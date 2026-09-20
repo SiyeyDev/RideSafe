@@ -829,7 +829,24 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 1
   webEnableSubmoduleStrippingCompatibility: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Android: TextMeshPro;ODIN_INSPECTOR;ODIN_INSPECTOR_3;ODIN_INSPECTOR_3_1;ODIN_INSPECTOR_3_2;ODIN_INSPECTOR_3_3;UNITY_POST_PROCESSING_STACK_V2
+    EmbeddedLinux: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    GameCoreScarlett: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    GameCoreXboxOne: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    Kepler: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    LinuxHeadlessSimulation: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    Nintendo Switch: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    Nintendo Switch 2: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    PS4: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    PS5: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    QNX: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    Standalone: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    VisionOS: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    WebGL: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    XboxOne: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
+    iPhone: TextMeshPro
+    tvOS: TextMeshPro;UNITY_POST_PROCESSING_STACK_V2
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
@@ -929,11 +946,11 @@ PlayerSettings:
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
   enableDirectStorage: 0
-  cloudProjectId: 
+  cloudProjectId: d48579fc-6fa9-4f35-86fb-0feff1147329
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: RideSafe
+  organizationId: mrschwerter
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

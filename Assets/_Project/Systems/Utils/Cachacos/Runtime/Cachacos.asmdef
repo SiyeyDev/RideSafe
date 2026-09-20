@@ -1,0 +1,20 @@
+{
+    "name": "Cachacos",
+    "rootNamespace": "",
+    "references": [
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Sirenix.Serialization.dll",
+        "Sirenix.Utilities.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

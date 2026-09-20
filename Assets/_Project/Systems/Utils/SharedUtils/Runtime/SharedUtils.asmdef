@@ -1,0 +1,24 @@
+{
+    "name": "SharedUtils",
+    "rootNamespace": "",
+    "references": [
+        "Cachacos",
+        "AutoHandAssembly",
+        "Unity.TextMeshPro",
+        "UnityEngine.SpatialTracking",
+        "Autohand.OpenXR"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Sirenix.Serialization.dll",
+        "Sirenix.Utilities.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

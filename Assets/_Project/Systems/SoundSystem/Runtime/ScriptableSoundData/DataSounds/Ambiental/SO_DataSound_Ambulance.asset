@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6a79bef8fd4a1144b32832e69c1d140, type: 3}
+  m_Name: SO_DataSound_Ambulance
+  m_EditorClassIdentifier: 
+  loop: 0
+  audioClip: {fileID: 8300000, guid: d60c1465f569c08428492885d08f6671, type: 3}
+  volume: 0.4
+  isAmbiental: 1

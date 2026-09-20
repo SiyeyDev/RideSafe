@@ -1,0 +1,21 @@
+{
+    "name": "Brand",
+    "rootNamespace": "",
+    "references": [
+        "Unity.TextMeshPro",
+        "Unity.RenderPipelines.Universal.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Sirenix.Serialization.dll",
+        "Sirenix.Utilities.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

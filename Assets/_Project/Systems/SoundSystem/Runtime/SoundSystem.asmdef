@@ -1,0 +1,23 @@
+{
+    "name": "SoundSystem",
+    "rootNamespace": "",
+    "references": [
+        "Cachacos",
+        "SharedUtils",
+        "CommandSystem",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Sirenix.Serialization.dll",
+        "Sirenix.Utilities.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

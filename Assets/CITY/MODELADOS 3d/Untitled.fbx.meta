@@ -1,0 +1,280 @@
+fileFormatVersion: 2
+guid: a5b2e5df9a7f6c941a1ece797637cc1b
+ModelImporter:
+  serializedVersion: 24200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AxeMetal
+    second: {fileID: 2100000, guid: 21cca0e60529a174bb598d6756b7197d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AxeWood
+    second: {fileID: 2100000, guid: 012930350d5380d4ab76ebe4aeb38c71, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BlowTorchSticker
+    second: {fileID: 2100000, guid: cffd23d477af7674b8ac596b867fde28, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BlowtorchMetal1
+    second: {fileID: 2100000, guid: 5f8e509e7d9acee43b43e99bcfdcaeef, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BlowtorchMetal2
+    second: {fileID: 2100000, guid: eafd76907895f434fa40742894fee598, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BlowtorchPlastic
+    second: {fileID: 2100000, guid: 073e427f66770fb46bf106c1f26fc85c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HammerMetal.001
+    second: {fileID: 2100000, guid: 490217a6b456956468ecc438b9f5f9a8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HammerWoodHandle.001
+    second: {fileID: 2100000, guid: bc6d9b4b235ef9240aea22ecfafb6699, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.001
+    second: {fileID: 2100000, guid: 3e8245f40f540ce4794a37cfafbf962a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal
+    second: {fileID: 2100000, guid: 9405c93eb7b9bd5458c789563960543d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal.001
+    second: {fileID: 2100000, guid: 62cd737cb8dc7764e819f09d126849e6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: OilCanMain
+    second: {fileID: 2100000, guid: c015e35c7bca77143b69e28ea5214981, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: OilCanMetal
+    second: {fileID: 2100000, guid: 2d68399199b0b3049b0fddc693754828, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Radio
+    second: {fileID: 2100000, guid: a36f3d500812a154a9ccfc4fe9777d87, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: SawBladeMetal
+    second: {fileID: 2100000, guid: d156480534e396c4e8e152471e5c4d66, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: SawHandleWood
+    second: {fileID: 2100000, guid: e914c91c98211924db9e8de5a41846c5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ScrewdriverMetal
+    second: {fileID: 2100000, guid: b4cb025c4e87f6b49913854edf2936e1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ScrewdriverWood
+    second: {fileID: 2100000, guid: 0df118fabf3b696428968a57b68bbd48, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Screws
+    second: {fileID: 2100000, guid: ff503d7462076cf4d944d76c1e144a95, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: SpraycanBase
+    second: {fileID: 2100000, guid: 75090253f2a39854a922917eaf493fb3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: SpraycanCapGreen
+    second: {fileID: 2100000, guid: 6fd9d6f881951b14e99f9a6852f34b01, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: SpraycanCapOrange
+    second: {fileID: 2100000, guid: 17465137577d33e46a0a3bf35a96aac1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: SpraycanCapRed
+    second: {fileID: 2100000, guid: 8de778b989a4d6347a041cbd3fea46a8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: SpraycanCapWhite
+    second: {fileID: 2100000, guid: 66598af03a6739f4f85f3d1cf0f5d9f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ToolBoxMetal
+    second: {fileID: 2100000, guid: 8f008650dbc91dd4795c431448069183, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ToolBoxPlastic
+    second: {fileID: 2100000, guid: 3d2968da6fe12024b97dc92ea4784543, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ViceMetal
+    second: {fileID: 2100000, guid: a010c005f466a9b4c9a959f96ce57a76, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ViceMetal2
+    second: {fileID: 2100000, guid: 2daaae07e432f8248b29b4f0cdd02dfc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ViceMetal3
+    second: {fileID: 2100000, guid: 8932021def7fd7c4f8cfca123b828fb1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wood.001
+    second: {fileID: 2100000, guid: 99ec7b9dbae49e242aa3560134a0df4e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wood2
+    second: {fileID: 2100000, guid: b216f638e94d5e8459302c956ba8e54a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WoodenHammerMaterial
+    second: {fileID: 2100000, guid: 4cf18a82e2ff6144799165052924a943, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WrenchMetal
+    second: {fileID: 2100000, guid: 23657dbe373d1084a92c911732812530, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WrenchMetal.001
+    second: {fileID: 2100000, guid: 46d4e111bd2fc8c4380efbb1b72c1a13, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
