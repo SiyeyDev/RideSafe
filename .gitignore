@@ -1,17 +1,6 @@
-# Unity .gitignore Template
-# Source: https://github.com/github/gitignore/blob/main/Unity.gitignore
-# Last synced: 2026-07-02
-# License: CC0-1.0
-#
-# This template is maintained from the github/gitignore repository
-# and distributed under Creative Commons Zero v1.0 Universal license.
-
 # This .gitignore file should be placed at the root of your Unity project directory
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
-#
-# Recommended: add any editor/OS/tool-specific ignore rules from the Global/ templates as needed.
-# See: https://github.com/github/gitignore/tree/main/Global
 #
 .utmp/
 /[Ll]ibrary/
@@ -44,6 +33,7 @@
 
 # Visual Studio cache directory
 .vs/
+*.vsconfig
 
 # Gradle cache directory
 .gradle/
@@ -54,7 +44,6 @@ ExportedObj/
 *.csproj
 *.unityproj
 *.sln
-*.slnx
 *.suo
 *.tmp
 *.user
@@ -110,5 +99,16 @@ InitTestScene*.unity*
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
-# Auto-generated cache in Assets folder
-/[Aa]ssets/[Ss]ceneDependencyCache*
+/
+MyAddressables/
+
+# === OpenCode / Development ===
+.opencode/
+.opencode_cache/
+*.opencode.log
+
+# === AI Agents & State ===
+.agents/
+.agents_cache/
+.agent_state/
+*.agent.log

@@ -1,0 +1,884 @@
+fileFormatVersion: 2
+guid: d235fc59425bf3940b67373d1ca8a1cd
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1529245386
+    second: Checklist_Container
+  - first:
+      213: 196757475
+    second: Checklist_Row_Default
+  - first:
+      213: 1730001983
+    second: Checklist_Row_Selected
+  - first:
+      213: 1692283004
+    second: Icon_Selected_CoralCircle
+  - first:
+      213: 424334464
+    second: Status_Pill_Default
+  - first:
+      213: 835015177
+    second: Video_Frame
+  - first:
+      213: 878916352
+    second: Comparison_Column
+  - first:
+      213: 1434563372
+    second: Debrief_Label
+  - first:
+      213: 524934776
+    second: Debrief_Step_Active
+  - first:
+      213: 1778833769
+    second: Debrief_Step_Inactive
+  - first:
+      213: 1492506897
+    second: Debrief_Connector
+  - first:
+      213: 21266278
+    second: Focus_Ring_Mint
+  - first:
+      213: 1851000231
+    second: Decision_Point_Coral
+  - first:
+      213: 683070856
+    second: Status_Independent
+  - first:
+      213: 730063443
+    second: Status_Supported
+  - first:
+      213: 865498807
+    second: Status_Retry
+  - first:
+      213: 1578291598
+    second: Status_Ready
+  - first:
+      213: 1318643761
+    second: Status_Attention
+  - first:
+      213: 1173123864
+    second: Icon_Back
+  - first:
+      213: 823590034
+    second: Icon_Continue
+  - first:
+      213: 732533640
+    second: Icon_Replay
+  - first:
+      213: 1367881571
+    second: Icon_Pause
+  - first:
+      213: 269693065
+    second: Icon_Confirm
+  - first:
+      213: 1394395073
+    second: Icon_Close
+  - first:
+      213: 28106033
+    second: Icon_Expand
+  - first:
+      213: 1773055086
+    second: Icon_Collapse
+  - first:
+      213: 754234145
+    second: Icon_Audio
+  - first:
+      213: 1244901411
+    second: Icon_Captions
+  - first:
+      213: 1685657241
+    second: Icon_Recenter
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 1
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Checklist_Container
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 2980
+        width: 512
+        height: 1024
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 64, y: 64, z: 64, w: 64}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3a85d8d4c87ecdf9ae06d607e50e2b12
+      internalID: 1529245386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Checklist_Row_Default
+      rect:
+        serializedVersion: 2
+        x: 592
+        y: 3812
+        width: 768
+        height: 192
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 56, y: 56, z: 56, w: 56}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f5126aa64d300fb2d73530d14d3869d9
+      internalID: 196757475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Checklist_Row_Selected
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 2734
+        width: 768
+        height: 192
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 56, y: 56, z: 56, w: 56}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cfa3f42317d1a5a7cab0e840141a0f38
+      internalID: 1730001983
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Selected_CoralCircle
+      rect:
+        serializedVersion: 2
+        x: 848
+        y: 2798
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 98cc90a8c0bbe2159eb6874acd70f9c2
+      internalID: 1692283004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_Pill_Default
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 2122
+        width: 512
+        height: 192
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 96, y: 0, z: 96, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 737bc7381c31c9bb408e700f158a4b68
+      internalID: 424334464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Video_Frame
+      rect:
+        serializedVersion: 2
+        x: 2088
+        y: 3428
+        width: 1024
+        height: 576
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 64, y: 64, z: 64, w: 64}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 525d39f3c7335febd73e2f59b69c26be
+      internalID: 835015177
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Comparison_Column
+      rect:
+        serializedVersion: 2
+        x: 3144
+        y: 2980
+        width: 512
+        height: 1024
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 64, y: 64, z: 64, w: 64}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a2981436aee3006e0637cb335c7ae385
+      internalID: 878916352
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debrief_Label
+      rect:
+        serializedVersion: 2
+        x: 2088
+        y: 2678
+        width: 512
+        height: 192
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 56, y: 56, z: 56, w: 56}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1956154189c7fb77228db00b8af67d72
+      internalID: 1434563372
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debrief_Step_Active
+      rect:
+        serializedVersion: 2
+        x: 2632
+        y: 2742
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 66ad0fc40178bad721df1636096a6095
+      internalID: 524934776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debrief_Step_Inactive
+      rect:
+        serializedVersion: 2
+        x: 2896
+        y: 2742
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2ea6e75468f1b71c4ab1e02f2a2ee16
+      internalID: 1778833769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debrief_Connector
+      rect:
+        serializedVersion: 2
+        x: 3168
+        y: 2806
+        width: 256
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 24, y: 0, z: 24, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 423417d9cc17ab03ab7ccb5708734b7b
+      internalID: 1492506897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Focus_Ring_Mint
+      rect:
+        serializedVersion: 2
+        x: 3458
+        y: 2614
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 64, y: 64, z: 64, w: 64}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ce194c94a2cce9f87303b95de8285146
+      internalID: 21266278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Decision_Point_Coral
+      rect:
+        serializedVersion: 2
+        x: 3746
+        y: 2742
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8ab5fcc5f1811a017984ee8b70eb33f0
+      internalID: 1851000231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_Independent
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 2368
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61476ece5ac8b9074e81d1d1732479c2
+      internalID: 683070856
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_Supported
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 2368
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d569813dbe3b91f7c53025f84570b93d
+      internalID: 730063443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_Retry
+      rect:
+        serializedVersion: 2
+        x: 624
+        y: 2368
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 24614b7658ca177d4ccba64c93e2d4aa
+      internalID: 865498807
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_Ready
+      rect:
+        serializedVersion: 2
+        x: 912
+        y: 2368
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 330f466f9979c7bffb7423a8570a3f86
+      internalID: 1578291598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_Attention
+      rect:
+        serializedVersion: 2
+        x: 1200
+        y: 2368
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e0f6f642e564951d235c8cbc8cf55631
+      internalID: 1318643761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Back
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 1884
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4356acbab67d5527f7ba29aa618b8d8b
+      internalID: 1173123864
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Continue
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 1884
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fa9b2b9dae6ddc97e768f49a578c2f3e
+      internalID: 823590034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Replay
+      rect:
+        serializedVersion: 2
+        x: 456
+        y: 1884
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5291315a2b7db933d3ade1156024c3c8
+      internalID: 732533640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Pause
+      rect:
+        serializedVersion: 2
+        x: 654
+        y: 1884
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9ff3a757366ef7334f9e22a9e3294809
+      internalID: 1367881571
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Confirm
+      rect:
+        serializedVersion: 2
+        x: 856
+        y: 1884
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1d806fcfcc8c5cb283d5c1f66f5dfcaa
+      internalID: 269693065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Close
+      rect:
+        serializedVersion: 2
+        x: 1064
+        y: 1884
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d32dbaef9076512b914a8d42eaae898c
+      internalID: 1394395073
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Expand
+      rect:
+        serializedVersion: 2
+        x: 1256
+        y: 1884
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f26dd7a07be45c5298a634b9f2e3604d
+      internalID: 28106033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Collapse
+      rect:
+        serializedVersion: 2
+        x: 1464
+        y: 1884
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bed68eb3a9b406f848667260492f236a
+      internalID: 1773055086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Audio
+      rect:
+        serializedVersion: 2
+        x: 1684
+        y: 1884
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6e5f1f0ba529e89321395a37571d8a1a
+      internalID: 754234145
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Captions
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 1702
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f5ab7b19beec1968262e446414666352
+      internalID: 1244901411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Recenter
+      rect:
+        serializedVersion: 2
+        x: 266
+        y: 1702
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: acd2673b077927b0c0af0d36cc0b54bc
+      internalID: 1685657241
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 33c06c3d395d97ccf28cf719398824e3
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Checklist_Container: 1529245386
+      Checklist_Row_Default: 196757475
+      Checklist_Row_Selected: 1730001983
+      Icon_Selected_CoralCircle: 1692283004
+      Status_Pill_Default: 424334464
+      Video_Frame: 835015177
+      Comparison_Column: 878916352
+      Debrief_Label: 1434563372
+      Debrief_Step_Active: 524934776
+      Debrief_Step_Inactive: 1778833769
+      Debrief_Connector: 1492506897
+      Focus_Ring_Mint: 21266278
+      Decision_Point_Coral: 1851000231
+      Status_Independent: 683070856
+      Status_Supported: 730063443
+      Status_Retry: 865498807
+      Status_Ready: 1578291598
+      Status_Attention: 1318643761
+      Icon_Back: 1173123864
+      Icon_Continue: 823590034
+      Icon_Replay: 732533640
+      Icon_Pause: 1367881571
+      Icon_Confirm: 269693065
+      Icon_Close: 1394395073
+      Icon_Expand: 28106033
+      Icon_Collapse: 1773055086
+      Icon_Audio: 754234145
+      Icon_Captions: 1244901411
+      Icon_Recenter: 1685657241
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
