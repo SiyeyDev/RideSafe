@@ -1,0 +1,22 @@
+{
+    "name": "TaskSequence.CommandSystemBridge",
+    "rootNamespace": "RideSafe.TaskSequence.Bridge",
+    "references": [
+        "TaskSequence",
+        "CommandSystem",
+        "Cachacos"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Sirenix.Serialization.dll",
+        "Sirenix.Utilities.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
