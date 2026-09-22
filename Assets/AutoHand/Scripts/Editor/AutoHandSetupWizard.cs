@@ -33,6 +33,14 @@ namespace AutoHand {
 
 
         static void Start() {
+            // PARCHE LOCAL (se pierde al actualizar AutoHand): ver AutoHandUpdateDataWizard.
+            // En un AssetImportWorker (-batchMode) esto puede abrir una ventana huerfana e
+            // incluso un navegador con Application.OpenURL.
+            if(Application.isBatchMode) {
+                EditorApplication.update -= Start;
+                return;
+            }
+
             SetRequiredSettings();
 
             if(ShowSetupWindow()) {

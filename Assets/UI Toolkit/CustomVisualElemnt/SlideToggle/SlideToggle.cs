@@ -2,10 +2,13 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 
-public class SlideToggle : BaseField<bool>
+// UxmlElement en vez de UxmlFactory/UxmlTraits: desde Unity 6 el importador de UXML ignora los
+// atributos de los controles que siguen en la API vieja ("Control SlideToggle uses the deprecated
+// UxmlTraits API. Its attributes were ignored on import"), y por eso label y value llegaban vacios.
+// BaseField<T>.UxmlSerializedData ya declara label y value, asi que no hace falta redeclararlos.
+[UxmlElement]
+public partial class SlideToggle : BaseField<bool>
 {
-    public new class UxmlFactory : UxmlFactory<SlideToggle, UxmlTraits> { }
-    public new class UxmlTraits : BaseFieldTraits<bool, UxmlBoolAttributeDescription> { }
     public static readonly new string ussClassName = "slide-toggle";
     public static readonly new string inputUssClassName = "slide-toggle__input";
     public static readonly string inputKnobUssClassName = "slide-toggle__input-knob";

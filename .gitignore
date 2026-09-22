@@ -112,3 +112,6 @@ MyAddressables/
 .agents_cache/
 .agent_state/
 *.agent.log
+
+# Solucion de Visual Studio (formato nuevo), se regenera sola igual que *.sln
+*.slnx

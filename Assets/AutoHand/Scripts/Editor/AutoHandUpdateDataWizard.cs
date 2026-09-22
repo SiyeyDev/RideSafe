@@ -40,6 +40,16 @@ namespace Autohand {
 
         [UnityEditor.InitializeOnLoadMethod]
         public static void CheckSceneForOldPoses() {
+            // PARCHE LOCAL (se pierde al actualizar AutoHand):
+            // Los AssetImportWorker de Unity corren con -batchMode pero igual ejecutan los
+            // InitializeOnLoad. Abajo se llama GetWindow() sin condicion, y en esos procesos eso
+            // crea una ContainerWindow visible (clase UnityContainerWndClass, con caption) que
+            // nadie cierra nunca. Como los statics se resetean en cada domain reload del worker,
+            // 'loaded' vuelve a false y se acumula otra ventana en blanco en la barra de tareas.
+            // En un proceso sin UI no hay ningun wizard que mostrar.
+            if(Application.isBatchMode)
+                return;
+
             if(!loaded) {
                 if(window != null)
                     window.Close();
