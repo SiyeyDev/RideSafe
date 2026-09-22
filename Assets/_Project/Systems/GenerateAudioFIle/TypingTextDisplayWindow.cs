@@ -19,10 +19,32 @@ public class TypingTextDisplayWindow : EditorWindow
     private float _smoothTime = 0.1f;
     private static Vector2 _startPosition;
 
+    /// <summary>
+    /// Esta ventana se crea con ShowPopup(): no tiene barra de titulo ni boton de cerrar, y como
+    /// es un ScriptableObject sobrevive a los domain reloads (recompilar, entrar a Play). Los
+    /// statics de abajo SI se resetean, asi que tras un reload la instancia queda huerfana: vacia,
+    /// sin nadie que la cierre y sin forma de cerrarla a mano. Por eso se barren al cargar.
+    /// </summary>
+    [InitializeOnLoadMethod]
+    private static void CloseOrphans()
+    {
+        _displayedText = null;
+        _coroutine = null;
+        Opened = false;
+        _window = null;
+        EditorApplication.delayCall += () =>
+        {
+            foreach (TypingTextDisplayWindow orphan in Resources.FindObjectsOfTypeAll<TypingTextDisplayWindow>())
+            {
+                if (orphan != null)
+                    orphan.Close();
+            }
+        };
+    }
+
     public static void OpenTyping(AudioClip audioClip, string jsonData, Rect startRect)
     {
-        if (Opened)
-            CloseTyping();
+        CloseTyping();
         if (_typingStyle == null)
         {
             _typingStyle = EditorGUIUtils.GetButtonStyle(Color.white);
@@ -48,15 +70,27 @@ public class TypingTextDisplayWindow : EditorWindow
             EditorCoroutineUtility.StopCoroutine(_coroutine);
         _coroutine = null;
         EditorAudioUtils.StopAllClips();
+        if (_window == this)
+            _window = null;
+        _displayedText = null;
+        Opened = false;
     }
     public static void CloseTyping()
     {
         if (_coroutine != null)
             EditorCoroutineUtility.StopCoroutine(_coroutine);
         _coroutine = null;
+        _displayedText = null;
         EditorAudioUtils.StopAllClips();
         Opened = false;
-        _window.Close();
+        // Cierra cualquier instancia viva, no solo la que apunta el static: si hubo un domain
+        // reload en medio, _window ya no apunta a la ventana que quedo abierta.
+        foreach (TypingTextDisplayWindow open in Resources.FindObjectsOfTypeAll<TypingTextDisplayWindow>())
+        {
+            if (open != null)
+                open.Close();
+        }
+        _window = null;
     }
     private static void SetText(string newText)
     {
@@ -68,18 +102,26 @@ public class TypingTextDisplayWindow : EditorWindow
         _coroutine = null;
         _displayedText = null;
         Opened = false;
-        _window.Close();
+        if (_window != null)
+            _window.Close();
+        _window = null;
     }
 
     private void OnGUI()
     {
-        if (_displayedText != null)
+        // Si ya no es la ventana activa (tipico despues de un domain reload) no hay nadie que la
+        // cierre y ShowPopup no deja chrome para hacerlo a mano: se cierra sola.
+        if (_window != this || !Opened || _typingStyle == null)
         {
-            GUILayout.Label(WrapText(_displayedText), _typingStyle);
-            GUILayout.Label(_displayedText, _typingStyle);
-            UpdateWindowSize();
-            _window.Repaint();
+            Close();
+            return;
         }
+        if (_displayedText == null)
+            return;
+        GUILayout.Label(WrapText(_displayedText), _typingStyle);
+        GUILayout.Label(_displayedText, _typingStyle);
+        UpdateWindowSize();
+        Repaint();
     }
 
     private static string WrapText(string text)

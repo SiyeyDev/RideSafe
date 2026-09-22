@@ -77,6 +77,18 @@ public class GenerateAudio
         }
     }
 
+    /// <summary>
+    /// La carpeta de la categoria/idioma puede no existir todavia (proyecto nuevo, idioma nuevo).
+    /// El .mp3 se escribia sin crearla, asi que WriteAllBytes tiraba DirectoryNotFoundException y
+    /// no se generaba nada.
+    /// </summary>
+    private static void EnsureFolder(string filePath)
+    {
+        string folderPath = Path.GetDirectoryName(filePath);
+        if (!string.IsNullOrEmpty(folderPath) && !Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+    }
+
     private void ConvertBase64ToAudioClip(string base64Audio, string filePath)
     {
         try
@@ -93,6 +105,7 @@ public class GenerateAudio
     {
         try
         {
+            EnsureFolder(filePath);
             File.WriteAllBytes($"{filePath}{Constants.k_audioFileExtension}", audioBytes);
             AssetDatabase.Refresh();
             Debug.Log("MP3 file saved to: " + filePath);
@@ -107,9 +120,7 @@ public class GenerateAudio
         try
         {
             string json = JsonConvert.SerializeObject(wordAligment, Formatting.Indented);
-            string folderPath = Path.GetDirectoryName(filePath);
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
+            EnsureFolder(filePath);
             File.WriteAllText($"{filePath}{Constants.k_jsonExtension}", json);
             AssetDatabase.Refresh();
             Debug.Log($"TimeStamp data saved to {filePath}");

@@ -32,7 +32,7 @@ Slider #unity-text-input {
     justify-content: center;
     -unity-text-align: middle-center;
     -unity-font-style: bold;
-    background-image: url("project://database/Assets/UIToolkit/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
+    background-image: url("project://database/Assets/UI%20Toolkit/Juant0/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
 }
 
 Slider #unity-drag-container {
@@ -65,7 +65,7 @@ Toggle #unity-checkmark {
     border-top-right-radius: 48%;
     border-bottom-right-radius: 48%;
     border-bottom-left-radius: 48%;
-    background-image: url("project://database/Assets/UIToolkit/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
+    background-image: url("project://database/Assets/UI%20Toolkit/Juant0/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
     border-left-color: rgb(0, 255, 238);
     border-right-color: rgb(0, 255, 238);
     border-top-color: rgb(0, 255, 238);
@@ -96,7 +96,7 @@ Toggle #unity-checkmark {
 }
 
 Button {
-    background-image: url("project://database/Assets/UIToolkit/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
+    background-image: url("project://database/Assets/UI%20Toolkit/Juant0/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
     -unity-background-image-tint-color: rgb(255, 255, 255);
     background-color: rgb(0, 0, 0);
     -unity-slice-scale: 0.1px;
@@ -117,7 +117,7 @@ Button {
     font-size: 20px;
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/TextMesh%20Pro/Examples%20&%20Extras/Fonts/Roboto-Bold.ttf?fileID=12800000&guid=4beb055f07aaff244873dec698d0363e&type=3#Roboto-Bold");
-    background-image: url("project://database/Assets/UIToolkit/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
+    background-image: url("project://database/Assets/UI%20Toolkit/Juant0/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
     -unity-background-image-tint-color: rgb(253, 255, 0);
     background-color: rgb(46, 49, 17);
     -unity-slice-scale: 0.1px;
@@ -136,7 +136,7 @@ Button {
 }
 
 DropdownField .unity-base-field_input {
-    background-image: url("project://database/Assets/UIToolkit/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
+    background-image: url("project://database/Assets/UI%20Toolkit/Juant0/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
     background-color: rgb(19, 52, 52);
     -unity-background-image-tint-color: rgb(0, 255, 223);
     -unity-slice-scale: 0.1px;
@@ -153,7 +153,7 @@ DropdownField .unity-base-field_input {
 }
 
 #VoiceDropField .unity-base-popup-field__input {
-    background-image: url("project://database/Assets/UIToolkit/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
+    background-image: url("project://database/Assets/UI%20Toolkit/Juant0/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
     -unity-background-image-tint-color: rgb(0, 255, 242);
     -unity-slice-scale: 0.1px;
     -unity-slice-left: 46;
@@ -175,7 +175,7 @@ DropdownField .unity-base-field_input {
 }
 
 .unity-base-popup-field__input {
-    background-image: url("project://database/Assets/UIToolkit/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
+    background-image: url("project://database/Assets/UI%20Toolkit/Juant0/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
     -unity-background-image-tint-color: rgb(253, 255, 0);
     -unity-slice-scale: 0.1px;
     -unity-slice-left: 46;
@@ -192,7 +192,7 @@ DropdownField .unity-base-field_input {
 }
 
 .unity-enum-field__input {
-    background-image: url("project://database/Assets/UIToolkit/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
+    background-image: url("project://database/Assets/UI%20Toolkit/Juant0/RadialGradien_256x256.png?fileID=2800000&guid=a73ff8472bd40b94c8f3e7520a502e0f&type=3#RadialGradien_256x256");
     -unity-background-image-tint-color: rgb(253, 255, 0);
     -unity-slice-scale: 0.1px;
     -unity-slice-left: 46;

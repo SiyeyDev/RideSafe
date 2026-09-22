@@ -7,7 +7,8 @@ public class CustomDebugWindow : EditorWindow
     private static string _messages;
     private static CustomDebugWindow _window;
 
-    [MenuItem("Tools/Custom Debug")]
+    // Sin [MenuItem]: Unity solo acepta metodos sin parametros (o con MenuCommand) y logueaba
+    // "Method CustomDebugWindow.Log has invalid parameters" en cada carga del editor.
     public static void Log(string message)
     {
         _messages = message;

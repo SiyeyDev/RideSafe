@@ -12,6 +12,8 @@ public class GenerateWindow : BaseWindow
     private I2LocalizeWindow _localizeWindow;
     private ElevenLabsAPIWindow _elevenLabsAPIWindow;
 
+    private const string k_soundsFolder = "Resources/Sounds/";
+
     private Button _createBtn;
     private Label _pathLabel;
     private SlideToggle _audioToggle;
@@ -50,11 +52,20 @@ public class GenerateWindow : BaseWindow
     }
     #endregion
 
+    /// <summary>
+    /// Carpeta destino de la categoria seleccionada. Se busca una carpeta con el nombre de la
+    /// categoria dentro de cualquier Resources/Sounds del proyecto; si todavia no existe se usa la
+    /// ruta canonica, que <see cref="GenerateAudio"/> crea al escribir. Antes se devolvia null
+    /// cuando la carpeta no existia y eso dejaba el boton Create oculto para siempre en un
+    /// proyecto nuevo: no habia forma de crear la carpeta desde la tool.
+    /// </summary>
     private string GetFolderRouth()
     {
-        string basePath = FolderUtilities.GetPath(_localizeWindow.Category, "folder", parentPath: "Resources/Sounds/");
-        if (basePath == null)
+        if (string.IsNullOrEmpty(_localizeWindow.Category) || string.IsNullOrEmpty(_localizeWindow.Language))
             return null;
+        string basePath = FolderUtilities.GetPath(_localizeWindow.Category, "folder", parentPath: k_soundsFolder);
+        if (basePath == null)
+            basePath = $"Assets/{k_soundsFolder}{_localizeWindow.Category}";
         return $"{basePath}/{_localizeWindow.Language}";
     }
     private void Create() => EditorCoroutineUtility.StartCoroutine(StartGeneration(), this);

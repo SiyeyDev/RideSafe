@@ -8,6 +8,7 @@ namespace Cachacos
     {
         private static readonly float _pading = 4;
         private static readonly float _heightMultiplier = 0.85f;
+        private static readonly float _minWidth = 120;
         private static BasePopUp<T> _window;
         protected static T selection;
         private static string[] _options;
@@ -28,25 +29,37 @@ namespace Cachacos
             if (_window != null)
                 _window.Close();
             _window = CreateInstance<TPopUp>();
-            Vector2 windowSize = GetWindowSize(options, removePart);
-            _window.ShowAsDropDown(buttonSize, windowSize);
+            _window.ShowAsDropDown(buttonSize, _window.GetWindowSize(options, removePart));
         }
-        private static Vector2 GetWindowSize(string[] options, string removePart)
+        /// <summary>
+        /// Espacio, fuera de la lista, que necesita el popup: el boton CLOSE de
+        /// <see cref="SelectablePopUp"/>, por ejemplo. Antes era un static que la hija ocultaba
+        /// con 'new'; los statics no son virtuales, asi que siempre se ejecutaba el de la clase
+        /// base y ese espacio nunca se reservaba.
+        /// </summary>
+        protected virtual Vector2 ExtraSize() => Vector2.zero;
+
+        private Vector2 GetWindowSize(string[] options, string removePart)
         {
-            Vector2 windowSize = Defaultsize();
-            float totalContentHeight = 0;
+            float contentWidth = _minWidth;
+            float contentHeight = 0;
             foreach (string option in options)
             {
                 string nameDisplayed = string.IsNullOrEmpty(removePart) ? option : option.Replace(removePart, "");
                 Vector2 size = _selected.CalcSize(new GUIContent(nameDisplayed));
-                windowSize.x = Mathf.Max(windowSize.x, size.x) + _selected.margin.top + _selected.margin.bottom; 
-                totalContentHeight += size.y + _selected.margin.top + _selected.margin.bottom; ;
+                // El ancho es el del elemento mas largo. Antes se sumaban los margenes en cada
+                // vuelta del bucle, asi que el ancho dependia de cuantos elementos habia: con
+                // muchos sobraba sitio y con pocos el nombre salia cortado.
+                contentWidth = Mathf.Max(contentWidth, size.x + _selected.margin.horizontal);
+                contentHeight += size.y + _selected.margin.vertical;
             }
-            windowSize.x += _pading;
-            windowSize.y = Mathf.Min(totalContentHeight, Screen.currentResolution.height * _heightMultiplier);
-            return windowSize;
+            Vector2 extra = ExtraSize();
+            // La barra vertical del ScrollView se come ancho: sin reservarlo, el texto queda
+            // cortado y encima aparece una barra horizontal que roba alto a la lista.
+            float width = contentWidth + extra.x + _pading + GUI.skin.verticalScrollbar.fixedWidth;
+            float height = Mathf.Min(contentHeight + extra.y + _pading, Screen.currentResolution.height * _heightMultiplier);
+            return new Vector2(width, height);
         }
-        protected static Vector2 Defaultsize() =>Vector2.zero;
         private void OnGUI()
         {
             if (_options == null)

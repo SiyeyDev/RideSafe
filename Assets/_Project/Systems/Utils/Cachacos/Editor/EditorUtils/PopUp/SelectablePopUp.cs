@@ -7,14 +7,23 @@ namespace Cachacos
     public class SelectablePopUp : BasePopUp<HashSet<string>>
     {
         private static GUIStyle _close;
+        private static GUIStyle CloseStyle
+        {
+            get
+            {
+                if (_close == null)
+                    _close = EditorGUIUtils.GetButtonStyle(Color.red, border: 2);
+                return _close;
+            }
+        }
 
-        protected static new Vector2 Defaultsize() =>  Vector2.up * (_close.CalcSize(new GUIContent("CLOSE")).y + _close.margin.top + _close.margin.bottom);
+        protected override Vector2 ExtraSize()
+            => Vector2.up * (CloseStyle.CalcSize(new GUIContent("CLOSE")).y + CloseStyle.margin.vertical);
+
         protected override void Draw()
         {
-            if(_close == null)
-                _close = EditorGUIUtils.GetButtonStyle(Color.red, border: 2);
             base.Draw();
-            if (GUILayout.Button("CLOSE", _close))
+            if (GUILayout.Button("CLOSE", CloseStyle))
                 Close();
         }
         protected override bool CompareSelection(string option) => selection.Contains(option);
