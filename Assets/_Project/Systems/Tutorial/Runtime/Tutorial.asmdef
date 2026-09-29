@@ -3,9 +3,7 @@
     "rootNamespace": "RideSafe.Tutorial",
     "references": [
         "TaskSequence",
-        "Cachacos",
-        "SharedUtils",
-        "Unity.InputSystem"
+        "Cachacos"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

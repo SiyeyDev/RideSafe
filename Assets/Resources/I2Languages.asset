@@ -49,6 +49,350 @@ MonoBehaviour:
       - 
       Flags: 0000
       Languages_Touch: []
+    - Term: Tutorial/ChooseLocation
+      TermType: 0
+      Description: 
+      Languages:
+      - Choose where you ride.
+      - "Elige d\xF3nde conduces."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Tutorial/ChooseVehicle
+      TermType: 0
+      Description: 
+      Languages:
+      - Choose your vehicle.
+      - "Elige tu veh\xEDculo."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Tutorial/ConfirmVehicle
+      TermType: 0
+      Description: 
+      Languages:
+      - Confirm your vehicle.
+      - "Confirma tu veh\xEDculo."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Welcome_Tagline
+      TermType: 0
+      Description: 
+      Languages:
+      - "Better decisions in motion."
+      - "Mejores decisiones en movimiento."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Button_Begin
+      TermType: 0
+      Description: 
+      Languages:
+      - "Begin"
+      - "Comenzar"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Button_Back
+      TermType: 0
+      Description: 
+      Languages:
+      - "Back"
+      - "Atr\xE1s"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Button_Continue
+      TermType: 0
+      Description: 
+      Languages:
+      - "Continue"
+      - "Continuar"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Button_Change
+      TermType: 0
+      Description: 
+      Languages:
+      - "Change"
+      - "Cambiar"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Button_Confirm
+      TermType: 0
+      Description: 
+      Languages:
+      - "Confirm"
+      - "Confirmar"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Button_StartModule1
+      TermType: 0
+      Description: 
+      Languages:
+      - "Start Module 1"
+      - "Iniciar M\xF3dulo 1"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Caption_Selected
+      TermType: 0
+      Description: 
+      Languages:
+      - "Selected"
+      - "Seleccionado"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Switch_On
+      TermType: 0
+      Description: 
+      Languages:
+      - "On"
+      - "S\xED"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Switch_Off
+      TermType: 0
+      Description: 
+      Languages:
+      - "Off"
+      - "No"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Language_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - "Choose your language"
+      - "Elige tu idioma"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Language_Subtitle
+      TermType: 0
+      Description: 
+      Languages:
+      - "You can change this later."
+      - "Puedes cambiarlo m\xE1s tarde."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Location_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - "Which rules apply to your riding?"
+      - "\xBFQu\xE9 normas aplican a tus recorridos?"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Location_Subtitle
+      TermType: 0
+      Description: 
+      Languages:
+      - "This sets the rule pack the whole session is judged against."
+      - "Define el conjunto de normas con el que se eval\xFAa toda la sesi\xF3n."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Location_Florida
+      TermType: 0
+      Description: 
+      Languages:
+      - "Florida"
+      - "Florida"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Location_Florida_Description
+      TermType: 0
+      Description: 
+      Languages:
+      - "United States \xB7 state e-bike and scooter rule pack"
+      - "Estados Unidos \xB7 normas estatales para bicicletas y patinetas el\xE9ctricas"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Location_Bogota
+      TermType: 0
+      Description: 
+      Languages:
+      - "Bogot\xE1"
+      - "Bogot\xE1"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Location_Bogota_Description
+      TermType: 0
+      Description: 
+      Languages:
+      - "Colombia \xB7 city cycling and micromobility rule pack"
+      - "Colombia \xB7 normas urbanas de ciclismo y micromovilidad"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Vehicle_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - "Choose your vehicle"
+      - "Elige tu veh\xEDculo"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Vehicle_Subtitle
+      TermType: 0
+      Description: 
+      Languages:
+      - "Look at each vehicle before you choose."
+      - "Observa cada veh\xEDculo antes de elegir."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Vehicle_EBike
+      TermType: 0
+      Description: 
+      Languages:
+      - "E-bike"
+      - "Bicicleta el\xE9ctrica"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Vehicle_EBike_Description
+      TermType: 0
+      Description: 
+      Languages:
+      - "Pedal assist \xB7 seated"
+      - "Pedaleo asistido \xB7 sentado"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Vehicle_EScooter
+      TermType: 0
+      Description: 
+      Languages:
+      - "Standing e-scooter"
+      - "Patineta el\xE9ctrica de pie"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Vehicle_EScooter_Description
+      TermType: 0
+      Description: 
+      Languages:
+      - "Standing \xB7 throttle"
+      - "De pie \xB7 acelerador"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Vehicle_SelectedFormat
+      TermType: 0
+      Description: 
+      Languages:
+      - "{0} selected \u2014"
+      - "{0} seleccionada \u2014"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Vehicle_ConfirmPrompt
+      TermType: 0
+      Description: 
+      Languages:
+      - "confirm to continue?"
+      - "\xBFconfirmar para continuar?"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - "Set up your comfort"
+      - "Ajusta tu comodidad"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Subtitle
+      TermType: 0
+      Description: 
+      Languages:
+      - "Nothing here affects your results."
+      - "Nada de esto afecta tus resultados."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Posture
+      TermType: 0
+      Description: 
+      Languages:
+      - "Riding posture"
+      - "Postura de conducci\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Posture_Detail
+      TermType: 0
+      Description: 
+      Languages:
+      - "Sets eye height and handlebar reach"
+      - "Ajusta la altura de los ojos y el alcance del manubrio"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Seated
+      TermType: 0
+      Description: 
+      Languages:
+      - "Seated"
+      - "Sentado"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Standing
+      TermType: 0
+      Description: 
+      Languages:
+      - "Standing"
+      - "De pie"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Subtitles
+      TermType: 0
+      Description: 
+      Languages:
+      - "Subtitles"
+      - "Subt\xEDtulos"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Subtitles_Detail
+      TermType: 0
+      Description: 
+      Languages:
+      - "Every spoken line, placed below the instruction panel"
+      - "Cada l\xEDnea hablada, debajo del panel de instrucciones"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_TextSize
+      TermType: 0
+      Description: 
+      Languages:
+      - "Text size"
+      - "Tama\xF1o del texto"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_TextSize_Detail
+      TermType: 0
+      Description: 
+      Languages:
+      - "Scales all world-space type together"
+      - "Escala a la vez todo el texto del entorno"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Hand
+      TermType: 0
+      Description: 
+      Languages:
+      - "Dominant hand"
+      - "Mano dominante"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Hand_Detail
+      TermType: 0
+      Description: 
+      Languages:
+      - "Mirrors mounted controls and the ray hand"
+      - "Refleja los controles montados y la mano del rayo"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Left
+      TermType: 0
+      Description: 
+      Languages:
+      - "Left"
+      - "Izquierda"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M0/Comfort_Right
+      TermType: 0
+      Description: 
+      Languages:
+      - "Right"
+      - "Derecha"
+      Flags: 0000
+      Languages_Touch: []
     CaseInsensitiveTerms: 0
     OnMissingTranslation: 1
     mTerm_AppName: 

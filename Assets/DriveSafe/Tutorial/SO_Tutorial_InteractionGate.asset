@@ -1,0 +1,148 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba13b57fdf4846e42b40e008c316d27e, type: 3}
+  m_Name: SO_Tutorial_InteractionGate
+  m_EditorClassIdentifier: TaskSequence::RideSafe.TaskSequence.TaskSequenceSO
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: _steps
+      Entry: 7
+      Data: 0|System.Collections.Generic.List`1[[RideSafe.TaskSequence.TaskStepData,
+        TaskSequence]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 2
+    - Name: 
+      Entry: 7
+      Data: 1|RideSafe.TaskSequence.TaskStepData, TaskSequence
+    - Name: _stepId
+      Entry: 1
+      Data: gate.point
+    - Name: _entityId
+      Entry: 7
+      Data: RideSafe.TaskSequence.EntityId, TaskSequence
+    - Name: _value
+      Entry: 1
+      Data: gate.target
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: _instructionKey
+      Entry: 6
+      Data: 
+    - Name: _audioKey
+      Entry: 6
+      Data: 
+    - Name: _validator
+      Entry: 7
+      Data: 2|RideSafe.Tutorial.EntityFocusedValidator, Tutorial
+    - Name: _dwellSeconds
+      Entry: 4
+      Data: 0.15
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: _completionMode
+      Entry: 3
+      Data: 0
+    - Name: _feedbackDuration
+      Entry: 4
+      Data: 0
+    - Name: _timeout
+      Entry: 4
+      Data: 0
+    - Name: _failurePolicy
+      Entry: 3
+      Data: 0
+    - Name: _missingEntityPolicy
+      Entry: 3
+      Data: 0
+    - Name: _skipPolicy
+      Entry: 3
+      Data: 1
+    - Name: _hintActionId
+      Entry: 6
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 3|RideSafe.TaskSequence.TaskStepData, TaskSequence
+    - Name: _stepId
+      Entry: 1
+      Data: gate.select
+    - Name: _entityId
+      Entry: 7
+      Data: RideSafe.TaskSequence.EntityId, TaskSequence
+    - Name: _value
+      Entry: 1
+      Data: gate.target
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: _instructionKey
+      Entry: 6
+      Data: 
+    - Name: _audioKey
+      Entry: 6
+      Data: 
+    - Name: _validator
+      Entry: 7
+      Data: 4|RideSafe.Tutorial.EntitySelectedValidator, Tutorial
+    - Name: _acceptPreexistingSelection
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: _completionMode
+      Entry: 3
+      Data: 1
+    - Name: _feedbackDuration
+      Entry: 4
+      Data: 0.6
+    - Name: _timeout
+      Entry: 4
+      Data: 0
+    - Name: _failurePolicy
+      Entry: 3
+      Data: 0
+    - Name: _missingEntityPolicy
+      Entry: 3
+      Data: 0
+    - Name: _skipPolicy
+      Entry: 3
+      Data: 1
+    - Name: _hintActionId
+      Entry: 1
+      Data: primaryselect
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  _sequenceId: Initial.InteractionGate
+  _contextRequirements: []
+  _restartPolicy: 0
+  _skipPolicy: 0

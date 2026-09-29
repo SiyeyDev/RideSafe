@@ -18,11 +18,19 @@ namespace RideSafe.Tutorial
         [Tooltip("Signal name raised by gameplay, e.g. module01.panel.opened")]
         [SerializeField] private string _signal;
 
-        [Tooltip("Accept a signal that fired shortly BEFORE this step armed.")]
-        [SerializeField] private bool _acceptLatched;
+        [Tooltip("Also accept the signal if it fired at most this many seconds BEFORE the step armed. 0 = only after.")]
+        [SerializeField, Min(0f)] private float _latchWindowSeconds;
 
         private TutorialSignalBus _bus;
         private bool _satisfied;
+
+        public CustomEventValidator() { }
+
+        internal CustomEventValidator(string signal, float latchWindowSeconds = 0f)
+        {
+            _signal = signal;
+            _latchWindowSeconds = latchWindowSeconds;
+        }
 
         protected override void OnPrepare()
         {
@@ -44,7 +52,7 @@ namespace RideSafe.Tutorial
                 return;
             }
 
-            if (_acceptLatched && _bus.WasRaised(_signal))
+            if (_bus.WasRaisedWithin(_signal, _latchWindowSeconds))
                 _satisfied = true;
 
             _bus.Subscribe(_signal, HandleSignal);

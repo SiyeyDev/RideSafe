@@ -20,6 +20,7 @@ namespace RideSafe.UI.EditorTools
                         ("bogota", "Bogotá", "Colombia · city cycling and micromobility rule pack", 516f, 206f, 814f, 418f) });
             Vehicle(Panel("Vehicle"));
             Comfort(Panel("Comfort"));
+            LocalizeModule00(_module);
             EndModule("PF_Module00_UI");
         }
 

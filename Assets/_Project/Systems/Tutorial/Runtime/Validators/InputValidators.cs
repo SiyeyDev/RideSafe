@@ -8,8 +8,7 @@ namespace RideSafe.Tutorial
     /// <para>
     /// Only presses that happen AFTER Prepare count. A press made while the previous step
     /// was still running is deliberately ignored so the learner cannot skip ahead by
-    /// mashing a button (CASE 05). Set <c>_graceWindow</c> above zero to accept a press
-    /// made just before the step armed, for steps where that feels unfair.
+    /// mashing a button (CASE 05).
     /// </para>
     /// </summary>
     [Serializable]
@@ -18,31 +17,25 @@ namespace RideSafe.Tutorial
         [Tooltip("Abstract action, e.g. primaryselect. Never a physical button.")]
         [SerializeField] private string _actionId = ActionIds.PrimarySelect;
 
-        [Tooltip("Seconds of leniency for a press made just before this step armed. 0 = strict.")]
-        [SerializeField, Min(0f)] private float _graceWindow;
-
         private ITutorialInputService _input;
-        private float _armedFor;
 
         public ActionId Action => new ActionId(_actionId);
 
+        public InputPressedValidator() { }
+
+        internal InputPressedValidator(string actionId) => _actionId = actionId;
+
         protected override void OnPrepare()
         {
-            _armedFor = 0f;
             _input = ResolveInput();
             RequireMappedAction(_input, Action);
         }
 
         protected override bool OnEvaluate(float deltaTime)
         {
-            _armedFor += deltaTime;
-            if (_input == null)
-                return false;
-
             // Only edges observed after Prepare count, so a press made during the previous
-            // step never carries over. _graceWindow is reserved for a future pre-arm
-            // buffer in the input service; it intentionally does nothing yet.
-            return _input.WasPerformedThisFrame(Action);
+            // step never carries over.
+            return _input != null && _input.WasPerformedThisFrame(Action);
         }
 
         protected override void OnCleanup() => _input = null;

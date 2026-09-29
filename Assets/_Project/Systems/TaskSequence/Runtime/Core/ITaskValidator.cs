@@ -23,6 +23,13 @@ namespace RideSafe.TaskSequence
         /// <summary>Polled once per frame while the step waits. True means satisfied.</summary>
         bool Evaluate(float deltaTime);
 
+        /// <summary>
+        /// True when the validator can never succeed (missing service, wrong entity type,
+        /// unmapped action). The runner checks it after Prepare and every Evaluate and fails
+        /// the step at once instead of waiting forever.
+        /// </summary>
+        bool IsBroken { get; }
+
         /// <summary>Unhook sources and drop references. Always called, including on abort.</summary>
         void Cleanup();
 

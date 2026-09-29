@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace RideSafe.TaskSequence
 {
@@ -14,11 +15,18 @@ namespace RideSafe.TaskSequence
     /// There are no module branches in here. The runner knows Sequence, Step, Entity,
     /// Validator and Context, and nothing else.
     /// </para>
+    /// <para>
+    /// Events may be raised re-entrantly: a listener is allowed to Abort, Skip or even Start
+    /// a new sequence from inside a callback, and the runner stops touching the old step.
+    /// </para>
     /// </summary>
     public sealed class TaskSequenceRunner
     {
         private readonly TaskContextService _entities;
-        private readonly Func<string, string> _contextLookup;
+
+        // Per-runner session memory for RestartPolicy. Not persisted.
+        private readonly HashSet<string> _completedSequences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, int> _resumeIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         private TaskSequenceSO _sequence;
         private int _stepIndex = -1;
@@ -26,7 +34,8 @@ namespace RideSafe.TaskSequence
         private TaskStepContext _context;
         private ITaskValidator _validator;
         private float _phaseElapsed;
-        private bool _stepFailed;
+        private bool _anyStepFailed;
+        private bool _pendingSuccess;
 
         public TaskSequenceStatus Status { get; private set; } = TaskSequenceStatus.Idle;
         public TaskStepPhase Phase { get; private set; } = TaskStepPhase.None;
@@ -36,18 +45,26 @@ namespace RideSafe.TaskSequence
         public int StepCount => _sequence != null ? _sequence.StepCount : 0;
         public bool IsRunning => Status == TaskSequenceStatus.Running;
 
+        /// <summary>1 on the first try of the current step, +1 on every Retry. Presentation can escalate help with it.</summary>
+        public int StepAttempt { get; private set; }
+
+        /// <summary>
+        /// Supplies context values to sequence requirements. Null means no context is wired:
+        /// requirements are then ignored with a warning instead of blocking every sequence.
+        /// </summary>
+        public Func<string, string> ContextLookup { get; set; }
+
         public event Action<TaskSequenceRunner> SequenceStarted;
         public event Action<TaskSequenceRunner, TaskStepData> StepStarted;
         public event Action<TaskSequenceRunner, TaskStepData, TaskStepPhase> StepPhaseChanged;
         public event Action<TaskSequenceRunner, TaskStepData, bool> StepCompleted;
         public event Action<TaskSequenceRunner, TaskSequenceStatus> SequenceFinished;
 
-        public TaskSequenceRunner(TaskContextService entities, Func<string, string> contextLookup = null)
+        public TaskSequenceRunner(TaskContextService entities)
         {
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
             _entities = entities;
-            _contextLookup = contextLookup;
         }
 
         #region Control
@@ -70,23 +87,35 @@ namespace RideSafe.TaskSequence
                 TaskLog.Error(sequence.SequenceId, null, "Sequence has no steps.");
                 return false;
             }
-
-            string unmet;
-            if (!sequence.MatchesContext(_contextLookup, out unmet))
+            if (sequence.RestartPolicy == RestartPolicy.RunOnce && _completedSequences.Contains(sequence.SequenceId))
             {
-                TaskLog.Warn(sequence.SequenceId, null,
-                    "Context requirement not met (" + unmet + "). Sequence not started.");
+                TaskLog.Warn(sequence.SequenceId, null, "RestartPolicy.RunOnce: already completed this session. Not started.");
                 return false;
             }
+            if (!PassesContext(sequence))
+                return false;
+
+            int startIndex = 0;
+            int resumeAt;
+            if (sequence.RestartPolicy == RestartPolicy.Resume &&
+                _resumeIndex.TryGetValue(sequence.SequenceId, out resumeAt) &&
+                resumeAt > 0 && resumeAt < sequence.StepCount)
+            {
+                startIndex = resumeAt;
+            }
+            _resumeIndex.Remove(sequence.SequenceId);
 
             _sequence = sequence;
-            _stepIndex = -1;
-            _stepFailed = false;
+            _stepIndex = startIndex - 1;
+            _anyStepFailed = false;
             Status = TaskSequenceStatus.Running;
 
-            TaskLog.Info(SequenceId, null, "START (" + sequence.StepCount + " steps)");
+            TaskLog.Info(SequenceId, null, "START (" + sequence.StepCount + " steps" +
+                                           (startIndex > 0 ? ", resuming at " + (startIndex + 1) : string.Empty) + ")");
             if (SequenceStarted != null)
                 SequenceStarted.Invoke(this);
+            if (!IsRunning || _sequence != sequence)
+                return true;
 
             AdvanceToNextStep();
             return true;
@@ -99,23 +128,25 @@ namespace RideSafe.TaskSequence
                 return;
 
             _phaseElapsed += deltaTime;
-            if (_context != null)
-                _context.ElapsedInStep += deltaTime;
 
             switch (Phase)
             {
                 case TaskStepPhase.Present:
-                    // Presentation is fire-and-forget in the core; Phase 3 gates this.
+                    // Presentation is fire-and-forget in the core.
                     SetPhase(TaskStepPhase.WaitForInteraction);
                     break;
 
                 case TaskStepPhase.WaitForInteraction:
+                    if (_context != null)
+                        _context.ElapsedInStep += deltaTime;
                     TickWait(deltaTime);
                     break;
 
                 case TaskStepPhase.Feedback:
-                    if (_phaseElapsed >= _step.FeedbackDuration)
-                        CompleteStep(!_stepFailed);
+                    // Only AfterFeedback dwells here on a timer; Manual waits for CompleteCurrentStep.
+                    if (_step.CompletionMode == StepCompletionMode.AfterFeedback &&
+                        _phaseElapsed >= _step.FeedbackDuration)
+                        ResolveFeedback();
                     break;
             }
         }
@@ -125,7 +156,6 @@ namespace RideSafe.TaskSequence
             if (_validator == null)
             {
                 // A step with no validator is a presentation-only beat: it passes at once.
-                SetPhase(TaskStepPhase.Validate);
                 OnValidated(true);
                 return;
             }
@@ -137,15 +167,19 @@ namespace RideSafe.TaskSequence
             }
             catch (Exception exception)
             {
-                TaskLog.Error(SequenceId, StepId,
-                    "Validator " + _validator.GetType().Name + " threw and the step was failed: " + exception);
-                OnValidated(false);
+                FailStep("validator " + _validator.GetType().Name + " threw: " + exception, recoverable: false);
+                return;
+            }
+
+            if (_validator.IsBroken)
+            {
+                FailStep("validator " + _validator.GetType().Name + " is broken (" + _validator.Describe() + ").",
+                    recoverable: false);
                 return;
             }
 
             if (satisfied)
             {
-                SetPhase(TaskStepPhase.Validate);
                 OnValidated(true);
                 return;
             }
@@ -154,17 +188,23 @@ namespace RideSafe.TaskSequence
             {
                 TaskLog.Warn(SequenceId, StepId,
                     "Timed out after " + _step.Timeout.ToString("0.##") + "s waiting for " + _validator.Describe() + ".");
-                SetPhase(TaskStepPhase.Validate);
                 OnValidated(false);
             }
         }
 
-        /// <summary>Completes the current step externally. Required by StepCompletionMode.Manual.</summary>
+        /// <summary>
+        /// Completes the current step from outside, in any phase. This is how a Manual step
+        /// advances; passing false routes through the step's failure policy.
+        /// </summary>
         public void CompleteCurrentStep(bool success = true)
         {
             if (!IsRunning || _step == null)
                 return;
-            OnValidated(success);
+
+            if (success)
+                CompleteStep();
+            else
+                FailStep("completed externally as failed.", recoverable: true);
         }
 
         /// <summary>Skips the current step if its policy allows it.</summary>
@@ -192,6 +232,23 @@ namespace RideSafe.TaskSequence
             return true;
         }
 
+        /// <summary>Skips the whole sequence unless the sequence is NotSkippable.</summary>
+        public bool SkipSequence()
+        {
+            if (!IsRunning)
+                return false;
+
+            if (_sequence.SkipPolicy == SkipPolicy.NotSkippable)
+            {
+                TaskLog.Warn(SequenceId, StepId, "Skip refused: sequence is marked NotSkippable.");
+                return false;
+            }
+
+            TaskLog.Info(SequenceId, StepId, "SKIP whole sequence");
+            Finish(TaskSequenceStatus.Skipped);
+            return true;
+        }
+
         /// <summary>
         /// Stops immediately and cleans up. Safe to call when idle; always leaves the
         /// runner with no validator hooked and no step context held.
@@ -205,6 +262,10 @@ namespace RideSafe.TaskSequence
             }
             TaskLog.Info(SequenceId, StepId,
                 "ABORT" + (string.IsNullOrEmpty(reason) ? string.Empty : " (" + reason + ")"));
+
+            if (_sequence.RestartPolicy == RestartPolicy.Resume && _stepIndex > 0)
+                _resumeIndex[_sequence.SequenceId] = _stepIndex;
+
             Finish(TaskSequenceStatus.Aborted);
         }
 
@@ -217,7 +278,7 @@ namespace RideSafe.TaskSequence
             _stepIndex++;
             if (_sequence == null || _stepIndex >= _sequence.StepCount)
             {
-                Finish(_stepFailed ? TaskSequenceStatus.Failed : TaskSequenceStatus.Completed);
+                Finish(_anyStepFailed ? TaskSequenceStatus.Failed : TaskSequenceStatus.Completed);
                 return;
             }
 
@@ -229,51 +290,55 @@ namespace RideSafe.TaskSequence
                 return;
             }
 
+            StepAttempt = 1;
             PrepareStep();
         }
 
         private void PrepareStep()
         {
+            TaskStepData step = _step;
             SetPhase(TaskStepPhase.Prepare);
-            TaskLog.Info(SequenceId, StepId, "PREPARE (" + (_stepIndex + 1) + "/" + StepCount + ")");
+            TaskLog.Info(SequenceId, StepId, "PREPARE (" + (_stepIndex + 1) + "/" + StepCount + ")" +
+                                             (StepAttempt > 1 ? " attempt " + StepAttempt : string.Empty));
 
             ITaskEntity entity = null;
-            if (_step.EntityId.IsValid && !_entities.TryGetEntity(_step.EntityId, out entity))
+            if (step.EntityId.IsValid && !_entities.TryGetEntity(step.EntityId, out entity))
             {
                 // CASE 02: never throws, always names the id and dumps what IS registered.
                 TaskLog.Error(SequenceId, StepId,
-                    "EntityId '" + _step.EntityId + "' is not registered. Policy = " + _step.MissingEntityPolicy +
+                    "EntityId '" + step.EntityId + "' is not registered. Policy = " + step.MissingEntityPolicy +
                     ".\nCurrently registered:\n" + _entities.DumpIds());
 
-                if (_step.MissingEntityPolicy == MissingEntityPolicy.SkipStep)
+                if (step.MissingEntityPolicy == MissingEntityPolicy.SkipStep)
                 {
-                    _stepFailed = true;
+                    _anyStepFailed = true;
                     CleanupStep();
                     AdvanceToNextStep();
                     return;
                 }
-                if (_step.MissingEntityPolicy == MissingEntityPolicy.FailSequence)
+                if (step.MissingEntityPolicy == MissingEntityPolicy.FailSequence)
                 {
-                    _stepFailed = true;
-                    CleanupStep();
+                    _anyStepFailed = true;
                     Finish(TaskSequenceStatus.Failed);
                     return;
                 }
             }
 
             _context = new TaskStepContext(SequenceId, StepId, entity, _entities);
-            _validator = _step.Validator;
+            _validator = step.Validator;
 
+            string brokenReason = null;
             if (_validator != null)
             {
                 try
                 {
                     _validator.Prepare(_context);
+                    if (_validator.IsBroken)
+                        brokenReason = "validator " + _validator.GetType().Name + " is broken after Prepare.";
                 }
                 catch (Exception exception)
                 {
-                    TaskLog.Error(SequenceId, StepId, "Validator Prepare threw: " + exception);
-                    _validator = null;
+                    brokenReason = "validator Prepare threw: " + exception;
                 }
             }
             else
@@ -282,31 +347,91 @@ namespace RideSafe.TaskSequence
             }
 
             if (StepStarted != null)
-                StepStarted.Invoke(this, _step);
+                StepStarted.Invoke(this, step);
+            if (!IsCurrent(step))
+                return;
+
             SetPhase(TaskStepPhase.Present);
+
+            // Fail fast: a validator that cannot succeed must never leave the learner waiting.
+            if (brokenReason != null)
+                FailStep(brokenReason, recoverable: false);
         }
 
         private void OnValidated(bool success)
         {
-            if (!success)
-                _stepFailed = true;
-
             TaskLog.Info(SequenceId, StepId, success ? "VALIDATED" : "VALIDATION FAILED");
+            SetPhase(TaskStepPhase.Validate);
+            _pendingSuccess = success;
             SetPhase(TaskStepPhase.Feedback);
 
-            if (_step.CompletionMode == StepCompletionMode.Immediate || _step.FeedbackDuration <= 0f)
-                CompleteStep(success);
-            // AfterFeedback dwells in Tick; Manual waits for CompleteCurrentStep.
+            if (_step.CompletionMode == StepCompletionMode.AfterFeedback && _step.FeedbackDuration > 0f)
+                return; // Tick resolves once the feedback has been shown.
+            if (success && _step.CompletionMode == StepCompletionMode.Manual)
+                return; // CompleteCurrentStep resolves.
+
+            ResolveFeedback();
         }
 
-        private void CompleteStep(bool success)
+        private void ResolveFeedback()
         {
-            SetPhase(TaskStepPhase.Complete);
-            TaskLog.Info(SequenceId, StepId, success ? "COMPLETE" : "COMPLETE (failed)");
+            if (_pendingSuccess)
+                CompleteStep();
+            else
+                FailStep("validation failed.", recoverable: true);
+        }
 
+        private void CompleteStep()
+        {
             TaskStepData completed = _step;
+            SetPhase(TaskStepPhase.Complete);
+            TaskLog.Info(SequenceId, StepId, "COMPLETE");
+
             if (StepCompleted != null)
-                StepCompleted.Invoke(this, completed, success);
+                StepCompleted.Invoke(this, completed, true);
+            if (!IsCurrent(completed))
+                return;
+
+            CleanupStep();
+            AdvanceToNextStep();
+        }
+
+        /// <summary>
+        /// Single failure path. <paramref name="recoverable"/> is false when trying again
+        /// cannot help (broken or throwing validator), in which case Retry degrades to Skip.
+        /// </summary>
+        private void FailStep(string reason, bool recoverable)
+        {
+            TaskStepData failed = _step;
+            StepFailurePolicy policy = failed.FailurePolicy;
+
+            if (policy == StepFailurePolicy.Retry && recoverable)
+            {
+                TaskLog.Info(SequenceId, StepId, "RETRY (" + reason + ")");
+                CleanupStep();
+                _step = failed;
+                StepAttempt++;
+                PrepareStep();
+                return;
+            }
+
+            if (recoverable)
+                TaskLog.Warn(SequenceId, StepId, "STEP FAILED (" + reason + ") Policy = " + policy + ".");
+            else
+                TaskLog.Error(SequenceId, StepId, "STEP FAILED, not retryable (" + reason + ") Policy = " + policy + ".");
+
+            _anyStepFailed = true;
+            SetPhase(TaskStepPhase.Complete);
+            if (StepCompleted != null)
+                StepCompleted.Invoke(this, failed, false);
+            if (!IsCurrent(failed))
+                return;
+
+            if (policy == StepFailurePolicy.FailSequence)
+            {
+                Finish(TaskSequenceStatus.Failed);
+                return;
+            }
 
             CleanupStep();
             AdvanceToNextStep();
@@ -314,7 +439,7 @@ namespace RideSafe.TaskSequence
 
         /// <summary>
         /// Unhooks the validator and drops the context. Called on every exit path
-        /// (success, failure, skip, abort) so no validator is ever left subscribed.
+        /// (success, failure, retry, skip, abort) so no validator is ever left subscribed.
         /// </summary>
         private void CleanupStep()
         {
@@ -345,10 +470,36 @@ namespace RideSafe.TaskSequence
         {
             CleanupStep();
             Status = status;
+            if (status == TaskSequenceStatus.Completed && _sequence != null)
+                _completedSequences.Add(_sequence.SequenceId);
+
             TaskLog.Info(SequenceId, null, "FINISHED -> " + status);
             if (SequenceFinished != null)
                 SequenceFinished.Invoke(this, status);
         }
+
+        private bool PassesContext(TaskSequenceSO sequence)
+        {
+            if (!sequence.HasContextRequirements)
+                return true;
+
+            if (ContextLookup == null)
+            {
+                TaskLog.Warn(sequence.SequenceId, null,
+                    "Sequence has context requirements but no ContextLookup is wired; requirements ignored.");
+                return true;
+            }
+
+            string unmet;
+            if (sequence.MatchesContext(ContextLookup, out unmet))
+                return true;
+
+            TaskLog.Warn(sequence.SequenceId, null, "Context requirement not met (" + unmet + "). Sequence not started.");
+            return false;
+        }
+
+        /// <summary>False once a listener aborted, skipped or restarted from inside a callback.</summary>
+        private bool IsCurrent(TaskStepData step) => IsRunning && ReferenceEquals(_step, step);
 
         private void SetPhase(TaskStepPhase phase)
         {
@@ -362,7 +513,7 @@ namespace RideSafe.TaskSequence
 
         #endregion
 
-        /// <summary>Drops every external subscriber. Called by the session scope on teardown.</summary>
+        /// <summary>Drops every external subscriber. Called by the host on teardown.</summary>
         public void ClearSubscribers()
         {
             SequenceStarted = null;

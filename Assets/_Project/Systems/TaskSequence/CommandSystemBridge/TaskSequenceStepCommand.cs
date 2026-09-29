@@ -35,13 +35,24 @@ namespace RideSafe.TaskSequence.Bridge
         [Tooltip("Abort the running sequence when this command exits early.")]
         [SerializeField] private bool _abortOnExit = true;
 
+        // The run this command is currently waiting on. Callbacks from any other handle
+        // (a previous Execute, or a run aborted by Exit) are ignored, so Complete is raised
+        // at most once per Execute and never from inside Exit.
         private TaskSequenceHandle _handle;
-        private bool _completed;
+
+        public TaskSequenceStepCommand() { }
+
+        /// <summary>Code construction, used by EditMode tests.</summary>
+        internal TaskSequenceStepCommand(TaskSequenceSO sequence, bool abortOnExit = true)
+        {
+            _sequence = sequence;
+            _abortOnExit = abortOnExit;
+        }
 
         public override void Execute(Action<bool, IStepCommand> onComplete)
         {
             base.Execute(onComplete);
-            _completed = false;
+            AbortPending("CommandSystem step re-executed");
 
             ITaskSequenceService service = ServiceLocator.Instance.RequestService<ITaskSequenceService>();
             if (service == null)
@@ -52,32 +63,49 @@ namespace RideSafe.TaskSequence.Bridge
                 return;
             }
 
-            _handle = _sequence != null ? service.Run(_sequence) : service.RunById(_sequenceId);
+            if (service.IsRunning)
+            {
+                TaskLog.Error(DescribeTarget(), null,
+                    "Cannot start: '" + service.CurrentSequenceId + "' is still running. " +
+                    "Only one sequence runs at a time; reporting failure.");
+                Complete(false, this);
+                return;
+            }
 
-            if (_handle == null)
+            TaskSequenceHandle handle = _sequence != null ? service.Run(_sequence) : service.RunById(_sequenceId);
+            if (handle == null)
             {
                 TaskLog.Error(DescribeTarget(), null, "Sequence could not be started; reporting failure.");
                 Complete(false, this);
                 return;
             }
 
-            _handle.OnFinished(HandleFinished);
+            _handle = handle;
+            // May fire synchronously when the run already finished inside Run.
+            handle.OnFinished(status => HandleFinished(handle, status));
         }
 
         public override void Exit()
         {
-            if (_abortOnExit && _handle != null && _handle.IsRunning)
-                _handle.Abort("CommandSystem step exited");
-
+            if (_abortOnExit)
+                AbortPending("CommandSystem step exited");
             _handle = null;
             base.Exit();
         }
 
-        private void HandleFinished(TaskSequenceStatus status)
+        /// <summary>Forgets the pending run BEFORE aborting it, so its callback is ignored.</summary>
+        private void AbortPending(string reason)
         {
-            if (_completed)
+            TaskSequenceHandle pending = _handle;
+            _handle = null;
+            if (pending != null && pending.IsRunning)
+                pending.Abort(reason);
+        }
+
+        private void HandleFinished(TaskSequenceHandle handle, TaskSequenceStatus status)
+        {
+            if (!ReferenceEquals(handle, _handle))
                 return;
-            _completed = true;
             _handle = null;
 
             bool success = status == TaskSequenceStatus.Completed ||

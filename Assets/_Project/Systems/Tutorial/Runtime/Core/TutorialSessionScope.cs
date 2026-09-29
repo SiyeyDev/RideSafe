@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Cachacos;
+using RideSafe.TaskSequence;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace RideSafe.Tutorial
 {
@@ -16,33 +17,46 @@ namespace RideSafe.Tutorial
     /// </para>
     /// <para>
     /// Anything registered here is undone in reverse order on <see cref="Dispose"/>, which
-    /// also runs automatically on scene unload and on application quit.
+    /// also runs automatically when the OWNING scene unloads (other additive scenes coming
+    /// and going do not end the session) and on application quit.
     /// </para>
     /// </summary>
     public sealed class TutorialSessionScope : IDisposable
     {
         private readonly List<Action> _teardown = new List<Action>();
+        private readonly Scene _owningScene;
+        private readonly bool _hasOwningScene;
         private readonly string _label;
         private bool _disposed;
 
-        public TutorialSessionScope(string label = "tutorial-session")
+        /// <param name="owningScene">
+        /// Scene whose unload ends the session, normally <c>gameObject.scene</c> of the owner.
+        /// An invalid scene means the session only ends on explicit Dispose or quit.
+        /// </param>
+        public TutorialSessionScope(Scene owningScene, string label = "tutorial-session")
         {
+            _owningScene = owningScene;
+            // Captured now: an unloaded scene may no longer report IsValid() in the callback.
+            _hasOwningScene = owningScene.IsValid();
             _label = string.IsNullOrWhiteSpace(label) ? "tutorial-session" : label;
-            UnityEngine.SceneManagement.SceneManager.sceneUnloaded += HandleSceneUnloaded;
+            SceneManager.sceneUnloaded += HandleSceneUnloaded;
             Application.quitting += HandleQuitting;
         }
 
         public bool IsDisposed => _disposed;
         public int PendingTeardowns => _teardown.Count;
 
-        /// <summary>Registers a service and schedules its deregistration.</summary>
+        /// <summary>
+        /// Registers a service (instance-safe) and schedules its deregistration. A slot
+        /// already owned by another live instance is left alone and nothing is scheduled.
+        /// </summary>
         public TutorialSessionScope AddService<T>(T service) where T : class
         {
             if (service == null || _disposed)
                 return this;
 
-            ServiceLocator.Instance.RegisterService<T>(service);
-            _teardown.Add(() => ServiceLocator.Instance.TryDeregisterService<T>(service));
+            if (ServiceRegistration.TryRegister(service))
+                _teardown.Add(() => ServiceRegistration.Deregister(service));
             return this;
         }
 
@@ -80,7 +94,7 @@ namespace RideSafe.Tutorial
                 return;
             _disposed = true;
 
-            UnityEngine.SceneManagement.SceneManager.sceneUnloaded -= HandleSceneUnloaded;
+            SceneManager.sceneUnloaded -= HandleSceneUnloaded;
             Application.quitting -= HandleQuitting;
 
             int count = _teardown.Count;
@@ -102,7 +116,12 @@ namespace RideSafe.Tutorial
             Debug.Log("[Tutorial] Session scope '" + _label + "' disposed (" + count + " teardowns).");
         }
 
-        private void HandleSceneUnloaded(UnityEngine.SceneManagement.Scene scene) => Dispose();
+        /// <summary>Exposed for tests: the scene-unload path without loading real scenes.</summary>
+        internal void HandleSceneUnloaded(Scene scene)
+        {
+            if (_hasOwningScene && scene.handle == _owningScene.handle)
+                Dispose();
+        }
 
         private void HandleQuitting() => Dispose();
     }

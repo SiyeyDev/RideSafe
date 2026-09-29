@@ -37,14 +37,34 @@ namespace RideSafe.TaskSequence
         public SkipPolicy SkipPolicy => _skipPolicy;
         public int StepCount => _steps?.Count ?? 0;
 
+        public bool HasContextRequirements => _contextRequirements != null && _contextRequirements.Count > 0;
+
+        /// <summary>Code configuration, used by EditMode tests. Authoring goes through the inspector.</summary>
+        internal void Configure(
+            string sequenceId,
+            IEnumerable<TaskStepData> steps,
+            RestartPolicy restartPolicy = RestartPolicy.FromBeginning,
+            SkipPolicy skipPolicy = SkipPolicy.NotSkippable,
+            IEnumerable<ContextRequirement> contextRequirements = null)
+        {
+            _sequenceId = sequenceId;
+            _steps = new List<TaskStepData>(steps);
+            _restartPolicy = restartPolicy;
+            _skipPolicy = skipPolicy;
+            _contextRequirements = contextRequirements == null
+                ? new List<ContextRequirement>()
+                : new List<ContextRequirement>(contextRequirements);
+        }
+
         /// <summary>
         /// Checks requirements against a context lookup. The lookup is a delegate so the
-        /// core never depends on the tutorial layer's context type.
+        /// core never depends on the tutorial layer's context type. A null lookup means no
+        /// context is wired, and every requirement passes (the runner warns about it).
         /// </summary>
         public bool MatchesContext(System.Func<string, string> contextLookup, out string firstUnmet)
         {
             firstUnmet = null;
-            if (_contextRequirements == null || _contextRequirements.Count == 0)
+            if (!HasContextRequirements)
                 return true;
             if (contextLookup == null)
                 return true;
