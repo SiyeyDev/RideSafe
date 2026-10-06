@@ -12,7 +12,7 @@ namespace RideSafe.UI.EditorTools
     /// </summary>
     internal sealed partial class UIModules
     {
-        public const string Folder = "Assets/DriveSafe/UI/Prefabs";
+        public const string Folder = "Assets/_Project/UI/Prefabs";
 
         /// <summary>A built module: its prefab and, per panel, whether the storyboard shows it over a dark scene.</summary>
         public sealed class Built
@@ -38,7 +38,7 @@ namespace RideSafe.UI.EditorTools
         public void BuildAll()
         {
             if (!AssetDatabase.IsValidFolder(Folder))
-                AssetDatabase.CreateFolder("Assets/DriveSafe/UI", "Prefabs");
+                AssetDatabase.CreateFolder("Assets/_Project/UI", "Prefabs");
 
             BuildModule00();
             BuildModule01();

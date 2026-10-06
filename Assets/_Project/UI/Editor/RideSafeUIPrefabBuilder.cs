@@ -22,12 +22,12 @@ namespace RideSafe.UI.EditorTools
     /// </summary>
     public static class RideSafeUIPrefabBuilder
     {
-        private const string k_AtlasA = "Assets/DriveSafe/UI/RideSafe_UI_Atlas_A_4096.png";
-        private const string k_AtlasB = "Assets/DriveSafe/UI/RideSafe_UI_Atlas_B_4096.png";
-        private const string k_LogoPath = "Assets/DriveSafe/UI/ridesafe-logo.png";
-        private const string k_FontsDir = "Assets/DriveSafe/UI/Fonts";
+        private const string k_AtlasA = "Assets/_Project/UI/RideSafe_UI_Atlas_A_4096.png";
+        private const string k_AtlasB = "Assets/_Project/UI/RideSafe_UI_Atlas_B_4096.png";
+        private const string k_LogoPath = "Assets/_Project/UI/ridesafe-logo.png";
+        private const string k_FontsDir = "Assets/_Project/UI/Fonts";
         private const string k_LiberationSans = "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset";
-        private const string k_CatalogScene = "Assets/DriveSafe/Scene/RideSafe_UI_Panels.unity";
+        private const string k_CatalogScene = "Assets/_Project/Scene/RideSafe_UI_Panels.unity";
         private const string k_XRPlayerPath = "Assets/AutoHand/Examples/Scenes/XR/Prefabs/XRPlayer.prefab";
 
         private const string k_Charset =

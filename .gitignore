@@ -115,3 +115,6 @@ MyAddressables/
 
 # Solucion de Visual Studio (formato nuevo), se regenera sola igual que *.sln
 *.slnx
+
+# Superpowers: scratch de ejecucion de planes
+.superpowers/

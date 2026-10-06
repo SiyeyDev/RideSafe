@@ -16,7 +16,7 @@ namespace RideSafe.Tutorial.Tests
     /// </summary>
     public class Module00IntegrationTests
     {
-        private const string PrefabPath = "Assets/DriveSafe/UI/Prefabs/PF_Module00_UI.prefab";
+        private const string PrefabPath = "Assets/_Project/UI/Prefabs/PF_Module00_UI.prefab";
 
         private static readonly HashSet<string> Autonyms = new HashSet<string> { "English", "Español" };
         private static readonly HashSet<string> RuntimeTexts = new HashSet<string>

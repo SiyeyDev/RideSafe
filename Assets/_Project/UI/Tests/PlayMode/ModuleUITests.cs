@@ -16,14 +16,14 @@ namespace RideSafe.UI.Tests
     /// </summary>
     public class ModuleUITests
     {
-        private const string k_Folder = "Assets/DriveSafe/UI/Prefabs/";
+        private const string k_Folder = "Assets/_Project/UI/Prefabs/";
         private static readonly string[] s_Modules = { "PF_Module00_UI", "PF_Module01_UI", "PF_Module02_UI" };
 
         private static readonly HashSet<string> s_AllowedTextures = new HashSet<string>
         {
-            "Assets/DriveSafe/UI/RideSafe_UI_Atlas_A_4096.png",
-            "Assets/DriveSafe/UI/RideSafe_UI_Atlas_B_4096.png",
-            "Assets/DriveSafe/UI/ridesafe-logo.png"
+            "Assets/_Project/UI/RideSafe_UI_Atlas_A_4096.png",
+            "Assets/_Project/UI/RideSafe_UI_Atlas_B_4096.png",
+            "Assets/_Project/UI/ridesafe-logo.png"
         };
 
         private readonly List<GameObject> _spawned = new List<GameObject>();
