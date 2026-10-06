@@ -1,0 +1,19 @@
+{
+    "name": "RideSafe.Module01",
+    "rootNamespace": "RideSafe.Module01",
+    "references": [
+        "RideSafe.UI",
+        "TaskSequence",
+        "Cachacos",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
