@@ -23,7 +23,12 @@ namespace RideSafe.Tools.Editor
         private static HeadlessTestRunner _active;
 
         /// <summary>Lanza los tests de EditMode de las assemblies indicadas.</summary>
-        public static void Run(string[] assemblyNames)
+        public static void Run(string[] assemblyNames) => Run(assemblyNames, TestMode.EditMode);
+
+        /// <summary>Lanza los tests de PlayMode de las assemblies indicadas.</summary>
+        public static void RunPlayMode(string[] assemblyNames) => Run(assemblyNames, TestMode.PlayMode);
+
+        private static void Run(string[] assemblyNames, TestMode mode)
         {
             File.WriteAllText(ResultPath, "RUNNING\n");
 
@@ -32,7 +37,7 @@ namespace RideSafe.Tools.Editor
             _active.hideFlags = HideFlags.HideAndDontSave;
             api.RegisterCallbacks(_active);
 
-            Filter filter = new Filter { testMode = TestMode.EditMode };
+            Filter filter = new Filter { testMode = mode };
             if (assemblyNames != null && assemblyNames.Length > 0)
                 filter.assemblyNames = assemblyNames;
 
