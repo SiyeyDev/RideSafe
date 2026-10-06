@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4349871b8731f4409f85b61274ad9f9, type: 3}
+  m_Name: SO_Zone_clothing
+  m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.ZoneSO
+  _zoneId: clothing
+  _titleKey: Module1/Zone_Clothing
+  _items:
+  - {fileID: 11400000, guid: d3108f6561eae7448887d4ac77d3b677, type: 2}
+  - {fileID: 11400000, guid: ce2781f6547e7ef47968af938bd440f3, type: 2}
+  - {fileID: 11400000, guid: 463d0dcf67e2f7140a39f2eb6adfcabc, type: 2}
