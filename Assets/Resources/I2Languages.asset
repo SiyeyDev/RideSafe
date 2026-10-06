@@ -17,6 +17,30 @@ MonoBehaviour:
     UserAgreesToHaveItInsideThePluginsFolder: 0
     GoogleLiveSyncIsUptoDate: 1
     mTerms:
+    - Term: Menu/Menu_StartLanguaje
+      TermType: 0
+      Description: 
+      Languages:
+      - Select your language
+      - Selecciona tu lenguaje
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_English
+      TermType: 0
+      Description: 
+      Languages:
+      - English
+      - Ingles
+      Flags: 0000
+      Languages_Touch: []
+    - Term: "Menu/Menu_Espa\xF1ol"
+      TermType: 0
+      Description: 
+      Languages:
+      - Spanish
+      - "Espa\xF1ol"
+      Flags: 0000
+      Languages_Touch: []
     - Term: Menu/Menu_StartCountry
       TermType: 0
       Description: 
@@ -41,7 +65,293 @@ MonoBehaviour:
       - Colombia
       Flags: 0000
       Languages_Touch: []
+    - Term: Menu/Menu_Continuar
+      TermType: 0
+      Description: 
+      Languages:
+      - Continue
+      - Continuar
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Atras
+      TermType: 0
+      Description: 
+      Languages:
+      - Back
+      - Atras
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Selected
+      TermType: 0
+      Description: 
+      Languages:
+      - Selected
+      - Seleccionado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_NormasTitle
+      TermType: 0
+      Description: 
+      Languages:
+      - What rules apply to your driving?
+      - "\xBFQu\xE9 normas se aplican a tu conducci\xF3n?"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_NormasBody
+      TermType: 0
+      Description: 
+      Languages:
+      - This establishes the set of rules according to which the entire session is
+        judged.
+      - "Esto establece el conjunto de reglas conforme al cual se juzga toda la sesi\xF3n."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Location1
+      TermType: 0
+      Description: 
+      Languages:
+      - Florida
+      - Florida
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Location1Body
+      TermType: 0
+      Description: 
+      Languages:
+      - "United States \xB7 Compilation of state regulations on electric bicycles
+        and scooters"
+      - "Estados Unidos \xB7 Recopilaci\xF3n de normas estatales sobre bicicletas
+        el\xE9ctricas y patinetes"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Location2
+      TermType: 0
+      Description: 
+      Languages:
+      - "Bogot\xE1"
+      - "Bogot\xE1"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Location2Body
+      TermType: 0
+      Description: 
+      Languages:
+      - "Colombia \xB7 Regulations for urban cycling and micromobility"
+      - "Colombia \xB7 Normativa de ciclismo urbano y micromovilidad"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_VehicleTitle
+      TermType: 0
+      Description: 
+      Languages:
+      - Choose your vehicle
+      - "Elige tu veh\xEDculo"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_VehicleBody
+      TermType: 0
+      Description: 
+      Languages:
+      - Examine each vehicle before choosing.
+      - "Examina cada veh\xEDculo antes de elegir."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Vehicle1
+      TermType: 0
+      Description: 
+      Languages:
+      - E-bike
+      - E-bike
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Vehicle1Body
+      TermType: 0
+      Description: 
+      Languages:
+      - Sitting
+      - Sentado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Vehicle2
+      TermType: 0
+      Description: 
+      Languages:
+      - Scooter
+      - Scooter
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Vehicle2Body
+      TermType: 0
+      Description: 
+      Languages:
+      - Standing
+      - De pie
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_ConformTtiel
+      TermType: 0
+      Description: 
+      Languages:
+      - Configure your comfort
+      - Configura tu confort
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_ConformBody
+      TermType: 0
+      Description: 
+      Languages:
+      - Nothing here affects your results.
+      - "Nada de lo que hay aqu\xED afecta a tus resultados."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_PosturaTitle
+      TermType: 0
+      Description: 
+      Languages:
+      - Driving posture
+      - "Postura de conducci\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_PosturaBody
+      TermType: 0
+      Description: 
+      Languages:
+      - Set eye height and handlebar reach.
+      - Establece la altura de los ojos y el alcance del manillar.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Postura1
+      TermType: 0
+      Description: 
+      Languages:
+      - Sitting
+      - Sentado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Postura2
+      TermType: 0
+      Description: 
+      Languages:
+      - Standing
+      - De pie
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_SubtitulosTitle
+      TermType: 0
+      Description: 
+      Languages:
+      - Subtitles
+      - Subtitles
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_SubtitulosBody
+      TermType: 0
+      Description: 
+      Languages:
+      - Each spoken phrase, located below the instruction panel
+      - Cada frase hablada, situada debajo del panel de instrucciones
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Subtitulos1
+      TermType: 0
+      Description: 
+      Languages:
+      - On
+      - On
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Subtitulos2
+      TermType: 0
+      Description: 
+      Languages:
+      - Off
+      - Off
+      Flags: 0000
+      Languages_Touch: []
+    - Term: "Menu/Menu_Tama\xF1oTitle"
+      TermType: 0
+      Description: 
+      Languages:
+      - Text size
+      - "Tama\xF1o del texto"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: "Menu/Menu_Tama\xF1oBody"
+      TermType: 0
+      Description: 
+      Languages:
+      - Scale the entire text in universal space together.
+      - Escala todo el texto en el espacio universal de manera conjunta.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_ManoTitle
+      TermType: 0
+      Description: 
+      Languages:
+      - Dominant hand
+      - Mano dominante
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_ManoBody
+      TermType: 0
+      Description: 
+      Languages:
+      - Mirror-mounted controls and lightning bolt-type remote
+      - Controles montados en los espejos y el mando tipo rayo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Mano1
+      TermType: 0
+      Description: 
+      Languages:
+      - Right
+      - Derecha
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_Mano2
+      TermType: 0
+      Description: 
+      Languages:
+      - Left
+      - Izquierda
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Menu/Menu_ComenzarModulo
+      TermType: 0
+      Description: 
+      Languages:
+      - Start Module 1
+      - Comenzar Modulo 1
+      Flags: 0000
+      Languages_Touch: []
     - Term: Menu/
+      TermType: 0
+      Description: 
+      Languages:
+      - 
+      - 
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/M01_Welcome
+      TermType: 0
+      Description: 
+      Languages:
+      - Welcome to Module 1! In this module, you will learn everything about the
+        necessary precautions and PPE you must take before starting your vehicle.
+        Let's begin!
+      - Bienvenido al Modulo1, En este modulo vas a aprender todo sobre los precursores
+        y epps que debes tener en cuenta antes de dar marcha con tu vehiculo. Comencemos!
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/M01_Video
+      TermType: 0
+      Description: 
+      Languages:
+      - To begin, we're going to show you the following video
+      - Para iniciar, te vamos a mostrar el siguiente video
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/
       TermType: 0
       Description: 
       Languages:
@@ -64,7 +374,7 @@ MonoBehaviour:
     Google_WebServiceURL: https://script.google.com/macros/s/AKfycbwzabmjo36njUhCbXt9eyJw8DqnIQ__GolCEUawki_SREXpyZvYcJkfu-WY4Gaoc45EVg/exec
     Google_SpreadsheetKey: 1x6Rra_gjfZ7ekycOZrI_UtUaWF0g63huKrL3Xy95nt0
     Google_SpreadsheetName: I2Loc RideSafe Localization
-    Google_LastUpdatedVersion: 1790035526874
+    Google_LastUpdatedVersion: 1790103781559
     Google_Password: RideSafeI2Loc
     GoogleUpdateFrequency: 3
     GoogleInEditorCheckFrequency: 2

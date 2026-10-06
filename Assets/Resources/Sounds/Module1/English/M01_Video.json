@@ -1,0 +1,38 @@
+{
+  "characters": [
+    "To",
+    "begin,",
+    "we're",
+    "going",
+    "to",
+    "show",
+    "you",
+    "the",
+    "following",
+    "video"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.221,
+    0.906,
+    1.149,
+    1.37,
+    1.474,
+    1.695,
+    1.834,
+    1.997,
+    2.496
+  ],
+  "character_end_times_seconds": [
+    0.151,
+    0.731,
+    1.126,
+    1.324,
+    1.416,
+    1.637,
+    1.776,
+    1.904,
+    2.438,
+    3.158
+  ]
+}
