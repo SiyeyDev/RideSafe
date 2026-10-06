@@ -240,7 +240,10 @@ El módulo se considera terminado cuando, **corriendo en modo PC**:
 
 ## 10. Decisiones abiertas
 
-1. Qué vehículo es el primero y con qué modelo se construye mientras llega 3D.
+1. ~~Qué vehículo es el primero y con qué modelo se construye.~~
+   **Resuelto (2026-10-05): e-bike.** Se construye sobre un cubo con colliders
+   nombrados por punto de interés. El perfil del vehículo referencia el modelo,
+   así que sustituirlo por el entregable de 3D no toca lógica ni datos.
 2. Quién genera los audios de las líneas nuevas con `GenerateAudioFIle`.
 3. Si `MenuRuntimeTextLocalizer` se retira ya o después.
 4. Cuánto tiempo conviven las dos versiones de Unity.
