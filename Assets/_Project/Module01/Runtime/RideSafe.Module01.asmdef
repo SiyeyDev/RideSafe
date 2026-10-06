@@ -5,7 +5,8 @@
         "RideSafe.UI",
         "TaskSequence",
         "Cachacos",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
