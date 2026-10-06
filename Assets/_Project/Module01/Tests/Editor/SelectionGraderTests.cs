@@ -82,4 +82,127 @@ namespace RideSafe.Module01.Tests
             StringAssert.Contains("helmet_ok", problems[0]);
         }
     }
+
+    public class SelectionGraderTests : CatalogFixture
+    {
+        private Module01CatalogSO StandardCatalog() => Catalog(
+            Zone("head",
+                Item("helmet_ok", SafetyItemCategory.Core),
+                Item("helmet_cracked", SafetyItemCategory.Inappropriate),
+                Item("glasses", SafetyItemCategory.Optional)),
+            Zone("clothing",
+                Item("shoes_ok", SafetyItemCategory.Core),
+                Item("laces_loose", SafetyItemCategory.Inappropriate),
+                Item("reflective", SafetyItemCategory.ConditionDependent)));
+
+        [Test]
+        public void Elegir_un_opcional_no_penaliza()
+        {
+            SelectionLedger ledger = new SelectionLedger();
+            ledger.Add("helmet_ok");
+            ledger.Add("shoes_ok");
+            ledger.Add("glasses");
+
+            SelectionReport report = SelectionGrader.Grade(StandardCatalog(), ledger);
+
+            CollectionAssert.AreEquivalent(new[] { "glasses" }, report.OptionalSelected);
+            CollectionAssert.IsEmpty(report.InappropriateSelected);
+            CollectionAssert.IsEmpty(report.CoreOmitted);
+            Assert.IsFalse(report.HasCriticalProblem);
+        }
+
+        [Test]
+        public void Omitir_un_opcional_tampoco_penaliza()
+        {
+            SelectionLedger ledger = new SelectionLedger();
+            ledger.Add("helmet_ok");
+            ledger.Add("shoes_ok");
+
+            SelectionReport report = SelectionGrader.Grade(StandardCatalog(), ledger);
+
+            CollectionAssert.IsEmpty(report.OptionalSelected);
+            CollectionAssert.IsEmpty(report.CoreOmitted);
+            Assert.IsFalse(report.HasCriticalProblem);
+        }
+
+        [Test]
+        public void Omitir_un_elemento_nucleo_es_problema_critico()
+        {
+            SelectionLedger ledger = new SelectionLedger();
+            ledger.Add("helmet_ok");
+
+            SelectionReport report = SelectionGrader.Grade(StandardCatalog(), ledger);
+
+            CollectionAssert.AreEquivalent(new[] { "shoes_ok" }, report.CoreOmitted);
+            Assert.IsTrue(report.HasCriticalProblem);
+        }
+
+        [Test]
+        public void Elegir_un_inapropiado_es_problema_critico()
+        {
+            SelectionLedger ledger = new SelectionLedger();
+            ledger.Add("helmet_ok");
+            ledger.Add("shoes_ok");
+            ledger.Add("laces_loose");
+
+            SelectionReport report = SelectionGrader.Grade(StandardCatalog(), ledger);
+
+            CollectionAssert.AreEquivalent(new[] { "laces_loose" }, report.InappropriateSelected);
+            Assert.IsTrue(report.HasCriticalProblem);
+        }
+
+        [Test]
+        public void El_condicional_se_reporta_aparte_y_no_es_critico()
+        {
+            SelectionLedger ledger = new SelectionLedger();
+            ledger.Add("helmet_ok");
+            ledger.Add("shoes_ok");
+            ledger.Add("reflective");
+
+            SelectionReport report = SelectionGrader.Grade(StandardCatalog(), ledger);
+
+            CollectionAssert.AreEquivalent(new[] { "reflective" }, report.ConditionDependentSelected);
+            CollectionAssert.IsEmpty(report.InappropriateSelected);
+            Assert.IsFalse(report.HasCriticalProblem);
+        }
+
+        [Test]
+        public void Quitar_antes_de_enviar_deja_el_elemento_fuera_del_reporte()
+        {
+            SelectionLedger ledger = new SelectionLedger();
+            ledger.Add("helmet_ok");
+            ledger.Add("shoes_ok");
+            ledger.Add("laces_loose");
+            ledger.Remove("laces_loose");
+
+            SelectionReport report = SelectionGrader.Grade(StandardCatalog(), ledger);
+
+            CollectionAssert.IsEmpty(report.InappropriateSelected);
+            Assert.IsFalse(report.HasCriticalProblem);
+        }
+
+        [Test]
+        public void Un_id_desconocido_en_el_libro_se_ignora_sin_reventar()
+        {
+            SelectionLedger ledger = new SelectionLedger();
+            ledger.Add("helmet_ok");
+            ledger.Add("shoes_ok");
+            ledger.Add("fantasma");
+
+            SelectionReport report = SelectionGrader.Grade(StandardCatalog(), ledger);
+
+            Assert.IsFalse(report.HasCriticalProblem);
+            CollectionAssert.DoesNotContain(report.OptionalSelected, "fantasma");
+        }
+
+        [Test]
+        public void Agregar_dos_veces_el_mismo_elemento_no_lo_duplica()
+        {
+            SelectionLedger ledger = new SelectionLedger();
+            ledger.Add("helmet_ok");
+            ledger.Add("helmet_ok");
+
+            Assert.AreEqual(1, ledger.Selected.Count);
+        }
+    }
 }
