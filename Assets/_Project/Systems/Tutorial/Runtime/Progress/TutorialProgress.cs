@@ -17,8 +17,22 @@ namespace RideSafe.Tutorial
     {
         private readonly HashSet<string> _completed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _skipped = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<ActionId> _learnedActions = new HashSet<ActionId>();
 
         public event Action<string> SequenceCompleted;
+
+        /// <summary>
+        /// True once the learner has been introduced to <paramref name="action"/> and used it.
+        /// Drives first-use (show the controller at once) versus reminder (only if stuck).
+        /// Session memory only.
+        /// </summary>
+        public bool IsActionLearned(ActionId action) => action.IsValid && _learnedActions.Contains(action);
+
+        public void MarkActionLearned(ActionId action)
+        {
+            if (action.IsValid)
+                _learnedActions.Add(action);
+        }
 
         public bool IsTutorialCompleted(string sequenceId) =>
             !string.IsNullOrWhiteSpace(sequenceId) && _completed.Contains(sequenceId.Trim());
@@ -50,6 +64,7 @@ namespace RideSafe.Tutorial
         {
             _completed.Clear();
             _skipped.Clear();
+            _learnedActions.Clear();
             SequenceCompleted = null;
         }
     }

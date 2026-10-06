@@ -42,6 +42,7 @@ namespace RideSafe.UI
 
         private UnityEngine.UI.Toggle _toggle;
         private bool? _lastInteractable;
+        private Cachacos.ILocalizationProvider _localization;
 
         private void Awake()
         {
@@ -56,7 +57,18 @@ namespace RideSafe.UI
         {
             _lastInteractable = null;
             if (_toggle != null)
+            {
                 ApplyToggle(_toggle.isOn);
+                // Caption and On/Off are runtime text: re-resolve them when the language changes.
+                _localization = UIText.ListenForLanguage(RefreshText);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_localization != null)
+                _localization.LanguageChanged -= RefreshText;
+            _localization = null;
         }
 
         /// <summary>
@@ -72,6 +84,7 @@ namespace RideSafe.UI
             UnityEngine.UI.Toggle toggle = _toggle != null ? _toggle : GetComponent<UnityEngine.UI.Toggle>();
             _stateText.text = toggle != null && toggle.isOn ? _onText : _offText;
         }
+        private void RefreshText() => ApplyToggle(_toggle.isOn);
 
         private void OnDestroy()
         {
@@ -104,13 +117,13 @@ namespace RideSafe.UI
 
             if (_caption != null)
             {
-                _caption.text = isOn ? _onCaption : string.Empty;
+                _caption.text = isOn ? UIText.Resolve(_onCaption) : string.Empty;
                 _caption.gameObject.SetActive(isOn && !string.IsNullOrEmpty(_onCaption));
             }
             if (_knob != null)
                 _knob.anchoredPosition = isOn ? _knobOn : _knobOff;
             if (_stateText != null)
-                _stateText.text = isOn ? _onText : _offText;
+                _stateText.text = UIText.Resolve(isOn ? _onText : _offText);
         }
     }
 }

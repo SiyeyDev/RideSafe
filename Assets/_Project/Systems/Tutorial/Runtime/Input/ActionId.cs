@@ -7,8 +7,8 @@ namespace RideSafe.Tutorial
     /// Abstract name for something the learner DOES, independent of hardware.
     /// <para>
     /// A sequence asks "was PrimarySelect performed?", never "was the right index trigger
-    /// pressed?". The translation lives in <see cref="InputProfileSO"/>, so swapping the
-    /// controller profile never touches a sequence asset (CASE 14).
+    /// pressed?". The translation lives in the input service's bindings, so remapping a
+    /// button never touches a sequence asset (CASE 14).
     /// </para>
     /// </summary>
     [Serializable]

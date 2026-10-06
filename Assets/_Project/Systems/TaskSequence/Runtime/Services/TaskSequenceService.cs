@@ -1,4 +1,3 @@
-using Cachacos;
 using UnityEngine;
 
 namespace RideSafe.TaskSequence
@@ -7,10 +6,10 @@ namespace RideSafe.TaskSequence
     /// Scene-side host: owns the entity registry, ticks the runner and publishes itself
     /// as <see cref="ITaskSequenceService"/>.
     /// <para>
-    /// Registration is undone in <see cref="OnDestroy"/>. That matters because
-    /// <c>ServiceLocator</c> is a plain static singleton with no scene awareness, so a
-    /// service that never deregisters would be handed to the next scene as a destroyed
-    /// object (CASE 09).
+    /// Registration is instance-safe and undone in <see cref="OnDestroy"/>. That matters
+    /// because <c>ServiceLocator</c> is a plain static singleton with no scene awareness:
+    /// a service that never deregisters would be handed to the next scene as a destroyed
+    /// object (CASE 09), and a type-wide deregister would remove a newer instance.
     /// </para>
     /// </summary>
     [DefaultExecutionOrder(-200)]
@@ -25,34 +24,55 @@ namespace RideSafe.TaskSequence
 
         private TaskContextService _entities;
         private TaskSequenceRunner _runner;
-        private TaskSequenceHandle _current;
+        private System.Func<string, string> _contextLookup;
+        private bool _registered;
 
         /// <summary>
         /// Supplies context values to sequence requirements. The tutorial layer assigns
-        /// this so the core never references TutorialContext.
+        /// this so the core never references TutorialContext. Can be set before or after Awake.
         /// </summary>
-        public System.Func<string, string> ContextLookup { get; set; }
+        public System.Func<string, string> ContextLookup
+        {
+            get { return _contextLookup; }
+            set
+            {
+                _contextLookup = value;
+                if (_runner != null)
+                    _runner.ContextLookup = value;
+            }
+        }
 
         public TaskContextService Entities => _entities;
         public bool IsRunning => _runner != null && _runner.IsRunning;
         public string CurrentSequenceId => _runner != null ? _runner.SequenceId : null;
 
-        /// <summary>Raw runner, for presentation and hint systems added in Phase 3.</summary>
+        /// <summary>Raw runner, for presentation.</summary>
         public TaskSequenceRunner Runner => _runner;
 
         protected virtual void Awake()
         {
             TaskLog.Verbose = _verboseLogging;
 
-            _entities = new TaskContextService();
-            _runner = new TaskSequenceRunner(_entities, ResolveContextValue);
+            TaskContextService entities = new TaskContextService();
+            if (!ServiceRegistration.TryRegister<ITaskSequenceService>(this, this))
+            {
+                enabled = false;
+                return;
+            }
+            if (!ServiceRegistration.TryRegister(entities, this))
+            {
+                ServiceRegistration.Deregister<ITaskSequenceService>(this);
+                enabled = false;
+                return;
+            }
 
-            ServiceLocator.Instance.RegisterService<TaskContextService>(_entities);
-            ServiceLocator.Instance.RegisterService<ITaskSequenceService>(this);
+            _registered = true;
+            _entities = entities;
+            _runner = new TaskSequenceRunner(_entities) { ContextLookup = _contextLookup };
 
-            // Entities that woke up before this service existed could not register, so
-            // sweep the loaded scenes once the registry is available.
-            SweepSceneRegistrars();
+            // Entities that woke up before this registry existed (or registered with a
+            // previous one) could not register here, so sweep the loaded scenes once.
+            SweepEntities();
         }
 
         protected virtual void OnDestroy()
@@ -67,12 +87,13 @@ namespace RideSafe.TaskSequence
             if (_entities != null)
             {
                 _entities.Clear();
-                ServiceLocator.Instance.TryDeregisterService<TaskContextService>(_entities);
+                ServiceRegistration.Deregister(_entities);
                 _entities = null;
             }
 
-            ServiceLocator.Instance.TryDeregisterService<ITaskSequenceService>(this);
-            _current = null;
+            if (_registered)
+                ServiceRegistration.Deregister<ITaskSequenceService>(this);
+            _registered = false;
         }
 
         protected virtual void Update()
@@ -87,27 +108,29 @@ namespace RideSafe.TaskSequence
         {
             if (_runner == null)
             {
-                TaskLog.Error(null, null, "TaskSequenceService is not initialized.");
+                TaskLog.Error(sequence != null ? sequence.SequenceId : null, null,
+                    "TaskSequenceService is not initialized.", this);
+                return null;
+            }
+            if (sequence == null)
+            {
+                TaskLog.Error(null, null, "Run called with a null sequence.", this);
                 return null;
             }
             if (_runner.IsRunning)
             {
-                TaskLog.Error(sequence != null ? sequence.SequenceId : null, null,
-                    "Refusing to start: '" + _runner.SequenceId + "' is still running.");
+                TaskLog.Error(sequence.SequenceId, null,
+                    "Refusing to start: '" + _runner.SequenceId + "' is still running.", this);
                 return null;
             }
-            if (!_runner.Start(sequence))
-                return null;
-
-            _current = new TaskSequenceHandle(_runner);
-            return _current;
+            return TaskSequenceHandle.Start(_runner, sequence);
         }
 
         public TaskSequenceHandle RunById(string sequenceId)
         {
             if (string.IsNullOrWhiteSpace(sequenceId))
             {
-                TaskLog.Error(null, null, "RunById called with an empty id.");
+                TaskLog.Error(null, null, "RunById called with an empty id.", this);
                 return null;
             }
             if (_catalog == null)
@@ -135,24 +158,13 @@ namespace RideSafe.TaskSequence
 
         #endregion
 
-        private string ResolveContextValue(string key)
+        private static void SweepEntities()
         {
-            System.Func<string, string> lookup = ContextLookup;
-            return lookup == null ? null : lookup(key);
-        }
-
-        private void SweepSceneRegistrars()
-        {
-#if UNITY_2023_1_OR_NEWER
-            TaskEntitySceneRegistrar[] registrars =
-                Object.FindObjectsByType<TaskEntitySceneRegistrar>(FindObjectsInactive.Include);
-#else
-            TaskEntitySceneRegistrar[] registrars = Object.FindObjectsOfType<TaskEntitySceneRegistrar>(true);
-#endif
-            for (int i = 0; i < registrars.Length; i++)
+            TaskEntity[] entities = Object.FindObjectsByType<TaskEntity>(FindObjectsInactive.Include);
+            for (int i = 0; i < entities.Length; i++)
             {
-                if (registrars[i] != null)
-                    registrars[i].Scan();
+                if (entities[i] != null)
+                    entities[i].EnsureRegistered();
             }
         }
     }

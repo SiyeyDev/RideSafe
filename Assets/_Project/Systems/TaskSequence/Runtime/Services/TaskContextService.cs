@@ -81,6 +81,14 @@ namespace RideSafe.TaskSequence
             return true;
         }
 
+        /// <summary>True when this exact instance currently owns its id here.</summary>
+        public bool Contains(ITaskEntity entity)
+        {
+            ITaskEntity existing;
+            return entity != null && entity.Id.IsValid &&
+                   _entities.TryGetValue(entity.Id, out existing) && ReferenceEquals(existing, entity);
+        }
+
         public bool TryGetEntity(EntityId id, out ITaskEntity entity)
         {
             entity = null;

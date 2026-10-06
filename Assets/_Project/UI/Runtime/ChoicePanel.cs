@@ -68,6 +68,7 @@ namespace RideSafe.UI
                 return;
             }
         }
+        private Cachacos.ILocalizationProvider _localization;
 
         private void Awake()
         {
@@ -95,6 +96,14 @@ namespace RideSafe.UI
                     SelectedId = option.Id;
             }
             Refresh();
+            _localization = UIText.ListenForLanguage(Refresh);
+        }
+
+        private void OnDisable()
+        {
+            if (_localization != null)
+                _localization.LanguageChanged -= Refresh;
+            _localization = null;
         }
 
         public void Select(string id)
@@ -151,7 +160,7 @@ namespace RideSafe.UI
             if (_confirmationBar != null)
                 _confirmationBar.SetActive(chosen);
             if (_confirmationText != null && chosen)
-                _confirmationText.text = string.Format(_confirmationFormat, DisplayNameOf(SelectedId));
+                _confirmationText.text = string.Format(UIText.Resolve(_confirmationFormat), DisplayNameOf(SelectedId));
         }
 
         private string DisplayNameOf(string id)
@@ -159,7 +168,7 @@ namespace RideSafe.UI
             foreach (Option option in _options)
             {
                 if (option.Id == id)
-                    return string.IsNullOrEmpty(option.DisplayName) ? id : option.DisplayName;
+                    return string.IsNullOrEmpty(option.DisplayName) ? id : UIText.Resolve(option.DisplayName);
             }
             return id;
         }

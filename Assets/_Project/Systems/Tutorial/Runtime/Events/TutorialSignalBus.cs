@@ -24,10 +24,21 @@ namespace RideSafe.Tutorial
         private readonly Dictionary<string, Action<string>> _handlers =
             new Dictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly HashSet<string> _latched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // Last time each signal was raised, so a step can accept a signal that arrived
+        // slightly before it armed without accepting one from minutes ago.
+        private readonly Dictionary<string, float> _lastRaised =
+            new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly Func<float> _clock;
 
         /// <summary>Raised for every signal, for logging and analytics.</summary>
         public event Action<string> SignalRaised;
+
+        /// <param name="clock">Seconds source. Defaults to unscaled real time; tests inject their own.</param>
+        public TutorialSignalBus(Func<float> clock = null)
+        {
+            _clock = clock ?? (() => Time.realtimeSinceStartup);
+        }
 
         public void Raise(string signal)
         {
@@ -35,7 +46,7 @@ namespace RideSafe.Tutorial
                 return;
 
             string key = signal.Trim();
-            _latched.Add(key);
+            _lastRaised[key] = _clock();
 
             Action<string> handlers;
             if (_handlers.TryGetValue(key, out handlers) && handlers != null)
@@ -74,19 +85,20 @@ namespace RideSafe.Tutorial
                 _handlers[key] = reduced;
         }
 
-        /// <summary>
-        /// True if the signal fired at any point since the last <see cref="ClearLatched"/>.
-        /// Lets a step accept a signal that arrived a frame or two before it armed.
-        /// </summary>
-        public bool WasRaised(string signal) =>
-            !string.IsNullOrWhiteSpace(signal) && _latched.Contains(signal.Trim());
+        /// <summary>True if the signal was raised no more than <paramref name="seconds"/> ago.</summary>
+        public bool WasRaisedWithin(string signal, float seconds)
+        {
+            if (string.IsNullOrWhiteSpace(signal) || seconds <= 0f)
+                return false;
 
-        public void ClearLatched() => _latched.Clear();
+            float raisedAt;
+            return _lastRaised.TryGetValue(signal.Trim(), out raisedAt) && _clock() - raisedAt <= seconds;
+        }
 
         public void Clear()
         {
             _handlers.Clear();
-            _latched.Clear();
+            _lastRaised.Clear();
             SignalRaised = null;
             Debug.Log("[Tutorial] Signal bus cleared.");
         }

@@ -41,8 +41,12 @@ namespace RideSafe.TaskSequence
         [SerializeField, Min(0f)] private float _feedbackDuration = 0.5f;
 
         [BoxGroup("Validation")]
-        [Tooltip("Seconds before the step gives up. 0 disables the timeout.")]
+        [Tooltip("Seconds before the step fails. 0 disables the timeout.")]
         [SerializeField, Min(0f)] private float _timeout;
+
+        [BoxGroup("Validation")]
+        [Tooltip("What a failed step does. Retry re-arms it (timeouts only; a broken validator falls back to Skip).")]
+        [SerializeField] private StepFailurePolicy _failurePolicy = StepFailurePolicy.Retry;
 
         [BoxGroup("Validation")]
         [SerializeField] private MissingEntityPolicy _missingEntityPolicy = MissingEntityPolicy.SkipStep;
@@ -51,12 +55,37 @@ namespace RideSafe.TaskSequence
         [SerializeField] private SkipPolicy _skipPolicy = SkipPolicy.SkipStep;
 
         [BoxGroup("Assistance")]
-        [Tooltip("Opaque to the core. Phase 3 hint ladder reads this key to pick a policy.")]
-        [SerializeField] private string _hintPolicyKey;
+        [Tooltip("Abstract action shown as the level-2 input hint, e.g. primaryselect. Empty = no input hint. Opaque to the core.")]
+        [SerializeField] private string _hintActionId;
 
-        [BoxGroup("Assistance")]
-        [Tooltip("Opaque to the core. Presentation layer decides what this means.")]
-        [SerializeField] private string _visualCueKey;
+        public TaskStepData() { }
+
+        /// <summary>Code construction, used by EditMode tests. Authoring goes through the inspector.</summary>
+        internal TaskStepData(
+            string stepId,
+            ITaskValidator validator = null,
+            string entityId = null,
+            StepCompletionMode completionMode = StepCompletionMode.Immediate,
+            float feedbackDuration = 0f,
+            float timeout = 0f,
+            StepFailurePolicy failurePolicy = StepFailurePolicy.Retry,
+            MissingEntityPolicy missingEntityPolicy = MissingEntityPolicy.SkipStep,
+            SkipPolicy skipPolicy = SkipPolicy.SkipStep,
+            string instructionKey = null,
+            string hintActionId = null)
+        {
+            _instructionKey = instructionKey;
+            _hintActionId = hintActionId;
+            _stepId = stepId;
+            _validator = validator;
+            _entityId = new EntityId(entityId);
+            _completionMode = completionMode;
+            _feedbackDuration = feedbackDuration;
+            _timeout = timeout;
+            _failurePolicy = failurePolicy;
+            _missingEntityPolicy = missingEntityPolicy;
+            _skipPolicy = skipPolicy;
+        }
 
         public string StepId => string.IsNullOrWhiteSpace(_stepId) ? "step" : _stepId.Trim();
         public EntityId EntityId => _entityId;
@@ -66,10 +95,10 @@ namespace RideSafe.TaskSequence
         public StepCompletionMode CompletionMode => _completionMode;
         public float FeedbackDuration => Mathf.Max(0f, _feedbackDuration);
         public float Timeout => Mathf.Max(0f, _timeout);
+        public StepFailurePolicy FailurePolicy => _failurePolicy;
         public MissingEntityPolicy MissingEntityPolicy => _missingEntityPolicy;
         public SkipPolicy SkipPolicy => _skipPolicy;
-        public string HintPolicyKey => _hintPolicyKey;
-        public string VisualCueKey => _visualCueKey;
+        public string HintActionId => _hintActionId;
 
         /// <summary>Row label in the sequence's step list. Resolved by Odin.</summary>
         public string GetEditorLabel()

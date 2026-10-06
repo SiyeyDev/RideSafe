@@ -1,4 +1,5 @@
 using System;
+using RideSafe.TaskSequence;
 using UnityEngine;
 
 namespace RideSafe.Tutorial
@@ -235,5 +236,71 @@ namespace RideSafe.Tutorial
 
         public override string Describe() =>
             "turn head " + _direction + " by " + _requiredYaw.ToString("0") + " degrees";
+    }
+
+    /// <summary>
+    /// Satisfied when the learner looks at the step's entity: the head's forward stays
+    /// within <c>_maxAngle</c> of the direction to the entity for <c>_holdSeconds</c>.
+    /// <para>
+    /// Unlike <see cref="HeadRotationValidator"/> this is absolute, so "look left" then
+    /// "look right" works no matter where the learner was facing when the step armed.
+    /// </para>
+    /// </summary>
+    [Serializable]
+    public class HeadLookAtEntityValidator : TutorialValidatorBase
+    {
+        [Tooltip("Degrees between the head's forward and the direction to the entity.")]
+        [SerializeField, Range(5f, 60f)] private float _maxAngle = 20f;
+
+        [Tooltip("Continuous seconds the learner must keep looking.")]
+        [SerializeField, Min(0f)] private float _holdSeconds = 0.3f;
+
+        private IXRPoseProvider _pose;
+        private Transform _target;
+        private float _heldFor;
+
+        public HeadLookAtEntityValidator() { }
+
+        internal HeadLookAtEntityValidator(float maxAngle, float holdSeconds)
+        {
+            _maxAngle = maxAngle;
+            _holdSeconds = holdSeconds;
+        }
+
+        protected override void OnPrepare()
+        {
+            _heldFor = 0f;
+            _pose = ResolvePose();
+            ITaskEntity entity = ResolveEntity<ITaskEntity>();
+            _target = entity != null ? entity.Transform : null;
+            if (entity != null && _target == null)
+                Break("entity '" + entity.Id + "' has no transform to look at.");
+        }
+
+        protected override bool OnEvaluate(float deltaTime)
+        {
+            Pose head;
+            if (_pose == null || _target == null || !_pose.TryGetPose(XRNodeRole.Head, out head))
+                return false;
+
+            float angle = Vector3.Angle(head.rotation * Vector3.forward, _target.position - head.position);
+            if (angle > _maxAngle)
+            {
+                _heldFor = 0f;
+                return false;
+            }
+
+            _heldFor += deltaTime;
+            return _heldFor >= _holdSeconds;
+        }
+
+        protected override void OnCleanup()
+        {
+            _pose = null;
+            _target = null;
+            _heldFor = 0f;
+        }
+
+        public override string Describe() => "look at entity (within " + _maxAngle.ToString("0") + " degrees)";
     }
 }

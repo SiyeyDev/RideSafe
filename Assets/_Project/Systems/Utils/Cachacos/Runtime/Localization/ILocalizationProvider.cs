@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Cachacos
@@ -17,5 +18,12 @@ namespace Cachacos
         /// Returns every term available in the active source. Used to populate editor dropdowns.
         /// </summary>
         IEnumerable<string> GetTerms();
+        /// <summary>
+        /// Switches the active language by code (e.g. "en", "es"). A bare code matches a
+        /// regional variant ("es" -> "es-CO"). Returns false when no language matches.
+        /// </summary>
+        bool SetLanguage(string languageCode);
+        /// <summary>Raised after the active language changed and texts were re-localized.</summary>
+        event Action LanguageChanged;
     }
 }

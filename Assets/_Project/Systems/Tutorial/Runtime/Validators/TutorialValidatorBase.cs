@@ -23,8 +23,11 @@ namespace RideSafe.Tutorial
     {
         protected TaskStepContext Context { get; private set; }
 
-        /// <summary>Set when the validator cannot possibly succeed, so it fails fast.</summary>
-        protected bool IsBroken { get; private set; }
+        /// <summary>
+        /// Set when the validator cannot possibly succeed. The runner reads it and fails the
+        /// step at once (never retried), so the learner is never left waiting on a config bug.
+        /// </summary>
+        public bool IsBroken { get; private set; }
 
         public void Prepare(TaskStepContext context)
         {
@@ -71,7 +74,7 @@ namespace RideSafe.Tutorial
 
             ITutorialInputService input = Context.GetService<ITutorialInputService>();
             if (input == null)
-                Break("no ITutorialInputService is registered. Add a RideSafeInputService to the scene.");
+                Break("no ITutorialInputService is registered. Add an AutoHandTutorialInputService to the scene.");
             return input;
         }
 

@@ -24,6 +24,13 @@ namespace RideSafe.TaskSequence
         [Tooltip("When true the requirement passes only if the context value DIFFERS.")]
         [SerializeField] private bool _negate;
 
+        internal ContextRequirement(string key, string value, bool negate = false)
+        {
+            _key = key;
+            _value = value;
+            _negate = negate;
+        }
+
         public string Key => string.IsNullOrWhiteSpace(_key) ? string.Empty : _key.Trim().ToLowerInvariant();
         public string Value => string.IsNullOrWhiteSpace(_value) ? string.Empty : _value.Trim().ToLowerInvariant();
 

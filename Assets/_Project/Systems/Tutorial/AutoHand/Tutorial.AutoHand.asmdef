@@ -1,0 +1,27 @@
+{
+    "name": "Tutorial.AutoHand",
+    "rootNamespace": "RideSafe.Tutorial.AutoHand",
+    "references": [
+        "TaskSequence",
+        "Tutorial",
+        "Cachacos",
+        "AutoHandAssembly",
+        "Autohand.XR",
+        "RideSafe.UI",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Sirenix.Serialization.dll",
+        "Sirenix.Utilities.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

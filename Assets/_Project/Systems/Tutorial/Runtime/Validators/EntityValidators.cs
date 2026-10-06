@@ -18,6 +18,10 @@ namespace RideSafe.Tutorial
         private IFocusableTaskEntity _entity;
         private float _focusedFor;
 
+        public EntityFocusedValidator() { }
+
+        internal EntityFocusedValidator(float dwellSeconds) => _dwellSeconds = dwellSeconds;
+
         protected override void OnPrepare()
         {
             _focusedFor = 0f;
@@ -176,12 +180,24 @@ namespace RideSafe.Tutorial
 
         public ActionId ConfirmAction => new ActionId(_confirmActionId);
 
+        public SelectionConfirmedValidator() { }
+
+        internal SelectionConfirmedValidator(bool acceptConfirmAction, bool requireSelection = false,
+            string confirmActionId = ActionIds.Confirm)
+        {
+            _acceptConfirmAction = acceptConfirmAction;
+            _requireSelection = requireSelection;
+            _confirmActionId = confirmActionId;
+        }
+
         protected override void OnPrepare()
         {
             _satisfied = false;
+            if (Context == null)
+                return;
 
             // The entity is optional here: a step may confirm a whole panel via the action.
-            if (Context != null && Context.Entity != null)
+            if (Context.Entity != null)
             {
                 _confirmable = Context.Entity as IConfirmableTaskEntity;
                 _selectable = Context.Entity as ISelectableTaskEntity;
@@ -190,14 +206,26 @@ namespace RideSafe.Tutorial
             }
 
             if (_acceptConfirmAction)
-            {
-                _input = ResolveInput();
-                RequireMappedAction(_input, ConfirmAction);
-            }
-            else if (_confirmable == null)
-            {
-                Break("no IConfirmableTaskEntity and the confirm action is disabled.");
-            }
+                _input = ResolveConfirmInput();
+
+            // Two routes: the entity event or the action. Only break when NEITHER is usable.
+            if (_confirmable == null && _input == null)
+                Break("needs an IConfirmableTaskEntity or a mapped '" + ConfirmAction + "' action; has neither.");
+        }
+
+        /// <summary>
+        /// Resolves the input service for the action route without breaking: when the entity
+        /// can confirm on its own, a missing service or unmapped action only disables this route.
+        /// </summary>
+        private ITutorialInputService ResolveConfirmInput()
+        {
+            ITutorialInputService input = Context.GetService<ITutorialInputService>();
+            if (input != null && ConfirmAction.IsValid && input.IsMapped(ConfirmAction))
+                return input;
+
+            if (_confirmable != null)
+                Context.LogWarn("Confirm action '" + ConfirmAction + "' unavailable; accepting entity confirmation only.");
+            return null;
         }
 
         protected override bool OnEvaluate(float deltaTime)

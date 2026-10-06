@@ -30,8 +30,26 @@ namespace RideSafe.TaskSequence
         Immediate = 0,
         /// <summary>Hold on Feedback for the step's feedback duration, then advance.</summary>
         AfterFeedback = 1,
-        /// <summary>Never self-advances; an external caller must call CompleteCurrentStep.</summary>
+        /// <summary>
+        /// Never self-advances on success; an external caller must call CompleteCurrentStep.
+        /// A failure (timeout, broken validator) still goes through the step's failure policy.
+        /// </summary>
         Manual = 2
+    }
+
+    /// <summary>What a step does when it fails (timeout, broken or throwing validator).</summary>
+    public enum StepFailurePolicy
+    {
+        /// <summary>
+        /// Re-arm the same step. Default, because a tutorial teaches by letting the learner
+        /// try again. Only applies to recoverable failures (timeout); a broken validator
+        /// can never succeed, so it falls back to <see cref="Skip"/>.
+        /// </summary>
+        Retry = 0,
+        /// <summary>Move on to the next step. The sequence will finish as Failed.</summary>
+        Skip = 1,
+        /// <summary>Stop the whole sequence as Failed.</summary>
+        FailSequence = 2
     }
 
     /// <summary>What to do when a step's EntityId cannot be resolved. Never throws.</summary>
@@ -45,6 +63,10 @@ namespace RideSafe.TaskSequence
         FailSequence = 2
     }
 
+    /// <summary>
+    /// On a step: what SkipCurrentStep does. On a sequence: whether SkipSequence is allowed
+    /// (anything other than NotSkippable allows it).
+    /// </summary>
     public enum SkipPolicy
     {
         NotSkippable = 0,
@@ -52,13 +74,14 @@ namespace RideSafe.TaskSequence
         SkipWholeSequence = 2
     }
 
+    /// <summary>What happens when a sequence is started again in the same session (same runner).</summary>
     public enum RestartPolicy
     {
-        /// <summary>Re-running a completed sequence starts from the first step.</summary>
+        /// <summary>Every run starts from the first step.</summary>
         FromBeginning = 0,
-        /// <summary>Re-running resumes at the last incomplete step.</summary>
+        /// <summary>A run that was aborted resumes at the step it was aborted on.</summary>
         Resume = 1,
-        /// <summary>A completed sequence refuses to run again in the same session.</summary>
+        /// <summary>A sequence that already completed refuses to run again.</summary>
         RunOnce = 2
     }
 }
