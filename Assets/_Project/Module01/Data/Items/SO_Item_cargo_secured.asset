@@ -16,4 +16,4 @@ MonoBehaviour:
   _nameKey: Module1/Item_CargoSecured
   _riskKey: Module1/Item_CargoSecured_Risk
   _category: 0
-  _displayPrefab: {fileID: 1917487406099677532, guid: 048e0cf3d6d1037479918082d12c4c1c, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: 49e4b3b227b8f114f9f60dd917b45351, type: 3}

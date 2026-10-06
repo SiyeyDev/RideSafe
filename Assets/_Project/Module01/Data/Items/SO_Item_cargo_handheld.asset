@@ -16,4 +16,4 @@ MonoBehaviour:
   _nameKey: Module1/Item_CargoHandheld
   _riskKey: Module1/Item_CargoHandheld_Risk
   _category: 3
-  _displayPrefab: {fileID: 6343129321320203097, guid: b909cfd41f34cde4bbad2c2d6bf030d1, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: 52081078a41cd6546b8e60cf9206a973, type: 3}

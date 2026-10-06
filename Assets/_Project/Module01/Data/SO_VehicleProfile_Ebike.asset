@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_VehicleProfile_Ebike
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.VehicleProfileSO
   _vehicleContextValue: ebike
-  _model: {fileID: 1529747072151971261, guid: 4f241f20248acb94b9f71a9c806ca0f6, type: 3}
+  _model: {fileID: 919132149155446097, guid: e8019823d73f27347a191ddac608b826, type: 3}
   _inspectionZones:
   - {fileID: 11400000, guid: 2e812fb54e2d7364fa3302d91d7e907d, type: 2}
   - {fileID: 11400000, guid: 65b474ed86641f9468aec537c0de391d, type: 2}

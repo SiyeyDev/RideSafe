@@ -16,4 +16,4 @@ MonoBehaviour:
   _nameKey: Module1/Item_Glasses
   _riskKey: Module1/Item_Glasses_Risk
   _category: 2
-  _displayPrefab: {fileID: 1664270248946706928, guid: 03b0ae46054c2d943843cc504cc57d3e, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: 267e57f7a3c0d8743914f675d618b5eb, type: 3}
