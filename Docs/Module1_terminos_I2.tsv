@@ -1,11 +1,15 @@
 ﻿Keys	English	Español
 Module1/Choose_Instruction	Select an object to inspect it. You can change your choices before submitting.	Selecciona un objeto para examinarlo. Puedes cambiar tus elecciones antes de enviarlas.
+Module1/Conditional	Condition-dependent	Depende de la condición
+Module1/Confirm	Submit choices	Enviar elecciones
 Module1/Confirm_Question	Add this item to your preparation?	¿Quieres añadir este elemento a tu preparación?
+Module1/Continue	Continue	Continuar
 Module1/Decision_Correct	Your decision matches the inspection.	Tu decisión coincide con la revisión.
 Module1/Decision_Question	After your inspection, what do you decide?	Después de tu revisión, ¿qué decides?
 Module1/Decision_Review	Review your decision before riding.	Revisa tu decisión antes de circular.
 Module1/DoNotRide	Do not ride	No circular
 Module1/Final_Complete	Module complete. Review your preparation and inspection summary.	Módulo completado. Revisa el resumen de tu preparación e inspección.
+Module1/Inappropriate	Not suitable	No adecuado
 Module1/Inspect_Instruction	Select each marker to check the component before riding.	Selecciona cada marcador para revisar el componente antes de salir.
 Module1/Inspect_Question	Have you checked this part of the vehicle?	¿Has revisado este punto del vehículo?
 Module1/Item_CargoHandheld	Handheld object	Objeto en la mano
@@ -16,20 +20,39 @@ Module1/Item_HelmetDamaged	Damaged helmet	Casco deteriorado
 Module1/Item_HelmetOk	Intact, fitted helmet	Casco íntegro y ajustado
 Module1/Item_Reflective	Reflective vest	Chaleco reflectivo
 Module1/Item_ShoesOk	Closed-toe shoes	Calzado cerrado
+Module1/KeepChoosing	Keep choosing	Seguir eligiendo
+Module1/M01_Video	To begin, we're going to show you the following video	Para iniciar, te vamos a mostrar el siguiente video
+Module1/M01_Welcome	Welcome to Module 1! In this module, you will learn everything about the necessary precautions and PPE you must take before starting your vehicle. Let's begin!	Bienvenido al Modulo1, En este modulo vas a aprender todo sobre los precursores y epps que debes tener en cuenta antes de dar marcha con tu vehiculo. Comencemos!
 Module1/NeedsService	Needs service	Necesita servicio
 Module1/Next	Continue tour	Continuar recorrido
 Module1/No	No	No
+Module1/Omitted	Core item omitted	Núcleo omitido
+Module1/Orientation_Body	Visit the stations and choose what to take. Then inspect the e-bike. Feedback appears after you submit each section.	Recorre las estaciones y elige qué llevar. Después revisa la e-bike. Verás la retroalimentación al enviar cada sección.
+Module1/Orientation_Title	Prepare before riding	Prepárate antes de rodar
+Module1/Pause	Pause / resume	Pausar / seguir
 Module1/Point_Brakes	Brakes	Frenos
 Module1/Point_Electrics	Electrical system and controls	Estado eléctrico y controles
 Module1/Point_Lights	Lights and reflectors	Luces y reflectivos
 Module1/Point_Steering	Steering and handlebar	Dirección y manubrio
 Module1/Point_Wheels	Wheels and frame	Ruedas y estructura
 Module1/Previous	Previous station	Estación anterior
+Module1/RepeatAudio	Repeat instructions	Repetir instrucciones
+Module1/Replay	Replay	Repetir
 Module1/Report_Reference	Reference for this ride	Referencia para este recorrido
 Module1/Report_Subtitle	Optional items are not penalized. Review omissions and risks.	Los elementos opcionales no penalizan. Revisa las omisiones y los riesgos.
 Module1/Report_Title	Review summary	Resumen de la revisión
 Module1/Report_Yours	Your choice	Tu elección
+Module1/Review_Lock	Confirm to evaluate this section.	Al confirmar se evaluará esta sección.
+Module1/Review_Subtitle	You can go back and change them before submitting.	Puedes volver y cambiarlas antes de enviar.
+Module1/Review_Title	Review your choices	Revisa tus elecciones
 Module1/RoadReady	Ready to ride	Listo para circular
+Module1/Selected	Selected	Seleccionado
+Module1/Sidebar_Empty	No items added yet.	Todavía no has añadido elementos.
+Module1/Sidebar_Note	Added does not mean correct. Click a row to remove it.	Añadido no significa correcto. Pulsa una fila para quitarla.
+Module1/Sidebar_Title	My preparation	Mi preparación
+Module1/Start	Start	Comenzar
+Module1/VideoPlaceholder	Placeholder video. Final educational content is pending.	Video provisional. El contenido educativo final está pendiente.
+Module1/WatchVideo	Watch explanation	Ver explicación
 Module1/Yes	Yes	Sí
 Module1/Zone_Clothing	Clothing and footwear	Ropa y calzado
 Module1/Zone_Cockpit	Steering, brakes and controls	Dirección, frenos y controles

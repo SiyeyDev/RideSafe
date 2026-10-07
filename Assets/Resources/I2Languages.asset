@@ -351,14 +351,6 @@ MonoBehaviour:
       - Para iniciar, te vamos a mostrar el siguiente video
       Flags: 0000
       Languages_Touch: []
-    - Term: Module1/
-      TermType: 0
-      Description: 
-      Languages:
-      - 
-      - 
-      Flags: 0000
-      Languages_Touch: []
     - Term: Tutorial/ChooseLocation
       TermType: 0
       Description: 
