@@ -72,8 +72,12 @@ namespace RideSafe.Module01
                 var rect = (RectTransform)list;
                 rect.anchorMin = rect.anchorMax = new Vector2(.5f, .5f);
                 rect.pivot = new Vector2(.5f, 1f);
-                rect.anchoredPosition = new Vector2(430, 200);
-                rect.sizeDelta = new Vector2(250, 300);
+                // Medido: con 250 de ancho la fila queda en 188 y la etiqueta, que se estira
+                // con 44 por la izquierda y 90 por la derecha, en 54 px. Por eso "Casco
+                // deteriorado" salia partido en trozos de seis letras. El espanol necesita
+                // mas sitio que el ingles con el que se diseno el kit.
+                rect.anchoredPosition = new Vector2(470, 200);
+                rect.sizeDelta = new Vector2(420, 300);
             }
             Localize(OrientationPanel, "Title", "Orientation_Title");
             Localize(OrientationPanel, "Body", "Orientation_Body");
