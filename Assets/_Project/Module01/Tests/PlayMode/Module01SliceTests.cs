@@ -226,7 +226,10 @@ namespace RideSafe.Module01.Tests
             Assert.AreEqual("Comparison", _binding.Module.Current);
             AssertVisible(_binding.Comparison.GetComponentsInChildren<TMP_Text>().First(t => t.name == "Title").rectTransform);
             Assert.IsTrue(_binding.Comparison.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("point_brakes")), "El reporte no muestra el vehiculo");
-            Assert.GreaterOrEqual(blackTeleports, 7, "No se probaron todos los cambios de zona con fade");
+            // 6 y no 7: volver a la misma zona (KeepChoosing) ya no repite el salto, porque el
+            // director solo llama al recorrido cuando el ancla cambia de verdad. Lo que sigue
+            // guardado es que CADA salto ocurre con la pantalla en negro, arriba en ZoneReached.
+            Assert.GreaterOrEqual(blackTeleports, 6, "No se probaron todos los cambios de zona con fade");
             if (!omitHelmet) yield return Capture("final-report");
             CollectionAssert.IsEmpty(_problems, string.Join("\n", _problems));
         }
@@ -469,11 +472,18 @@ namespace RideSafe.Module01.Tests
             // CaptureScreenshot a archivo, no CaptureScreenshotAsTexture: la variante en memoria
             // devolvia el frame sin la UI desde que esta vive en la camara de overlay del stack.
             string path = folder + "/" + name + ".png";
-            if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+            // Exigir escritura NUEVA, no solo que el archivo exista: si el borrado falla, un
+            // File.Exists sobre la captura vieja da verde y la evidencia queda caducada.
+            System.DateTime before = System.IO.File.Exists(path)
+                ? System.IO.File.GetLastWriteTimeUtc(path)
+                : System.DateTime.MinValue;
             ScreenCapture.CaptureScreenshot(path);
-            float until = Time.realtimeSinceStartup + 5f;
-            while (!System.IO.File.Exists(path) && Time.realtimeSinceStartup < until) yield return null;
-            Assert.IsTrue(System.IO.File.Exists(path), "No se escribio la captura " + name);
+            float until = Time.realtimeSinceStartup + 10f;
+            while (Time.realtimeSinceStartup < until
+                   && (!System.IO.File.Exists(path) || System.IO.File.GetLastWriteTimeUtc(path) <= before))
+                yield return null;
+            Assert.Greater(System.IO.File.GetLastWriteTimeUtc(path), before,
+                "La captura '" + name + "' no se reescribio: la evidencia seria la de la corrida anterior.");
         }
         private static string Path(Transform t)
         {

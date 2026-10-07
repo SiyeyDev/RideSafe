@@ -48,6 +48,12 @@ namespace RideSafe.Module01
             _anchors[Normalize(zoneId)] = anchor;
         }
 
+        /// <summary>¿Hay ancla registrada para esa zona? Permite decidir sin provocar un aviso.</summary>
+        public bool HasAnchor(string zoneId) =>
+            !string.IsNullOrWhiteSpace(zoneId)
+            && _anchors.TryGetValue(Normalize(zoneId), out Transform anchor)
+            && anchor != null;
+
         public bool TryGoTo(string zoneId)
         {
             if (IsMoving) return false;

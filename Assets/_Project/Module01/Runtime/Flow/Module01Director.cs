@@ -185,13 +185,34 @@ namespace RideSafe.Module01
             Finished?.Invoke();
         }
 
+        /// <summary>
+        /// En las zonas personales el aprendiz viaja entre estaciones. En las del vehículo
+        /// no: se queda en el punto de exhibición y es el vehículo el que gira para enseñar
+        /// cada zona. Por eso solo se llama al recorrido cuando el ancla cambia de verdad —
+        /// si no, cada zona del vehículo metería un fundido a negro que taparía el giro,
+        /// que es justo lo que hay que ver.
+        /// </summary>
         private void EnterZone(ZoneSO zone)
         {
             CurrentZone = zone;
-            _tour?.TryGoTo(zone.ZoneId);
+
+            // El punto unico de exhibicion solo manda si la escena ya tiene su ancla. Mientras
+            // no exista, cada zona del vehiculo sigue teniendo la suya y el recorrido es el de
+            // siempre: asi el codigo nuevo no rompe una escena que aun no se ha remontado.
+            bool singleViewpoint = _inVehicleSection && _tour != null && _tour.HasAnchor(VehicleAnchorId);
+            string anchorId = singleViewpoint ? VehicleAnchorId : zone.ZoneId;
+            if (_tour != null && _tour.CurrentZoneId != anchorId)
+                _tour.TryGoTo(anchorId);
+
+            if (_inVehicleSection && _stage != null)
+                _stage.FaceYaw(SelectedVehicle != null ? SelectedVehicle.YawFor(zone) : 0f);
+
             _runner.Begin(zone);
             ZoneEntered?.Invoke(zone);
         }
+
+        /// <summary>Ancla única desde la que se mira el vehículo, sea cual sea la zona.</summary>
+        public const string VehicleAnchorId = "vehicle";
 
         /// <summary>
         /// Gradúa contra un catálogo que contiene solo las zonas de la sección que

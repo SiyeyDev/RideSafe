@@ -158,6 +158,120 @@ namespace RideSafe.Module01.Tests
         }
     }
 
+
+    /// <summary>
+    /// El aprendiz se queda quieto y es el vehículo el que gira para enseñar cada zona:
+    /// de costado para las ruedas, de frente para las luces. La pose es dato por zona y
+    /// por vehículo, no código, porque hay que ajustarla a ojo contra cada malla.
+    /// </summary>
+    public class VehiclePoseTests : CatalogFixture
+    {
+        private VehicleProfileSO _profile;
+        private ZoneSO _wheels;
+        private ZoneSO _lights;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _wheels = Zone("wheels", Item("point_wheels", SafetyItemCategory.Core));
+            _lights = Zone("visibility", Item("point_lights", SafetyItemCategory.Core));
+            _profile = ScriptableObject.CreateInstance<VehicleProfileSO>();
+            _profile.Configure("ebike", null, new List<ZoneSO> { _wheels, _lights });
+        }
+
+        [TearDown]
+        public void TearDownPose() => Object.DestroyImmediate(_profile);
+
+        [Test]
+        public void Cada_zona_puede_declarar_su_propio_giro()
+        {
+            _profile.ConfigureZoneViews(new[] { (_wheels, 90f), (_lights, 0f) });
+
+            Assert.AreEqual(90f, _profile.YawFor(_wheels), .01f);
+            Assert.AreEqual(0f, _profile.YawFor(_lights), .01f);
+        }
+
+        [Test]
+        public void Una_zona_sin_pose_declarada_no_gira_en_vez_de_reventar()
+        {
+            Assert.AreEqual(0f, _profile.YawFor(_wheels), .01f);
+            Assert.AreEqual(0f, _profile.YawFor(null), .01f);
+        }
+
+        [Test]
+        public void Los_dos_vehiculos_pueden_tener_giros_distintos_para_la_misma_zona()
+        {
+            var scooter = ScriptableObject.CreateInstance<VehicleProfileSO>();
+            scooter.Configure("escooter", null, new List<ZoneSO> { _wheels });
+            _profile.ConfigureZoneViews(new[] { (_wheels, 90f) });
+            scooter.ConfigureZoneViews(new[] { (_wheels, -90f) });
+
+            Assert.AreEqual(90f, _profile.YawFor(_wheels), .01f);
+            Assert.AreEqual(-90f, scooter.YawFor(_wheels), .01f);
+
+            Object.DestroyImmediate(scooter);
+        }
+    }
+
+    public class VehicleStageRotationTests
+    {
+        private GameObject _go;
+        private GameObject _bike;
+        private VehicleStage _stage;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _go = new GameObject("stage");
+            _bike = new GameObject("ebike");
+            _stage = _go.AddComponent<VehicleStage>();
+            _stage.ConfigureForTests(("ebike", _bike));
+            _stage.Show("ebike");
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            Object.DestroyImmediate(_go);
+            Object.DestroyImmediate(_bike);
+        }
+
+        [Test]
+        public void Encarar_una_zona_gira_el_vehiculo_sobre_su_eje()
+        {
+            _stage.FaceYaw(90f, immediate: true);
+
+            Assert.AreEqual(90f, _bike.transform.eulerAngles.y, .5f);
+        }
+
+        [Test]
+        public void El_giro_es_el_pedido_aunque_se_encadenen_zonas()
+        {
+            _stage.FaceYaw(90f, immediate: true);
+            _stage.FaceYaw(-35f, immediate: true);
+
+            Assert.AreEqual(325f, _bike.transform.eulerAngles.y, .5f);
+        }
+
+        /// <summary>
+        /// Los marcadores cuelgan de la malla, así que al girar el vehículo viajan con él:
+        /// eso es justo lo que hace que señalen la pieza y no un punto del aire.
+        /// </summary>
+        [Test]
+        public void Los_marcadores_giran_con_el_vehiculo()
+        {
+            var mount = new GameObject("mount_point_wheels").transform;
+            mount.SetParent(_bike.transform, false);
+            mount.localPosition = new Vector3(0f, 0f, 1f);
+            var marker = new GameObject("point_wheels").transform;
+            marker.SetParent(mount, false);
+
+            _stage.FaceYaw(180f, immediate: true);
+
+            Assert.AreEqual(-1f, marker.position.z, .01f);
+        }
+    }
+
     /// <summary>
     /// El escenario es lo único que sabe qué mallas del garaje son vehículos. Separado
     /// del director para que elegir vehículo no obligue a buscar objetos por nombre.

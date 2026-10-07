@@ -85,6 +85,12 @@ namespace RideSafe.Module01
             LocalizeButton(ReviewPanel, "KeepChoosingButton", "KeepChoosing");
             LocalizeButton(ReviewPanel, "ConfirmButton", "Confirm");
             LocalizeButton(ComparisonPanel, "ExplainButton", "WatchVideo");
+            // La leyenda estaba escrita a mano en ingles y nunca pasaba por I2, asi que salia
+            // en ingles incluso con el resto del modulo en espanol.
+            Localize(ComparisonPanel, "Legend_Selected", "Selected");
+            Localize(ComparisonPanel, "Legend_Omitted", "Omitted");
+            Localize(ComparisonPanel, "Legend_Conditional", "Conditional");
+            Localize(ComparisonPanel, "Legend_Inappropriate", "Inappropriate");
             LocalizeButton(ExplanationPanel, "PauseButton", "Pause");
             LocalizeButton(ExplanationPanel, "ReplayButton", "Replay");
             LocalizeButton(ExplanationPanel, "ContinueButton", "Continue");

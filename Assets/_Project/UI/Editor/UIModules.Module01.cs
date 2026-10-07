@@ -181,10 +181,12 @@ namespace RideSafe.UI.EditorTools
 
             Transform legend = K.Slice(panel, "Checklist_Row_Selected", 176f, 421f, 827f, 466f, 2.4f, Color.white, "Legend").transform;
             float pad = UIBuilderKit.PadFor(2.4f);
-            LegendItem(legend, "Status_Independent", 27f + pad, "Selected");
-            LegendItem(legend, "Status_Supported", 130f + pad, "Core item omitted");
-            LegendItem(legend, "Status_Attention", 292f + pad, "Condition-dependent");
-            LegendItem(legend, "Status_Retry", 476f + pad, "Not suited to this ride");
+            // El nombre del objeto no lleva el texto ingles: el binding localiza por nombre,
+            // y si el nombre cambia con el idioma de diseno la clave se pierde.
+            LegendItem(legend, "Status_Independent", 27f + pad, "Selected", "Legend_Selected");
+            LegendItem(legend, "Status_Supported", 130f + pad, "Core item omitted", "Legend_Omitted");
+            LegendItem(legend, "Status_Attention", 292f + pad, "Condition-dependent", "Legend_Conditional");
+            LegendItem(legend, "Status_Retry", 476f + pad, "Not suited to this ride", "Legend_Inappropriate");
 
             _ui.Button(panel, "ExplainButton", "Explain each one", true, 397f, 473f, 604f, 523f);
 
@@ -222,11 +224,11 @@ namespace RideSafe.UI.EditorTools
             }
         }
 
-        private void LegendItem(Transform legend, string glyph, float x, string label)
+        private void LegendItem(Transform legend, string glyph, float x, string label, string name)
         {
             float cy = 23f + UIBuilderKit.PadFor(2.4f) - 1f;
             K.Icon(legend, glyph, x, cy, 18f);
-            K.TL(legend, label, K.LabelBold.With(14f), x + 16f, cy, 170f, "Legend · " + label);
+            K.TL(legend, label, K.LabelBold.With(14f), x + 16f, cy, 170f, name);
         }
 
         // 10B / 13B — video card, item card, explanation, subtitle.
