@@ -5,6 +5,7 @@ using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.Video;
 // UnityEngine.UIElements es un namespace y taparia la clase del kit, igual que
@@ -46,6 +47,7 @@ namespace RideSafe.Module01.Editor
             _camera.rotation = Quaternion.Euler(0,180,0);
             var cam = _camera.GetComponent<Camera>(); cam.fieldOfView = 60; cam.nearClipPlane = .05f;
             cam.tag = "MainCamera";
+            BuildUiCamera(cam);
             var root = Find("Module01");
             if(root.GetComponent<RideSafe.TaskSequence.TaskSequenceService>()==null) root.AddComponent<RideSafe.TaskSequence.TaskSequenceService>();
             var inspector = root.GetComponent<ItemInspector>(); var tour = root.GetComponent<GuidedTour>();
@@ -233,6 +235,45 @@ namespace RideSafe.Module01.Editor
             if(!string.IsNullOrEmpty(key)) b.transform.Find("Label").gameObject.AddComponent<Module01Text>().Configure(key);
             return b;
         }
+
+        /// <summary>
+        /// Camara de overlay para la capa UI. Sin esto los canvas de world space se ordenan
+        /// por profundidad junto con la geometria, y cualquier malla mas cercana los atraviesa:
+        /// el video salia detras de un objeto y las esferas del vehiculo perforaban el reporte.
+        /// <para>
+        /// Comparte transform con la principal, asi que la UI no se mueve ni cambia de escala;
+        /// solo se dibuja despues. El canvas del inspector se queda a proposito en Default: su
+        /// popup va <b>detras</b> del modelo que gira sobre el pedestal, y esa relacion importa.
+        /// </para>
+        /// </summary>
+        static void BuildUiCamera(Camera main)
+        {
+            int uiMask = 1 << LayerMask.NameToLayer("UI");
+
+            var hud = Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .FirstOrDefault(c => c.name == "Module01Controls");
+            if (hud != null)
+                foreach (var t in hud.GetComponentsInChildren<Transform>(true))
+                    t.gameObject.layer = LayerMask.NameToLayer("UI");
+
+            var old = main.transform.Find("UI Camera");
+            if (old != null) Object.DestroyImmediate(old.gameObject);
+
+            var go = new GameObject("UI Camera", typeof(Camera));
+            go.transform.SetParent(main.transform, false);
+            var uiCam = go.GetComponent<Camera>();
+            uiCam.fieldOfView = main.fieldOfView;
+            uiCam.nearClipPlane = main.nearClipPlane;
+            uiCam.farClipPlane = main.farClipPlane;
+            uiCam.cullingMask = uiMask;
+            uiCam.GetUniversalAdditionalCameraData().renderType = CameraRenderType.Overlay;
+
+            main.cullingMask &= ~uiMask;
+            var data = main.GetUniversalAdditionalCameraData();
+            data.cameraStack.Clear();
+            data.cameraStack.Add(uiCam);
+        }
+
         private static void RequireUnique(string name)
         {
             var found=Object.FindObjectsByType<Transform>(FindObjectsInactive.Include,FindObjectsSortMode.None).Where(x=>x.name==name).ToArray();

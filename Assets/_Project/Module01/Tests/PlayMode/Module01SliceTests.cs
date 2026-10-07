@@ -6,6 +6,7 @@ using RideSafe.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
@@ -87,10 +88,49 @@ namespace RideSafe.Module01.Tests
             CollectionAssert.IsEmpty(_problems, string.Join("\n", _problems));
         }
 
+        /// <summary>
+        /// Un canvas de world space se ordena por profundidad con la geometria, asi que
+        /// cualquier malla mas cercana lo atraviesa: el video salia detras de un objeto y las
+        /// esferas del vehiculo perforaban el reporte. La UI va en su propia camara de overlay.
+        /// </summary>
+        [UnityTest] public IEnumerator La_interfaz_se_dibuja_por_encima_del_mundo()
+        {
+            int uiMask = 1 << LayerMask.NameToLayer("UI");
+            var main = _camera;
+            Assert.AreEqual(CameraRenderType.Base, main.GetUniversalAdditionalCameraData().renderType);
+            Assert.AreEqual(0, main.cullingMask & uiMask,
+                "La camara principal sigue dibujando la capa UI: la geometria la va a atravesar.");
+
+            var stack = main.GetUniversalAdditionalCameraData().cameraStack;
+            Assert.AreEqual(1, stack.Count, "Falta la camara de overlay de la UI en el stack.");
+            var uiCam = stack[0];
+            Assert.AreEqual(CameraRenderType.Overlay, uiCam.GetUniversalAdditionalCameraData().renderType);
+            Assert.AreEqual(uiMask, uiCam.cullingMask, "La camara de UI debe dibujar solo la capa UI.");
+            Assert.AreEqual(main.transform, uiCam.transform.parent,
+                "Comparten transform: si no, la UI se despega de donde mira el jugador.");
+
+            // El reporte y el video son los que tienen que quedar siempre delante.
+            foreach (string panel in new[] { "Comparison", "Explanation" })
+                Assert.AreEqual(LayerMask.NameToLayer("UI"),
+                    _binding.Module.Get<RectTransform>(panel).gameObject.layer,
+                    $"El panel {panel} no esta en la capa UI.");
+
+            // El inspector se queda fuera a proposito: su popup va detras del modelo que gira.
+            var inspectorCanvas = Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .First(c => c.name == "ItemInspectorCanvas");
+            Assert.AreNotEqual(LayerMask.NameToLayer("UI"), inspectorCanvas.gameObject.layer,
+                "El canvas del inspector no debe ir en la capa UI: taparia el objeto.");
+            yield return null;
+        }
+
         private IEnumerator RunFlow(bool omitHelmet, bool subtitles, string vehicleId = "ebike")
         {
+            // Solo las Base: la del stack de URP que dibuja la capa UI por encima no es un
+            // rig aparte, y lo que este assert vigila es que no haya dos rigs encendidos.
             var gameCameras = Object.FindObjectsByType<Camera>(FindObjectsSortMode.None)
-                .Where(c => c.enabled && c.cameraType == CameraType.Game).ToArray();
+                .Where(c => c.enabled && c.cameraType == CameraType.Game)
+                .Where(c => c.GetUniversalAdditionalCameraData().renderType
+                            == UnityEngine.Rendering.Universal.CameraRenderType.Base).ToArray();
             Assert.AreEqual(1, gameCameras.Length,
                 "Debe haber una sola camara de juego en modo PC. Activas: "
                 + string.Join(", ", gameCameras.Select(c => Path(c.transform) + " [escena " + c.gameObject.scene.name + "]")));
@@ -153,7 +193,7 @@ namespace RideSafe.Module01.Tests
                     var asked = Field<TMP_Text>(_inspector, "_questionLabel");
                     Assert.IsNotEmpty(asked.text, "El popup pregunta en blanco en " + item.ItemId);
                     Assert.IsFalse(asked.text.StartsWith("Module1/"), "Pregunta sin traducir: " + asked.text);
-                    if (!omitHelmet && item.ItemId == "helmet_ok") Capture("inspector");
+                    if (!omitHelmet && item.ItemId == "helmet_ok") yield return Capture("inspector");
                     bool take = item.Category == SafetyItemCategory.Core || item.Category == SafetyItemCategory.ConditionDependent;
                     if (item.ItemId == "helmet_ok" && omitHelmet) take = false;
                     var button = Field<Button>(_inspector, take ? "_acceptButton" : "_declineButton");
@@ -187,7 +227,7 @@ namespace RideSafe.Module01.Tests
             AssertVisible(_binding.Comparison.GetComponentsInChildren<TMP_Text>().First(t => t.name == "Title").rectTransform);
             Assert.IsTrue(_binding.Comparison.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("point_brakes")), "El reporte no muestra el vehiculo");
             Assert.GreaterOrEqual(blackTeleports, 7, "No se probaron todos los cambios de zona con fade");
-            if (!omitHelmet) Capture("final-report");
+            if (!omitHelmet) yield return Capture("final-report");
             CollectionAssert.IsEmpty(_problems, string.Join("\n", _problems));
         }
         private IEnumerator ReviewAndVideo()
@@ -417,25 +457,23 @@ namespace RideSafe.Module01.Tests
             Vector3 p = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? rect.TransformPoint(rect.rect.center) : _camera.WorldToScreenPoint(rect.TransformPoint(rect.rect.center));
             Assert.IsTrue((canvas.renderMode == RenderMode.ScreenSpaceOverlay || p.z > 0) && p.x > 0 && p.x < Screen.width && p.y > 0 && p.y < Screen.height, "UI fuera de pantalla: " + rect.name + " " + p);
         }
-        private void Capture(string name)
+        /// <summary>
+        /// Captura el frame tal cual sale por pantalla. Antes renderizaba solo la camara
+        /// principal, y desde que la UI vive en una camara de overlay del stack de URP eso
+        /// dejaba fuera toda la interfaz: la captura mentia justo sobre lo que hay que revisar.
+        /// </summary>
+        private IEnumerator Capture(string name)
         {
             const string folder = "Docs/verification/module01";
             System.IO.Directory.CreateDirectory(folder);
-            var target = new RenderTexture(1280, 720, 24);
-            var previous = _camera.targetTexture;
-            var active = RenderTexture.active;
-            var texture = new Texture2D(1280, 720, TextureFormat.RGB24, false);
-            try
-            {
-                _camera.targetTexture = target; _camera.Render(); RenderTexture.active = target;
-                texture.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0); texture.Apply();
-                System.IO.File.WriteAllBytes(folder + "/" + name + ".png", texture.EncodeToPNG());
-            }
-            finally
-            {
-                _camera.targetTexture = previous; RenderTexture.active = active;
-                target.Release(); Object.Destroy(target); Object.Destroy(texture);
-            }
+            // CaptureScreenshot a archivo, no CaptureScreenshotAsTexture: la variante en memoria
+            // devolvia el frame sin la UI desde que esta vive en la camara de overlay del stack.
+            string path = folder + "/" + name + ".png";
+            if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+            ScreenCapture.CaptureScreenshot(path);
+            float until = Time.realtimeSinceStartup + 5f;
+            while (!System.IO.File.Exists(path) && Time.realtimeSinceStartup < until) yield return null;
+            Assert.IsTrue(System.IO.File.Exists(path), "No se escribio la captura " + name);
         }
         private static string Path(Transform t)
         {

@@ -9,7 +9,8 @@
         "TaskSequence",
         "Cachacos",
         "UnityEngine.UI",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -22,7 +23,9 @@
         "Sirenix.Utilities.dll"
     ],
     "autoReferenced": false,
-    "defineConstraints": [ "UNITY_INCLUDE_TESTS" ],
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }
