@@ -6,11 +6,12 @@ using RideSafe.TaskSequence;
 namespace RideSafe.Module01.Editor
 {
     /// <summary>
-    /// Crea las seis secuencias de zona del módulo 1.
+    /// Crea las nueve secuencias de zona del módulo 1: 3 personales y 3 por vehículo.
     /// <para>
-    /// Las tres del vehículo llevan el requisito <c>vehicle == ebike</c>. Añadir el
-    /// e-scooter es duplicar esas tres con <c>vehicle == escooter</c> y otro
-    /// <see cref="VehicleProfileSO"/>: ninguna línea de código pregunta por el vehículo.
+    /// Las del vehículo llevan el requisito <c>vehicle == ebike</c> o
+    /// <c>vehicle == escooter</c>, y cada una su propio <c>SequenceId</c>: el runner
+    /// indexa lo completado y el punto de reanudación por ese id, así que dos vehículos
+    /// con el mismo id compartirían estado.
     /// </para>
     /// <para>
     /// Los pasos se autoran en el inspector, porque cada uno necesita su clave de
@@ -25,12 +26,15 @@ namespace RideSafe.Module01.Editor
         /// <summary>(nombre del asset, sequenceId, valor exigido a 'vehicle' o vacío).</summary>
         private static readonly (string Asset, string SequenceId, string Vehicle)[] Sequences =
         {
-            ("SO_Seq_Module01_Head",              "Module01.Zone.Head",         ""),
-            ("SO_Seq_Module01_Clothing",          "Module01.Zone.Clothing",     ""),
-            ("SO_Seq_Module01_Load",              "Module01.Zone.Load",         ""),
-            ("SO_Seq_Module01_Ebike_Cockpit",     "Module01.Vehicle.Cockpit",   "ebike"),
-            ("SO_Seq_Module01_Ebike_Wheels",      "Module01.Vehicle.Wheels",    "ebike"),
-            ("SO_Seq_Module01_Ebike_Visibility",  "Module01.Vehicle.Visibility","ebike")
+            ("SO_Seq_Module01_Head",                 "Module01.Zone.Head",                  ""),
+            ("SO_Seq_Module01_Clothing",             "Module01.Zone.Clothing",              ""),
+            ("SO_Seq_Module01_Load",                 "Module01.Zone.Load",                  ""),
+            ("SO_Seq_Module01_Ebike_Cockpit",        "Module01.Vehicle.Ebike.Cockpit",      "ebike"),
+            ("SO_Seq_Module01_Ebike_Wheels",         "Module01.Vehicle.Ebike.Wheels",       "ebike"),
+            ("SO_Seq_Module01_Ebike_Visibility",     "Module01.Vehicle.Ebike.Visibility",   "ebike"),
+            ("SO_Seq_Module01_Escooter_Cockpit",     "Module01.Vehicle.Escooter.Cockpit",   "escooter"),
+            ("SO_Seq_Module01_Escooter_Wheels",      "Module01.Vehicle.Escooter.Wheels",    "escooter"),
+            ("SO_Seq_Module01_Escooter_Visibility",  "Module01.Vehicle.Escooter.Visibility","escooter")
         };
 
         [MenuItem("RideSafe/Módulo 1/Crear secuencias de zona")]

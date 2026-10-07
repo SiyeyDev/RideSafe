@@ -9,8 +9,10 @@ namespace RideSafe.Module01
     /// personal, cierra esa sección con su reporte, pasa a las zonas del vehículo y
     /// cierra la segunda.
     /// <para>
-    /// Las zonas del vehículo salen del <see cref="VehicleProfileSO"/>, no de una lista
-    /// fija: cambiar de e-bike a scooter es cambiar el perfil, sin tocar esto.
+    /// Las zonas del vehículo salen del <see cref="VehicleProfileSO"/> elegido. El
+    /// director tiene un perfil por vehículo y <see cref="SelectVehicle"/> decide cuál,
+    /// porque con un solo perfil serializado elegir patinete recorría las zonas de la
+    /// bici. Quien elige es <c>Module01Experience</c>, que es quien tiene el contexto.
     /// </para>
     /// <para>
     /// El libro se reinicia entre secciones porque son dos entregas independientes: lo
@@ -21,7 +23,13 @@ namespace RideSafe.Module01
     public class Module01Director : MonoBehaviour
     {
         [SerializeField] private Module01CatalogSO _catalog;
-        [SerializeField] private VehicleProfileSO _vehicle;
+
+        [Tooltip("Un perfil por vehículo elegible. El módulo 0 decide cuál con SelectVehicle.")]
+        [SerializeField] private List<VehicleProfileSO> _vehicles = new List<VehicleProfileSO>();
+
+        [Tooltip("Opcional: enciende la malla del vehículo elegido y apaga las demás.")]
+        [SerializeField] private VehicleStage _stage;
+
         [SerializeField] private GuidedTour _tour;
         [SerializeField] private ZoneRunner _runner;
         [SerializeField] private ReportPresenter _report;
@@ -41,6 +49,7 @@ namespace RideSafe.Module01
         private int _index = -1;
         private bool _inVehicleSection;
         private bool _subscribed;
+        private VehicleProfileSO _selected;
 
         public event Action<SelectionReport> PersonalSectionCompleted;
         public event Action<SelectionReport> VehicleSectionCompleted;
@@ -71,9 +80,10 @@ namespace RideSafe.Module01
                     _personalZones.Add(zone);
 
             _vehicleZones.Clear();
-            if (_vehicle != null)
+            VehicleProfileSO vehicle = SelectedVehicle;
+            if (vehicle != null)
             {
-                foreach (ZoneSO zone in _vehicle.InspectionZones)
+                foreach (ZoneSO zone in vehicle.InspectionZones)
                     if (zone != null)
                         _vehicleZones.Add(zone);
             }
@@ -201,16 +211,68 @@ namespace RideSafe.Module01
             return report;
         }
 
+        /// <summary>
+        /// El perfil en uso: el elegido, y mientras nadie elija, el primero de la lista.
+        /// Nunca queda en null teniendo perfiles, porque un vehículo sin zonas salta la
+        /// sección entera sin que nadie se entere.
+        /// </summary>
+        public VehicleProfileSO SelectedVehicle
+        {
+            get
+            {
+                if (_selected != null)
+                    return _selected;
+                foreach (VehicleProfileSO profile in _vehicles)
+                    if (profile != null)
+                        return profile;
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Lo que el aprendiz eligió en el panel Vehicle. Llamar antes de
+        /// <see cref="Begin"/>, que es donde se arma el recorrido.
+        /// </summary>
+        public void SelectVehicle(string vehicleContextValue)
+        {
+            string wanted = Normalize(vehicleContextValue);
+            foreach (VehicleProfileSO profile in _vehicles)
+            {
+                if (profile == null || profile.VehicleContextValue != wanted)
+                    continue;
+
+                _selected = profile;
+                if (_stage != null)
+                    _stage.Show(profile.VehicleContextValue);
+                return;
+            }
+
+            Debug.LogError(
+                $"[Module01] No hay perfil de vehiculo para '{vehicleContextValue}'. Sigue el anterior.", this);
+        }
+
+        private static string Normalize(string value) =>
+            string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToLowerInvariant();
+
         /// <summary>Solo para tests: inyecta las dependencias sin pasar por el inspector.</summary>
         public void ConfigureForTests(Module01CatalogSO catalog, VehicleProfileSO vehicle,
                                       GuidedTour tour, ZoneRunner runner, ReportPresenter report)
+            => ConfigureForTests(catalog, new[] { vehicle }, tour, runner, report);
+
+        /// <summary>Solo para tests: varios perfiles, como los tendrá la escena.</summary>
+        public void ConfigureForTests(Module01CatalogSO catalog, IEnumerable<VehicleProfileSO> vehicles,
+                                      GuidedTour tour, ZoneRunner runner, ReportPresenter report)
         {
             _catalog = catalog;
-            _vehicle = vehicle;
+            _vehicles = new List<VehicleProfileSO>(vehicles);
+            _selected = null;
             _tour = tour;
             _runner = runner;
             _report = report;
         }
+
+        /// <summary>Solo para tests: el escenario que enciende y apaga las mallas.</summary>
+        public void ConfigureStageForTests(VehicleStage stage) => _stage = stage;
     }
 }
 

@@ -34,7 +34,7 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  _sequenceId: Module01.Vehicle.Visibility
+  _sequenceId: Module01.Vehicle.Ebike.Visibility
   _contextRequirements:
   - _key: vehicle
     _value: ebike

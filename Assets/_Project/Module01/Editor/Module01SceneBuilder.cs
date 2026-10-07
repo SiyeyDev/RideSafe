@@ -20,7 +20,16 @@ namespace RideSafe.Module01.Editor
     /// reconstruir ese cableado.
     /// </para>
     /// <para>
-    /// Es idempotente: vuelve a correrse sobre la escena resultante sin duplicar nada.
+    /// <b>OJO: no edita la escena de salida, la regenera.</b> Parte siempre de
+    /// <c>RideSafe_Garaje</c> y escribe encima de <c>RideSafe_Garaje_v5</c>, así que
+    /// borra todo lo que se le haya añadido a v5 después —entre otras cosas la
+    /// presentación y el <c>Module01Experience</c> que pone
+    /// <c>Module01PresentationBuilder</c>—. No duplica nada, pero tampoco conserva nada:
+    /// después de correrlo hay que volver a montar la presentación.
+    /// </para>
+    /// <para>
+    /// Para cambios acotados sobre la escena viva, usar el comando que corresponda
+    /// (p. ej. <see cref="Module01VehicleWiring"/>), no esto.
     /// </para>
     /// </summary>
     public static class Module01SceneBuilder
@@ -38,18 +47,6 @@ namespace RideSafe.Module01.Editor
             "chaleco refectivo", "gafas", "MobilePhone_01"
         };
 
-        /// <summary>(nombre del objeto en la escena, zona, id del elemento del catálogo).</summary>
-        private static readonly (string Obj, string Zone, string Item)[] Entities =
-        {
-            ("casco 1",            "head",     "helmet_ok"),
-            ("df_g_helmet_01",     "head",     "helmet_damaged"),
-            ("gafas",              "head",     "glasses"),
-            ("botas",              "clothing", "shoes_ok"),
-            ("chaleco refectivo",  "clothing", "reflective"),
-            ("guaya candado",      "load",     "cargo_secured"),
-            ("MobilePhone_01",     "load",     "cargo_handheld")
-        };
-
         private static readonly string[] ZoneIds =
         {
             "head", "clothing", "load", "cockpit", "wheels", "visibility"
@@ -65,8 +62,7 @@ namespace RideSafe.Module01.Editor
             MoveWorld(art, logic);
             EditorSceneManager.CloseScene(art, true);
 
-            TagEntities();
-            FillMissingEntities();
+            Module01SceneEntities.Apply();
             BuildAnchors();
             BuildOrchestrator();
             EnsurePhysicsRaycaster();
@@ -114,134 +110,6 @@ namespace RideSafe.Module01.Editor
             Debug.Log($"[Module01] Trasplantadas {moving.Count} raices del mundo nuevo.");
         }
 
-        /// <summary>Pone la entidad de tarea sobre cada objeto de EPP ya colocado por arte.</summary>
-        private static void TagEntities()
-        {
-            foreach ((string objName, string zone, string item) in Entities)
-            {
-                GameObject go = Find(objName);
-                if (go == null)
-                {
-                    Debug.LogWarning($"[Module01] No encuentro '{objName}' en la escena; {zone}.{item} queda sin entidad.");
-                    continue;
-                }
-
-                if (go.GetComponent<Collider>() == null)
-                {
-                    BoxCollider box = go.AddComponent<BoxCollider>();
-                    FitCollider(go, box);
-                }
-
-                WorldObjectTaskEntity entity = go.GetComponent<WorldObjectTaskEntity>();
-                bool wasActive = go.activeSelf;
-                go.SetActive(false);
-                if (entity == null)
-                    entity = go.AddComponent<WorldObjectTaskEntity>();
-                entity.Configure(new EntityId($"module01.{zone}.{item}"), item);
-                go.SetActive(wasActive);
-            }
-        }
-
-        /// <summary>
-        /// Toda zona debe tener una entidad por elemento, o nunca se cierra y el módulo
-        /// se queda esperando. Lo que el equipo de arte no colocó se crea aquí: el
-        /// modelo del catálogo si lo tiene, y si no una primitiva gris.
-        /// </summary>
-        private static void FillMissingEntities()
-        {
-            Module01CatalogSO catalog = AssetDatabase.LoadAssetAtPath<Module01CatalogSO>(
-                "Assets/_Project/Module01/Data/SO_Module01Catalog.asset");
-            VehicleProfileSO vehicle = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(
-                "Assets/_Project/Module01/Data/SO_VehicleProfile_Ebike.asset");
-
-            HashSet<string> present = new HashSet<string>();
-            foreach (WorldObjectTaskEntity e in Object.FindObjectsByType<WorldObjectTaskEntity>(
-                         FindObjectsInactive.Include, FindObjectsSortMode.None))
-                present.Add(e.Id.Value);
-
-            GameObject spare = Find("Module01_Spawned") ?? new GameObject("Module01_Spawned");
-            GameObject bike = Find("ebike");
-            int created = 0;
-
-            List<(ZoneSO Zone, bool OnVehicle)> all = new List<(ZoneSO, bool)>();
-            if (catalog != null)
-                foreach (ZoneSO z in catalog.Zones) if (z != null) all.Add((z, false));
-            if (vehicle != null)
-                foreach (ZoneSO z in vehicle.InspectionZones) if (z != null) all.Add((z, true));
-
-            foreach ((ZoneSO zone, bool onVehicle) in all)
-            {
-                for (int i = 0; i < zone.Items.Count; i++)
-                {
-                    SafetyItemSO item = zone.Items[i];
-                    if (item == null)
-                        continue;
-
-                    string id = $"module01.{zone.ZoneId}.{item.ItemId}";
-                    if (present.Contains(id))
-                        continue;
-
-                    GameObject go;
-                    if (item.DisplayPrefab != null)
-                    {
-                        go = (GameObject)PrefabUtility.InstantiatePrefab(item.DisplayPrefab);
-                        go.name = item.ItemId;
-                    }
-                    else
-                    {
-                        go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                        go.name = item.ItemId;
-                        go.transform.localScale = Vector3.one * 0.15f;
-                    }
-
-                    if (onVehicle && bike != null)
-                    {
-                        // Marcador sobre el vehiculo real, repartido a lo largo de el.
-                        go.transform.SetParent(bike.transform, false);
-                        go.transform.localPosition = new Vector3(0f, 0.4f + i * 0.25f, -0.4f + i * 0.4f);
-                    }
-                    else
-                    {
-                        go.transform.SetParent(spare.transform, false);
-                        go.transform.position = new Vector3(i * 0.6f, 1.0f, 0f);
-                    }
-
-                    if (go.GetComponent<Collider>() == null)
-                    {
-                        BoxCollider box = go.AddComponent<BoxCollider>();
-                        FitCollider(go, box);
-                    }
-
-                    bool wasActive = go.activeSelf;
-                    go.SetActive(false);
-                    WorldObjectTaskEntity entity = go.GetComponent<WorldObjectTaskEntity>()
-                                                   ?? go.AddComponent<WorldObjectTaskEntity>();
-                    entity.Configure(new EntityId(id), item.ItemId);
-                    go.SetActive(wasActive);
-
-                    present.Add(id);
-                    created++;
-                }
-            }
-
-            Debug.Log($"[Module01] Entidades creadas para completar las zonas: {created}.");
-        }
-
-        /// <summary>Ajusta el collider al volumen visible, que los FBX no traen uno.</summary>
-        private static void FitCollider(GameObject go, BoxCollider box)
-        {
-            Renderer[] renderers = go.GetComponentsInChildren<Renderer>(true);
-            if (renderers.Length == 0)
-                return;
-
-            Bounds b = renderers[0].bounds;
-            foreach (Renderer r in renderers)
-                b.Encapsulate(r.bounds);
-
-            box.center = go.transform.InverseTransformPoint(b.center);
-            box.size = b.size;
-        }
-
         /// <summary>Un ancla por zona, en la posición del primer objeto que contiene.</summary>
         private static void BuildAnchors()
         {
@@ -270,10 +138,8 @@ namespace RideSafe.Module01.Editor
 
         private static GameObject FirstObjectOfZone(string zone)
         {
-            foreach ((string objName, string z, string _) in Entities)
-                if (z == zone)
-                    return Find(objName);
-            return Find("ebike");
+            string objName = Module01SceneEntities.FirstObjectNameOfZone(zone);
+            return (objName == null ? null : Find(objName)) ?? Find("ebike");
         }
 
         /// <summary>El objeto que gobierna el módulo, con sus componentes cableados.</summary>
@@ -290,8 +156,6 @@ namespace RideSafe.Module01.Editor
 
             Module01CatalogSO catalog = AssetDatabase.LoadAssetAtPath<Module01CatalogSO>(
                 "Assets/_Project/Module01/Data/SO_Module01Catalog.asset");
-            VehicleProfileSO vehicle = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(
-                "Assets/_Project/Module01/Data/SO_VehicleProfile_Ebike.asset");
 
             ModuleUI moduleUi = null;
             GameObject ui = Find("PF_Module01_UI");
@@ -304,7 +168,7 @@ namespace RideSafe.Module01.Editor
             Set(report, "_catalog", catalog);
             Set(report, "_binding", binding);
             Set(director, "_catalog", catalog);
-            Set(director, "_vehicle", vehicle);
+            Module01VehicleWiring.Apply(director);
             Set(director, "_tour", tour);
             Set(director, "_runner", runner);
             Set(director, "_report", report);

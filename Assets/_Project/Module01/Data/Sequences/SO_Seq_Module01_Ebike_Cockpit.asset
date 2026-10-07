@@ -34,7 +34,7 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  _sequenceId: Module01.Vehicle.Cockpit
+  _sequenceId: Module01.Vehicle.Ebike.Cockpit
   _contextRequirements:
   - _key: vehicle
     _value: ebike

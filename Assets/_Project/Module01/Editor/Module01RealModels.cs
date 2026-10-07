@@ -26,11 +26,10 @@ namespace RideSafe.Module01.Editor
         /// <summary>(id del elemento, ruta del modelo). Vacío = se queda en greybox.</summary>
         private static readonly (string ItemId, string Model)[] Map =
         {
-            ("helmet_ok",      Models + "casco 1.fbx"),
-            ("helmet_damaged", Models + "df_g_helmet_01.fbx"),
+            ("helmet_ok",      Models + "df_g_helmet_01.fbx"),   // Charlie 2026-10-07: este es el bueno
+            ("helmet_damaged", Models + "casco 1.fbx"),
             ("glasses",        Models + "gafas.fbx"),
             ("shoes_ok",       Models + "botas.fbx"),
-            ("clothing_loose", ""),                               // sin modelo: no hay ropa suelta
             ("reflective",     Models + "chaleco refectivo.fbx"),
             ("cargo_secured",  Models + "guaya candado.fbx"),
             ("cargo_handheld", Models + "MobilePhone_01.fbx")
@@ -72,23 +71,32 @@ namespace RideSafe.Module01.Editor
                 applied++;
             }
 
-            // El perfil del e-bike deja de apuntar al cubo.
-            VehicleProfileSO profile = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(
-                "Assets/_Project/Module01/Data/SO_VehicleProfile_Ebike.asset");
-            GameObject ebike = AssetDatabase.LoadAssetAtPath<GameObject>(Models + "ebike.fbx");
-            if (profile != null && ebike != null)
-            {
-                SerializedObject so = new SerializedObject(profile);
-                so.FindProperty("_model").objectReferenceValue = ebike;
-                so.ApplyModifiedPropertiesWithoutUndo();
-                EditorUtility.SetDirty(profile);
-                Debug.Log("[Module01] Perfil del e-bike apuntando a ebike.fbx.");
-            }
+            // Los perfiles de los dos vehículos dejan de apuntar al cubo.
+            PointProfileAtModel("Ebike", "ebike.fbx");
+            PointProfileAtModel("Escooter", "scooter.fbx");
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[Module01] Modelos reales aplicados: {applied}.");
             foreach (string s in skipped)
                 Debug.LogWarning("[Module01] " + s);
+        }
+
+        private static void PointProfileAtModel(string assetSuffix, string fileName)
+        {
+            VehicleProfileSO profile = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(
+                $"Assets/_Project/Module01/Data/SO_VehicleProfile_{assetSuffix}.asset");
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(Models + fileName);
+            if (profile == null || model == null)
+            {
+                Debug.LogWarning($"[Module01] No pude apuntar {assetSuffix} a {fileName}.");
+                return;
+            }
+
+            SerializedObject so = new SerializedObject(profile);
+            so.FindProperty("_model").objectReferenceValue = model;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(profile);
+            Debug.Log($"[Module01] Perfil {assetSuffix} apuntando a {fileName}.");
         }
     }
 }

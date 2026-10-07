@@ -34,7 +34,6 @@ namespace RideSafe.Module01.Editor
             ("helmet_damaged",  "Module1/Item_HelmetDamaged",  SafetyItemCategory.Inappropriate),
             ("glasses",         "Module1/Item_Glasses",        SafetyItemCategory.Optional),
             ("shoes_ok",        "Module1/Item_ShoesOk",        SafetyItemCategory.Core),
-            ("clothing_loose",  "Module1/Item_ClothingLoose",  SafetyItemCategory.Inappropriate),
             ("reflective",      "Module1/Item_Reflective",     SafetyItemCategory.ConditionDependent),
             ("cargo_secured",   "Module1/Item_CargoSecured",   SafetyItemCategory.Core),
             ("cargo_handheld",  "Module1/Item_CargoHandheld",  SafetyItemCategory.Inappropriate)
@@ -43,7 +42,8 @@ namespace RideSafe.Module01.Editor
         private static readonly (string ZoneId, string TitleKey, string[] ItemIds)[] Zones =
         {
             ("head",     "Module1/Zone_Head",     new[] { "helmet_ok", "helmet_damaged", "glasses" }),
-            ("clothing", "Module1/Zone_Clothing", new[] { "shoes_ok", "clothing_loose", "reflective" }),
+            // clothing_loose fuera por decision de Charlie (2026-10-07): no hay modelo de ropa suelta.
+            ("clothing", "Module1/Zone_Clothing", new[] { "shoes_ok", "reflective" }),
             ("load",     "Module1/Zone_Load",     new[] { "cargo_secured", "cargo_handheld" })
         };
 
@@ -148,12 +148,29 @@ namespace RideSafe.Module01.Editor
             EditorUtility.SetDirty(catalog);
         }
 
-        private static void CreateVehicleProfile(GameObject model, List<ZoneSO> zones)
+        /// <summary>
+        /// Un perfil por vehículo, los dos sobre las mismas tres zonas: se revisa lo
+        /// mismo en bici y en patinete —frenos, luces, llantas—, solo que en sitios
+        /// distintos. Compartir las <see cref="ZoneSO"/> es lo que evita duplicar los
+        /// cinco elementos y sus claves de localización.
+        /// </summary>
+        private static void CreateVehicleProfile(GameObject greybox, List<ZoneSO> zones)
         {
-            VehicleProfileSO profile = LoadOrCreate<VehicleProfileSO>($"{DataFolder}/SO_VehicleProfile_Ebike.asset");
-            profile.Configure("ebike", model, zones);
+            Profile("Ebike", "ebike", Model("ebike.fbx") ?? greybox, zones);
+            Profile("Escooter", "escooter", Model("scooter.fbx") ?? greybox, zones);
+        }
+
+        private static void Profile(string assetSuffix, string contextValue, GameObject model, List<ZoneSO> zones)
+        {
+            VehicleProfileSO profile =
+                LoadOrCreate<VehicleProfileSO>($"{DataFolder}/SO_VehicleProfile_{assetSuffix}.asset");
+            profile.Configure(contextValue, model, zones);
             EditorUtility.SetDirty(profile);
         }
+
+        private static GameObject Model(string fileName) =>
+            AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/_Project/Models/CITY/MODELADOS 3d/" + fileName);
 
         /// <summary>Un prop gris por elemento, con collider y entidad ya configurada.</summary>
         private static GameObject CreateProp(string itemId)

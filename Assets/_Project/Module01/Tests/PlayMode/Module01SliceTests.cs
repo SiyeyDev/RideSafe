@@ -49,13 +49,51 @@ namespace RideSafe.Module01.Tests
             yield return null;
         }
         [UnityTest] public IEnumerator El_modulo_recorre_de_la_primera_zona_al_reporte_final()
-        { yield return RunFlow(false, true, scripted: true); }
+        { yield return RunFlow(false, true); }
         [UnityTest] public IEnumerator Rechazar_el_casco_correcto_lo_reporta_como_omision_critica()
-        { yield return RunFlow(true, false, scripted: false); }
+        { yield return RunFlow(true, false); }
 
-        private IEnumerator RunFlow(bool omitHelmet, bool subtitles, bool scripted)
+        /// <summary>
+        /// Elegir patinete en el módulo 0 tiene que llegar hasta el perfil que usa el
+        /// director y hasta la malla que se ve en el garaje. Con un solo perfil
+        /// serializado esto pasaba en silencio: el aprendiz elegía patinete y revisaba
+        /// la bici.
+        /// </summary>
+        [UnityTest] public IEnumerator Elegir_patinete_usa_su_perfil_y_deja_la_bici_apagada()
         {
-            Assert.AreEqual(1, Object.FindObjectsByType<Camera>(FindObjectsSortMode.None).Count(c => c.enabled && c.cameraType == CameraType.Game), "Debe haber una sola camara de juego en modo PC.");
+            var experience = Object.FindAnyObjectByType<Module01Experience>();
+            Assert.IsNotNull(experience, "La escena cargada no tiene Module01Experience. Escena activa: "
+                + SceneManager.GetActiveScene().name + ", raices="
+                + string.Join(", ", SceneManager.GetActiveScene().GetRootGameObjects().Select(g => g.name)));
+
+            // Se pulsa la tarjeta del patinete en el panel de verdad, no se inyecta el valor.
+            yield return Onboarding("escooter", subtitles: true);
+
+            yield return WaitFor(() => _binding.Module.gameObject.activeInHierarchy
+                                    && _binding.Module.Current == "Orientation", "Entrada al garaje", 8);
+            yield return Press(_binding.Module.Get<RectTransform>("Orientation"), "StartButton");
+
+            Assert.IsNotNull(_director.SelectedVehicle, "El director se quedo sin perfil de vehiculo.");
+            Assert.AreEqual("escooter", _director.SelectedVehicle.VehicleContextValue,
+                "Elegir patinete dejo al director con el perfil de la bici.");
+
+            GameObject bike = FindIncludingInactive("ebike");
+            GameObject scooter = FindIncludingInactive("scooter");
+            Assert.IsNotNull(scooter, "La escena no tiene una malla llamada 'scooter'.");
+            Assert.IsNotNull(bike, "La escena no tiene una malla llamada 'ebike'.");
+            Assert.IsTrue(scooter.activeInHierarchy, "El patinete elegido tiene que verse.");
+            Assert.IsFalse(bike.activeInHierarchy, "La bici tiene que quedar apagada al elegir patinete.");
+
+            CollectionAssert.IsEmpty(_problems, string.Join("\n", _problems));
+        }
+
+        private IEnumerator RunFlow(bool omitHelmet, bool subtitles, string vehicleId = "ebike")
+        {
+            var gameCameras = Object.FindObjectsByType<Camera>(FindObjectsSortMode.None)
+                .Where(c => c.enabled && c.cameraType == CameraType.Game).ToArray();
+            Assert.AreEqual(1, gameCameras.Length,
+                "Debe haber una sola camara de juego en modo PC. Activas: "
+                + string.Join(", ", gameCameras.Select(c => Path(c.transform) + " [escena " + c.gameObject.scene.name + "]")));
             Assert.Greater(_camera.transform.position.z, 6.6f, "El jugador debe empezar fuera del garaje.");
             var door = GameObject.Find("Door_Garage_Brown_5x").transform;
             var tourForFade = Object.FindAnyObjectByType<GuidedTour>();
@@ -65,7 +103,7 @@ namespace RideSafe.Module01.Tests
             tourForFade.ZoneReached += _ => { Assert.GreaterOrEqual(fade.alpha, .99f, "La camara salto sin pantalla negra"); blackTeleports++; };
             Vector3 closed = door.position;
             Vector3 outside = _camera.transform.position;
-            yield return Onboarding(scripted, subtitles);
+            yield return Onboarding(vehicleId, subtitles);
             yield return WaitFor(() => _binding.Module.gameObject.activeInHierarchy && _binding.Module.Current == "Orientation", "Entrada al garaje", 8);
             Assert.Greater(Vector3.Distance(door.position, closed), 1, "La puerta no se abrio.");
             Assert.Greater(Vector3.Distance(_camera.transform.position, outside), 2, "No hubo teletransporte al interior.");
@@ -73,6 +111,11 @@ namespace RideSafe.Module01.Tests
                 Assert.Greater(renderer.bounds.min.y, 2.1f, "La puerta aun bloquea la altura de paso");
             Assert.IsFalse(fade.blocksRaycasts, "El fade sigue interceptando clics");
             yield return Press(_binding.Module.Get<RectTransform>("Orientation"), "StartButton");
+
+            // El recorrido tiene que ser el del vehiculo elegido, sea cual sea.
+            Assert.IsNotNull(_director.SelectedVehicle, "El director se quedo sin perfil de vehiculo.");
+            Assert.AreEqual(Object.FindAnyObjectByType<Module01Experience>().Context.Get(Module01Context.VehicleKey),
+                _director.SelectedVehicle.VehicleContextValue, "El director no usa el vehiculo elegido.");
 
             SelectionReport personal = null, vehicle = null;
             _director.PersonalSectionCompleted += r => personal = r;
@@ -170,10 +213,15 @@ namespace RideSafe.Module01.Tests
         /// <summary>
         /// Entra al módulo 1 pulsando Begin, nunca llamando a StartWithDefaults: ese atajo apagaba
         /// todos los ModuleUI y por eso la escena pudo tener dos PF_Module00_UI superpuestos sin
-        /// que ningún test se enterara. Con <paramref name="scripted"/> Begin usa el asset de
-        /// parámetros; sin él recorre las cinco pantallas de verdad.
+        /// que ningún test se enterara.
+        /// <para>
+        /// Recorre siempre las cinco pantallas de verdad, que es como está configurada la escena
+        /// (<c>_quickStart</c> vacío). Ningún test escribe en la escena: inyectar un asset de
+        /// parámetros la dejaba sucia y la tarea previa del propio Test Framework reventaba con
+        /// "cannot be used during play mode" en la corrida siguiente.
+        /// </para>
         /// </summary>
-        private IEnumerator Onboarding(bool scripted, bool subtitles)
+        private IEnumerator Onboarding(string vehicle, bool subtitles)
         {
             var experience = Object.FindAnyObjectByType<Module01Experience>();
             var onboardings = Object.FindObjectsByType<ModuleUI>(FindObjectsInactive.Include, FindObjectsSortMode.None)
@@ -183,30 +231,27 @@ namespace RideSafe.Module01.Tests
             var onboarding = onboardings[0];
             Assert.IsTrue(onboarding.gameObject.activeInHierarchy, "El UI del modulo 0 esta apagado; Begin no se puede pulsar.");
 
+            // El interruptor es el propio campo de la escena: asignado = atajo con parametros,
+            // vacio = las cinco pantallas del modulo 0. El test lo LEE, nunca lo escribe: inyectar
+            // un asset dejaba la escena sucia y la tarea previa del Test Framework reventaba con
+            // "cannot be used during play mode" en la corrida siguiente.
             var quickStart = Field<Module00SettingsSO>(experience, "_quickStart");
-            Assert.IsNotNull(quickStart, "Falta el asset de parametros del modulo 0 en _quickStart.");
-            if (!scripted) SetField(experience, "_quickStart", null);
+            if (quickStart != null)
+                Assert.Ignore($"La escena entra por el atajo ('{quickStart.Vehicle}'), asi que no se "
+                    + $"puede elegir '{vehicle}' ni los subtitulos. Vacia _quickStart en "
+                    + "Module01Experience para correr el recorrido completo.");
 
             var welcome = onboarding.Get<RectTransform>("Welcome");
             yield return WaitFor(() => onboarding.Current == "Welcome", "Welcome visible");
             yield return Press(welcome, "BeginButton");
             Assert.IsFalse(welcome.gameObject.activeInHierarchy, "El panel Welcome sigue encendido despues de Begin.");
 
-            if (scripted)
-            {
-                Assert.AreEqual("Entrance", experience.Phase, "Begin con parametros no entro al modulo 1.");
-                Assert.AreEqual(quickStart.Vehicle.ToLowerInvariant(), experience.Context.Get(Module01Context.VehicleKey));
-                Assert.AreEqual(quickStart.Jurisdiction.ToLowerInvariant(), experience.Context.Get(Module01Context.JurisdictionKey));
-                Assert.AreEqual(subtitles, experience.SubtitlesEnabled, "El asset no impuso la preferencia de subtitulos.");
-                yield break;
-            }
-
             Assert.AreEqual("Language", onboarding.Current, "Begin sin parametros deberia abrir Language.");
             yield return Choose(onboarding.Get<ChoicePanel>("Language"), "Option_es");
             yield return Choose(onboarding.Get<ChoicePanel>("Jurisdiction"), "Option_bogota");
-            yield return Choose(onboarding.Get<ChoicePanel>("Vehicle"), "Option_ebike");
+            yield return Choose(onboarding.Get<ChoicePanel>("Vehicle"), "Option_" + vehicle);
             // Lo que el aprendiz eligió tiene que llegar al contexto, no solo pasar de pantalla.
-            Assert.AreEqual("ebike", experience.Context.Get(Module01Context.VehicleKey), "El vehiculo elegido no llego al contexto.");
+            Assert.AreEqual(vehicle, experience.Context.Get(Module01Context.VehicleKey), "El vehiculo elegido no llego al contexto.");
             Assert.AreEqual("bogota", experience.Context.Get(Module01Context.JurisdictionKey), "La jurisdiccion elegida no llego al contexto.");
 
             var comfort = onboarding.Get<ComfortSettingsPanel>("Comfort");
@@ -392,6 +437,15 @@ namespace RideSafe.Module01.Tests
                 target.Release(); Object.Destroy(target); Object.Destroy(texture);
             }
         }
+        private static string Path(Transform t)
+        {
+            string path = t.name;
+            for (Transform p = t.parent; p != null; p = p.parent) path = p.name + "/" + path;
+            return path;
+        }
+        private static GameObject FindIncludingInactive(string name) =>
+            Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .FirstOrDefault(g => g.name == name);
         private static void SetField(object o, string name, object value) =>
             o.GetType().GetField(name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(o, value);
         private static T Field<T>(object o, string name) => (T)o.GetType().GetField(name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(o);

@@ -159,6 +159,9 @@ namespace RideSafe.Module01
         {
             onLeaveOrientation.Invoke();
             _binding.PreparationList.Clear();
+            // El director no consulta el contexto: quien lo tiene es esta clase. Va antes
+            // de Begin, que es donde se arma el recorrido del vehiculo.
+            _director.SelectVehicle(Context.Get(Module01Context.VehicleKey));
             _director.Begin();
         }
         private void EnterZone(ZoneSO zone) => StartCoroutine(Arrive(zone));
