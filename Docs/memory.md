@@ -331,6 +331,22 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 - **Unity sigue con la escena vieja en memoria tras un `git checkout`.** Restaurar el archivo no
   basta: los tests de PlayMode siguieron fallando contra la copia destruida hasta la siguiente
   recarga de dominio. Recompilar antes de creerse el resultado.
+- **Importar la pestaña `Module1` a I2 duplica el prefijo de categoría.** I2 trata `Module1/`
+  como categoría, así que si las claves de la hoja ya la traen, la vuelve a añadir y quedan
+  como `Module1/Module1/Orientation_Title`. El juego no encuentra ninguna y se ve la clave
+  cruda en pantalla. Pasó el 2026-10-07 con las 61. **Al importar, la columna de claves debe
+  ir sin el `Module1/`**, o hay que quitarlo después. Verificar siempre con un volcado:
+  `src.mTerms.Count(t => t.Term.StartsWith("Module1/Module1/"))` tiene que ser 0.
+- **Traducir la hoja entera con el traductor automático destroza el inglés.** El inglés es el
+  **origen**; el español salió de él. En la misma importación volvieron 36 cadenas inglesas
+  retraducidas desde el español: `Yes → "Yeah"`, `Prepare before riding → "Prepare yourself
+  before filming"` (por «rodar»), `Secured load → "Cargo insurance"`, `Core item omitted →
+  "Omitted nucleus"`. **Traducir solo la columna que falta, nunca la de origen.**
+- **El Editor se queda en modo Play tras una corrida de PlayMode que falla.** Y entonces la
+  tarea previa del Test Framework (`SaveModifiedSceneTask`) revienta con *"This cannot be used
+  during play mode"* y tiñe de rojo un test que no tiene nada que ver — el primero o el último,
+  según cuándo se emita. **Antes de lanzar PlayMode, comprobar `EditorApplication.isPlaying` y
+  salir si está en true.** Esto explica todos los "fallos intermitentes" del 2026-10-07.
 - **`HeadlessTestRunner.Run(null)` mete la assembly de PlayMode en modo EditMode** y revienta con
   `InvalidOperationException: This cannot be used during play mode`. Hay que nombrar las
   assemblies: `RideSafe.Module01.Tests`, `TaskSequence.Tests`, `Tutorial.Tests`.
@@ -413,6 +429,20 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-07 (tarde, 3) — I2: el export estaba a medias y la importación salió mal
+
+- **El export cubría 38 claves de 61.** Las 23 que faltaban son la orientación, la lista
+  lateral, el reporte y los botones: viven en `PresentationTexts.txt`, no en código, y por eso
+  la lista hecha a mano no las vio. Ahora el export sale del asset por la API de I2.
+- Subida a Drive la hoja completa, `RideSafe Module1 terminos COMPLETO (desde I2) 2026-10-07`.
+  La hoja original `I2Loc RideSafe Localization` **no está en este Drive**, ni propia ni
+  compartida, así que no se pudo alinear.
+- **La importación de vuelta rompió la categoría entera**: prefijo duplicado en las 61 e inglés
+  retraducido desde el español en 36. Reparado desde el export commiteado; el asset volvió al
+  byte con `git checkout` para no meter 650 líneas de ruido en un archivo que luego hay que
+  fusionar con el trabajo de Cindy. Las dos trampas quedaron escritas en §9.
+- 145 EditMode y 3 PlayMode en verde después de la reparación.
 
 ### 2026-10-07 (tarde, 2) — decisiones de contenido de Charlie
 
