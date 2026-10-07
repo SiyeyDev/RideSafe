@@ -43,7 +43,7 @@ namespace RideSafe.Module01.Editor
             _kit=RideSafeUIPrefabBuilder.CreateKit(); _ui=new UIElements(_kit);
             foreach (var g in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects()) if (g.name == "XRPlayer" || g.name == "Tutorial") g.SetActive(false);
             _camera = Find("Desktop Camera").transform;
-            _camera.position = new Vector3(0,1.65f,9.3f);
+            _camera.position = new Vector3(0,1.45f,9.3f);
             _camera.rotation = Quaternion.Euler(0,180,0);
             var cam = _camera.GetComponent<Camera>(); cam.fieldOfView = 60; cam.nearClipPlane = .05f;
             cam.tag = "MainCamera";
