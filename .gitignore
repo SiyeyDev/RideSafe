@@ -118,3 +118,6 @@ MyAddressables/
 
 # Superpowers: scratch de ejecucion de planes
 .superpowers/
+
+# Capturas que reescribe cada corrida de PlayMode (Module01SliceTests.Capture)
+Docs/verification/
