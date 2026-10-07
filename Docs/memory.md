@@ -1,7 +1,7 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-07
+> Última actualización: 2026-10-07 (tarde)
 
 ---
 
@@ -61,8 +61,8 @@ subtítulos palabra por palabra, video final, colliders del garaje.
 
 ### Módulo 1 — lógica y presentación, las dos probadas corriendo
 
-Los 2 tests de PlayMode corren sobre la escena real y **entran pulsando Begin**, no por atajo.
-Tres corridas verdes consecutivas tras el arreglo del video (2026-10-06).
+Los 3 tests de PlayMode corren sobre la escena real y **entran pulsando Begin**, no por atajo.
+Verdes dos corridas seguidas el 2026-10-07, junto con 145 de EditMode.
 
 | Lo que se pidió | Estado |
 |---|---|
@@ -75,10 +75,17 @@ Tres corridas verdes consecutivas tras el arreglo del video (2026-10-06).
 | Lista lateral siempre visible | hecho |
 | Reporte final en pantalla | hecho; el test exige ver `point_brakes` |
 
-Los dos tests cubren caminos distintos a propósito:
+Los tres recorren el **módulo 0 real** (Language → Jurisdiction → Vehicle → Comfort) y ninguno
+escribe en la escena: el interruptor es `Module01Experience._quickStart`, que hoy va **vacío**
+para que al abrir la escena a mano se vean las cinco pantallas. Si alguien se lo asigna, los
+tests se marcan *ignorados* diciendo por qué, en vez de fallar sin explicación.
 
-- `El_modulo_recorre...` entra por **Begin con parámetros** (`SO_Module00_TestSettings`)
-- `Rechazar_el_casco...` recorre el **módulo 0 real**: Language → Jurisdiction → Vehicle → Comfort
+- `El_modulo_recorre...` — recorrido completo con subtítulos encendidos
+- `Rechazar_el_casco...` — rechaza el casco bueno y lo reporta como omisión crítica
+- `Elegir_patinete...` — pulsa la tarjeta del patinete y afirma que el director usa ese perfil,
+  que el patinete se ve y que la bici queda apagada
+
+**Lo que ya no cubre ningún test:** la entrada rápida con `SO_Module00_TestSettings`.
 
 ---
 
@@ -95,10 +102,14 @@ clave de localización y de audio, y el runner con fases
 `ContextRequirement` compara la clave `vehicle`. Hay 6 secuencias; las 3 del vehículo
 exigen `vehicle == ebike`. Esta regla aplica a todos los módulos.
 
-**Ojo: «añadir el scooter es cero líneas de código» es falso**, aunque lo digan la spec §3.2 y
-el comentario de `Module01Sequences`. Las secuencias sí se filtran solas, pero
-`Module01Director._vehicle` es **un solo** `VehicleProfileSO` serializado, y las zonas que
-recorre el director salen de ahí. Verificado el 2026-10-06. Ver §10.
+**Resuelto el 2026-10-07 (tramo 1).** El director tiene `List<VehicleProfileSO> _vehicles` y
+`SelectVehicle(string)`, que llama `Module01Experience.StartZones` con el valor del contexto,
+justo antes de `Begin()`. Sin elección usa el primero de la lista; con un vehículo sin perfil
+avisa por consola y conserva el anterior, en vez de dejar la sección de vehículo vacía.
+
+Queda desmentido el «añadir el scooter es cero líneas de código» de la spec §3.2. Hoy los dos
+perfiles comparten las mismas 3 `ZoneSO`, así que el recorrido coincide por contenido; la lista
+es lo que guarda que siga valiendo si algún día divergen.
 
 ### Enlace por nombre, nunca overrides en el prefab
 
@@ -126,15 +137,20 @@ quedó obsoleto frente a `UIText`; falta unificar.
 | `ItemInspector` | presenta el objeto y confirma |
 | `ZoneRunner` | conecta entidad, inspector y libro por zona |
 | `GuidedTour` | fade y reposición del rig |
-| `Module01Director` | encadena las seis zonas y los dos reportes |
+| `VehicleStage` | enciende la malla del vehículo elegido y apaga la otra |
+| `Module01Director` | encadena las seis zonas y los dos reportes; elige perfil de vehículo |
 | `Module01Context` | publica `vehicle` / `language` |
 
 ### Herramientas de editor (menú `RideSafe → Módulo 1`)
 
-- `Crear datos de la primera pasada` — catálogo, zonas, greybox
-- `Crear secuencias de zona` — las 6 `TaskSequenceSO`
-- `Usar modelos reales en vez del greybox`
-- `Montar escena jugable con el garaje nuevo` — **idempotente**, rehacer cuando 3D entregue
+- `Crear datos de la primera pasada` — catálogo, zonas, greybox y **los 2 perfiles de vehículo**
+- `Crear secuencias de zona` — las **9** `TaskSequenceSO` (3 personales + 3 por vehículo)
+- `Usar modelos reales en vez del greybox` — apunta los 2 perfiles a `ebike.fbx` y `scooter.fbx`
+- `Cablear los vehículos en la escena abierta` — perfiles y `VehicleStage` sobre la escena viva
+- `Etiquetar entidades en la escena abierta` — pone las entidades sobre los objetos de arte,
+  crea las que falten y borra las huérfanas. **Es la vía para cambiar un modelo, añadir un EPP
+  o recibir un garaje nuevo sin regenerar la escena.**
+- `Montar escena jugable con el garaje nuevo` — **PELIGRO: regenera, no edita.** Ver §9
 
 `Assets/_Project/Tools/Editor/HeadlessTestRunner.cs` corre los tests sin abrir la ventana;
 deja el resultado en `Temp/ridesafe-tests.txt`.
@@ -143,18 +159,21 @@ deja el resultado en `Temp/ridesafe-tests.txt`.
 
 ## 6. Contenido
 
-### Catálogo de EPP — 8 elementos en 3 zonas
+### Catálogo de EPP — 7 elementos en 3 zonas
 
 | Zona | Elemento | Categoría | Modelo |
 |---|---|---|---|
-| head | Casco apto | Núcleo | `casco 1.fbx` |
-| head | Casco no apto | Inapropiado | `df_g_helmet_01.fbx` |
+| head | Casco apto | Núcleo | `df_g_helmet_01.fbx` |
+| head | Casco no apto | Inapropiado | `casco 1.fbx` |
 | head | Gafas | Opcional | `gafas.fbx` |
 | clothing | Calzado | Núcleo | `botas.fbx` |
-| clothing | Ropa suelta | Inapropiado | **sin modelo, cubo gris** |
 | clothing | Chaleco reflectivo | Según condición | `chaleco refectivo.fbx` |
 | load | Carga asegurada | Núcleo | `guaya candado.fbx` |
 | load | Objeto en mano | Inapropiado | `MobilePhone_01.fbx` |
+
+**Cuál casco es cuál lo confirmó Charlie el 2026-10-07: el bueno es `df_g_helmet_01`.** Hasta
+entonces estaba al revés y el módulo enseñaba lo contrario. La zona `clothing` se quedó sin
+elemento de riesgo al apagar la ropa suelta; ver §8.
 
 **Sin confirmar:** cuál de los dos cascos se ve dañado. Si está al revés, el aprendiz
 aprende lo contrario. Hay un tercero disponible, `casco.fbx`.
@@ -209,29 +228,49 @@ y trasera, teléfono). La escena de arte `CITY/scenas/Garage.unity` trae todo mo
 
 Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que sigue abierto:
 
-- [ ] **El scooter.** Decidido autorarlo. Diseño acordado pero **sin aprobar y sin empezar**:
-      ver §10. Mientras tanto elegir `escooter` deja el módulo colgado, porque no existen sus
-      3 `TaskSequenceSO` y `vehicle == ebike` no casa.
-- [ ] Volver a encender `LogoPlate` y `Tagline` del panel Welcome cuando haya logo propio.
-      Hoy están apagados **como override de la instancia en la escena**, no en el prefab,
-      porque el logo vive en la puerta del garaje.
+- [x] ~~**El scooter**~~ — **CONGELADO el 2026-10-07 por decisión de Charlie, hasta nuevo aviso.**
+      El tramo 1 queda hecho y afirmado —elegir patinete usa su perfil, se ve el patinete y la
+      bici queda apagada—. Lo que no se empieza es el tramo 2: punto único de exhibición, anclas en órbita y los 5 puntos colgando de
+      cada malla. Ver §10.
+      **Ojo:** sus 3 `TaskSequenceSO` existen y filtran bien por `vehicle == escooter`, pero
+      —igual que las de la e-bike— **siguen sin pasos y nadie las ejecuta**: el módulo lo mueve
+      `Module01Director`, no `TaskSequence`. Eso sigue pendiente para los dos vehículos.
+- [x] ~~Volver a encender `LogoPlate` y `Tagline`~~ — **descartado el 2026-10-07.** El logo vive
+      en la puerta del garaje y Charlie no piensa volver a encenderlos. Siguen apagados como
+      override de la instancia en la escena.
 
 ### Contenido
 
 - [ ] Alinear la hoja de I2 con el asset (la hoja va detrás; ver §6)
-- [ ] Voz del módulo 1 y los dos videos
-- [ ] Confirmar cuál casco es el dañado
-- [ ] Modelo de ropa suelta, o sustituir ese riesgo por otro que sí tenga modelo
-- [ ] Decidir si entran `luz grontal` y `luz roja 1`, que el GDD pide y ya tienen modelo
+- [ ] Voz del módulo 1 y los dos videos. **Bloqueados a propósito:** Charlie quiere dejar
+      primero los textos bien en el Drive, y sacar de ahí locución y guion de video.
+- [x] ~~Confirmar cuál casco es el dañado~~ — **resuelto el 2026-10-07: el bueno es
+      `df_g_helmet_01`.** Estaba al revés, así que `helmet_ok` y `helmet_damaged` intercambiaron
+      modelo y etiqueta de escena. Hasta hoy el módulo enseñaba lo contrario.
+- [x] ~~Modelo de ropa suelta~~ — **apagado el 2026-10-07.** `clothing_loose` fuera del catálogo;
+      su `SafetyItemSO` sigue en disco para reactivarlo. **Consecuencia: la zona `clothing` se
+      queda sin ninguna respuesta equivocada**, así que no enseña nada: el aprendiz acepta las
+      dos cosas y acierta. La excepción está declarada en `Module01DataTests.ZonesWithoutRisk`
+      con su motivo, para que no se olvide.
+- [ ] Decidir si entran `luz grontal` y `luz roja 1`. **No se puede consultar el GDD: los dos PDF
+      no están en el repo.** Hoy las luces no son un EPP recogible, son el punto de inspección
+      `point_lights` ("Luces y reflectivos") de la zona `visibility`. Esos dos modelos son los
+      candidatos naturales para colgarlos del vehículo y que ese punto apunte a algo real — que
+      era trabajo del tramo 2, ahora congelado.
 
 ### Técnico
 
+- [ ] **Partir `Module01SceneBuilder` en comandos no destructivos**, como se hizo con
+      `Module01VehicleWiring`. Hoy etiquetar entidades, crear las que faltan y colocar anclas
+      solo se puede haciendo `Build()`, que regenera la escena y borra la presentación. Bloquea
+      añadir EPP nuevos y recibir el garaje v6 sin rehacerlo todo.
 - [ ] Integrar `feat/garaje-v5` en `dev` (avisar a Cindy)
 - [ ] Rehornear luz y occlusion en la escena nueva
 - [ ] Reponer MeshColliders si el entorno cambió
 - [ ] 370k triángulos sigue por encima del presupuesto de Quest
 - [ ] Unificar `MenuRuntimeTextLocalizer` con `UIText`
-- [ ] Autorar los pasos de las 6 `TaskSequenceSO` cuando existan los términos
+- [ ] Autorar los pasos de las 9 `TaskSequenceSO` cuando existan los términos; hoy ninguna
+      tiene pasos y nada las ejecuta
 - [ ] Ningún nivel de calidad asigna RP asset; `Mobile_RPAsset` sin usar
 
 ---
@@ -280,6 +319,21 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 - **`ItemInspector.Translate` no tenía caída a la clave** (al revés que `UIText.Resolve`): un
   término borrado del I2 salía como texto **en blanco**, no como clave visible. Arreglado. Y
   `??` no atrapa la cadena vacía, así que `SetQuestion("")` dejaba la pregunta muda.
+- **`Montar escena jugable` no edita v5: la regenera y borra lo que no sepa rehacer.**
+  Abre siempre `RideSafe_Garaje`, le trasplanta el mundo del paquete de arte y guarda **encima**
+  de `RideSafe_Garaje_v5`. Todo lo que se añadió a v5 después se pierde: el 2026-10-07 se llevó
+  28 GameObjects, entre ellos el `Module01Experience` que pone `Module01PresentationBuilder`, y
+  dejó la escena con el `XRPlayer` encendido y dos cámaras de juego. El doc decía «idempotente»,
+  y lo es solo en el sentido de que siempre produce lo mismo desde la escena de lógica. Para
+  cambios acotados, un comando propio sobre la escena abierta (como
+  `Cablear los vehículos en la escena abierta`); si hay que regenerar, volver a montar la
+  presentación después.
+- **Unity sigue con la escena vieja en memoria tras un `git checkout`.** Restaurar el archivo no
+  basta: los tests de PlayMode siguieron fallando contra la copia destruida hasta la siguiente
+  recarga de dominio. Recompilar antes de creerse el resultado.
+- **`HeadlessTestRunner.Run(null)` mete la assembly de PlayMode en modo EditMode** y revienta con
+  `InvalidOperationException: This cannot be used during play mode`. Hay que nombrar las
+  assemblies: `RideSafe.Module01.Tests`, `TaskSequence.Tests`, `Tutorial.Tests`.
 - **Un atajo de test que apaga medio mundo esconde bugs.** El viejo `StartWithDefaults`
   desactivaba todos los `ModuleUI`, y por eso ningún test vio la escena duplicada durante
   semanas. El test entra pulsando Begin.
@@ -288,8 +342,9 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 
 ## 10. El scooter — diseño pendiente
 
-> **Estado: diseñado, NO aprobado, NO empezado.** Conversación del 2026-10-06 por la mañana;
-> Charlie lo retoma por la tarde. Nada de esto está escrito en código ni en la escena todavía.
+> **Estado: aprobado el 2026-10-07. Tramo 1 hecho y afirmado; tramo 2 pendiente.**
+> Charlie confirmó la premisa: «los mismos items de la inspección de e-bike también para la
+> scooter, se revisa casi lo mismo, llantas, luces, frenos». Y eligió hacerlo en dos entregas.
 
 ### Lo que decidió Charlie
 
@@ -308,16 +363,23 @@ y el comentario de `Module01Sequences`.** Las *secuencias* sí se filtran solas 
 serializado, hoy fijo en el de la e-bike. Las zonas que recorre el director salen de ese campo,
 así que con solo crear assets el scooter recorrería las zonas de la bici. Hay que tocar código.
 
-### Tramo 1 — que elegir scooter signifique algo
+### Tramo 1 — HECHO el 2026-10-07
 
-1. `Module01Director`: `_vehicle` → `List<VehicleProfileSO> _vehicles` + `SelectVehicle(string)`.
-   El director no consulta el contexto; se lo dice `Module01Experience`, que es quien lo tiene.
-2. `SO_VehicleProfile_Escooter`: `escooter`, `scooter.fbx`, **las mismas 3 zonas** que la e-bike.
-3. Tres filas más en `Module01Sequences.Sequences` con `"escooter"`.
-4. Al elegir vehículo se apaga el otro.
-5. Reactivar la tarjeta `Option_escooter` del panel Vehicle del módulo 0.
+1. ✅ `Module01Director`: `_vehicle` → `List<VehicleProfileSO> _vehicles` + `SelectVehicle(string)`,
+   que llama `Module01Experience.StartZones` antes de `Begin()`.
+2. ✅ `SO_VehicleProfile_Escooter`: `escooter`, `scooter.fbx`, **las mismas 3 zonas** que la e-bike.
+3. ✅ Tres filas más en `Module01Sequences.Sequences` con `"escooter"`. **Y los `SequenceId` pasaron
+   a llevar el vehículo** (`Module01.Vehicle.Ebike.Cockpit`): `TaskSequenceRunner` indexa lo
+   completado y el punto de reanudación por ese id, así que dos vehículos con el mismo id
+   compartirían estado y cerrar uno daría por hecho el otro.
+4. ✅ `VehicleStage` apaga el vehículo no elegido. Cableado por
+   `RideSafe → Módulo 1 → Cablear los vehículos en la escena abierta`.
+5. ✅ La tarjeta `Option_escooter` **ya existía** y la construye `UIModules.Module00.cs:89`; lo de
+   «reactivarla» era falso.
+6. ✅ Borrado el `ebike (1)` suelto (era el punto 9 del tramo 2, pero sin él «se apaga el otro»
+   era mentira: quedaba una bici flotando).
 
-### Tramo 2 — que los puntos estén donde van
+### Tramo 2 — que los puntos estén donde van (PENDIENTE)
 
 6. Punto de exhibición en `(-0.14, 0, 0.78)`, centro del `piso` (9.54 × 11.28).
 7. Las 3 anclas del vehículo dejan de ser la fila fija de `z=2.30` y **orbitan** ese punto:
@@ -351,6 +413,34 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-07 (tarde, 2) — decisiones de contenido de Charlie
+
+- **El scooter se congela** hasta nuevo aviso. El tramo 1 queda entregado; el 2 no se empieza.
+- **El casco estaba al revés.** El bueno es `df_g_helmet_01`. Intercambiados modelo y etiqueta
+  de escena para `helmet_ok` / `helmet_damaged`.
+- **Ropa suelta apagada** por falta de modelo. La zona `clothing` se queda sin respuesta
+  equivocada: declarado como excepción con motivo en `Module01DataTests.ZonesWithoutRisk`.
+- **Logo y tagline descartados**: el logo vive en la puerta del garaje.
+- Voz y videos esperan a que los textos queden bien en el Drive.
+- **`Module01SceneEntities`**: etiquetar entidades, crear las que falten y podar huérfanas, ahora
+  sobre la escena abierta. Era el primer trozo de «partir el constructor destructivo», y es lo
+  que permitió cambiar los cascos sin regenerar la escena. Lo usará también el garaje v6.
+- 145 EditMode y 3 PlayMode en verde tras todo esto.
+
+### 2026-10-07 (tarde) — el patinete empieza a significar algo
+
+- **Tramo 1 del scooter, con TDD.** 9 tests nuevos de EditMode sobre la selección de vehículo y
+  el escenario, 3 sobre los assets, 1 de PlayMode que entra pulsando Begin con `escooter` y
+  afirma que el director usa su perfil, que el patinete se ve y que la bici queda apagada. El
+  test de la e-bike afirma lo simétrico. **145 EditMode y 3 PlayMode en verde**, PlayMode dos
+  corridas seguidas.
+- Los dos perfiles comparten las 3 `ZoneSO`: **cero términos nuevos de I2**, como se decidió.
+- Los `SequenceId` del vehículo ahora llevan el vehículo, por el estado compartido del runner.
+- **Me cargué la escena y la restauré.** Corrí `Montar escena jugable`, que no edita v5 sino que
+  la regenera desde la escena de lógica: se perdieron 28 GameObjects y toda la presentación del
+  2026-10-07. `git checkout` del `.unity` y el cableado rehecho con un comando nuevo que trabaja
+  sobre la escena abierta. La trampa quedó escrita en §9 y en el comentario de la herramienta.
 
 ### 2026-10-07 — la presentación del módulo 1, con la marca del módulo 0
 
