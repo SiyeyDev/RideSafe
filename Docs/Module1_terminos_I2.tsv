@@ -1,0 +1,39 @@
+﻿Keys	English	Español
+Module1/Choose_Instruction	Select an object to inspect it. You can change your choices before submitting.	Selecciona un objeto para examinarlo. Puedes cambiar tus elecciones antes de enviarlas.
+Module1/Confirm_Question	Add this item to your preparation?	¿Quieres añadir este elemento a tu preparación?
+Module1/Decision_Correct	Your decision matches the inspection.	Tu decisión coincide con la revisión.
+Module1/Decision_Question	After your inspection, what do you decide?	Después de tu revisión, ¿qué decides?
+Module1/Decision_Review	Review your decision before riding.	Revisa tu decisión antes de circular.
+Module1/DoNotRide	Do not ride	No circular
+Module1/Final_Complete	Module complete. Review your preparation and inspection summary.	Módulo completado. Revisa el resumen de tu preparación e inspección.
+Module1/Inspect_Instruction	Select each marker to check the component before riding.	Selecciona cada marcador para revisar el componente antes de salir.
+Module1/Inspect_Question	Have you checked this part of the vehicle?	¿Has revisado este punto del vehículo?
+Module1/Item_CargoHandheld	Handheld object	Objeto en la mano
+Module1/Item_CargoSecured	Secured load	Carga asegurada
+Module1/Item_ClothingLoose	Loose clothing or laces	Ropa o cordones sueltos
+Module1/Item_Glasses	Glasses	Gafas
+Module1/Item_HelmetDamaged	Damaged helmet	Casco deteriorado
+Module1/Item_HelmetOk	Intact, fitted helmet	Casco íntegro y ajustado
+Module1/Item_Reflective	Reflective vest	Chaleco reflectivo
+Module1/Item_ShoesOk	Closed-toe shoes	Calzado cerrado
+Module1/NeedsService	Needs service	Necesita servicio
+Module1/Next	Continue tour	Continuar recorrido
+Module1/No	No	No
+Module1/Point_Brakes	Brakes	Frenos
+Module1/Point_Electrics	Electrical system and controls	Estado eléctrico y controles
+Module1/Point_Lights	Lights and reflectors	Luces y reflectivos
+Module1/Point_Steering	Steering and handlebar	Dirección y manubrio
+Module1/Point_Wheels	Wheels and frame	Ruedas y estructura
+Module1/Previous	Previous station	Estación anterior
+Module1/Report_Reference	Reference for this ride	Referencia para este recorrido
+Module1/Report_Subtitle	Optional items are not penalized. Review omissions and risks.	Los elementos opcionales no penalizan. Revisa las omisiones y los riesgos.
+Module1/Report_Title	Review summary	Resumen de la revisión
+Module1/Report_Yours	Your choice	Tu elección
+Module1/RoadReady	Ready to ride	Listo para circular
+Module1/Yes	Yes	Sí
+Module1/Zone_Clothing	Clothing and footwear	Ropa y calzado
+Module1/Zone_Cockpit	Steering, brakes and controls	Dirección, frenos y controles
+Module1/Zone_Head	Head protection	Cabeza y protección
+Module1/Zone_Load	Load and free hands	Carga y manos libres
+Module1/Zone_Visibility	Lights and visibility	Luces y visibilidad
+Module1/Zone_Wheels	Wheels and frame	Ruedas y estructura
