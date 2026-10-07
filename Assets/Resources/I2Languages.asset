@@ -357,6 +357,8 @@ MonoBehaviour:
       Languages:
       - 
       - 
+      Flags: 0000
+      Languages_Touch: []
     - Term: Tutorial/ChooseLocation
       TermType: 0
       Description: 
@@ -385,23 +387,23 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Better decisions in motion."
-      - "Mejores decisiones en movimiento."
+      - Better decisions in motion.
+      - Mejores decisiones en movimiento.
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Button_Begin
       TermType: 0
       Description: 
       Languages:
-      - "Begin"
-      - "Comenzar"
+      - Begin
+      - Comenzar
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Button_Back
       TermType: 0
       Description: 
       Languages:
-      - "Back"
+      - Back
       - "Atr\xE1s"
       Flags: 0000
       Languages_Touch: []
@@ -409,31 +411,31 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Continue"
-      - "Continuar"
+      - Continue
+      - Continuar
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Button_Change
       TermType: 0
       Description: 
       Languages:
-      - "Change"
-      - "Cambiar"
+      - Change
+      - Cambiar
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Button_Confirm
       TermType: 0
       Description: 
       Languages:
-      - "Confirm"
-      - "Confirmar"
+      - Confirm
+      - Confirmar
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Button_StartModule1
       TermType: 0
       Description: 
       Languages:
-      - "Start Module 1"
+      - Start Module 1
       - "Iniciar M\xF3dulo 1"
       Flags: 0000
       Languages_Touch: []
@@ -441,15 +443,15 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Selected"
-      - "Seleccionado"
+      - Selected
+      - Seleccionado
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Switch_On
       TermType: 0
       Description: 
       Languages:
-      - "On"
+      - On
       - "S\xED"
       Flags: 0000
       Languages_Touch: []
@@ -457,23 +459,23 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Off"
-      - "No"
+      - Off
+      - No
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Language_Title
       TermType: 0
       Description: 
       Languages:
-      - "Choose your language"
-      - "Elige tu idioma"
+      - Choose your language
+      - Elige tu idioma
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Language_Subtitle
       TermType: 0
       Description: 
       Languages:
-      - "You can change this later."
+      - You can change this later.
       - "Puedes cambiarlo m\xE1s tarde."
       Flags: 0000
       Languages_Touch: []
@@ -481,7 +483,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Which rules apply to your riding?"
+      - Which rules apply to your riding?
       - "\xBFQu\xE9 normas aplican a tus recorridos?"
       Flags: 0000
       Languages_Touch: []
@@ -489,7 +491,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "This sets the rule pack the whole session is judged against."
+      - This sets the rule pack the whole session is judged against.
       - "Define el conjunto de normas con el que se eval\xFAa toda la sesi\xF3n."
       Flags: 0000
       Languages_Touch: []
@@ -497,8 +499,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Florida"
-      - "Florida"
+      - Florida
+      - Florida
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Location_Florida_Description
@@ -529,7 +531,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Choose your vehicle"
+      - Choose your vehicle
       - "Elige tu veh\xEDculo"
       Flags: 0000
       Languages_Touch: []
@@ -537,7 +539,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Look at each vehicle before you choose."
+      - Look at each vehicle before you choose.
       - "Observa cada veh\xEDculo antes de elegir."
       Flags: 0000
       Languages_Touch: []
@@ -545,7 +547,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "E-bike"
+      - E-bike
       - "Bicicleta el\xE9ctrica"
       Flags: 0000
       Languages_Touch: []
@@ -561,7 +563,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Standing e-scooter"
+      - Standing e-scooter
       - "Patineta el\xE9ctrica de pie"
       Flags: 0000
       Languages_Touch: []
@@ -585,7 +587,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "confirm to continue?"
+      - confirm to continue?
       - "\xBFconfirmar para continuar?"
       Flags: 0000
       Languages_Touch: []
@@ -593,23 +595,23 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Set up your comfort"
-      - "Ajusta tu comodidad"
+      - Set up your comfort
+      - Ajusta tu comodidad
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Comfort_Subtitle
       TermType: 0
       Description: 
       Languages:
-      - "Nothing here affects your results."
-      - "Nada de esto afecta tus resultados."
+      - Nothing here affects your results.
+      - Nada de esto afecta tus resultados.
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Comfort_Posture
       TermType: 0
       Description: 
       Languages:
-      - "Riding posture"
+      - Riding posture
       - "Postura de conducci\xF3n"
       Flags: 0000
       Languages_Touch: []
@@ -617,31 +619,31 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Sets eye height and handlebar reach"
-      - "Ajusta la altura de los ojos y el alcance del manubrio"
+      - Sets eye height and handlebar reach
+      - Ajusta la altura de los ojos y el alcance del manubrio
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Comfort_Seated
       TermType: 0
       Description: 
       Languages:
-      - "Seated"
-      - "Sentado"
+      - Seated
+      - Sentado
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Comfort_Standing
       TermType: 0
       Description: 
       Languages:
-      - "Standing"
-      - "De pie"
+      - Standing
+      - De pie
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Comfort_Subtitles
       TermType: 0
       Description: 
       Languages:
-      - "Subtitles"
+      - Subtitles
       - "Subt\xEDtulos"
       Flags: 0000
       Languages_Touch: []
@@ -649,7 +651,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Every spoken line, placed below the instruction panel"
+      - Every spoken line, placed below the instruction panel
       - "Cada l\xEDnea hablada, debajo del panel de instrucciones"
       Flags: 0000
       Languages_Touch: []
@@ -657,7 +659,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Text size"
+      - Text size
       - "Tama\xF1o del texto"
       Flags: 0000
       Languages_Touch: []
@@ -665,40 +667,515 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Scales all world-space type together"
-      - "Escala a la vez todo el texto del entorno"
+      - Scales all world-space type together
+      - Escala a la vez todo el texto del entorno
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Comfort_Hand
       TermType: 0
       Description: 
       Languages:
-      - "Dominant hand"
-      - "Mano dominante"
+      - Dominant hand
+      - Mano dominante
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Comfort_Hand_Detail
       TermType: 0
       Description: 
       Languages:
-      - "Mirrors mounted controls and the ray hand"
-      - "Refleja los controles montados y la mano del rayo"
+      - Mirrors mounted controls and the ray hand
+      - Refleja los controles montados y la mano del rayo
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Comfort_Left
       TermType: 0
       Description: 
       Languages:
-      - "Left"
-      - "Izquierda"
+      - Left
+      - Izquierda
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Comfort_Right
       TermType: 0
       Description: 
       Languages:
-      - "Right"
-      - "Derecha"
+      - Right
+      - Derecha
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Yes
+      TermType: 0
+      Description: 
+      Languages:
+      - Yes
+      - "S\xED"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/No
+      TermType: 0
+      Description: 
+      Languages:
+      - No
+      - No
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Confirm_Question
+      TermType: 0
+      Description: 
+      Languages:
+      - Add this item to your preparation?
+      - "\xBFQuieres a\xF1adir este elemento a tu preparaci\xF3n?"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Inspect_Question
+      TermType: 0
+      Description: 
+      Languages:
+      - Have you checked this part of the vehicle?
+      - "\xBFHas revisado este punto del veh\xEDculo?"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Next
+      TermType: 0
+      Description: 
+      Languages:
+      - Continue tour
+      - Continuar recorrido
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Previous
+      TermType: 0
+      Description: 
+      Languages:
+      - Previous station
+      - "Estaci\xF3n anterior"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Choose_Instruction
+      TermType: 0
+      Description: 
+      Languages:
+      - Select an object to inspect it. You can change your choices before submitting.
+      - Selecciona un objeto para examinarlo. Puedes cambiar tus elecciones antes
+        de enviarlas.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Inspect_Instruction
+      TermType: 0
+      Description: 
+      Languages:
+      - Select each marker to check the component before riding.
+      - Selecciona cada marcador para revisar el componente antes de salir.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Decision_Question
+      TermType: 0
+      Description: 
+      Languages:
+      - After your inspection, what do you decide?
+      - "Despu\xE9s de tu revisi\xF3n, \xBFqu\xE9 decides?"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/RoadReady
+      TermType: 0
+      Description: 
+      Languages:
+      - Ready to ride
+      - Listo para circular
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/NeedsService
+      TermType: 0
+      Description: 
+      Languages:
+      - Needs service
+      - Necesita servicio
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/DoNotRide
+      TermType: 0
+      Description: 
+      Languages:
+      - Do not ride
+      - No circular
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Decision_Correct
+      TermType: 0
+      Description: 
+      Languages:
+      - Your decision matches the inspection.
+      - "Tu decisi\xF3n coincide con la revisi\xF3n."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Decision_Review
+      TermType: 0
+      Description: 
+      Languages:
+      - Review your decision before riding.
+      - "Revisa tu decisi\xF3n antes de circular."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Final_Complete
+      TermType: 0
+      Description: 
+      Languages:
+      - Module complete. Review your preparation and inspection summary.
+      - "M\xF3dulo completado. Revisa el resumen de tu preparaci\xF3n e inspecci\xF3n."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Report_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Review summary
+      - "Resumen de la revisi\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Report_Subtitle
+      TermType: 0
+      Description: 
+      Languages:
+      - Optional items are not penalized. Review omissions and risks.
+      - Los elementos opcionales no penalizan. Revisa las omisiones y los riesgos.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Report_Yours
+      TermType: 0
+      Description: 
+      Languages:
+      - Your choice
+      - "Tu elecci\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Report_Reference
+      TermType: 0
+      Description: 
+      Languages:
+      - Reference for this ride
+      - Referencia para este recorrido
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Zone_Head
+      TermType: 0
+      Description: 
+      Languages:
+      - Head protection
+      - "Cabeza y protecci\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Zone_Clothing
+      TermType: 0
+      Description: 
+      Languages:
+      - Clothing and footwear
+      - Ropa y calzado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Zone_Load
+      TermType: 0
+      Description: 
+      Languages:
+      - Load and free hands
+      - Carga y manos libres
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Zone_Cockpit
+      TermType: 0
+      Description: 
+      Languages:
+      - Steering, brakes and controls
+      - "Direcci\xF3n, frenos y controles"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Zone_Wheels
+      TermType: 0
+      Description: 
+      Languages:
+      - Wheels and frame
+      - Ruedas y estructura
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Zone_Visibility
+      TermType: 0
+      Description: 
+      Languages:
+      - Lights and visibility
+      - Luces y visibilidad
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Item_HelmetOk
+      TermType: 0
+      Description: 
+      Languages:
+      - Intact, fitted helmet
+      - "Casco \xEDntegro y ajustado"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Item_HelmetDamaged
+      TermType: 0
+      Description: 
+      Languages:
+      - Damaged helmet
+      - Casco deteriorado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Item_Glasses
+      TermType: 0
+      Description: 
+      Languages:
+      - Glasses
+      - Gafas
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Item_ShoesOk
+      TermType: 0
+      Description: 
+      Languages:
+      - Closed-toe shoes
+      - Calzado cerrado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Item_ClothingLoose
+      TermType: 0
+      Description: 
+      Languages:
+      - Loose clothing or laces
+      - Ropa o cordones sueltos
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Item_Reflective
+      TermType: 0
+      Description: 
+      Languages:
+      - Reflective vest
+      - Chaleco reflectivo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Item_CargoSecured
+      TermType: 0
+      Description: 
+      Languages:
+      - Secured load
+      - Carga asegurada
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Item_CargoHandheld
+      TermType: 0
+      Description: 
+      Languages:
+      - Handheld object
+      - Objeto en la mano
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Point_Steering
+      TermType: 0
+      Description: 
+      Languages:
+      - Steering and handlebar
+      - "Direcci\xF3n y manubrio"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Point_Brakes
+      TermType: 0
+      Description: 
+      Languages:
+      - Brakes
+      - Frenos
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Point_Electrics
+      TermType: 0
+      Description: 
+      Languages:
+      - Electrical system and controls
+      - "Estado el\xE9ctrico y controles"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Point_Wheels
+      TermType: 0
+      Description: 
+      Languages:
+      - Wheels and frame
+      - Ruedas y estructura
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Point_Lights
+      TermType: 0
+      Description: 
+      Languages:
+      - Lights and reflectors
+      - Luces y reflectivos
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Orientation_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Prepare before riding
+      - "Prep\xE1rate antes de rodar"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Orientation_Body
+      TermType: 0
+      Description: 
+      Languages:
+      - Visit the stations and choose what to take. Then inspect the e-bike. Feedback
+        appears after you submit each section.
+      - "Recorre las estaciones y elige qu\xE9 llevar. Despu\xE9s revisa la e-bike.
+        Ver\xE1s la retroalimentaci\xF3n al enviar cada secci\xF3n."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Start
+      TermType: 0
+      Description: 
+      Languages:
+      - Start
+      - Comenzar
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/RepeatAudio
+      TermType: 0
+      Description: 
+      Languages:
+      - Repeat instructions
+      - Repetir instrucciones
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Sidebar_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - My preparation
+      - "Mi preparaci\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Sidebar_Empty
+      TermType: 0
+      Description: 
+      Languages:
+      - No items added yet.
+      - "Todav\xEDa no has a\xF1adido elementos."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Sidebar_Note
+      TermType: 0
+      Description: 
+      Languages:
+      - Added does not mean correct. Click a row to remove it.
+      - "A\xF1adido no significa correcto. Pulsa una fila para quitarla."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Review_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Review your choices
+      - Revisa tus elecciones
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Review_Subtitle
+      TermType: 0
+      Description: 
+      Languages:
+      - You can go back and change them before submitting.
+      - Puedes volver y cambiarlas antes de enviar.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Review_Lock
+      TermType: 0
+      Description: 
+      Languages:
+      - Confirm to evaluate this section.
+      - "Al confirmar se evaluar\xE1 esta secci\xF3n."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/KeepChoosing
+      TermType: 0
+      Description: 
+      Languages:
+      - Keep choosing
+      - Seguir eligiendo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Confirm
+      TermType: 0
+      Description: 
+      Languages:
+      - Submit choices
+      - Enviar elecciones
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/WatchVideo
+      TermType: 0
+      Description: 
+      Languages:
+      - Watch explanation
+      - "Ver explicaci\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Pause
+      TermType: 0
+      Description: 
+      Languages:
+      - Pause / resume
+      - Pausar / seguir
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Replay
+      TermType: 0
+      Description: 
+      Languages:
+      - Replay
+      - Repetir
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Continue
+      TermType: 0
+      Description: 
+      Languages:
+      - Continue
+      - Continuar
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/VideoPlaceholder
+      TermType: 0
+      Description: 
+      Languages:
+      - Placeholder video. Final educational content is pending.
+      - "Video provisional. El contenido educativo final est\xE1 pendiente."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Selected
+      TermType: 0
+      Description: 
+      Languages:
+      - Selected
+      - Seleccionado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Omitted
+      TermType: 0
+      Description: 
+      Languages:
+      - Core item omitted
+      - "N\xFAcleo omitido"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Conditional
+      TermType: 0
+      Description: 
+      Languages:
+      - Condition-dependent
+      - "Depende de la condici\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Module1/Inappropriate
+      TermType: 0
+      Description: 
+      Languages:
+      - Not suitable
+      - No adecuado
       Flags: 0000
       Languages_Touch: []
     CaseInsensitiveTerms: 0

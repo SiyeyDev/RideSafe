@@ -30,6 +30,7 @@ namespace RideSafe.Module01
         private ZoneSO _zone;
         private ILocalizationProvider _localization;
         private bool _subscribed;
+        private bool _listSubscribed;
 
         public SelectionLedger Ledger { get; } = new SelectionLedger();
         public ZoneSO CurrentZone => _zone;
@@ -70,6 +71,18 @@ namespace RideSafe.Module01
             _resolved.Clear();
             Subscribe();
             Rebind();
+            if (!_listSubscribed && _binding != null && _binding.PreparationList != null)
+            {
+                _binding.PreparationList.onItemRemoved.AddListener(RemoveSelection);
+                _listSubscribed = true;
+            }
+        }
+
+        private void RemoveSelection(string id) => Ledger.Remove(id);
+        private void OnDestroy()
+        {
+            if (_listSubscribed && _binding != null && _binding.PreparationList != null)
+                _binding.PreparationList.onItemRemoved.RemoveListener(RemoveSelection);
         }
 
         private void Rebind()

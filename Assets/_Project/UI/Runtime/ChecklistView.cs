@@ -52,6 +52,9 @@ namespace RideSafe.UI
             Refresh();
         }
 
+        public void ConfigureLabels(string empty, string filled, string tag)
+        { _emptySubtitle = empty; _filledSubtitle = filled; _rowTag = tag; Refresh(); }
+
         public bool Contains(string id) => IndexOf(id) >= 0;
 
         public void AddItem(string id, string label)
@@ -63,7 +66,7 @@ namespace RideSafe.UI
             row.name = "Row · " + label;
             row.SetActive(true);
             SetText(row, "Label", label);
-            SetText(row, "Tag", _removable ? _rowTag : string.Empty);
+            SetText(row, "Tag", _removable ? UIText.Resolve(_rowTag) : string.Empty);
 
             UnityEngine.UI.Button button = row.GetComponent<UnityEngine.UI.Button>();
             if (button != null)
@@ -123,7 +126,7 @@ namespace RideSafe.UI
             if (_subtitle != null)
             {
                 string text = filled ? _filledSubtitle : _emptySubtitle;
-                _subtitle.text = text;
+                _subtitle.text = UIText.Resolve(text);
                 _subtitle.gameObject.SetActive(!string.IsNullOrEmpty(text));
             }
             if (_counter != null)
@@ -145,3 +148,4 @@ namespace RideSafe.UI
         }
     }
 }
+

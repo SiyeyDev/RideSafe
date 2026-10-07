@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d8813abd67b0b249bdc0c43c5d18a41, type: 3}
+  m_Name: SO_Module01PresentationCatalog
+  m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01CatalogSO
+  _zones:
+  - {fileID: 11400000, guid: 4df50470b3263bf42ad740ada2de4cfe, type: 2}
+  - {fileID: 11400000, guid: 80ed2efc738a9a441a6efd278602232e, type: 2}
+  - {fileID: 11400000, guid: e94125ba2028d7c4c937768fe7d5e30c, type: 2}
+  - {fileID: 11400000, guid: 2e812fb54e2d7364fa3302d91d7e907d, type: 2}
+  - {fileID: 11400000, guid: 65b474ed86641f9468aec537c0de391d, type: 2}
+  - {fileID: 11400000, guid: 01bccd36419332147ae3c3be8d6e16f1, type: 2}

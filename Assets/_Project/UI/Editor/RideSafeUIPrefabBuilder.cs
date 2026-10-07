@@ -74,13 +74,22 @@ namespace RideSafe.UI.EditorTools
 
         #endregion
 
-        public static void Build(string shotsDir)
+        /// <summary>
+        /// Atlas, logo y fuentes del kit. Lo usa también el montador de escena del módulo 1,
+        /// que construye su presentación con las mismas piezas en vez de inventarse botones.
+        /// </summary>
+        internal static UIBuilderKit CreateKit()
         {
             TMP_FontAsset fallback = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(k_LiberationSans);
-            UIBuilderKit kit = new UIBuilderKit(LoadAtlasSprites(), AssetDatabase.LoadAssetAtPath<Sprite>(k_LogoPath),
+            return new UIBuilderKit(LoadAtlasSprites(), AssetDatabase.LoadAssetAtPath<Sprite>(k_LogoPath),
                 EnsureFont("Manrope-Bold", fallback), EnsureFont("Manrope-SemiBold", fallback),
                 EnsureFont("Inter-Regular", fallback), EnsureFont("Inter-Medium", fallback),
                 EnsureFont("Inter-SemiBold", fallback));
+        }
+
+        public static void Build(string shotsDir)
+        {
+            UIBuilderKit kit = CreateKit();
             AssetDatabase.SaveAssets();
 
             // Prefabs are assembled in a throwaway scene so nothing leaks into the user's scene.

@@ -16,6 +16,7 @@ namespace RideSafe.Module01
     {
         public const string VehicleKey = "vehicle";
         public const string LanguageKey = "language";
+        public const string JurisdictionKey = "jurisdiction";
 
         private readonly Dictionary<string, string> _values = new Dictionary<string, string>();
 

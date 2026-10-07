@@ -26,6 +26,16 @@ namespace RideSafe.Module01
         [SerializeField, Min(0f)] private float _fadeSeconds = 0.35f;
 
         private readonly Dictionary<string, Transform> _anchors = new Dictionary<string, Transform>();
+        [SerializeField] private Transform _anchorRoot;
+        public bool IsMoving { get; private set; }
+
+        private void Awake()
+        {
+            if (_anchorRoot != null)
+                foreach (Transform anchor in _anchorRoot)
+                    RegisterAnchor(anchor.name.Replace("anchor_", ""), anchor);
+            if (_fade != null) { _fade.alpha = 0; _fade.blocksRaycasts = false; }
+        }
 
         public event Action<string> ZoneReached;
 
@@ -40,6 +50,7 @@ namespace RideSafe.Module01
 
         public bool TryGoTo(string zoneId)
         {
+            if (IsMoving) return false;
             if (string.IsNullOrWhiteSpace(zoneId))
                 return false;
 
@@ -60,9 +71,13 @@ namespace RideSafe.Module01
 
         private IEnumerator FadeAndPlace(string id, Transform anchor)
         {
+            IsMoving = true;
+            _fade.blocksRaycasts = true;
             yield return Fade(0f, 1f);
             Place(id, anchor);
             yield return Fade(1f, 0f);
+            _fade.blocksRaycasts = false;
+            IsMoving = false;
         }
 
         private IEnumerator Fade(float from, float to)

@@ -1,0 +1,59 @@
+Module1/Yes|Sí|Yes
+Module1/No|No|No
+Module1/Confirm_Question|¿Quieres añadir este elemento a tu preparación?|Add this item to your preparation?
+Module1/Inspect_Question|¿Has revisado este punto del vehículo?|Have you checked this part of the vehicle?
+Module1/Next|Continuar recorrido|Continue tour
+Module1/Previous|Estación anterior|Previous station
+Module1/Choose_Instruction|Selecciona un objeto para examinarlo. Puedes cambiar tus elecciones antes de enviarlas.|Select an object to inspect it. You can change your choices before submitting.
+Module1/Inspect_Instruction|Selecciona cada marcador para revisar el componente antes de salir.|Select each marker to check the component before riding.
+Module1/Decision_Question|Después de tu revisión, ¿qué decides?|After your inspection, what do you decide?
+Module1/RoadReady|Listo para circular|Ready to ride
+Module1/NeedsService|Necesita servicio|Needs service
+Module1/DoNotRide|No circular|Do not ride
+Module1/Decision_Correct|Tu decisión coincide con la revisión.|Your decision matches the inspection.
+Module1/Decision_Review|Revisa tu decisión antes de circular.|Review your decision before riding.
+Module1/Final_Complete|Módulo completado. Revisa el resumen de tu preparación e inspección.|Module complete. Review your preparation and inspection summary.
+Module1/Report_Title|Resumen de la revisión|Review summary
+Module1/Report_Subtitle|Los elementos opcionales no penalizan. Revisa las omisiones y los riesgos.|Optional items are not penalized. Review omissions and risks.
+Module1/Report_Yours|Tu elección|Your choice
+Module1/Report_Reference|Referencia para este recorrido|Reference for this ride
+Module1/Zone_Head|Cabeza y protección|Head protection
+Module1/Zone_Clothing|Ropa y calzado|Clothing and footwear
+Module1/Zone_Load|Carga y manos libres|Load and free hands
+Module1/Zone_Cockpit|Dirección, frenos y controles|Steering, brakes and controls
+Module1/Zone_Wheels|Ruedas y estructura|Wheels and frame
+Module1/Zone_Visibility|Luces y visibilidad|Lights and visibility
+Module1/Item_HelmetOk|Casco íntegro y ajustado|Intact, fitted helmet
+Module1/Item_HelmetDamaged|Casco deteriorado|Damaged helmet
+Module1/Item_Glasses|Gafas|Glasses
+Module1/Item_ShoesOk|Calzado cerrado|Closed-toe shoes
+Module1/Item_ClothingLoose|Ropa o cordones sueltos|Loose clothing or laces
+Module1/Item_Reflective|Chaleco reflectivo|Reflective vest
+Module1/Item_CargoSecured|Carga asegurada|Secured load
+Module1/Item_CargoHandheld|Objeto en la mano|Handheld object
+Module1/Point_Steering|Dirección y manubrio|Steering and handlebar
+Module1/Point_Brakes|Frenos|Brakes
+Module1/Point_Electrics|Estado eléctrico y controles|Electrical system and controls
+Module1/Point_Wheels|Ruedas y estructura|Wheels and frame
+Module1/Point_Lights|Luces y reflectivos|Lights and reflectors
+Module1/Orientation_Title|Prepárate antes de rodar|Prepare before riding
+Module1/Orientation_Body|Recorre las estaciones y elige qué llevar. Después revisa la e-bike. Verás la retroalimentación al enviar cada sección.|Visit the stations and choose what to take. Then inspect the e-bike. Feedback appears after you submit each section.
+Module1/Start|Comenzar|Start
+Module1/RepeatAudio|Repetir instrucciones|Repeat instructions
+Module1/Sidebar_Title|Mi preparación|My preparation
+Module1/Sidebar_Empty|Todavía no has añadido elementos.|No items added yet.
+Module1/Sidebar_Note|Añadido no significa correcto. Pulsa una fila para quitarla.|Added does not mean correct. Click a row to remove it.
+Module1/Review_Title|Revisa tus elecciones|Review your choices
+Module1/Review_Subtitle|Puedes volver y cambiarlas antes de enviar.|You can go back and change them before submitting.
+Module1/Review_Lock|Al confirmar se evaluará esta sección.|Confirm to evaluate this section.
+Module1/KeepChoosing|Seguir eligiendo|Keep choosing
+Module1/Confirm|Enviar elecciones|Submit choices
+Module1/WatchVideo|Ver explicación|Watch explanation
+Module1/Pause|Pausar / seguir|Pause / resume
+Module1/Replay|Repetir|Replay
+Module1/Continue|Continuar|Continue
+Module1/VideoPlaceholder|Video provisional. El contenido educativo final está pendiente.|Placeholder video. Final educational content is pending.
+Module1/Selected|Seleccionado|Selected
+Module1/Omitted|Núcleo omitido|Core item omitted
+Module1/Conditional|Depende de la condición|Condition-dependent
+Module1/Inappropriate|No adecuado|Not suitable

@@ -28,6 +28,13 @@ namespace RideSafe.Module01
 
         [Tooltip("Arranca solo al entrar en Play. Apagalo si lo dispara el modulo 0.")]
         [SerializeField] private bool _beginOnStart;
+        [SerializeField] private bool _manualProgress;
+        private bool _awaitingReview;
+        public bool InVehicleSection => _inVehicleSection;
+        public bool IsLastZone => _index == ActiveList.Count - 1;
+        public event Action<ZoneSO> ZoneEntered;
+        public SelectionReport PersonalReport { get; private set; }
+        public SelectionReport VehicleReport { get; private set; }
 
         private readonly List<ZoneSO> _personalZones = new List<ZoneSO>();
         private readonly List<ZoneSO> _vehicleZones = new List<ZoneSO>();
@@ -72,6 +79,8 @@ namespace RideSafe.Module01
             }
 
             IsFinished = false;
+            _awaitingReview = false;
+            PersonalReport = VehicleReport = null;
             _inVehicleSection = false;
             _index = -1;
             _runner.Ledger.Clear();
@@ -98,7 +107,31 @@ namespace RideSafe.Module01
 
         private List<ZoneSO> ActiveList => _inVehicleSection ? _vehicleZones : _personalZones;
 
-        private void HandleZoneCompleted(ZoneSO zone) => Advance();
+        private void HandleZoneCompleted(ZoneSO zone) { if (!_manualProgress) Advance(); }
+
+        public void AdvanceZone()
+        {
+            if (_manualProgress && !_awaitingReview && !IsFinished) Advance();
+        }
+
+        public void PreviousZone()
+        {
+            if (_manualProgress && !_awaitingReview && _index > 0) { _index--; EnterZone(ActiveList[_index]); }
+        }
+
+        public void ContinueAfterReview()
+        {
+            if (!_awaitingReview) return;
+            _awaitingReview = false;
+            if (!_inVehicleSection)
+            {
+                _inVehicleSection = true;
+                _index = -1;
+                _runner.Ledger.Clear();
+                Advance();
+            }
+            else { CurrentZone = null; IsFinished = true; Unsubscribe(); Finished?.Invoke(); }
+        }
 
         private void Advance()
         {
@@ -112,6 +145,14 @@ namespace RideSafe.Module01
 
             // Se acabó la lista en curso: cerrar la sección.
             SelectionReport report = Grade();
+            if (_manualProgress)
+            {
+                _awaitingReview = true;
+                _runner.Begin(null);
+                if (_inVehicleSection) { VehicleReport = report; VehicleSectionCompleted?.Invoke(report); }
+                else { PersonalReport = report; PersonalSectionCompleted?.Invoke(report); }
+                return;
+            }
 
             if (!_inVehicleSection)
             {
@@ -139,6 +180,7 @@ namespace RideSafe.Module01
             CurrentZone = zone;
             _tour?.TryGoTo(zone.ZoneId);
             _runner.Begin(zone);
+            ZoneEntered?.Invoke(zone);
         }
 
         /// <summary>
@@ -171,3 +213,4 @@ namespace RideSafe.Module01
         }
     }
 }
+
