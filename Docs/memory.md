@@ -1,7 +1,7 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-07 (tarde)
+> Última actualización: 2026-10-07 (noche)
 
 ---
 
@@ -137,7 +137,7 @@ quedó obsoleto frente a `UIText`; falta unificar.
 | `ItemInspector` | presenta el objeto y confirma |
 | `ZoneRunner` | conecta entidad, inspector y libro por zona |
 | `GuidedTour` | fade y reposición del rig |
-| `VehicleStage` | enciende la malla del vehículo elegido y apaga la otra |
+| `VehicleStage` | enciende la malla del vehículo elegido, apaga la otra y la gira por zona |
 | `Module01Director` | encadena las seis zonas y los dos reportes; elige perfil de vehículo |
 | `Module01Context` | publica `vehicle` / `language` |
 
@@ -260,6 +260,24 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 
 ### Técnico
 
+- [ ] **El HUD sigue en la capa `Default`**, así que el 3D todavía lo puede atravesar. Mover la
+      pasada de capas al final de `Module01PresentationBuilder` lo arregla, pero al intentarlo
+      saltó una regresión en la fuente del `BeginButton` que no llegué a entender.
+- [ ] **Un casco no se dibuja en Game y sí en Scene**: `df_g_helmet_01` (el bueno). Descartado,
+      midiendo: capa (`Default`), máscara de cámara (lo ve), material (URP/Lit, no nulo),
+      renderer (activo), flags de estático y occlusion (0), y posición (viewport 0.34, 0.30,
+      dentro de pantalla). Sin resolver. Siguiente paso: apagar el resto del mostrador y
+      renderizar solo ese objeto.
+- [ ] **Los objetos no se apoyan en la mesa y por eso "se hace clic en la nada".** Causa
+      encontrada: `Module01PresentationBuilder.ArrangeStations` reparenta todo a
+      `Module01_Spawned` y lo coloca **flotando en fila** a 1.5 m del ancla, normalizado a 32 cm.
+      La guaya y el teléfono quedan como láminas de 2 cm: invisibles de canto pero con collider.
+      Arreglo: apoyarlos en la superficie y dar un volumen mínimo de clic.
+- [ ] Escena del vehículo giratorio: crear el ancla `vehicle`, colgar los 5 marcadores de la
+      malla y quitar las esferas de la fila. El código ya está y está probado.
+- [ ] Fondo para el título del reporte (se pierde contra el techo) y subtítulos más abajo.
+- [ ] Panel Vehicle del módulo 0: título y subtítulo se solapan, y la barra de confirmación
+      se pisa consigo misma.
 - [ ] **Partir `Module01SceneBuilder` en comandos no destructivos**, como se hizo con
       `Module01VehicleWiring`. Hoy etiquetar entidades, crear las que faltan y colocar anclas
       solo se puede haciendo `Build()`, que regenera la escena y borra la presentación. Bloquea
@@ -319,6 +337,22 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 - **`ItemInspector.Translate` no tenía caída a la clave** (al revés que `UIText.Resolve`): un
   término borrado del I2 salía como texto **en blanco**, no como clave visible. Arreglado. Y
   `??` no atrapa la cadena vacía, así que `SetQuestion("")` dejaba la pregunta muda.
+- **Un canvas de world space lo atraviesa cualquier malla más cercana.** Se ordenan por
+  profundidad junto con la geometría. La capa `UI` la dibuja una **cámara de overlay** en el
+  stack de URP (`Module01PresentationBuilder.BuildUiCamera`), que comparte transform con la
+  principal. No usar `ScreenSpaceOverlay`: no funciona en VR. El canvas del inspector se queda
+  fuera **a propósito**, porque su popup va detrás del modelo que gira sobre el pedestal.
+- **Medir los rects en unidades de canvas, nunca en píxeles de pantalla.** Leyendo píxeles
+  concluí que un `sizeDelta` no se aplicaba —se aplicaba— y reverté un arreglo correcto. Un
+  volcado de `rect.size`, `offsetMin` y `offsetMax` lo resuelve en un minuto. Ojo con las
+  plantillas inactivas: no las toca el layout group, así que conservan su 100×100 y una
+  etiqueta estirada con offsets grandes sale con **ancho negativo**.
+- **El español es más largo que el inglés con el que se diseñó el kit.** Cada panel de ancho
+  fijo es un candidato a que el texto se pise. Ya pasó en la lista lateral y sigue pasando en
+  el panel Vehicle del módulo 0.
+- **Una captura que solo comprueba que el archivo existe miente.** Si el borrado falla, el
+  assert pasa sobre la imagen de la corrida anterior y se revisa evidencia caducada. Exigir
+  marca de escritura nueva.
 - **`Montar escena jugable` no edita v5: la regenera y borra lo que no sepa rehacer.**
   Abre siempre `RideSafe_Garaje`, le trasplanta el mundo del paquete de arte y guarda **encima**
   de `RideSafe_Garaje_v5`. Todo lo que se añadió a v5 después se pierde: el 2026-10-07 se llevó
@@ -429,6 +463,40 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-07 (noche) — tanda de UI sobre lo que Charlie vio corriendo
+
+Charlie recorrió el módulo entero y mandó doce capturas. Salieron once problemas, y **dos
+causas explicaban la mitad**.
+
+- **La UI la atravesaba el 3D.** Todos los canvas del módulo 1 son world space, así que se
+  ordenaban por profundidad junto con la geometría: el video salía detrás de un objeto y las
+  esferas del vehículo perforaban el reporte. La capa `UI` pasa a dibujarla una **cámara de
+  overlay en el stack de URP**, que comparte transform con la principal. Elegido así y no con
+  `ScreenSpaceOverlay` porque esto también vale en VR. Verificado con captura real.
+  **Falta:** el HUD se quedó en `Default` — la cámara se crea al principio del builder y el HUD
+  se construye después, así que la asignación de capa no lo alcanza. Moverla al final disparó
+  otra regresión (la fuente del `BeginButton`) y se revirtió.
+- **La lista lateral partía el texto en trozos de seis letras.** Medido, no supuesto: la
+  plantilla de fila mide 100×100 y la etiqueta se estira con 44 por la izquierda y 90 por la
+  derecha → **−34 de ancho**. En runtime el binding forzaba el panel a 250, la fila quedaba en
+  188 y la etiqueta en 54 px. Panel a 420 y corrido a la derecha. Arreglado y verificado.
+- **La leyenda del reporte** estaba escrita a mano en inglés en `UIModules.Module01.cs` y nunca
+  pasaba por I2. Ahora se localiza por nombre.
+- **El vehículo giratorio**: cada zona declara su giro en `VehicleProfileSO`, por vehículo, y el
+  director deja de teletransportar en la sección de vehículo. Queda **tras una guarda**: solo
+  actúa si la escena tiene el ancla `vehicle`, que aún no existe.
+- Cámara inicial bajada de 1.65 a 1.45.
+- **Plantilla de guion para el cliente** en `Docs/Guion_Modulo1_RideSafe_PLANTILLA.docx`, con la
+  estructura del guion de Excavaciones y cada hueco atado a su clave de I2.
+
+**Dos errores míos que costaron tiempo y conviene no repetir:**
+1. Diagnostiqué el ancho de la lista leyendo **píxeles de pantalla en vez de unidades de
+   canvas**, concluí que el `sizeDelta` del binding no se aplicaba y **reverté el arreglo que
+   era correcto**. El volcado de rects lo resolvió en un minuto.
+2. `Capture()` solo comprobaba que el PNG existiera: si el borrado fallaba daba verde sobre la
+   captura de la corrida anterior. Estuve mirando evidencia caducada. Ahora exige escritura
+   nueva.
 
 ### 2026-10-07 (tarde, 3) — I2: el export estaba a medias y la importación salió mal
 
