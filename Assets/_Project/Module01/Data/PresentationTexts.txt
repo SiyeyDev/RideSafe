@@ -55,7 +55,7 @@ Module1/Continue|Continuar|Continue
 Module1/VideoPlaceholder|Video provisional. El contenido educativo final está pendiente.|Placeholder video. Final educational content is pending.
 Module1/Selected|Seleccionado|Selected
 Module1/Omitted|Núcleo omitido|Core item omitted
-Module1/Conditional|Depende de la condición|Condition-dependent
+Module1/Conditional|Condicional|Conditional
 Module1/Inappropriate|No adecuado|Not suitable
 Module1/MyChoice_Title|Mi Elección|My choice
 Module1/MyChoice_Note|Los elementos opcionales no penalizan: solo cuentan el equipo de núcleo y lo que no corresponde llevar.|Optional items carry no penalty: only core gear and unsuitable choices count.

@@ -211,37 +211,28 @@ namespace RideSafe.UI.EditorTools
             };
 
             RectTransform leftRows, rightRows;
-            // Encabezados vacios: en una lista unica no significan nada, y SetSingleList los
-            // apaga. Se siguen creando porque el binding los busca por nombre.
-            TMP_Text leftHeading = Column(panel, "LeftColumn", 57f, string.Empty, out leftRows);
-            TMP_Text rightHeading = Column(panel, "RightColumn", 553f, string.Empty, out rightRows);
+            // UNA sola columna, centrada y ancha. Encabezados vacios: en una lista unica no
+            // significan nada, y SetSingleList los apaga. La segunda columna se sigue creando
+            // -el binding la busca por nombre- pero nace apagada y SetSingleList la deja asi.
+            TMP_Text leftHeading = Column(panel, "LeftColumn", 191f, string.Empty, out leftRows, 620f);
+            TMP_Text rightHeading = Column(panel, "RightColumn", 191f, string.Empty, out rightRows, 620f);
+            rightRows.parent.gameObject.SetActive(false);
 
             RectTransform template = _ui.StatusRowTemplate(leftRows);
             template.gameObject.SetActive(false);
             StatusGlyphs glyphs = new StatusGlyphs { Sprites = _ui.StatusSprites() };
-            BakeSamples(template, leftRows, left, glyphs);
-            BakeSamples(template, rightRows, right, glyphs);
+            // Las muestras de edicion van todas a la columna unica, como en runtime.
+            List<ComparisonEntry> muestras = new List<ComparisonEntry>(left);
+            muestras.AddRange(right);
+            BakeSamples(template, leftRows, muestras, glyphs);
 
-            // La leyenda se ensancha de 651 a 760 y los cuatro estados se reparten a intervalos
-            // iguales de 190. Con el reparto apretado de antes, las etiquetas en espanol
-            // -"Seleccion incorrecta", "Elemento en riesgo o deteriorado"- se montaban unas
-            // sobre otras: el espanol es mas largo que el ingles con el que se diseno el kit, y
-            // esta leyenda era el ultimo sitio donde quedaba sin arreglar. Las etiquetas
-            // tambien se acortaron: con el icono al lado, "Correcta" dice lo mismo que
-            // "Seleccion correcta" y cabe.
-            Transform legend = K.Slice(panel, "Checklist_Row_Selected", 120f, 421f, 880f, 466f, 2.4f, Color.white, "Legend").transform;
-            float pad = UIBuilderKit.PadFor(2.4f);
-            // Los cuatro estados que pidio la reunion, en su orden: correcto, incorrecto,
-            // omision y en riesgo. Lo condicional no entra en la leyenda: no es ni acierto ni
-            // fallo, y meterlo obligaba a explicar una quinta cosa que no se evalua.
+            // Ya no hay leyenda al pie. La palabra del estado va en cada fila, a su derecha.
             //
-            // El nombre del objeto no lleva el texto ingles: el binding localiza por nombre,
-            // y si el nombre cambia con el idioma de diseno la clave se pierde.
-            LegendItem(legend, "Status_Independent", 30f + pad, "Correct", "Legend_Correct");
-            LegendItem(legend, "Status_Retry", 220f + pad, "Incorrect", "Legend_Incorrect");
-            LegendItem(legend, "Status_Supported", 410f + pad, "Omission", "Legend_Omission");
-            LegendItem(legend, "Status_Attention", 600f + pad, "At risk", "Legend_AtRisk");
-
+            // La leyenda separada tenia dos problemas. Uno de uso: obliga a bajar la vista,
+            // contar iconos y volver a subir para saber que significa el de esta linea. Y otro
+            // de sitio: con las etiquetas en espanol -"Seleccion incorrecta", "Elemento en
+            // riesgo o deteriorado"- las cuatro se montaban unas sobre otras, y ensancharla
+            // solo aplazaba el problema hasta el siguiente idioma mas largo.
             _ui.Button(panel, "ExplainButton", "Explain each one", true, 397f, 473f, 604f, 523f);
 
             ComparisonView view = panel.gameObject.AddComponent<ComparisonView>();
@@ -257,9 +248,10 @@ namespace RideSafe.UI.EditorTools
             UIWire.Entries(view, "_right", right);
         }
 
-        private TMP_Text Column(Transform panel, string name, float x0, string heading, out RectTransform rows)
+        private TMP_Text Column(Transform panel, string name, float x0, string heading, out RectTransform rows,
+                               float width = 392f)
         {
-            GameObject column = _ui.StackPanel(panel, name, "Card_Default", 2.8f, x0, 123f, 392f, new RectOffset(23, 23, 22, 20), 8f);
+            GameObject column = _ui.StackPanel(panel, name, "Card_Default", 2.8f, x0, 123f, width, new RectOffset(23, 23, 22, 20), 8f);
             TMP_Text title = _ui.StackText(column.transform, "Heading", heading, K.Caps);
             _ui.StackDivider(column.transform);
             rows = UIElements.StackList(column.transform, "Rows", 2f);

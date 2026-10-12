@@ -103,16 +103,22 @@ que el aprendiz lea el texto»*.
 La reunión es posterior, así que manda la reunión. **Pero el motivo de entonces sigue siendo
 válido**, y en un visor el verde tira mucho. Vale la pena mirarlo en el Quest y decidir.
 
-### 2.2 «Mi Elección» es un panel con dos columnas, no una sola
+### 2.2 «Mi Elección» es un panel con UNA sola columna — resuelto
 
 Se pidió «eliminar la tabla duplicada de *Referencia para este recorrido*» y «unificar en un
-único panel centrado». La tabla duplicada **está eliminada** —y era literalmente la misma lista
-con los estados cambiados, o sea cero información nueva—.
+único panel centrado». La tabla duplicada está eliminada —era literalmente la misma lista con
+los estados cambiados, o sea cero información nueva— y **la lista va en una sola columna**, como
+pediste después.
 
-Lo que conservé son las **dos columnas**, repartiendo una sola lista entre ellas. Motivo: el
-reporte final junta los 7 elementos de protección con los 5 puntos del vehículo, y doce filas en
-una columna se salen del panel por abajo. Si prefieres una sola columna con desplazamiento, se
-cambia en un rato.
+Caben las doce filas que puede llegar a tener porque cada una es de una sola línea: el estado va
+como palabra a su derecha (CORRECTA, INCORRECTA, OMISIÓN, EN RIESGO, CONDICIONAL) en vez de en
+una leyenda al pie. Eso resolvió tres cosas de golpe: se lee sin bajar la vista a descifrar
+iconos, desaparece el solape de las etiquetas largas en español, y la fila deja de necesitar una
+segunda línea.
+
+De paso: **cada fila mostraba el id crudo** (`helmet_ok`, `point_brakes`) debajo del título. Era
+texto de depuración a la vista del aprendiz; ya no se pinta, pero sigue en los datos para que los
+tests lo puedan afirmar.
 
 ### 2.3 El cuarto estado: «en riesgo» vs «incorrecto»
 

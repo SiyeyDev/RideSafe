@@ -104,14 +104,8 @@ namespace RideSafe.Module01
             LocalizeButton(ComparisonPanel, "ExplainButton", "WatchVideo");
             // La leyenda estaba escrita a mano en ingles y nunca pasaba por I2, asi que salia
             // en ingles incluso con el resto del modulo en espanol.
-            // Los cuatro estados que pidio la reunion. Los nombres de objeto cambiaron con la
-            // leyenda nueva, y como esto localiza POR NOMBRE, dejarlos como estaban hacia que
-            // no encontrara ninguno y la leyenda saliera en ingles con el resto del modulo en
-            // espanol. Se vio en la captura de PlayMode, no en los tests.
-            Localize(ComparisonPanel, "Legend_Correct", "Legend_Correct");
-            Localize(ComparisonPanel, "Legend_Incorrect", "Legend_Incorrect");
-            Localize(ComparisonPanel, "Legend_Omission", "Legend_Omission");
-            Localize(ComparisonPanel, "Legend_AtRisk", "Legend_AtRisk");
+            // Ya no se localiza ninguna leyenda al pie: no la hay. La palabra del estado la
+            // resuelve ComparisonView fila por fila, con las mismas claves Module1/Legend_*.
             LocalizeButton(ExplanationPanel, "PauseButton", "Pause");
             LocalizeButton(ExplanationPanel, "ReplayButton", "Replay");
             LocalizeButton(ExplanationPanel, "ContinueButton", "Continue");

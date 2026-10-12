@@ -335,19 +335,47 @@ namespace RideSafe.Module01
             // Demo media can be replaced independently for the personal and vehicle reviews.
             _video.clip = _director.InVehicleSection ? _vehicleVideo : _personalVideo;
             _videoComplete = false;
-            // Play() sobre un clip sin preparar se queda en prepared=true, playing=false cuando la
-            // decodificacion tarda, y la pantalla se ve en negro. Se prepara primero y se arranca
-            // en el callback, que no tiene carrera. waitForFirstFrame off para no esperar a que
-            // alguien dibuje la Game View, que en un test de PlayMode no pasa.
-            _video.waitForFirstFrame = false;
-            _video.prepareCompleted -= PlayPrepared;
-            _video.prepareCompleted += PlayPrepared;
-            _video.Prepare();
+            StartCoroutine(PrepareAndPlay());
         }
-        private void PlayPrepared(VideoPlayer player)
+
+        /// <summary>
+        /// Prepara el clip y lo arranca.
+        /// <para>
+        /// <b>Esperando a <c>isPrepared</c>, no al evento <c>prepareCompleted</c>.</b> Play()
+        /// sobre un clip sin preparar se queda en <c>prepared=true, playing=false</c> y la
+        /// pantalla sale negra, así que hay que preparar primero; pero colgarse del evento tiene
+        /// su propio fallo: <b>si el reproductor ya estaba preparado, <c>Prepare()</c> no vuelve
+        /// a emitirlo</b> y el video se queda esperando un aviso que no llega. Sondear el estado
+        /// no tiene esa carrera.
+        /// </para>
+        /// <para>
+        /// <c>waitForFirstFrame</c> en false para no esperar a que alguien dibuje la Game View,
+        /// que en un test de PlayMode no pasa. Y si la preparación no llega, se desbloquea el
+        /// botón igual: un video que no carga no puede encerrar al aprendiz en la pantalla.
+        /// </para>
+        /// </summary>
+        private IEnumerator PrepareAndPlay()
         {
-            player.prepareCompleted -= PlayPrepared;
-            if (Phase == "Video") player.Play();
+            _video.waitForFirstFrame = false;
+
+            if (!_video.isPrepared)
+            {
+                _video.Prepare();
+                float until = Time.realtimeSinceStartup + 10f;
+                while (!_video.isPrepared && Time.realtimeSinceStartup < until)
+                    yield return null;
+            }
+
+            if (!_video.isPrepared)
+            {
+                Debug.LogError("[Module01] El video no llego a prepararse; se desbloquea Continuar.");
+                _videoComplete = true;
+                _binding.Explanation.SetContinueEnabled(true);
+                yield break;
+            }
+
+            if (Phase == "Video")
+                _video.Play();
         }
         [SerializeField] private VideoClip _personalVideo;
         [SerializeField] private VideoClip _vehicleVideo;
@@ -412,7 +440,6 @@ namespace RideSafe.Module01
         private void OnDestroy()
         {
             foreach (var listener in _listeners) if (listener.button != null) listener.button.onClick.RemoveListener(listener.action);
-            if (_video != null) _video.prepareCompleted -= PlayPrepared;
             if (_localization != null) _localization.LanguageChanged -= RefreshInstruction;
             if (_director != null) { _director.ZoneEntered -= EnterZone; _director.PersonalSectionCompleted -= ShowPersonalReport; _director.VehicleSectionCompleted -= ShowVehicleReport; _director.Finished -= ShowFinalReport; }
         }

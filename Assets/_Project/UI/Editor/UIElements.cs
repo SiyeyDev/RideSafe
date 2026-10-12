@@ -300,12 +300,26 @@ namespace RideSafe.UI.EditorTools
             return (RectTransform)row.transform;
         }
 
-        /// <summary>Status row blueprint: glyph + title + optional detail, stacked by layout.</summary>
+        /// <summary>
+        /// Plantilla de fila de estado: icono + título + la palabra del estado a la derecha.
+        /// <para>
+        /// La palabra del estado va <b>en cada fila</b>, y no en una leyenda aparte al pie del
+        /// panel. Una leyenda separada obliga a mirar abajo, contar iconos y volver a subir
+        /// para saber qué significa el de esta línea; con la palabra al lado se lee de una. De
+        /// paso el estado queda expresado por forma, color <b>y texto</b>, que es la regla que
+        /// este proyecto ya se había puesto.
+        /// </para>
+        /// <para>
+        /// El <c>Detail</c> sigue existiendo y es opcional: el panel de explicación lo usa para
+        /// una segunda línea. En el reporte va vacío, así que la fila es de una sola línea y
+        /// caben las doce que puede llegar a tener.
+        /// </para>
+        /// </summary>
         public RectTransform StatusRowTemplate(Transform container)
         {
             GameObject row = UIBuilderKit.NewUi("RowTemplate", container);
             UnityEngine.UI.HorizontalLayoutGroup layout = row.AddComponent<UnityEngine.UI.HorizontalLayoutGroup>();
-            layout.spacing = 6f;
+            layout.spacing = 8f;
             layout.childAlignment = TextAnchor.UpperLeft;
             layout.childControlWidth = layout.childControlHeight = true;
             layout.childForceExpandWidth = layout.childForceExpandHeight = false;
@@ -317,7 +331,7 @@ namespace RideSafe.UI.EditorTools
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             UnityEngine.UI.LayoutElement iconLayout = iconGo.AddComponent<UnityEngine.UI.LayoutElement>();
-            iconLayout.minWidth = iconLayout.preferredWidth = iconLayout.minHeight = iconLayout.preferredHeight = 36f;
+            iconLayout.minWidth = iconLayout.preferredWidth = iconLayout.minHeight = iconLayout.preferredHeight = 28f;
 
             GameObject column = UIBuilderKit.NewUi("Text", row.transform);
             UnityEngine.UI.VerticalLayoutGroup stack = column.AddComponent<UnityEngine.UI.VerticalLayoutGroup>();
@@ -325,11 +339,19 @@ namespace RideSafe.UI.EditorTools
             stack.childControlWidth = stack.childControlHeight = true;
             stack.childForceExpandWidth = true;
             stack.childForceExpandHeight = false;
-            stack.padding = new RectOffset(0, 0, 7, 0);
+            stack.padding = new RectOffset(0, 0, 4, 0);
             column.AddComponent<UnityEngine.UI.LayoutElement>().flexibleWidth = 1f;
 
             _kit.AddText(UIBuilderKit.NewUi("Title", column.transform), "Item", _kit.Body, TextAlignmentOptions.TopLeft);
             _kit.AddText(UIBuilderKit.NewUi("Detail", column.transform), "Detail", _kit.Small, TextAlignmentOptions.TopLeft);
+
+            // La palabra del estado, alineada a la derecha y con ancho fijo para que las doce
+            // filas queden en columna y se puedan comparar de un vistazo.
+            GameObject stateGo = UIBuilderKit.NewUi("State", row.transform);
+            TMP_Text state = _kit.AddText(stateGo, string.Empty, _kit.Caps.With(12f), TextAlignmentOptions.MidlineRight);
+            state.textWrappingMode = TextWrappingModes.NoWrap;
+            UnityEngine.UI.LayoutElement stateLayout = stateGo.AddComponent<UnityEngine.UI.LayoutElement>();
+            stateLayout.minWidth = stateLayout.preferredWidth = 120f;
             return (RectTransform)row.transform;
         }
 

@@ -187,12 +187,15 @@ namespace RideSafe.Module01.Editor
             // debajo solo quedan unos 80. Un panel con titulo, cuerpo y dos botones pedia 210 y
             // se comia la leyenda entera.
             //
-            // Al medirlo: el rect de la barra sale y[-277..-191] y la leyenda y[-195..-136], que
-            // parece un solape de 3. No lo es. Panel() infla el rect por el padding transparente
-            // del atlas para que el ARTE VISIBLE mida lo pedido, asi que lo que se ve son 72 y no
-            // 86: -270..-198, tres por debajo de la leyenda. Comparar rects pelados aqui da un
-            // falso positivo; hay que descontar PadFor antes de concluir nada.
-            var result=Panel("FinalResult",hud.transform,new Vector2(0,-234),new Vector2(660,72),"Panel_Modal_Light",2.4f);
+            // Va por DEBAJO del marco de 1002x556, y eso es correcto: ese marco es la rejilla de
+            // diseno, no el limite de lo que se ve. A 1.8 m y con 60 de campo vertical la vista
+            // abarca 2.08 m, y el marco solo 1.11: ocupa el 53 %. Queda casi medio metro libre
+            // por abajo, que es lo que necesita la columna unica de "Mi Eleccion" para sus doce
+            // filas sin apretarlas.
+            //
+            // Comprobado el angulo: el borde inferior de la barra cae a 23.6 grados por debajo
+            // del centro, dentro de los 30 que da el campo visual.
+            var result=Panel("FinalResult",hud.transform,new Vector2(0,-358),new Vector2(660,72),"Panel_Modal_Light",2.4f);
             Button("ContinueModule2Button",result,new Vector2(-165,0),new Vector2(300,48),"Module1/ContinueModule2",true,16f);
             Button("RepeatModuleButton",result,new Vector2(170,0),new Vector2(280,48),"Module1/RepeatModule",false,16f);
             Set(exp,"_result",result.gameObject);

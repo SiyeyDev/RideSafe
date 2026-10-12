@@ -374,6 +374,11 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 - **Una captura que solo comprueba que el archivo existe miente.** Si el borrado falla, el
   assert pasa sobre la imagen de la corrida anterior y se revisa evidencia caducada. Exigir
   marca de escritura nueva.
+- **`VideoPlayer.prepareCompleted` no se vuelve a emitir si el reproductor ya estaba
+  preparado.** Arrancar el video desde ese evento deja `prepared=true, playing=false` esperando
+  un aviso que no llega, y la pantalla en negro. Es la otra cara de la trampa de arriba: no
+  basta con preparar antes de `Play()`, hay que **sondear `isPrepared`** en vez de colgarse del
+  evento. Tumbó los dos tests de recorrido completo y no dejó ni una excepción en el log.
 - **`Montar escena jugable` no edita v5: la regenera y borra lo que no sepa rehacer.**
   Abre siempre `RideSafe_Garaje`, le trasplanta el mundo del paquete de arte y guarda **encima**
   de `RideSafe_Garaje_v5`. Todo lo que se añadió a v5 después se pierde: el 2026-10-07 se llevó

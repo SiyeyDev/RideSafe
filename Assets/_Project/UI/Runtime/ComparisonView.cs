@@ -58,8 +58,17 @@ namespace RideSafe.UI
             return Sprites != null && index < Sprites.Length ? Sprites[index] : null;
         }
 
-        /// <summary>Fills a status row (children 'Icon', 'Title', 'Detail').</summary>
-        public void Bind(Transform row, ComparisonEntry entry)
+        /// <summary>Rellena una fila de estado (hijos 'Icon', 'Text/Title', 'Text/Detail', 'State').</summary>
+        public void Bind(Transform row, ComparisonEntry entry) => Bind(row, entry, null);
+
+        /// <summary>
+        /// Igual, y además escribe la palabra del estado a la derecha de la fila.
+        /// <para>
+        /// Con <paramref name="stateLabel"/> vacío la columna se apaga, que es lo que necesita
+        /// el panel de explicación: allí hay una sola fila y el estado ya se cuenta en el texto.
+        /// </para>
+        /// </summary>
+        public void Bind(Transform row, ComparisonEntry entry, string stateLabel)
         {
             UnityEngine.UI.Image icon = FindComponent<UnityEngine.UI.Image>(row, "Icon");
             if (icon != null && For(entry.Status) != null)
@@ -74,6 +83,13 @@ namespace RideSafe.UI
             {
                 detail.text = entry.Detail ?? string.Empty;
                 detail.gameObject.SetActive(!string.IsNullOrEmpty(entry.Detail));
+            }
+
+            TMP_Text state = FindComponent<TMP_Text>(row, "State");
+            if (state != null)
+            {
+                state.text = stateLabel ?? string.Empty;
+                state.gameObject.SetActive(!string.IsNullOrEmpty(stateLabel));
             }
         }
 
@@ -106,6 +122,38 @@ namespace RideSafe.UI
         [SerializeField] private List<ComparisonEntry> _left = new List<ComparisonEntry>();
         [SerializeField] private List<ComparisonEntry> _right = new List<ComparisonEntry>();
 
+        [Tooltip("Clave de la palabra de cada estado, en orden de ItemStatus. Se muestra en cada fila.")]
+        [SerializeField]
+        private string[] _stateKeys =
+        {
+            "Module1/Legend_Correct", "Module1/Legend_Omission", "Module1/Conditional",
+            "Module1/Legend_Incorrect", "Module1/Legend_AtRisk"
+        };
+
+        private readonly List<ComparisonEntry> _current = new List<ComparisonEntry>();
+
+        /// <summary>
+        /// Lo que el panel está mostrando. Público para que un test pueda afirmar sobre el
+        /// contenido sin depender del idioma ni de leer píxeles.
+        /// </summary>
+        public IReadOnlyList<ComparisonEntry> Entries => _current;
+
+        /// <summary>
+        /// La palabra del estado, ya traducida.
+        /// <para>
+        /// Lo condicional también lleva la suya. Se probó a dejarlo en blanco —no es ni acierto
+        /// ni fallo, así que no entra en la cuenta— y en pantalla el hueco no se lee como
+        /// «no aplica» sino como un dato que falta. Decirlo es más barato que explicarlo.
+        /// </para>
+        /// </summary>
+        private string StateLabel(ItemStatus status)
+        {
+            int i = (int)status;
+            if (_stateKeys == null || i >= _stateKeys.Length || string.IsNullOrEmpty(_stateKeys[i]))
+                return string.Empty;
+            return UIText.Resolve(_stateKeys[i]);
+        }
+
         private void Awake()
         {
             if (_rowTemplate != null)
@@ -127,16 +175,18 @@ namespace RideSafe.UI
         }
 
         /// <summary>
-        /// Una sola lista —«Mi Elección»— repartida entre las dos columnas del panel.
+        /// «Mi Elección»: <b>una sola lista en una sola columna</b>.
         /// <para>
         /// La reunión pidió quitar la tabla duplicada de «Referencia para este recorrido» y
-        /// dejar un único panel centrado. Quitar la tabla es quitar el <b>contenido</b>
-        /// repetido, no la segunda columna: el reporte final junta los 7 elementos de
-        /// protección con los 5 puntos del vehículo, y doce filas en una sola columna se salen
-        /// del panel por abajo. Repartidas en dos, caben y se siguen leyendo como una lista.
+        /// dejar un único panel. Primero se repartió la lista en las dos columnas que ya
+        /// existían, pero leer de arriba abajo y luego saltar a la derecha para seguir la misma
+        /// lista es peor que una columna larga: parecen dos tablas otra vez, que es justo lo que
+        /// se quería quitar.
         /// </para>
         /// <para>
-        /// Los encabezados de columna se apagan, porque en una lista única no significan nada.
+        /// Caben las doce filas que puede llegar a tener —7 de protección más 5 del vehículo—
+        /// porque cada fila es de una sola línea: el estado va como palabra a su derecha, no
+        /// como segunda línea ni en una leyenda al pie.
         /// </para>
         /// </summary>
         public void SetSingleList(string title, string note, IList<ComparisonEntry> entries)
@@ -146,14 +196,12 @@ namespace RideSafe.UI
             if (_leftHeading != null) _leftHeading.gameObject.SetActive(false);
             if (_rightHeading != null) _rightHeading.gameObject.SetActive(false);
 
-            int half = (entries.Count + 1) / 2;
-            List<ComparisonEntry> first = new List<ComparisonEntry>();
-            List<ComparisonEntry> second = new List<ComparisonEntry>();
-            for (int i = 0; i < entries.Count; i++)
-                (i < half ? first : second).Add(entries[i]);
+            // La segunda columna se apaga entera, no solo se vacía: un contenedor vacío sigue
+            // ocupando su sitio y dejaba el panel descentrado.
+            if (_rightRows != null && _rightRows.parent != null)
+                _rightRows.parent.gameObject.SetActive(false);
 
-            Fill(_leftRows, first);
-            Fill(_rightRows, second);
+            Fill(_leftRows, entries);
         }
 
         private void Fill(RectTransform container, IList<ComparisonEntry> entries)
@@ -173,7 +221,18 @@ namespace RideSafe.UI
                 GameObject row = Instantiate(_rowTemplate.gameObject, container);
                 row.name = "Row · " + entries[i].Title;
                 row.SetActive(true);
-                _glyphs.Bind(row.transform, entries[i]);
+                // El Detail de este panel lleva el id del elemento -'helmet_ok', 'point_brakes'-
+                // para que el reporte sea rastreable y testeable, pero eso NO se enseña: es
+                // texto de depuración y estaba saliendo debajo de cada título. Se pinta sin él;
+                // quien lo necesita lo lee de Entries.
+                ComparisonEntry visible = new ComparisonEntry(entries[i].Status, entries[i].Title);
+                _glyphs.Bind(row.transform, visible, StateLabel(entries[i].Status));
+            }
+
+            if (container == _leftRows)
+            {
+                _current.Clear();
+                _current.AddRange(entries);
             }
         }
     }

@@ -232,7 +232,13 @@ namespace RideSafe.Module01.Tests
             yield return WaitFor(() => _director.IsFinished, "Reporte final");
             Assert.AreEqual("Comparison", _binding.Module.Current);
             AssertVisible(_binding.Comparison.GetComponentsInChildren<TMP_Text>().First(t => t.name == "Title").rectTransform);
-            Assert.IsTrue(_binding.Comparison.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("point_brakes")), "El reporte no muestra el vehiculo");
+            // Se afirma sobre los DATOS del panel y no sobre su texto: el id ya no se pinta
+            // -era texto de depuracion saliendo debajo de cada titulo- y el nombre visible
+            // depende del idioma.
+            Assert.IsTrue(_binding.Comparison.Entries.Any(e => e.Detail == "point_brakes"),
+                "El reporte no muestra el vehiculo");
+            Assert.IsFalse(_binding.Comparison.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("point_brakes")),
+                "El id crudo 'point_brakes' se esta viendo en pantalla.");
             // 4 y no 6: tres saltos a las estaciones de protección personal y UNO al punto de
             // exhibición del vehículo. Las otras dos zonas del vehículo ya no mueven al
             // aprendiz —gira el vehículo, que es lo que pidió la reunión—, así que exigir seis

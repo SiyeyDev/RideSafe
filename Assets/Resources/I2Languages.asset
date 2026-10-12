@@ -1174,8 +1174,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Condition-dependent
-      - "Depende de la condici\xF3n"
+      - Conditional
+      - Condicional
       Flags: 0000
       Languages_Touch: []
     - Term: Module1/Inappropriate
