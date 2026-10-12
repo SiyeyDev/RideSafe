@@ -21,6 +21,9 @@ namespace RideSafe.Module01
 
         [SerializeField] private List<Entry> _vehicles = new List<Entry>();
 
+        [Tooltip("Puntos de inspección. Se cuelgan del vehículo elegido al encenderlo.")]
+        [SerializeField] private List<WorldObjectTaskEntity> _inspectionPoints = new List<WorldObjectTaskEntity>();
+
         [Tooltip("Segundos que tarda el vehículo en girar de una zona a otra.")]
         [SerializeField, Min(0f)] private float _turnSeconds = .8f;
 
@@ -63,7 +66,44 @@ namespace RideSafe.Module01
                     entry.Model.SetActive(entry == match);
 
             _active = match;
+            AttachInspectionPoints(match);
             FaceYaw(TargetYaw, immediate: true);
+        }
+
+        /// <summary>
+        /// Cuelga cada punto de inspección del mount correspondiente del vehículo encendido.
+        /// <para>
+        /// Hace falta en runtime y no basta con dejarlo hecho en la escena, porque hay
+        /// <b>una sola entidad por punto</b> para los dos vehículos: sus ids no llevan el
+        /// vehículo —<c>module01.cockpit.point_brakes</c>—, que es justo lo que permite que los
+        /// dos perfiles compartan las tres zonas y que no haga falta ni un término nuevo de I2.
+        /// Con los dos vehículos presentes en la escena, dejarlo cableado en el editor repartía
+        /// los cinco puntos entre las dos mallas a capricho de en cuál cayera primero la
+        /// búsqueda por nombre.
+        /// </para>
+        /// </summary>
+        private void AttachInspectionPoints(Entry entry)
+        {
+            if (entry?.Model == null)
+                return;
+
+            foreach (WorldObjectTaskEntity point in _inspectionPoints)
+            {
+                if (point == null || string.IsNullOrEmpty(point.ItemId))
+                    continue;
+
+                Transform mount = entry.Model.transform.Find("mount_" + point.ItemId);
+                if (mount == null)
+                {
+                    Debug.LogWarning(
+                        $"[Module01] '{entry.Model.name}' no tiene 'mount_{point.ItemId}'; " +
+                        "ese punto se queda donde estaba.", this);
+                    continue;
+                }
+
+                point.transform.SetParent(mount, false);
+                point.transform.localPosition = Vector3.zero;
+            }
         }
 
         /// <summary>

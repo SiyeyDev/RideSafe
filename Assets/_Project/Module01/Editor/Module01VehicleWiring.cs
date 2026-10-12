@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -85,9 +86,25 @@ namespace RideSafe.Module01.Editor
                 index++;
             }
 
+            // Los puntos de inspeccion los cuelga el escenario del vehiculo encendido, en
+            // runtime: hay una sola entidad por punto para los dos vehiculos, asi que no se
+            // puede dejar decidido en la escena de cual cuelga.
+            SerializedProperty points = so.FindProperty("_inspectionPoints");
+            points.ClearArray();
+            WorldObjectTaskEntity[] found = Object
+                .FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .Where(e => e.ItemId.StartsWith("point_"))
+                .OrderBy(e => e.ItemId)
+                .ToArray();
+            for (int i = 0; i < found.Length; i++)
+            {
+                points.InsertArrayElementAtIndex(i);
+                points.GetArrayElementAtIndex(i).objectReferenceValue = found[i];
+            }
+
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(stage);
-            Debug.Log($"[Module01] Escenario de vehiculos con {index} mallas.");
+            Debug.Log($"[Module01] Escenario de vehiculos con {index} mallas y {found.Length} puntos de inspeccion.");
         }
 
         /// <summary>

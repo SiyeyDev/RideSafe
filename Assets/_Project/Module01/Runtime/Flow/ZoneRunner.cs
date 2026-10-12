@@ -90,7 +90,10 @@ namespace RideSafe.Module01
             foreach (WorldObjectTaskEntity entity in _entities)
             {
                 if (entity != null)
+                {
                     entity.SelectionConfirmed -= HandleEntityConfirmed;
+                    Mark(entity, highlighted: false);
+                }
             }
             _entities.Clear();
 
@@ -108,7 +111,26 @@ namespace RideSafe.Module01
                     continue;
                 entity.SelectionConfirmed += HandleEntityConfirmed;
                 _entities.Add(entity);
+                // Solo laten y se encienden en naranja los puntos de la zona en curso: si
+                // latieran todos, ninguno diria "este".
+                Mark(entity, highlighted: true);
             }
+        }
+
+        /// <summary>
+        /// Pone el marcador del punto en su estado. Silencioso cuando no hay marcador: los
+        /// elementos de protección personal no lo llevan, y no es un fallo.
+        /// </summary>
+        private static void Mark(WorldObjectTaskEntity entity, bool highlighted)
+        {
+            if (entity == null)
+                return;
+            InspectionMarker marker = entity.GetComponent<InspectionMarker>();
+            if (marker == null)
+                return;
+            marker.SetHighlighted(highlighted);
+            if (highlighted)
+                marker.SetResolved(false);
         }
 
         private void HandleEntityConfirmed(ITaskEntity entity)
@@ -147,6 +169,11 @@ namespace RideSafe.Module01
         {
             if (_zone == null)
                 return;
+
+            foreach (WorldObjectTaskEntity entity in _entities)
+                if (entity != null && entity.ItemId == item.ItemId)
+                    entity.GetComponent<InspectionMarker>()?.SetResolved(true);
+
             if (!_resolved.Add(item.ItemId))
                 return;
             if (_resolved.Count >= _zone.Items.Count)
