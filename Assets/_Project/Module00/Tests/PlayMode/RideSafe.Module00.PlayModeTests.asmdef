@@ -1,0 +1,34 @@
+{
+    "name": "RideSafe.Module00.PlayModeTests",
+    "rootNamespace": "RideSafe.Module00.Tests",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "RideSafe.Module00",
+        "RideSafe.UI",
+        "TaskSequence",
+        "Tutorial",
+        "Tutorial.AutoHand",
+        "Tutorial.Presentation",
+        "Cachacos",
+        "AutoHandAssembly",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Sirenix.Serialization.dll",
+        "Sirenix.Utilities.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

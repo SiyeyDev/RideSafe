@@ -1,0 +1,16 @@
+{
+    "name": "RideSafe.Module00",
+    "rootNamespace": "RideSafe.Module00",
+    "references": [
+        "RideSafe.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

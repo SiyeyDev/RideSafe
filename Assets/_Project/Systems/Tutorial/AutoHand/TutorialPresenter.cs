@@ -1,5 +1,4 @@
-using Autohand;
-using Autohand.Demo;
+using System.Collections.Generic;
 using Cachacos;
 using RideSafe.TaskSequence;
 using TMPro;
@@ -18,13 +17,20 @@ namespace RideSafe.Tutorial.AutoHand
     /// </para>
     /// <para>
     /// <b>Reminder</b> (already learned, or a step without an action): instruction at once,
-    /// highlight after <c>_highlightAfter</c> seconds of waiting, controller hint after
-    /// <c>_inputHintAfter</c>.
+    /// highlight and controller hint after the delays of <see cref="TutorialHelpPolicy"/>,
+    /// which fades help as <see cref="TutorialProgress.PracticeCount"/> grows. Its defaults
+    /// keep the original ladder (highlight 2.75 s, controller 5 s).
     /// </para>
     /// <para>
     /// Every piece of help asks <see cref="TutorialAssistanceGuard"/> first. World feedback
     /// (the target reacting, the pressed button, haptic, sound) is the result of the
     /// learner's own action, not help, so it is not gated.
+    /// </para>
+    /// <para>
+    /// Hardware stays behind contracts: the action's hand and control come from an
+    /// <see cref="IPhysicalBindingResolver"/>, vibration from <see cref="IHapticFeedback"/>,
+    /// hand poses from <see cref="IXRPoseProvider"/>, and the controller drawing is any
+    /// <see cref="IControllerHintView"/> (3D Touch Plus first, the 2D drawing as fallback).
     /// </para>
     /// </summary>
     [AddComponentMenu("RideSafe/Tutorial/Tutorial Presenter")]
@@ -32,7 +38,10 @@ namespace RideSafe.Tutorial.AutoHand
     public class TutorialPresenter : MonoBehaviour
     {
         [SerializeField] private TaskSequenceService _service;
-        [SerializeField] private AutoHandTutorialInputService _input;
+
+        [Tooltip("Resolves an action to hand + control (IPhysicalBindingResolver), and optionally vibrates " +
+                 "(IHapticFeedback). E.g. AutoHandTutorialInputService.")]
+        [SerializeField] private MonoBehaviour _input;
 
         [Tooltip("XRPlayer's head camera. Highlight and controller hint face it.")]
         [SerializeField] private Transform _viewer;
@@ -41,14 +50,52 @@ namespace RideSafe.Tutorial.AutoHand
         [Tooltip("Short instruction at a comfortable fixed spot in the garage.")]
         [SerializeField] private TMP_Text _instructionLabel;
 
+        [Tooltip("Place the instruction just above the step's target, facing the viewer. Off keeps it where the " +
+                 "scene put it. Needed when the label must be readable before its authored parent is shown.")]
+        [SerializeField] private bool _instructionAboveTarget;
+
+        [Tooltip("With the instruction above the target: distance at which it keeps its authored size. Farther " +
+                 "targets get a proportionally larger label, so it reads the same. 0 = never rescale.")]
+        [SerializeField, Min(0f)] private float _instructionReferenceDistance;
+
+        [Tooltip("With the instruction above the target: metres between the target's top and the label, at the " +
+                 "authored size. Room for the panel's own title.")]
+        [SerializeField, Min(0f)] private float _instructionGap = 0.08f;
+
+        [Tooltip("With the instruction above the target: when the target is this many metres or more below eye " +
+                 "level (e.g. a Continue/Confirm bar), the instruction goes under it instead, clear of the panel's " +
+                 "own content above. 0 = always above.")]
+        [SerializeField, Min(0f)] private float _instructionBelowUnderEyeBy;
+
+        [Tooltip("Measure UI targets by their visible graphics only, so highlight and instruction hug the real " +
+                 "cards instead of a stretched container.")]
+        [SerializeField] private bool _boundsFromVisibleGraphics;
+
         [Tooltip("Ring drawn around the target. Local-space circle of radius 1.")]
         [SerializeField] private LineRenderer _highlight;
 
-        [SerializeField] private ControllerHintView _controllerHint;
+        [Tooltip("Optional ITargetHighlightView that draws the target mark instead of the line ring, e.g. a " +
+                 "SpriteTargetHighlight with RideSafe's Focus_Ring_Mint. This presenter still decides when it shows.")]
+        [SerializeField] private MonoBehaviour _targetHighlight;
+        [Tooltip("Also highlight UI controls that have their own hover/selected states (cards, buttons). " +
+                 "Off: those steps rely on the UI's own states and only 3D/neutral targets get the mark. " +
+                 "A step's Target Highlight (Show/Hide) overrides this.")]
+        [SerializeField] private bool _highlightSelfStyledUI;
 
-        [Header("Reminder ladder (seconds waiting, learned actions)")]
-        [SerializeField, Min(0f)] private float _highlightAfter = 2.75f;
-        [SerializeField, Min(0f)] private float _inputHintAfter = 5f;
+        [Tooltip("IControllerHintView tried first, e.g. ControllerHint3DView.")]
+        [SerializeField] private MonoBehaviour _controllerHint;
+
+        [Tooltip("IControllerHintView used when the first one cannot draw the control, e.g. the 2D ControllerHintView.")]
+        [SerializeField] private MonoBehaviour _fallbackControllerHint;
+
+        [Header("Help fading")]
+        [Tooltip("When highlight and controller appear, by how often the action was already practised.")]
+        [SerializeField] private TutorialHelpPolicy _help = new TutorialHelpPolicy();
+
+        [Header("Focus feedback")]
+        [Tooltip("The ring stops pulsing and changes colour while the learner points at the target.")]
+        [SerializeField] private bool _ringReactsToFocus;
+        [SerializeField] private Color _focusedRingColor = new Color(0.55f, 0.95f, 0.75f, 1f);
 
         [Header("Feedback")]
         [SerializeField] private float _focusScale = 1.06f;
@@ -61,6 +108,10 @@ namespace RideSafe.Tutorial.AutoHand
         [SerializeField, Min(0.01f)] private float _minHighlightRadius = 0.08f;
 
         private TaskSequenceRunner _runner;
+        private IPhysicalBindingResolver _bindings;
+        private IHapticFeedback _haptics;
+        private IXRPoseProvider _poses;
+        private readonly List<IControllerHintView> _hintViews = new List<IControllerHintView>(2);
         private TutorialAssistanceGuard _guard;
         private ILocalizationProvider _localization;
         private AudioSource _audio;
@@ -69,14 +120,21 @@ namespace RideSafe.Tutorial.AutoHand
         private TaskStepData _step;
         private ITaskEntity _entity;
         private ActionId _action;
+        private HelpStage _stage;
+        private HelpTiming _timing;
         private bool _firstUse;
         private bool _reacted;
         private float _waited;
-        private int _level = -1;
+        private bool _showHighlight;
+        private bool _showHint;
 
         // Views state
         private ITaskEntity _highlighted;
+        private IControllerHintView _activeHint;
+        private ITargetHighlightView _targetHighlightView;
         private Transform _hintAnchor;
+        private XRNodeRole _hintHand;
+        private bool _hintFollows;
         private bool _hintAnchoredToHand;
 
         // Target feedback (outlives the step so the pop can finish)
@@ -84,11 +142,34 @@ namespace RideSafe.Tutorial.AutoHand
         private Vector3 _feedbackBaseScale;
         private bool _focused;
         private float _popTime = -1f;
+        private Color _ringStartColor;
+        private Color _ringEndColor;
+        private Vector3 _instructionBaseScale = Vector3.one;
+        private float _instructionBottom;
+        private float _instructionTop;
+        private readonly List<Graphic> _graphics = new List<Graphic>();
+        private readonly Vector3[] _corners = new Vector3[4];
 
         #region Lifecycle
 
         protected virtual void Awake()
         {
+            _bindings = _input as IPhysicalBindingResolver;
+            _haptics = _input as IHapticFeedback;
+            AddHintView(_controllerHint);
+            AddHintView(_fallbackControllerHint);
+
+            _targetHighlightView = _targetHighlight as ITargetHighlightView;
+            if (_targetHighlight != null && _targetHighlightView == null)
+                Debug.LogError("[Tutorial] '" + _targetHighlight.name + "' is not an ITargetHighlightView.", this);
+            if (_instructionLabel != null)
+                _instructionBaseScale = _instructionLabel.transform.localScale;
+            if (_highlight != null)
+            {
+                _ringStartColor = _highlight.startColor;
+                _ringEndColor = _highlight.endColor;
+            }
+
             _audio = GetComponent<AudioSource>();
             _audio.playOnAwake = false;
             _audio.spatialBlend = 0f;
@@ -139,14 +220,16 @@ namespace RideSafe.Tutorial.AutoHand
 
         protected virtual void Update()
         {
-            if (_step == null || _firstUse || _runner == null || _runner.Phase != TaskStepPhase.WaitForInteraction)
+            if (_step == null || _runner == null || _runner.Phase != TaskStepPhase.WaitForInteraction)
                 return;
 
             _waited += Time.deltaTime;
-            int level = _waited >= _inputHintAfter ? 2 : (_waited >= _highlightAfter ? 1 : 0);
-            if (level > _level)
+            bool highlight = _showHighlight || _timing.ShowHighlight(_waited);
+            bool hint = _showHint || (_action.IsValid && _timing.ShowControllerHint(_waited));
+            if (highlight != _showHighlight || hint != _showHint)
             {
-                _level = level;
+                _showHighlight = highlight;
+                _showHint = hint;
                 Refresh();
             }
         }
@@ -158,15 +241,32 @@ namespace RideSafe.Tutorial.AutoHand
                 Vector3 center;
                 Vector2 half;
                 GetExtents(_highlighted.Transform, out center, out half);
-                Transform ring = _highlight.transform;
-                ring.position = center;
-                FaceViewer(ring);
-                float pulse = 1f + 0.06f * Mathf.Sin(Time.time * 4f);
-                ring.localScale = new Vector3(half.x * pulse, half.y * pulse, 1f);
+                bool focused = _ringReactsToFocus && _focused && _highlighted == _entity;
+                if (_targetHighlightView != null)
+                {
+                    Pose viewer;
+                    Quaternion facing = TryGetViewer(out viewer)
+                        ? Quaternion.LookRotation(center - viewer.position, Vector3.up)
+                        : _highlighted.Transform.rotation;
+                    _targetHighlightView.Frame(center, half, facing, focused);
+                }
+                else
+                {
+                    Transform ring = _highlight.transform;
+                    ring.position = center;
+                    FaceViewer(ring);
+                    float pulse = focused ? 1.04f : 1f + 0.06f * Mathf.Sin(Time.time * 4f);
+                    ring.localScale = new Vector3(half.x * pulse, half.y * pulse, 1f);
+                    _highlight.startColor = focused ? _focusedRingColor : _ringStartColor;
+                    _highlight.endColor = focused ? _focusedRingColor : _ringEndColor;
+                }
             }
 
-            if (_hintAnchor != null && _controllerHint.IsVisible)
+            if (_hintFollows && _activeHint != null && _activeHint.IsVisible)
                 PlaceControllerHint();
+
+            if (_instructionLabel != null && _instructionLabel.gameObject.activeSelf)
+                PlaceInstruction();
 
             AnimateFeedbackTarget();
         }
@@ -184,10 +284,14 @@ namespace RideSafe.Tutorial.AutoHand
             _entity = ResolveEntity(step);
             _action = new ActionId(step.HintActionId);
             TutorialProgress progress = ServiceLocator.Instance.RequestService<TutorialProgress>();
-            _firstUse = _action.IsValid && (progress == null || !progress.IsActionLearned(_action));
+            int practice = progress != null ? progress.PracticeCount(_action) : 0;
+            _stage = _help.StageFor(_action.IsValid, practice);
+            _timing = _help.TimingFor(_stage);
+            _firstUse = _stage == HelpStage.Teach;
             _reacted = false;
             _waited = 0f;
-            _level = _firstUse ? 2 : 0;
+            _showHighlight = _timing.ShowHighlight(0f);
+            _showHint = _action.IsValid && _timing.ShowControllerHint(0f);
 
             BindEntity(_entity);
             Refresh();
@@ -202,12 +306,9 @@ namespace RideSafe.Tutorial.AutoHand
             {
                 if (!_reacted)
                     React();
-                if (_firstUse)
-                {
-                    TutorialProgress progress = ServiceLocator.Instance.RequestService<TutorialProgress>();
-                    if (progress != null)
-                        progress.MarkActionLearned(_action);
-                }
+                TutorialProgress progress = ServiceLocator.Instance.RequestService<TutorialProgress>();
+                if (progress != null && _action.IsValid)
+                    progress.RecordPractice(_action);
             }
 
             UnbindEntity();
@@ -238,34 +339,48 @@ namespace RideSafe.Tutorial.AutoHand
                 return;
             _instructionLabel.text = Translate(localizationKey);
             _instructionLabel.gameObject.SetActive(true);
+            _instructionLabel.ForceMeshUpdate();
+            _instructionBottom = _instructionLabel.textBounds.min.y;
+            _instructionTop = _instructionLabel.textBounds.max.y;
+            PlaceInstruction();
         }
 
         public void Highlight(ITaskEntity entity)
         {
-            if (!AssistanceAllowed() || _highlight == null || entity == null || entity.Transform == null)
+            if (!AssistanceAllowed() || (_highlight == null && _targetHighlightView == null) ||
+                entity == null || entity.Transform == null)
                 return;
             _highlighted = entity;
-            _highlight.gameObject.SetActive(true);
+            if (_targetHighlightView != null)
+                _targetHighlightView.Show();
+            else
+                _highlight.gameObject.SetActive(true);
         }
 
         /// <summary>
-        /// Shows the controller with the button bound to <paramref name="action"/>. Next to the
+        /// Shows the controller with the control bound to <paramref name="action"/>. Next to the
         /// step's target when there is one (where the learner is looking), otherwise over the hand.
+        /// The first view able to draw the control wins; with none, no hint is shown.
         /// </summary>
         public void ShowInputHint(ActionId action)
         {
-            if (!AssistanceAllowed() || _controllerHint == null || _input == null || !action.IsValid)
+            PhysicalBinding binding;
+            if (!AssistanceAllowed() || _bindings == null || !_bindings.TryResolve(action, out binding))
                 return;
 
-            HandControllerLink link;
-            CommonButton button;
-            if (!_input.TryGetPhysicalBinding(action, out link, out button) || link.hand == null)
-                return;
-            if (!_controllerHint.Show(button, link.hand.left))
+            _activeHint = null;
+            for (int i = 0; i < _hintViews.Count && _activeHint == null; i++)
+            {
+                if (_hintViews[i].Show(binding))
+                    _activeHint = _hintViews[i];
+            }
+            if (_activeHint == null)
                 return;
 
+            _hintHand = binding.Hand;
             _hintAnchoredToHand = _entity == null || _entity.Transform == null;
-            _hintAnchor = _hintAnchoredToHand ? link.hand.transform : _entity.Transform;
+            _hintAnchor = _hintAnchoredToHand ? null : _entity.Transform;
+            _hintFollows = true;
             PlaceControllerHint();
         }
 
@@ -273,12 +388,15 @@ namespace RideSafe.Tutorial.AutoHand
         public void Clear()
         {
             _highlighted = null;
+            if (_targetHighlightView != null)
+                _targetHighlightView.Hide();
             if (_highlight != null)
                 _highlight.gameObject.SetActive(false);
 
-            if (_controllerHint != null && !_controllerHint.IsReleasing)
-                _controllerHint.Hide();
+            if (_activeHint != null && !_activeHint.IsReleasing)
+                _activeHint.Hide();
             _hintAnchor = null;
+            _hintFollows = false;
 
             if (_instructionLabel != null)
                 _instructionLabel.gameObject.SetActive(false);
@@ -292,14 +410,20 @@ namespace RideSafe.Tutorial.AutoHand
         private void Refresh()
         {
             Clear();
-            if (_step == null || _level < 0)
+            if (_step == null)
                 return;
 
             ShowInstruction(_step.InstructionKey);
-            if (_level >= 1)
+            if (_showHighlight && WantsHighlight())
                 Highlight(_entity);
-            if (_level >= 2)
+            if (_showHint)
                 ShowInputHint(_action);
+        }
+
+        private bool WantsHighlight()
+        {
+            Transform target = _entity != null ? _entity.Transform : null;
+            return TargetHighlightRule.ShouldHighlight(_step.TargetHighlight, target, _highlightSelfStyledUI);
         }
 
         private bool AssistanceAllowed()
@@ -383,14 +507,13 @@ namespace RideSafe.Tutorial.AutoHand
             _reacted = true;
             if (_feedbackTarget != null)
                 _popTime = 0f;
-            if (_controllerHint != null)
-                _controllerHint.Release();
+            if (_activeHint != null && _activeHint.IsVisible)
+                _activeHint.Release();
 
-            HandControllerLink link;
-            CommonButton button;
+            PhysicalBinding binding;
             ActionId hapticAction = _action.IsValid ? _action : new ActionId(ActionIds.PrimarySelect);
-            if (_input != null && _input.TryGetPhysicalBinding(hapticAction, out link, out button))
-                link.TryHapticImpulse(0.06f, 0.35f);
+            if (_haptics != null && _bindings != null && _bindings.TryResolve(hapticAction, out binding))
+                _haptics.TryPulse(binding.Hand, 0.35f, 0.06f);
 
             if (_successClip != null)
                 _audio.PlayOneShot(_successClip, 0.5f);
@@ -429,11 +552,27 @@ namespace RideSafe.Tutorial.AutoHand
 
         #region Helpers
 
+        protected virtual void OnValidate()
+        {
+            if (_input != null && !(_input is IPhysicalBindingResolver))
+                Debug.LogWarning("[Tutorial] '" + _input.name + "' does not implement IPhysicalBindingResolver.", this);
+        }
+
         private void HideAll()
         {
             Clear();
-            if (_controllerHint != null)
-                _controllerHint.Hide();
+            for (int i = 0; i < _hintViews.Count; i++)
+                _hintViews[i].Hide();
+            _activeHint = null;
+        }
+
+        private void AddHintView(MonoBehaviour candidate)
+        {
+            IControllerHintView view = candidate as IControllerHintView;
+            if (view != null && !_hintViews.Contains(view))
+                _hintViews.Add(view);
+            else if (candidate != null && view == null)
+                Debug.LogError("[Tutorial] '" + candidate.name + "' is not an IControllerHintView.", this);
         }
 
         private ITaskEntity ResolveEntity(TaskStepData step)
@@ -446,8 +585,34 @@ namespace RideSafe.Tutorial.AutoHand
 
         private void PlaceControllerHint()
         {
-            Transform hint = _controllerHint.transform;
-            if (_hintAnchoredToHand || _viewer == null)
+            Pose viewer;
+            if (_activeHint is IHeadRelativeHintView headRelative && TryGetViewer(out viewer))
+            {
+                Vector3 focus;
+                if (_hintAnchoredToHand)
+                {
+                    if (!TryGetHandPosition(_hintHand, out focus))
+                        focus = viewer.position + viewer.rotation * Vector3.forward;
+                }
+                else
+                {
+                    Vector2 targetHalf;
+                    GetExtents(_hintAnchor, out focus, out targetHalf);
+                }
+                headRelative.Place(viewer, focus);
+                return;
+            }
+
+            Transform hint = _activeHint.transform;
+            if (_hintAnchoredToHand)
+            {
+                Vector3 hand;
+                if (TryGetHandPosition(_hintHand, out hand))
+                    hint.position = hand + Vector3.up * 0.12f;
+                else if (_viewer != null)
+                    hint.position = _viewer.position + _viewer.forward * 0.45f - Vector3.up * 0.15f;
+            }
+            else if (_viewer == null)
             {
                 hint.position = _hintAnchor.position + Vector3.up * 0.12f;
             }
@@ -463,6 +628,42 @@ namespace RideSafe.Tutorial.AutoHand
             FaceViewer(hint);
         }
 
+        /// <summary>Above the current target, facing the viewer, when <c>_instructionAboveTarget</c> is on.</summary>
+        private void PlaceInstruction()
+        {
+            if (!_instructionAboveTarget || _entity == null || _entity.Transform == null)
+                return;
+
+            Vector3 center;
+            Vector2 half;
+            GetExtents(_entity.Transform, out center, out half);
+            Transform label = _instructionLabel.transform;
+            Pose viewer;
+            float scale = _instructionReferenceDistance > 0f && TryGetViewer(out viewer)
+                ? Mathf.Clamp(Vector3.Distance(viewer.position, center) / _instructionReferenceDistance, 1f, 3f)
+                : 1f;
+            label.localScale = _instructionBaseScale * scale;
+            bool below = _instructionBelowUnderEyeBy > 0f && TryGetViewer(out viewer) &&
+                         viewer.position.y - center.y >= _instructionBelowUnderEyeBy;
+            float gap = _instructionGap * scale;
+            // The text's near edge (however many lines) sits the gap above, or below, the target.
+            label.position = below
+                ? center - Vector3.up * (half.y + gap * 0.4f + _instructionTop * label.lossyScale.y)
+                : center + Vector3.up * (half.y + gap - _instructionBottom * label.lossyScale.y);
+            FaceViewer(label);
+        }
+
+        private bool TryGetHandPosition(XRNodeRole hand, out Vector3 position)
+        {
+            if (_poses == null)
+                _poses = ServiceLocator.Instance.RequestService<IXRPoseProvider>();
+
+            Pose pose = default(Pose);
+            bool found = _poses != null && _poses.TryGetPose(hand, out pose);
+            position = found ? pose.position : Vector3.zero;
+            return found;
+        }
+
         private string Translate(string key)
         {
             string text = _localization != null ? _localization.GetTranslation(key) : null;
@@ -471,8 +672,23 @@ namespace RideSafe.Tutorial.AutoHand
 
         private void FaceViewer(Transform target)
         {
-            if (_viewer != null)
-                target.rotation = Quaternion.LookRotation(target.position - _viewer.position, Vector3.up);
+            Pose viewer;
+            if (TryGetViewer(out viewer))
+                target.rotation = Quaternion.LookRotation(target.position - viewer.position, Vector3.up);
+        }
+
+        /// <summary>
+        /// The learner's head: from the pose provider when there is one (the XR head in VR,
+        /// the desktop camera when simulating without a headset), else the serialized viewer.
+        /// </summary>
+        private bool TryGetViewer(out Pose viewer)
+        {
+            if (_poses == null)
+                _poses = ServiceLocator.Instance.RequestService<IXRPoseProvider>();
+            if (_poses != null && _poses.TryGetPose(XRNodeRole.Head, out viewer))
+                return true;
+            viewer = _viewer != null ? new Pose(_viewer.position, _viewer.rotation) : default(Pose);
+            return _viewer != null;
         }
 
         /// <summary>
@@ -484,7 +700,8 @@ namespace RideSafe.Tutorial.AutoHand
             RectTransform rect = target as RectTransform;
             if (rect != null)
             {
-                Bounds local = RectTransformUtility.CalculateRelativeRectTransformBounds(rect);
+                Bounds local = _boundsFromVisibleGraphics ? VisibleGraphicsBounds(rect)
+                    : RectTransformUtility.CalculateRelativeRectTransformBounds(rect);
                 Vector3 scale = rect.lossyScale;
                 center = rect.TransformPoint(local.center);
                 half = new Vector2(local.extents.x * scale.x, local.extents.y * scale.y) * 1.15f;
@@ -497,6 +714,35 @@ namespace RideSafe.Tutorial.AutoHand
                 half = new Vector2(radius, radius);
             }
             half = Vector2.Max(half, new Vector2(_minHighlightRadius, _minHighlightRadius));
+        }
+
+        /// <summary>Union of the visible graphics under <paramref name="rect"/>, in its local space.</summary>
+        private Bounds VisibleGraphicsBounds(RectTransform rect)
+        {
+            rect.GetComponentsInChildren(false, _graphics);
+            bool any = false;
+            Bounds bounds = default(Bounds);
+            for (int i = 0; i < _graphics.Count; i++)
+            {
+                Graphic graphic = _graphics[i];
+                if (!graphic.enabled || graphic.color.a < 0.01f)
+                    continue;
+                graphic.rectTransform.GetWorldCorners(_corners);
+                for (int c = 0; c < 4; c++)
+                {
+                    Vector3 point = rect.InverseTransformPoint(_corners[c]);
+                    if (!any)
+                    {
+                        bounds = new Bounds(point, Vector3.zero);
+                        any = true;
+                    }
+                    else
+                    {
+                        bounds.Encapsulate(point);
+                    }
+                }
+            }
+            return any ? bounds : RectTransformUtility.CalculateRelativeRectTransformBounds(rect);
         }
 
         /// <summary>Soft 70 ms tick so the slice has a click without an audio asset.</summary>

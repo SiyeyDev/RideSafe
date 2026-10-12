@@ -26,7 +26,7 @@ namespace RideSafe.Tutorial.AutoHand
     /// </summary>
     [DefaultExecutionOrder(-300)]
     [AddComponentMenu("RideSafe/Tutorial/AutoHand Tutorial Input Service")]
-    public class AutoHandTutorialInputService : MonoBehaviour, ITutorialInputService
+    public class AutoHandTutorialInputService : MonoBehaviour, ITutorialInputService, IPhysicalBindingResolver, IHapticFeedback
     {
         [Serializable]
         public class Binding
@@ -181,6 +181,37 @@ namespace RideSafe.Tutorial.AutoHand
             link = LinkFor(state.Binding.Hand);
             button = state.Binding.Button;
             return link != null;
+        }
+
+        /// <summary>
+        /// The action's hand and control under the configured bindings. Answers from the
+        /// profile alone, without live controllers, and stays quiet when unbound so
+        /// presentation can simply show no hint.
+        /// </summary>
+        public bool TryResolve(ActionId action, out PhysicalBinding binding)
+        {
+            binding = default(PhysicalBinding);
+            if (!action.IsValid)
+                return false;
+
+            for (int i = 0; i < _bindings.Count; i++)
+            {
+                Binding candidate = _bindings[i];
+                if (candidate == null || !candidate.IsUsable || candidate.ActionId != action)
+                    continue;
+                binding = new PhysicalBinding(candidate.Hand, AutoHandControlMap.ToControl(candidate.Button));
+                return binding.IsValid;
+            }
+            return false;
+        }
+
+        public bool TryPulse(XRNodeRole hand, float amplitude, float seconds)
+        {
+            XRHandControllerLink link = LinkFor(hand);
+            if (link == null)
+                return false;
+            link.TryHapticImpulse(seconds, amplitude);
+            return true;
         }
 
         private static XRHandControllerLink LinkFor(XRNodeRole hand)
