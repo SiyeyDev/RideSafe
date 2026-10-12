@@ -1,7 +1,9 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-07 (noche)
+> Última actualización: 2026-10-12 (madrugada)
+>
+> **Lo que falta hoy, con nombres y números: `Docs/Pendientes_Reunion_2026-10-12.md`.**
 
 ---
 
@@ -47,9 +49,16 @@ y `docs/superpowers/plans/2026-10-05-modulo-01.md`.
 - **`main`** — rama compartida. Cindy trabaja aquí.
 - **`dev`** — reestructura `DriveSafe → _Project` y módulo 1 completo en lógica. Pusheada.
 - **`feat/garaje-v5`** — `dev` + el paquete de arte de 1.7 GB + la escena nueva. **Sin mezclar.**
+- **`feat/garaje-v6`** — la rama viva. Sale de `feat/garaje-v5` tras el merge del tutorial, e
+  incluye el garaje v6 y las tareas de la reunión del 2026-10-12. **Sin mezclar.**
 
 El merge de `main` en `dev` ya se hizo: integra el tutorial y TaskSequence de Cindy.
-**Avisarle antes de integrar `feat/garaje-v5`**, porque ella trabaja sobre `RideSafe_Garaje.unity`.
+**Avisar a Cindy antes de integrar `feat/garaje-v6`**, porque ella trabaja sobre
+`RideSafe_Garaje.unity`.
+
+**La escena sigue llamándose `RideSafe_Garaje_v5.unity` pero su mundo ya es el v6.** El nombre
+se conservó a propósito: cambiarlo habría roto las referencias de la lista de build, el montador
+de presentación y los tests, a cambio de nada.
 
 ---
 
@@ -61,8 +70,14 @@ subtítulos palabra por palabra, video final, colliders del garaje.
 
 ### Módulo 1 — lógica y presentación, las dos probadas corriendo
 
-Los 3 tests de PlayMode corren sobre la escena real y **entran pulsando Begin**, no por atajo.
-Verdes dos corridas seguidas el 2026-10-07, junto con 145 de EditMode.
+Los **4** tests de PlayMode corren sobre la escena real y **entran pulsando Begin**, no por
+atajo. Verdes dos corridas seguidas el 2026-10-12, junto con **257 de EditMode**.
+
+Desde la tanda del 2026-10-12 el módulo además: esconde el EPP de la mesa mientras gira en el
+pedestal y lo deja escondido al llevárselo puesto; atenúa el garaje durante los videos; no deja
+saltarse el video; exhibe el vehículo en un punto único y lo gira por zona con marcadores `!`
+colgando de su malla; y cierra con «Mi Elección», la nota con rango y los dos botones que esa
+nota desbloquea.
 
 | Lo que se pidió | Estado |
 |---|---|
@@ -228,10 +243,10 @@ y trasera, teléfono). La escena de arte `CITY/scenas/Garage.unity` trae todo mo
 
 Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que sigue abierto:
 
-- [x] ~~**El scooter**~~ — **CONGELADO el 2026-10-07 por decisión de Charlie, hasta nuevo aviso.**
-      El tramo 1 queda hecho y afirmado —elegir patinete usa su perfil, se ve el patinete y la
-      bici queda apagada—. Lo que no se empieza es el tramo 2: punto único de exhibición, anclas en órbita y los 5 puntos colgando de
-      cada malla. Ver §10.
+- [x] ~~**El scooter**~~ — **DESCONGELADO y hecho el 2026-10-12**, porque la reunión pidió en su
+      §4 justo lo que era el tramo 2: punto único de exhibición, el vehículo girando por zona y
+      los 5 puntos colgando de la malla. Los dos vehículos comparten el punto del centro del
+      garaje y `VehicleStage` recuelga los puntos del que esté encendido.
       **Ojo:** sus 3 `TaskSequenceSO` existen y filtran bien por `vehicle == escooter`, pero
       —igual que las de la e-bike— **siguen sin pasos y nadie las ejecuta**: el módulo lo mueve
       `Module01Director`, no `TaskSequence`. Eso sigue pendiente para los dos vehículos.
@@ -260,32 +275,36 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 
 ### Técnico
 
-- [ ] **El HUD sigue en la capa `Default`**, así que el 3D todavía lo puede atravesar. Mover la
-      pasada de capas al final de `Module01PresentationBuilder` lo arregla, pero al intentarlo
-      saltó una regresión en la fuente del `BeginButton` que no llegué a entender.
-- [ ] **Un casco no se dibuja en Game y sí en Scene**: `df_g_helmet_01` (el bueno). Descartado,
-      midiendo: capa (`Default`), máscara de cámara (lo ve), material (URP/Lit, no nulo),
-      renderer (activo), flags de estático y occlusion (0), y posición (viewport 0.34, 0.30,
-      dentro de pantalla). Sin resolver. Siguiente paso: apagar el resto del mostrador y
-      renderizar solo ese objeto.
-- [ ] **Los objetos no se apoyan en la mesa y por eso "se hace clic en la nada".** Causa
-      encontrada: `Module01PresentationBuilder.ArrangeStations` reparenta todo a
-      `Module01_Spawned` y lo coloca **flotando en fila** a 1.5 m del ancla, normalizado a 32 cm.
-      La guaya y el teléfono quedan como láminas de 2 cm: invisibles de canto pero con collider.
-      Arreglo: apoyarlos en la superficie y dar un volumen mínimo de clic.
-- [ ] Escena del vehículo giratorio: crear el ancla `vehicle`, colgar los 5 marcadores de la
-      malla y quitar las esferas de la fila. El código ya está y está probado.
+> La lista viva, con números y nombres, está en `Docs/Pendientes_Reunion_2026-10-12.md`.
+> Aquí solo queda lo que sigue abierto y lo que se cerró, para no buscarlo dos veces.
+
+- [x] ~~**El HUD en la capa `Default`**~~ — **resuelto el 2026-10-12.** No se movió
+      `BuildUiCamera` —que es lo que disparaba la regresión de la fuente del `BeginButton`—
+      sino que se añadió una pasada de capas al final, que era lo único que faltaba.
+- [x] ~~**Un casco no se dibuja en Game y sí en Scene**~~ — ya no ocurre: `df_g_helmet_01` sale
+      correctamente en las capturas de PlayMode del garaje v6.
+- [x] ~~**Los objetos no se apoyan en la mesa**~~ — **resuelto el 2026-10-12.** `ArrangeStations`
+      dejó de reparentar, colocar y escalar: ahora solo coloca el punto de vista, derivado de
+      donde el arte dejó los objetos. Y el collider lleva un grosor mínimo de 6 cm, que es lo
+      que le faltaba a la guaya y al teléfono.
+- [x] ~~Escena del vehículo giratorio~~ — **hecha el 2026-10-12.** Existe `anchor_vehicle`, los
+      5 puntos cuelgan de mounts en la malla y llevan marcador `!`. Los sitios son aproximados
+      y necesitan ojo humano; ver el documento de pendientes.
+- [x] ~~**Partir `Module01SceneBuilder` en comandos no destructivos**~~ — hecho: `Module01WorldSwap`
+      cambia el mundo sobre la escena abierta, `Module01EppLayout` agrupa el mostrador y
+      `Module01VehicleStaging` monta el vehículo. El destructivo ya no hace falta.
 - [ ] Fondo para el título del reporte (se pierde contra el techo) y subtítulos más abajo.
 - [ ] Panel Vehicle del módulo 0: título y subtítulo se solapan, y la barra de confirmación
       se pisa consigo misma.
-- [ ] **Partir `Module01SceneBuilder` en comandos no destructivos**, como se hizo con
-      `Module01VehicleWiring`. Hoy etiquetar entidades, crear las que faltan y colocar anclas
-      solo se puede haciendo `Build()`, que regenera la escena y borra la presentación. Bloquea
-      añadir EPP nuevos y recibir el garaje v6 sin rehacerlo todo.
-- [ ] Integrar `feat/garaje-v5` en `dev` (avisar a Cindy)
-- [ ] Rehornear luz y occlusion en la escena nueva
-- [ ] Reponer MeshColliders si el entorno cambió
-- [ ] 370k triángulos sigue por encima del presupuesto de Quest
+- [ ] Integrar `feat/garaje-v6` en `dev` (avisar a Cindy)
+- [ ] Rehornear luz y occlusion en la escena; el horneado es por escena y no viaja con el
+      trasplante del mundo
+- [ ] **Reponer colliders: ni los armarios ni los maniquíes del v6 tienen ninguno.** Además de
+      lo obvio, esto hace que toda comprobación de oclusión por raycast mienta (ver §9)
+- [ ] **670.903 triángulos**, casi el doble del presupuesto de Quest. El 39 % son tres maniquíes
+      en pose T y 22 troncos de árbol
+- [ ] **El orden de la lista de build pone primero `RideSafe_Garaje.unity`**, la vieja: un build
+      arrancaría en esa y no en la del v6
 - [ ] Unificar `MenuRuntimeTextLocalizer` con `UIText`
 - [ ] Autorar los pasos de las 9 `TaskSequenceSO` cuando existan los términos; hoy ninguna
       tiene pasos y nada las ejecuta
@@ -387,6 +406,50 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 - **Un atajo de test que apaga medio mundo esconde bugs.** El viejo `StartWithDefaults`
   desactivaba todos los `ModuleUI`, y por eso ningún test vio la escena duplicada durante
   semanas. El test entra pulsando Begin.
+- **Un diálogo modal de Unity bloquea el relay de MCP para siempre.** Con la escena sin guardar,
+  el Test Framework abre «Scene(s) Have Been Modified» **antes** de empezar, y también al salir
+  de PlayMode. Delante de una persona es una pregunta; desde un script es un cuelgue: la ventana
+  principal queda deshabilitada y no responde ni un ping. El log no dice nada —acaba en
+  «Scanning for USB devices»— así que parece un crash y no lo es. Se detecta enumerando ventanas
+  (`EnumWindows`, clase `#32770`) y se despeja mandando `BM_CLICK` al botón `Save`.
+  `HeadlessTestRunner` ya guarda las escenas antes de lanzar, pero el de la **salida** sigue
+  pudiendo aparecer. Costó media hora la primera vez.
+- **`GetComponent<T>() ?? AddComponent<T>()` no funciona.** En el Editor, `GetComponent` de un
+  componente ausente devuelve un objeto de diagnóstico que solo es null para el `==`
+  sobrecargado de Unity; para C#, y por tanto para `??`, es un objeto válido, así que
+  `AddComponent` nunca se llama y la primera línea que toque el componente revienta con
+  `MissingComponentException`. **Solo falla cuando el componente falta de verdad**, que es el
+  caso que la expresión pretendía cubrir: por eso aguantó ocho veces sin dar la cara. Usar
+  `Module01EditorComponents.Ensure<T>`.
+- **Nada del paquete de arte tiene collider: comprobar oclusión con un raycast miente.** Ni los
+  armarios del mostrador ni los maniquíes. Un rayo del ancla a cada uno de los 7 EPP devolvía
+  «despejado» mientras un maniquí tapaba las gafas y el calzado. **Eso solo se ve en una
+  captura.** Y por lo mismo, «está en pantalla» no implica «se ve»: el popup de confirmación
+  estaba dentro del encuadre (y de 0.03 a 0.26) y enterrado en la madera del armario.
+- **Comparar rects del kit sin descontar el padding da falsos solapes.** `Panel()` infla el rect
+  por el padding transparente del atlas para que el **arte visible** mida lo pedido. Dos paneles
+  cuyos rects se cruzan por 3 unidades pueden estar separados por 3 en lo que se ve. Descontar
+  `PadFor(multiplier)` antes de concluir nada.
+- **Borrar los `mount_*` del vehículo borra los puntos de inspección**, que cuelgan de ellos.
+  Si hay que rehacerlos, después toca `Module01SceneEntities.Apply()`, que recrea las entidades
+  que falten.
+- **El constructor estático de un `ScriptableObject` no puede llamar a
+  `ScriptableObject.CreateInstance`.** `HeadlessTestRunner` lo hacía en su `[InitializeOnLoad]`
+  y reventaba con `TypeInitializationException`, dejando el runner inservible justo cuando hacía
+  falta. Solo pasaba si quedaba un archivo de resultado en `RUNNING` de una corrida anterior.
+  Ahora se aplaza con `EditorApplication.delayCall`.
+- **No mover la cámara de juego en una medición sin devolverla.** Un volcado que la colocó en un
+  ancla para medir dejó la escena guardada con la cámara ahí, y el test siguiente falló con «el
+  jugador debe empezar fuera del garaje». `Module01PresentationBuilder.Build()` la devuelve a
+  `(0, 1.45, 9.3)`.
+- **El montador de prefabs de UI abre una escena nueva.** `RideSafeUIPrefabBuilder.Build(null)`
+  cierra la escena abierta; hay que reabrirla y volver a montar la presentación. Y **no** usar
+  `BuildMenu()` desde un script: llama a `SaveCurrentModifiedScenesIfUserWantsTo()`, que es el
+  diálogo modal de más arriba.
+- **La Scene View no dibuja el stack de cámaras de URP.** Lo que vive en la capa `UI` —el HUD,
+  los marcadores `!`— no sale en una captura de Scene View, aunque en el juego se vea perfecto.
+  Para verlo de verdad, la captura de la Game View que deja el test de PlayMode en
+  `Docs/verification/module01/`.
 
 ---
 
@@ -463,6 +526,41 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-12 — el garaje v6 y las tareas de la reunión
+
+Dos cosas a la vez: cambiar el mundo por el del paquete v6 y aplicar las ~40 tareas del acta.
+El detalle de lo que quedó pendiente está en `Docs/Pendientes_Reunion_2026-10-12.md`; aquí lo
+que conviene recordar.
+
+- **El v6 no venía en la rama del tutorial.** Ese merge trajo código del tutorial, los prefabs
+  de los Touch Plus y los atlas de fuentes; cero modelos. El paquete estaba en Descargas.
+- **El paquete trae el layout viejo** (`Assets/CITY`), así que 365 de sus 436 GUID sobrescriben
+  en sitio y 71 caían fuera de `_Project`. Esos 71 se movieron con su `.meta` al lado, que es
+  lo que conserva el GUID.
+- **El constructor de escena quedó obsoleto en el momento justo:** v6 agrupó los 7 EPP bajo una
+  raíz nueva `epps`, y la lista de nombres escrita a mano ya no los encontraba. De ahí
+  `Module01WorldSwap`, que decide qué es mundo preguntándole a la escena de arte en vez de a una
+  lista, y contra **toda** su jerarquía: `luz grontal`, `luz roja 1` y los dos `plataform`
+  dejaron de ser raíz y comparando solo raíces se quedaban duplicados.
+- **v6 trae los EPP casi bien, y eso solo se ve midiendo.** Apoyados en el mostrador y cada uno
+  a su altura —mucho mejor que la fila flotante que montaba el presentador—, pero `casco 1`
+  tenía la base **16 cm hundida** y otros dos un par de centímetros. Y estaban desparramados:
+  la zona `head` ocupaba 4,99 m. La altura de la tapa se deriva ahora de la **mediana** de las
+  bases, no de un número escrito: con un objeto hundido, la media se lleva por delante a los
+  que estaban bien.
+- **Lo que más tiempo costó no fue escribir código, fue un diálogo modal.** Dos veces. Ver §9.
+- **Cinco bugs los cazaron los tests y las capturas, no la vista:** el checklist comiéndose el
+  popup y luego la navegación, el punto clicable mientras el vehículo aún giraba, el marcador de
+  llantas debajo del checklist, el popup **dentro** del armario, y la leyenda en inglés porque
+  al renombrar sus objetos el binding —que localiza por nombre— dejó de encontrarlos y callaba.
+  Ese último ahora avisa.
+- **Tres tests de PlayMode codificaban el comportamiento viejo** y se actualizaron para afirmar
+  el nuevo: que el video no se puede saltar, que en las zonas del vehículo el aprendiz no viaja,
+  y que por eso hay 4 fundidos y no 6.
+- **670.903 triángulos**, casi el doble del presupuesto de Quest. El 39 % se lo llevan tres
+  maniquíes en pose T y 22 troncos de árbol, y ninguna de las dos cosas es contenido del módulo.
+- 257 EditMode y 4 PlayMode en verde, PlayMode dos corridas seguidas.
 
 ### 2026-10-07 (noche) — tanda de UI sobre lo que Charlie vio corriendo
 
