@@ -83,6 +83,28 @@ namespace RideSafe.Module01.Editor
             black.gameObject.AddComponent<Image>().color=Color.black;
             Set(tour,"_fade",group);
 
+            // Efecto cine: un panel negro en la capa UI, MAS LEJOS que los paneles de interfaz.
+            // La camara de overlay limpia profundidad, asi que lo que pinta tapa el garaje
+            // entero sin importar la distancia; y al estar detras de los paneles, el video y
+            // sus botones siguen encima. No vale un ScreenSpaceOverlay: taparia el video
+            // tambien, y no funciona en VR.
+            var dimCanvas = Canvas("TheaterDim",presentation,RenderMode.WorldSpace);
+            dimCanvas.transform.localPosition = new Vector3(0,0,6f);
+            dimCanvas.transform.localScale = Vector3.one*.01f;
+            ((RectTransform)dimCanvas.transform).sizeDelta = new Vector2(4000,4000);
+            var dimGroup = dimCanvas.gameObject.AddComponent<CanvasGroup>();
+            dimGroup.alpha=0; dimGroup.blocksRaycasts=false; dimGroup.interactable=false;
+            var dimRect = Rect("Black", dimCanvas.transform, Vector2.zero, new Vector2(100,100));
+            dimRect.anchorMin=Vector2.zero; dimRect.anchorMax=Vector2.one; dimRect.offsetMin=dimRect.offsetMax=Vector2.zero;
+            var dimImage = dimRect.gameObject.AddComponent<Image>(); dimImage.color=Color.black; dimImage.raycastTarget=false;
+            int uiLayer = LayerMask.NameToLayer("UI");
+            foreach(var t in dimCanvas.GetComponentsInChildren<Transform>(true)) t.gameObject.layer=uiLayer;
+            var theater = root.GetComponent<TheaterMode>();
+            if(theater==null) theater=root.AddComponent<TheaterMode>();
+            Set(theater,"_dim",dimGroup);
+            Set(exp,"_theater",theater);
+            dimCanvas.gameObject.SetActive(false);
+
             var inspection = Canvas("ItemInspectorCanvas",presentation,RenderMode.WorldSpace);
             inspection.transform.localPosition = new Vector3(-.16f,-.05f,1.15f);
             inspection.transform.localScale = Vector3.one*.0015f;
@@ -142,6 +164,26 @@ namespace RideSafe.Module01.Editor
             Button("DoNotRideButton",decision,new Vector2(245,-35),new Vector2(230,56),"Module1/DoNotRide",false,16f);
             Set(exp,"_decision",decision.gameObject);
             var summary=Text("FinalSummary",hud.transform,new Vector2(0,-235),new Vector2(850,55),"",_kit.BodyOnDark.With(22f)); Set(exp,"_summary",summary); summary.gameObject.SetActive(false);
+
+            // Barra de salida del reporte final: solo los dos botones.
+            //
+            // El rango y su recomendacion NO van aqui: van al titulo y al subtitulo del propio
+            // panel "Mi Eleccion", que es lo que pidio la reunion al decir "unificar en un unico
+            // panel". Y ademas no caben: medido en unidades de canvas, el marco va de -278 a
+            // +278, las columnas bajan hasta -122 y la leyenda ocupa -195..-136, asi que por
+            // debajo solo quedan unos 80. Un panel con titulo, cuerpo y dos botones pedia 210 y
+            // se comia la leyenda entera.
+            //
+            // Al medirlo: el rect de la barra sale y[-277..-191] y la leyenda y[-195..-136], que
+            // parece un solape de 3. No lo es. Panel() infla el rect por el padding transparente
+            // del atlas para que el ARTE VISIBLE mida lo pedido, asi que lo que se ve son 72 y no
+            // 86: -270..-198, tres por debajo de la leyenda. Comparar rects pelados aqui da un
+            // falso positivo; hay que descontar PadFor antes de concluir nada.
+            var result=Panel("FinalResult",hud.transform,new Vector2(0,-234),new Vector2(660,72),"Panel_Modal_Light",2.4f);
+            Button("ContinueModule2Button",result,new Vector2(-165,0),new Vector2(300,48),"Module1/ContinueModule2",true,16f);
+            Button("RepeatModuleButton",result,new Vector2(170,0),new Vector2(280,48),"Module1/RepeatModule",false,16f);
+            Set(exp,"_result",result.gameObject);
+            result.gameObject.SetActive(false);
             var vp = ui.GetComponent<VideoPlayer>(); if(vp==null) vp=ui.gameObject.AddComponent<VideoPlayer>();
             vp.playOnAwake=false; vp.isLooping=false; vp.renderMode=VideoRenderMode.RenderTexture; vp.waitForFirstFrame=false;
             var rt=AssetDatabase.LoadAssetAtPath<RenderTexture>("Assets/_Project/Video/VideoScreen_RT.renderTexture"); vp.targetTexture=rt;

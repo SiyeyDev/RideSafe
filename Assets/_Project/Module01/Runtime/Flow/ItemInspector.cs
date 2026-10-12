@@ -47,6 +47,9 @@ namespace RideSafe.Module01
 
         private GameObject _instance;
         [SerializeField] private GameObject _pedestal;
+
+        [Tooltip("Por donde suena la locución del elemento. Opcional.")]
+        [SerializeField] private AudioSource _voice;
         private string _activeQuestion;
         public void SetQuestion(string key) => _activeQuestion = key;
         private ILocalizationProvider _localization;
@@ -124,6 +127,24 @@ namespace RideSafe.Module01
             }
             RefreshText();
             SetChromeVisible(true);
+            Speak(item);
+        }
+
+        /// <summary>
+        /// Suelta la locución del elemento, si existe.
+        /// <para>
+        /// Hoy no hay ningún clip en el proyecto, así que esto no suena nunca y <b>no avisa de
+        /// nada</b>: un aviso por cada objeto en cada recorrido sería ruido, no información.
+        /// La falta de locuciones está donde tiene que estar, en el documento de pendientes.
+        /// </para>
+        /// </summary>
+        private void Speak(SafetyItemSO item)
+        {
+            if (_voice == null || item.PromptClip == null)
+                return;
+            _voice.Stop();
+            _voice.clip = item.PromptClip;
+            _voice.Play();
         }
 
         private void RefreshText()

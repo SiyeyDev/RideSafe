@@ -31,10 +31,22 @@ namespace RideSafe.Module01
         [SerializeField] private TMP_Text _instructionText;
         [SerializeField] private TMP_Text _summary;
         [SerializeField] private Module01CatalogSO _allItems;
+        [Tooltip("Atenúa el garaje durante los videos. Opcional: sin él no hay efecto cine.")]
+        [SerializeField] private TheaterMode _theater;
+        [Tooltip("Barra de salida del reporte final: «Continuar al Módulo 2» y «Repetir Módulo».")]
+        [SerializeField] private GameObject _result;
         [Tooltip("Con un asset aquí, Begin salta las pantallas del módulo 0 y usa estos valores. Vacío corre el onboarding completo.")]
         [SerializeField] private Module00SettingsSO _quickStart;
         public UnityEvent onOrientation = new UnityEvent();
         public UnityEvent onLeaveOrientation = new UnityEvent();
+
+        /// <summary>
+        /// El aprendiz aprobó y pulsó «Continuar al Módulo 2». Es un evento y no una llamada
+        /// porque el módulo 2 todavía no existe: cuando exista, se engancha aquí sin tocar esta
+        /// clase. Mientras tanto el botón sigue siendo honesto —solo se enciende al aprobar—,
+        /// simplemente no lleva a ningún sitio.
+        /// </summary>
+        public UnityEvent onContinueToModule2 = new UnityEvent();
         public string Phase { get; private set; } = "Outside";
         public bool SubtitlesEnabled { get; private set; } = true;
         /// <summary>Lo que el módulo 0 dejó decidido. Es lo que leen los requisitos de secuencia.</summary>
@@ -60,6 +72,12 @@ namespace RideSafe.Module01
             _binding.Module.gameObject.SetActive(true);
             _binding.Module.HideAll();
             _sidebar.SetActive(false); _navigation.SetActive(false); _decision.SetActive(false); _instruction.SetActive(false);
+            if (_result != null)
+            {
+                _result.SetActive(false);
+                Bind(_result.transform, "RepeatModuleButton", RepeatModule);
+                Bind(_result.transform, "ContinueModule2Button", () => onContinueToModule2.Invoke());
+            }
             Bind(_binding.Module.Get<RectTransform>("Orientation"), "StartButton", StartZones);
             Bind(_binding.Module.Get<RectTransform>("Orientation"), "RepeatAudioButton", () => onOrientation.Invoke());
             Bind(_navigation.transform, "NextZoneButton", NextZone);
@@ -140,12 +158,20 @@ namespace RideSafe.Module01
         {
             if (_started) return;
             _started = true;
-            if (_onboarding != null) _onboarding.gameObject.SetActive(false);
+            // Apagar el onboarding lo hace Entrance, con la pantalla ya en negro: hacerlo aqui
+            // dejaba ver el garaje un instante antes del fundido.
             StartCoroutine(Entrance());
         }
         private IEnumerator Entrance()
         {
             Phase = "Entrance";
+            // A negro antes de dejar el modulo 0 y de vuelta ya dentro del garaje: el corte
+            // entre la pantalla de configuracion y el mundo 3D es el salto mas brusco del
+            // recorrido, y en VR un corte asi es justo lo que marea.
+            yield return _tour.FadeToBlack();
+            if (_onboarding != null) _onboarding.gameObject.SetActive(false);
+            yield return _tour.FadeFromBlack();
+
             Vector3 closed = _door.position;
             float elapsed = 0;
             while (elapsed < .8f) { elapsed += Time.unscaledDeltaTime; _door.position = Vector3.Lerp(closed, closed + Vector3.up * 3.2f, elapsed / .8f); yield return null; }
@@ -155,6 +181,22 @@ namespace RideSafe.Module01
             Phase = "Orientation";
             onOrientation.Invoke();
         }
+        /// <summary>
+        /// Vuelve a empezar el módulo desde la primera zona. Es lo único que desbloquean los
+        /// rangos por debajo del 75 %.
+        /// </summary>
+        private void RepeatModule()
+        {
+            if (Phase != "Finished") return;
+            if (_result != null) _result.SetActive(false);
+            _summary.gameObject.SetActive(false);
+            _binding.Module.HideAll();
+            _personalEntries = null;
+            _vehicleEntries = null;
+            _readinessCorrect = false;
+            StartZones();
+        }
+
         private void StartZones()
         {
             onLeaveOrientation.Invoke();
@@ -227,18 +269,51 @@ namespace RideSafe.Module01
             var ids = new HashSet<string>(report.CoreSelected.Concat(report.CoreOmitted).Concat(report.OptionalSelected).Concat(report.ConditionDependentSelected).Concat(report.InappropriateSelected));
             return ReportPresenter.BuildEntries(_allItems, report, UIText.Resolve).Where(e => ids.Contains(e.Detail)).ToList();
         }
+        /// <summary>
+        /// «Mi Elección»: un único panel con lo que el aprendiz eligió.
+        /// <para>
+        /// Antes pintaba dos tablas, la suya y una «Referencia para este recorrido» derivada de
+        /// la primera. La reunión la mandó quitar, y con razón: la referencia se calculaba desde
+        /// las mismas filas cambiando los estados, así que no aportaba información nueva y
+        /// duplicaba doce renglones en una pantalla que ya iba justa.
+        /// </para>
+        /// </summary>
         private void ShowReport(List<ComparisonEntry> entries)
         {
             Phase = "Report";
             _binding.Module.Show("Comparison");
-            _binding.Comparison.SetContent(UIText.Resolve("Module1/Report_Title"), UIText.Resolve("Module1/Report_Subtitle"), UIText.Resolve("Module1/Report_Yours"), entries, UIText.Resolve("Module1/Report_Reference"), Reference(entries));
+            _binding.Comparison.SetSingleList(
+                UIText.Resolve("Module1/MyChoice_Title"),
+                UIText.Resolve("Module1/MyChoice_Note"),
+                entries);
         }
-        private List<ComparisonEntry> Reference(List<ComparisonEntry> entries) => entries.Where(e => e.Status != ItemStatus.NotSuited).Select(e => new ComparisonEntry(e.Status == ItemStatus.CoreOmitted ? ItemStatus.Selected : e.Status, e.Title, e.Detail)).ToList();
+
+        /// <summary>
+        /// El mismo panel, con el veredicto en su encabezado. Separar el rango en una tarjeta
+        /// aparte no cabía —medido: por debajo de la leyenda quedan unos 80 de los 556 del
+        /// marco— y además partía en dos lo que la reunión pidió unificar.
+        /// </summary>
+        private void ShowVerdict(List<ComparisonEntry> entries, SelectionScore score)
+        {
+            Phase = "Report";
+            _binding.Module.Show("Comparison");
+            _binding.Comparison.SetSingleList(
+                UIText.Resolve("Module1/MyChoice_Title") + "  ·  "
+                    + UIText.Resolve(score.Rank.TitleKey()) + "  ·  " + score.Percent + "%",
+                UIText.Resolve(score.Rank.FeedbackKey()) + "   "
+                    + UIText.Resolve(_readinessCorrect ? "Module1/Final_Complete" : "Module1/Decision_Review"),
+                entries);
+        }
         private void PlayVideo()
         {
             if (Phase != "Report") return;
             Phase = "Video"; _summary.gameObject.SetActive(false);
             _binding.Module.Show("Explanation");
+            // No se puede saltar el video: la reunion lo pidio. Se apaga el boton en vez de
+            // ignorar el clic, porque un boton que responde y no hace nada parece roto.
+            _binding.Explanation.SetContinueEnabled(false);
+            // Y se apaga el garaje alrededor, que es el "efecto cine".
+            if (_theater != null) _theater.SetOn(true);
             // La pantalla toma la textura del reproductor en runtime: así no depende de un override
             // guardado en la escena, que es justo lo que se perdía y dejaba el video en negro.
             if (_binding.Explanation.VideoSurface != null) _binding.Explanation.VideoSurface.texture = _video.targetTexture;
@@ -261,23 +336,60 @@ namespace RideSafe.Module01
         }
         [SerializeField] private VideoClip _personalVideo;
         [SerializeField] private VideoClip _vehicleVideo;
-        private void VideoEnded(VideoPlayer _) => _videoComplete = true;
-        private void VideoError(VideoPlayer _, string message) { _videoComplete = true; Debug.LogError("[Module01] Video: " + message); }
+        private void VideoEnded(VideoPlayer _) { _videoComplete = true; _binding.Explanation.SetContinueEnabled(true); }
+        /// <summary>
+        /// Un video que no carga tambien desbloquea el boton: si no, un archivo roto deja al
+        /// aprendiz encerrado en una pantalla de la que no se puede salir.
+        /// </summary>
+        private void VideoError(VideoPlayer _, string message)
+        {
+            _videoComplete = true;
+            _binding.Explanation.SetContinueEnabled(true);
+            Debug.LogError("[Module01] Video: " + message);
+        }
         private void FinishVideo()
         {
             if (Phase != "Video") return;
+            if (!_videoComplete) return;
+            if (_theater != null) _theater.SetOn(false);
             _video.Stop();
             _binding.Module.HideAll();
             _binding.PreparationList.Clear();
             _director.ContinueAfterReview();
         }
+        /// <summary>
+        /// Pantalla final: «Mi Elección», la nota con su rango y lo que esa nota desbloquea.
+        /// <para>
+        /// La nota se calcula <b>aquí</b> y no durante el recorrido, que es el «checkpoint
+        /// final» que pidió la reunión: hasta este punto el aprendiz puede volver atrás y
+        /// cambiar de opinión, así que mostrarle una nota antes sería puntuar un borrador.
+        /// </para>
+        /// </summary>
         private void ShowFinalReport()
         {
             var entries = new List<ComparisonEntry>(_personalEntries); entries.AddRange(_vehicleEntries);
-            ShowReport(entries); Phase = "Finished";
-            _summary.text = UIText.Resolve(_readinessCorrect ? "Module1/Final_Complete" : "Module1/Decision_Review");
-            _summary.gameObject.SetActive(true);
+            SelectionScore score = _director.FinalScore;
+            ShowVerdict(entries, score);
+            Phase = "Finished";
             Find<Button>(_binding.Comparison.transform, "ExplainButton").gameObject.SetActive(false);
+
+            // El resumen suelto se apaga: su frase ya va en el subtitulo del panel, y en el
+            // sitio que ocupaba ahora estan los botones de salida.
+            _summary.gameObject.SetActive(false);
+
+            if (_result != null) _result.SetActive(true);
+            // Solo el aprobado abre el modulo 2. Los demas rangos dejan repetir, y nada mas:
+            // el boton de continuar se apaga en vez de desaparecer para que se vea que existe
+            // y que hay algo que conseguir.
+            SetInteractable(_result, "ContinueModule2Button", score.UnlocksNextModule);
+            SetInteractable(_result, "RepeatModuleButton", true);
+        }
+
+        private static void SetInteractable(GameObject root, string name, bool value)
+        {
+            if (root == null) return;
+            Button button = Find<Button>(root.transform, name);
+            if (button != null) button.interactable = value;
         }
         private void Bind(Transform root, string name, UnityAction action)
         { var b = Find<Button>(root, name); if (b == null) { Debug.LogError("[Module01] Falta boton " + name); return; } b.onClick.AddListener(action); _listeners.Add((b,action)); }

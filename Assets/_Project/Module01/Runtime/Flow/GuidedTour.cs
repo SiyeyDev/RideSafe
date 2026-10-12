@@ -75,6 +75,36 @@ namespace RideSafe.Module01
             return true;
         }
 
+        /// <summary>
+        /// Funde a negro y se queda así, para una transición que no es un salto de zona —por
+        /// ejemplo pasar del módulo 0 al garaje—. Es la misma pantalla que usa el recorrido,
+        /// para que el aprendiz no vea dos negros distintos.
+        /// <para>
+        /// Fuera de Play no hace nada: los tests no deben depender del reloj.
+        /// </para>
+        /// </summary>
+        public IEnumerator FadeToBlack() => FadeScreen(1f);
+
+        /// <summary>Devuelve la imagen desde el negro.</summary>
+        public IEnumerator FadeFromBlack() => FadeScreen(0f);
+
+        private IEnumerator FadeScreen(float target)
+        {
+            if (_fade == null || !Application.isPlaying || !isActiveAndEnabled)
+            {
+                if (_fade != null)
+                {
+                    _fade.alpha = target;
+                    _fade.blocksRaycasts = target > .5f;
+                }
+                yield break;
+            }
+
+            _fade.blocksRaycasts = true;
+            yield return Fade(_fade.alpha, target);
+            _fade.blocksRaycasts = target > .5f;
+        }
+
         private IEnumerator FadeAndPlace(string id, Transform anchor)
         {
             IsMoving = true;

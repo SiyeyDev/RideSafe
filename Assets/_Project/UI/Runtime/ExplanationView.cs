@@ -21,6 +21,9 @@ namespace RideSafe.UI
         [SerializeField] private ProgressView _videoProgress;
         [SerializeField] private UnityEngine.UI.RawImage _videoSurface;
 
+        [Tooltip("Botón de continuar. Se apaga hasta que el video termina.")]
+        [SerializeField] private UnityEngine.UI.Button _continueButton;
+
         [Header("Item card")]
         [SerializeField] private Transform _itemRow;
         [SerializeField] private TMP_Text _itemCounter;
@@ -28,6 +31,29 @@ namespace RideSafe.UI
         [SerializeField] private TMP_Text _explanation;
 
         public UnityEngine.UI.RawImage VideoSurface => _videoSurface;
+
+        /// <summary>
+        /// Si el prefab es anterior a que existiera <see cref="_continueButton"/>, el botón se
+        /// busca por nombre.
+        /// <para>
+        /// Es el mismo patrón que el resto del proyecto —enlazar por nombre en runtime en vez
+        /// de por referencia guardada— y existe por la misma razón: regenerar el prefab para
+        /// añadir un campo borra el cableado de todo lo demás. Así el bloqueo del video
+        /// funciona en el prefab que ya está en la escena, sin tocarlo.
+        /// </para>
+        /// </summary>
+        private void Awake()
+        {
+            if (_continueButton != null)
+                return;
+            foreach (UnityEngine.UI.Button b in GetComponentsInChildren<UnityEngine.UI.Button>(true))
+            {
+                if (b.name != "ContinueButton")
+                    continue;
+                _continueButton = b;
+                return;
+            }
+        }
 
         /// <summary>
         /// Sets the header wording, e.g. ("Explaining · control {0} of {1}", "The control
@@ -68,5 +94,19 @@ namespace RideSafe.UI
             if (_videoProgress != null)
                 _videoProgress.SetValue(normalized);
         }
+
+        /// <summary>
+        /// Permite o impide continuar. La reunión pidió que no se pueda saltar el video: no
+        /// basta con ignorar el clic, porque un botón que responde y no hace nada se lee como
+        /// una interfaz rota. Se apaga, que es una respuesta.
+        /// </summary>
+        public void SetContinueEnabled(bool value)
+        {
+            if (_continueButton != null)
+                _continueButton.interactable = value;
+        }
+
+        /// <summary>¿Se puede continuar? Para que un test lo pueda afirmar.</summary>
+        public bool CanContinue => _continueButton == null || _continueButton.interactable;
     }
 }

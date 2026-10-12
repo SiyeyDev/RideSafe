@@ -126,6 +126,24 @@ namespace RideSafe.Module01
             return new SelectionScore(percent, judged, correct, RankOf(percent));
         }
 
+        /// <summary>
+        /// Junta las notas de las dos secciones en una sola.
+        /// <para>
+        /// Se suman <b>aciertos y juzgables</b>, no se promedian los porcentajes: la sección de
+        /// protección tiene 7 elementos y la del vehículo 5, así que promediar le daría a cada
+        /// acierto del vehículo más peso que a uno de los EPP sin que nadie lo haya decidido.
+        /// </para>
+        /// </summary>
+        public static SelectionScore Combine(SelectionScore a, SelectionScore b)
+        {
+            int judged = a.Judged + b.Judged;
+            int correct = a.Correct + b.Correct;
+            if (judged == 0)
+                return new SelectionScore(100, 0, 0, PerformanceRank.Knowledgeable);
+            int percent = correct * 100 / judged;
+            return new SelectionScore(percent, judged, correct, RankOf(percent));
+        }
+
         public static PerformanceRank RankOf(int percent)
         {
             if (percent >= 75) return PerformanceRank.Knowledgeable;

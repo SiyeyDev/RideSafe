@@ -44,6 +44,20 @@ namespace RideSafe.Module01
         public SelectionReport PersonalReport { get; private set; }
         public SelectionReport VehicleReport { get; private set; }
 
+        /// <summary>
+        /// Nota de cada sección, calculada contra el catálogo acotado de esa sección.
+        /// <para>
+        /// Se calcula aquí y no en la pantalla final porque aquí es donde existe ese catálogo
+        /// acotado: desde fuera solo se ve el catálogo entero, y puntuar el reporte personal
+        /// contra él daría por omitidos los cinco puntos del vehículo.
+        /// </para>
+        /// </summary>
+        public SelectionScore PersonalScore { get; private set; }
+        public SelectionScore VehicleScore { get; private set; }
+
+        /// <summary>La del módulo entero, sumando aciertos y juzgables de las dos secciones.</summary>
+        public SelectionScore FinalScore => SelectionScore.Combine(PersonalScore, VehicleScore);
+
         private readonly List<ZoneSO> _personalZones = new List<ZoneSO>();
         private readonly List<ZoneSO> _vehicleZones = new List<ZoneSO>();
         private int _index = -1;
@@ -91,6 +105,7 @@ namespace RideSafe.Module01
             IsFinished = false;
             _awaitingReview = false;
             PersonalReport = VehicleReport = null;
+            PersonalScore = VehicleScore = default;
             _inVehicleSection = false;
             _index = -1;
             _runner.Ledger.Clear();
@@ -223,6 +238,12 @@ namespace RideSafe.Module01
             Module01CatalogSO scope = ScriptableObject.CreateInstance<Module01CatalogSO>();
             scope.ConfigureForTests(ActiveList);
             SelectionReport report = SelectionGrader.Grade(scope, _runner.Ledger);
+
+            SelectionScore score = SelectionScore.Of(scope, report);
+            if (_inVehicleSection)
+                VehicleScore = score;
+            else
+                PersonalScore = score;
 
             if (Application.isPlaying)
                 Destroy(scope);

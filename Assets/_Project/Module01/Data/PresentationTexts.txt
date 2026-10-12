@@ -57,3 +57,19 @@ Module1/Selected|Seleccionado|Selected
 Module1/Omitted|Núcleo omitido|Core item omitted
 Module1/Conditional|Depende de la condición|Condition-dependent
 Module1/Inappropriate|No adecuado|Not suitable
+Module1/MyChoice_Title|Mi Elección|My choice
+Module1/MyChoice_Note|Los elementos opcionales no penalizan: solo cuentan el equipo de núcleo y lo que no corresponde llevar.|Optional items carry no penalty: only core gear and unsuitable choices count.
+Module1/ContinueModule2|Continuar al Módulo 2|Continue to Module 2
+Module1/RepeatModule|Repetir Módulo|Repeat module
+Module1/Rank_Knowledgeable_Title|Conocedor|Knowledgeable
+Module1/Rank_Knowledgeable|Has preparado bien el recorrido. Sigues con el Módulo 2.|You prepared the ride well. You can move on to Module 2.
+Module1/Rank_NeedsImprovement_Title|Por mejorar|Needs improvement
+Module1/Rank_NeedsImprovement|Vas por buen camino, pero se te escapó equipo de núcleo. Repite el módulo y fíjate en lo que quedó sin marcar.|You are on the right track, but you missed core gear. Repeat the module and look at what you left unchecked.
+Module1/Rank_Reconsider_Title|Recapacitar|Reconsider
+Module1/Rank_Reconsider|Faltó buena parte del equipo imprescindible. Vuelve a recorrer el garaje sin prisa antes de circular.|A good part of the essential gear was missing. Walk the garage again, without rushing, before riding.
+Module1/Rank_Inexperienced_Title|Inexperto|Inexperienced
+Module1/Rank_Inexperienced|Casi nada de lo imprescindible quedó cubierto. Repite el módulo y revisa cada estación con calma.|Almost none of the essentials were covered. Repeat the module and go through each station calmly.
+Module1/Legend_Correct|Selección correcta|Correct choice
+Module1/Legend_Incorrect|Selección incorrecta|Incorrect choice
+Module1/Legend_Omission|Omisión: elemento faltante|Omission: missing item
+Module1/Legend_AtRisk|Elemento en riesgo o deteriorado|Item at risk or damaged

@@ -149,6 +149,34 @@ namespace RideSafe.Module01.Tests
         }
 
         [Test]
+        public void La_nota_final_suma_aciertos_y_juzgables_en_vez_de_promediar_porcentajes()
+        {
+            // 7 elementos personales con 7 aciertos, 5 del vehiculo con 1: 8 de 12 = 66 %.
+            // Promediando los porcentajes saldria (100 + 20) / 2 = 60, que le daria a cada
+            // punto del vehiculo mas peso que a un EPP sin que nadie lo haya decidido.
+            Module01CatalogSO personal = Catalog(Zone("p",
+                Item("p0", SafetyItemCategory.Core), Item("p1", SafetyItemCategory.Core),
+                Item("p2", SafetyItemCategory.Core), Item("p3", SafetyItemCategory.Core),
+                Item("p4", SafetyItemCategory.Core), Item("p5", SafetyItemCategory.Core),
+                Item("p6", SafetyItemCategory.Core)));
+            Module01CatalogSO vehicle = Catalog(Zone("v",
+                Item("v0", SafetyItemCategory.Core), Item("v1", SafetyItemCategory.Core),
+                Item("v2", SafetyItemCategory.Core), Item("v3", SafetyItemCategory.Core),
+                Item("v4", SafetyItemCategory.Core)));
+
+            SelectionScore a = SelectionScore.Of(personal,
+                Grade(personal, "p0", "p1", "p2", "p3", "p4", "p5", "p6"));
+            SelectionScore b = SelectionScore.Of(vehicle, Grade(vehicle, "v0"));
+
+            SelectionScore total = SelectionScore.Combine(a, b);
+
+            Assert.AreEqual(12, total.Judged);
+            Assert.AreEqual(8, total.Correct);
+            Assert.AreEqual(66, total.Percent);
+            Assert.AreEqual(PerformanceRank.NeedsImprovement, total.Rank);
+        }
+
+        [Test]
         public void Cada_rango_trae_su_clave_de_texto_y_no_se_repiten()
         {
             string[] keys =

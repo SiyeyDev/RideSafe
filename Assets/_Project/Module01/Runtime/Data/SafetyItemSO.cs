@@ -23,6 +23,9 @@ namespace RideSafe.Module01
         [Tooltip("El elemento está deteriorado, no es que sea el objeto equivocado.")]
         [SerializeField] private bool _deteriorated;
 
+        [Tooltip("Locución breve al inspeccionarlo: «Casco deteriorado, ¿deseas añadirlo?». Vacío = en silencio.")]
+        [SerializeField] private AudioClip _promptClip;
+
         public string ItemId => string.IsNullOrWhiteSpace(_itemId) ? string.Empty : _itemId.Trim();
         public string NameKey => _nameKey;
         public string RiskKey => _riskKey;
@@ -37,6 +40,16 @@ namespace RideSafe.Module01
         /// las dos marcas por separado en la leyenda.
         /// </summary>
         public bool IsDeteriorated => _deteriorated;
+
+        /// <summary>
+        /// Lo que se oye al sacar el elemento al pedestal, si lo hay.
+        /// <para>
+        /// Hoy no hay ni un clip de audio en el proyecto, así que esto está siempre vacío y el
+        /// inspector se queda callado sin quejarse. El enchufe existe para que, cuando lleguen
+        /// las locuciones, baste con arrastrarlas al asset: ni una línea de código.
+        /// </para>
+        /// </summary>
+        public AudioClip PromptClip => _promptClip;
 
         /// <summary>Solo para tests: evita tener que crear assets en disco.</summary>
         public void ConfigureForTests(string itemId, string nameKey, string riskKey, SafetyItemCategory category)

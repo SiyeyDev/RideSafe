@@ -120,10 +120,40 @@ namespace RideSafe.UI
         {
             if (_title != null) _title.text = title;
             if (_subtitle != null) _subtitle.text = subtitle;
-            if (_leftHeading != null) _leftHeading.text = leftHeading;
-            if (_rightHeading != null) _rightHeading.text = rightHeading;
+            if (_leftHeading != null) { _leftHeading.text = leftHeading; _leftHeading.gameObject.SetActive(true); }
+            if (_rightHeading != null) { _rightHeading.text = rightHeading; _rightHeading.gameObject.SetActive(true); }
             Fill(_leftRows, left);
             Fill(_rightRows, right);
+        }
+
+        /// <summary>
+        /// Una sola lista —«Mi Elección»— repartida entre las dos columnas del panel.
+        /// <para>
+        /// La reunión pidió quitar la tabla duplicada de «Referencia para este recorrido» y
+        /// dejar un único panel centrado. Quitar la tabla es quitar el <b>contenido</b>
+        /// repetido, no la segunda columna: el reporte final junta los 7 elementos de
+        /// protección con los 5 puntos del vehículo, y doce filas en una sola columna se salen
+        /// del panel por abajo. Repartidas en dos, caben y se siguen leyendo como una lista.
+        /// </para>
+        /// <para>
+        /// Los encabezados de columna se apagan, porque en una lista única no significan nada.
+        /// </para>
+        /// </summary>
+        public void SetSingleList(string title, string note, IList<ComparisonEntry> entries)
+        {
+            if (_title != null) _title.text = title;
+            if (_subtitle != null) _subtitle.text = note;
+            if (_leftHeading != null) _leftHeading.gameObject.SetActive(false);
+            if (_rightHeading != null) _rightHeading.gameObject.SetActive(false);
+
+            int half = (entries.Count + 1) / 2;
+            List<ComparisonEntry> first = new List<ComparisonEntry>();
+            List<ComparisonEntry> second = new List<ComparisonEntry>();
+            for (int i = 0; i < entries.Count; i++)
+                (i < half ? first : second).Add(entries[i]);
+
+            Fill(_leftRows, first);
+            Fill(_rightRows, second);
         }
 
         private void Fill(RectTransform container, IList<ComparisonEntry> entries)

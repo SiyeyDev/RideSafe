@@ -249,7 +249,9 @@ namespace RideSafe.UI.EditorTools
             TMP_Text caption = K.TL(card, "Loose clothing near the drive train.", K.Body, 76f + o.x, 405f + o.y, 480f, "Caption");
             _ui.Button(card, "PauseButton", "Pause", false, 76f + o.x, 430f + o.y, 155f + o.x, 468f + o.y, 14f);
             _ui.Button(card, "ReplayButton", "Replay", false, 165f + o.x, 430f + o.y, 248f + o.x, 468f + o.y, 14f);
-            _ui.Button(card, "ContinueButton", "Continue", true, 455f + o.x, 430f + o.y, 560f + o.x, 468f + o.y, 15f);
+            // No hay boton de silencio, y no lo habra: la reunion pidio expresamente omitirlo.
+            UnityEngine.UI.Button continueButton =
+                _ui.Button(card, "ContinueButton", "Continue", true, 455f + o.x, 430f + o.y, 560f + o.x, 468f + o.y, 15f);
 
             Transform itemCard = K.Slice(panel, "Card_Default", 605f, 147f, 945f, 321f, 2.8f, Color.white, "ItemCard").transform;
             Vector2 i = Origin(605f, 147f, 2.8f);
@@ -278,6 +280,7 @@ namespace RideSafe.UI.EditorTools
             UIWire.Ref(view, "_playingTag", playing);
             UIWire.Ref(view, "_videoProgress", videoProgress);
             UIWire.Ref(view, "_videoSurface", surface);
+            UIWire.Ref(view, "_continueButton", continueButton);
             UIWire.Ref(view, "_itemRow", itemRow);
             UIWire.Ref(view, "_itemCounter", counter);
             UIWire.Ref(view, "_itemProgress", itemProgress);

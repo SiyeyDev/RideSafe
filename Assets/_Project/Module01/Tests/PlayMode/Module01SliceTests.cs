@@ -251,6 +251,21 @@ namespace RideSafe.Module01.Tests
             Assert.IsFalse(video.isPlaying);
             yield return Press(_binding.Explanation.transform, "ReplayButton");
             yield return WaitFor(() => video.isPlaying, "Repetir video");
+
+            // La reunion pidio que no se pueda saltar el video. Antes este test pulsaba
+            // Continuar a mitad y seguia, que es justo lo que ya no debe poder hacerse.
+            Assert.IsFalse(_binding.Explanation.CanContinue,
+                "Se puede continuar con el video a medias: el boton deberia estar apagado.");
+            yield return Press(_binding.Explanation.transform, "ContinueButton");
+            Assert.AreEqual("Explanation", _binding.Module.Current,
+                "Pulsar Continuar antes de tiempo saco de la pantalla del video.");
+
+            // Se salta al final en vez de esperar el clip entero: lo que se comprueba es que
+            // la puerta se abre al terminar, no cuanto dura el archivo de prueba.
+            video.time = System.Math.Max(0d, video.length - .25d);
+            yield return WaitFor(() => _binding.Explanation.CanContinue,
+                () => $"El video acabo y Continuar sigue apagado: time={video.time:F2} length={video.length:F2} playing={video.isPlaying}",
+                20);
             yield return Press(_binding.Explanation.transform, "ContinueButton");
         }
         /// <summary>
