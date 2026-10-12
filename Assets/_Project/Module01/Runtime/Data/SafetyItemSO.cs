@@ -20,11 +20,23 @@ namespace RideSafe.Module01
         [Tooltip("Objeto que sale al frente en el inspector. Greybox mientras llega 3D.")]
         [SerializeField] private GameObject _displayPrefab;
 
+        [Tooltip("El elemento está deteriorado, no es que sea el objeto equivocado.")]
+        [SerializeField] private bool _deteriorated;
+
         public string ItemId => string.IsNullOrWhiteSpace(_itemId) ? string.Empty : _itemId.Trim();
         public string NameKey => _nameKey;
         public string RiskKey => _riskKey;
         public SafetyItemCategory Category => _category;
         public GameObject DisplayPrefab => _displayPrefab;
+
+        /// <summary>
+        /// Distingue «esto está roto» de «esto no es lo que toca». Las dos cosas son
+        /// <see cref="SafetyItemCategory.Inappropriate"/> y las dos restan igual, pero en el
+        /// reporte son mensajes distintos: el casco dañado enseña a revisar el estado del
+        /// equipo, y el móvil en la mano enseña a no llevar carga suelta. La reunión pidió
+        /// las dos marcas por separado en la leyenda.
+        /// </summary>
+        public bool IsDeteriorated => _deteriorated;
 
         /// <summary>Solo para tests: evita tener que crear assets en disco.</summary>
         public void ConfigureForTests(string itemId, string nameKey, string riskKey, SafetyItemCategory category)
@@ -34,5 +46,8 @@ namespace RideSafe.Module01
             _riskKey = riskKey;
             _category = category;
         }
+
+        /// <summary>Solo para tests: marca el elemento como deteriorado.</summary>
+        public void MarkDeterioratedForTests() => _deteriorated = true;
     }
 }

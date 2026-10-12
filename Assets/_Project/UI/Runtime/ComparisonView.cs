@@ -6,15 +6,28 @@ using UnityEngine;
 namespace RideSafe.UI
 {
     /// <summary>
-    /// Post-submission four-state key. State is carried by shape, colour AND text, never
-    /// colour alone.
+    /// Clave de estado posterior al envío. El estado lo lleva la forma, el color Y el texto,
+    /// nunca el color solo.
+    /// <para>
+    /// Los cuatro que la reunión pidió en la leyenda son <see cref="Selected"/> (correcto),
+    /// <see cref="NotSuited"/> (incorrecto), <see cref="CoreOmitted"/> (omisión) y
+    /// <see cref="AtRisk"/> (en riesgo o deteriorado). <see cref="ConditionDependent"/> no
+    /// entra en la leyenda: no es ni acierto ni fallo, se pinta neutro.
+    /// </para>
     /// </summary>
     public enum ItemStatus
     {
         Selected = 0,
         CoreOmitted = 1,
         ConditionDependent = 2,
-        NotSuited = 3
+        NotSuited = 3,
+
+        /// <summary>
+        /// Elegido estando deteriorado. Resta igual que <see cref="NotSuited"/>, pero el
+        /// mensaje es otro: el casco dañado enseña a mirar el estado del equipo, no a elegir
+        /// otra cosa.
+        /// </summary>
+        AtRisk = 4
     }
 
     [Serializable]
@@ -36,8 +49,8 @@ namespace RideSafe.UI
     [Serializable]
     public class StatusGlyphs
     {
-        [Tooltip("In ItemStatus order: Selected, CoreOmitted, ConditionDependent, NotSuited.")]
-        public Sprite[] Sprites = new Sprite[4];
+        [Tooltip("En orden de ItemStatus: Selected, CoreOmitted, ConditionDependent, NotSuited, AtRisk.")]
+        public Sprite[] Sprites = new Sprite[5];
 
         public Sprite For(ItemStatus status)
         {

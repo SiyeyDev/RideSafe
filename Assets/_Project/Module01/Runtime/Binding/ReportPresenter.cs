@@ -98,7 +98,9 @@ namespace RideSafe.Module01
                         status = ItemStatus.ConditionDependent;
                         break;
                     case SafetyItemCategory.Inappropriate:
-                        status = ItemStatus.NotSuited;
+                        // Deteriorado y «no es lo que toca» restan igual, pero enseñan cosas
+                        // distintas: uno es revisar el estado del equipo y el otro elegir bien.
+                        status = item.IsDeteriorated ? ItemStatus.AtRisk : ItemStatus.NotSuited;
                         break;
                     default:
                         status = ItemStatus.Selected;

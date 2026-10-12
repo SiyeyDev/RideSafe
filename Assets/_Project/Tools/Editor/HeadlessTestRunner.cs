@@ -47,6 +47,9 @@ namespace RideSafe.Tools.Editor
 
         private static void Run(string[] assemblyNames, TestMode mode)
         {
+            if (!PrepareEditor())
+                return;
+
             File.WriteAllText(ResultPath, "RUNNING\n");
 
             TestRunnerApi api = ScriptableObject.CreateInstance<TestRunnerApi>();
@@ -59,6 +62,44 @@ namespace RideSafe.Tools.Editor
                 filter.assemblyNames = assemblyNames;
 
             api.Execute(new ExecutionSettings(filter));
+        }
+
+        /// <summary>
+        /// Deja el editor en condiciones de correr tests sin abrir un diálogo.
+        /// <para>
+        /// <b>Con una escena sin guardar, el Test Framework abre un modal
+        /// «Scene(s) Have Been Modified» antes de empezar.</b> Delante de una persona es una
+        /// pregunta; desde un script o desde el relay de MCP es un bloqueo indefinido: la
+        /// ventana principal queda deshabilitada, el hilo principal no avanza, y ni los tests
+        /// corren ni responde ninguna otra orden hasta que alguien la cierre a mano. Pasó, y
+        /// costó media hora de reloj averiguar que era eso y no un cuelgue.
+        /// </para>
+        /// <para>
+        /// Se guarda sin preguntar porque un test no debe poder perder trabajo, y guardar es
+        /// lo que habría contestado cualquiera en ese diálogo.
+        /// </para>
+        /// </summary>
+        private static bool PrepareEditor()
+        {
+            if (EditorApplication.isPlaying)
+            {
+                Debug.LogError(
+                    "[Tests] El editor esta en Play. Sal de Play antes de correr tests: la tarea " +
+                    "previa del framework revienta y tiñe de rojo un test que no tiene nada que ver.");
+                return false;
+            }
+
+            if (EditorApplication.isCompiling)
+            {
+                Debug.LogError(
+                    "[Tests] Sigue compilando. Compilar y correr en la misma llamada no funciona: " +
+                    "los tests correrian contra las assemblies viejas.");
+                return false;
+            }
+
+            UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
+            AssetDatabase.SaveAssets();
+            return true;
         }
 
         public void RunStarted(ITestAdaptor testsToRun) { }
