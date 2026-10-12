@@ -84,4 +84,16 @@ namespace RideSafe.TaskSequence
         /// <summary>A sequence that already completed refuses to run again.</summary>
         RunOnce = 2
     }
+
+    /// <summary>
+    /// Whether the presentation may mark the step's target with an extra highlight. Opaque to
+    /// the runner; only the tutorial presentation reads it.
+    /// </summary>
+    public enum TargetHighlightMode
+    {
+        /// <summary>The presentation decides: 3D targets yes, UI controls with their own hover/selected states no.</summary>
+        Auto = 0,
+        Show = 1,
+        Hide = 2
+    }
 }

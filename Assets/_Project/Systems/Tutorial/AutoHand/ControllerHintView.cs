@@ -10,7 +10,8 @@ namespace RideSafe.Tutorial.AutoHand
     /// <summary>
     /// Flat 2D Meta Quest Touch Plus drawn with uGUI, used to show which physical button to
     /// press. Knows buttons, not ActionIds: <see cref="TutorialPresenter"/> resolves the
-    /// ActionId to a hand and button through <see cref="AutoHandTutorialInputService"/>.
+    /// ActionId to a hand and control through an <see cref="IPhysicalBindingResolver"/>.
+    /// Kept as the fallback <see cref="IControllerHintView"/> next to the 3D Touch Plus view.
     /// <para>
     /// The required button is marked by several cues at once, never colour alone: an
     /// outline ring, a scale pulse and a small "press" movement. <see cref="Release"/> plays
@@ -18,7 +19,7 @@ namespace RideSafe.Tutorial.AutoHand
     /// </para>
     /// </summary>
     [AddComponentMenu("RideSafe/Tutorial/Controller Hint View")]
-    public class ControllerHintView : MonoBehaviour
+    public class ControllerHintView : MonoBehaviour, IControllerHintView
     {
         [Serializable]
         public struct Part
@@ -77,6 +78,13 @@ namespace RideSafe.Tutorial.AutoHand
             _releaseTime = -1f;
             gameObject.SetActive(true);
             return true;
+        }
+
+        /// <summary>Same as <see cref="Show(CommonButton, bool)"/>, from a backend-free binding.</summary>
+        public bool Show(PhysicalBinding binding)
+        {
+            CommonButton button = AutoHandControlMap.ToCommonButton(binding.Control);
+            return binding.IsValid && button != CommonButton.none && Show(button, binding.IsLeftHand);
         }
 
         /// <summary>The learner pressed it: show the button pressed, then hide.</summary>

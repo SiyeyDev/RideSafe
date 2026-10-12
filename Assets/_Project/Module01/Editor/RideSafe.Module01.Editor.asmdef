@@ -4,9 +4,13 @@
     "references": [
         "RideSafe.Module01",
         "TaskSequence",
-        "Cachacos"
+        "Cachacos",
+        "RideSafe.UI",
+        "Unity.TextMeshPro"
     ],
-    "includePlatforms": [ "Editor" ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

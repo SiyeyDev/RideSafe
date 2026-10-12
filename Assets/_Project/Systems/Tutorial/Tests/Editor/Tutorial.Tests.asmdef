@@ -8,9 +8,13 @@
         "TaskSequence.Tests",
         "Tutorial",
         "Tutorial.AutoHand",
+        "Tutorial.Presentation",
         "RideSafe.UI",
         "Unity.TextMeshPro",
-        "Cachacos"
+        "UnityEngine.UI",
+        "Cachacos",
+        "AutoHandAssembly",
+        "Autohand.XR"
     ],
     "includePlatforms": [
         "Editor"

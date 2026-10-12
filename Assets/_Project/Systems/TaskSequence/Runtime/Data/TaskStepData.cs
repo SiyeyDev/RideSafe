@@ -58,6 +58,10 @@ namespace RideSafe.TaskSequence
         [Tooltip("Abstract action shown as the level-2 input hint, e.g. primaryselect. Empty = no input hint. Opaque to the core.")]
         [SerializeField] private string _hintActionId;
 
+        [BoxGroup("Assistance")]
+        [Tooltip("Extra mark on the target. Auto: the presentation decides (none on UI controls that already show hover/selected).")]
+        [SerializeField] private TargetHighlightMode _targetHighlight = TargetHighlightMode.Auto;
+
         public TaskStepData() { }
 
         /// <summary>Code construction, used by EditMode tests. Authoring goes through the inspector.</summary>
@@ -72,8 +76,10 @@ namespace RideSafe.TaskSequence
             MissingEntityPolicy missingEntityPolicy = MissingEntityPolicy.SkipStep,
             SkipPolicy skipPolicy = SkipPolicy.SkipStep,
             string instructionKey = null,
-            string hintActionId = null)
+            string hintActionId = null,
+            TargetHighlightMode targetHighlight = TargetHighlightMode.Auto)
         {
+            _targetHighlight = targetHighlight;
             _instructionKey = instructionKey;
             _hintActionId = hintActionId;
             _stepId = stepId;
@@ -99,6 +105,7 @@ namespace RideSafe.TaskSequence
         public MissingEntityPolicy MissingEntityPolicy => _missingEntityPolicy;
         public SkipPolicy SkipPolicy => _skipPolicy;
         public string HintActionId => _hintActionId;
+        public TargetHighlightMode TargetHighlight => _targetHighlight;
 
         /// <summary>Row label in the sequence's step list. Resolved by Odin.</summary>
         public string GetEditorLabel()

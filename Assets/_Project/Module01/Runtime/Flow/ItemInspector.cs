@@ -29,6 +29,15 @@ namespace RideSafe.Module01
         [Tooltip("Raíz del popup de confirmación, abajo del objeto.")]
         [SerializeField] private GameObject _confirmRoot;
 
+        [Tooltip("Texto de la pregunta de confirmación.")]
+        [SerializeField] private TMP_Text _questionLabel;
+
+        [SerializeField] private UnityEngine.UI.Button _acceptButton;
+        [SerializeField] private UnityEngine.UI.Button _declineButton;
+
+        [Tooltip("Clave de la pregunta. Nunca texto literal.")]
+        [SerializeField] private string _questionKey = "Module1/Confirm_Question";
+
         private GameObject _instance;
         private ILocalizationProvider _localization;
 
@@ -41,7 +50,21 @@ namespace RideSafe.Module01
         private void Awake()
         {
             _localization = ServiceLocator.Instance.RequestService<ILocalizationProvider>();
+
+            if (_acceptButton != null)
+                _acceptButton.onClick.AddListener(Accept);
+            if (_declineButton != null)
+                _declineButton.onClick.AddListener(Decline);
+
             SetChromeVisible(false);
+        }
+
+        private void OnDestroy()
+        {
+            if (_acceptButton != null)
+                _acceptButton.onClick.RemoveListener(Accept);
+            if (_declineButton != null)
+                _declineButton.onClick.RemoveListener(Decline);
         }
 
         private void Update()
@@ -61,7 +84,10 @@ namespace RideSafe.Module01
                 _instance = Instantiate(item.DisplayPrefab, _stage.position, _stage.rotation, _stage);
 
             if (_nameLabel != null)
-                _nameLabel.text = _localization != null ? _localization.GetTranslation(item.NameKey) : item.NameKey;
+                _nameLabel.text = Translate(item.NameKey);
+
+            if (_questionLabel != null)
+                _questionLabel.text = Translate(_questionKey);
 
             SetChromeVisible(true);
         }
@@ -98,6 +124,9 @@ namespace RideSafe.Module01
             }
             SetChromeVisible(false);
         }
+
+        private string Translate(string key) =>
+            _localization != null ? _localization.GetTranslation(key) : key;
 
         private void SetChromeVisible(bool visible)
         {

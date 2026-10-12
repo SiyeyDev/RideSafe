@@ -18,6 +18,7 @@ namespace RideSafe.Tutorial
         private readonly HashSet<string> _completed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _skipped = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<ActionId> _learnedActions = new HashSet<ActionId>();
+        private readonly Dictionary<ActionId, int> _practice = new Dictionary<ActionId, int>();
 
         public event Action<string> SequenceCompleted;
 
@@ -30,8 +31,30 @@ namespace RideSafe.Tutorial
 
         public void MarkActionLearned(ActionId action)
         {
-            if (action.IsValid)
-                _learnedActions.Add(action);
+            if (!action.IsValid)
+                return;
+            _learnedActions.Add(action);
+            if (PracticeCount(action) == 0)
+                _practice[action] = 1;
+        }
+
+        /// <summary>
+        /// How many times the learner has completed a step by performing <paramref name="action"/>.
+        /// Drives fading help (<see cref="TutorialHelpPolicy"/>). Session memory only.
+        /// </summary>
+        public int PracticeCount(ActionId action)
+        {
+            int count;
+            return action.IsValid && _practice.TryGetValue(action, out count) ? count : 0;
+        }
+
+        /// <summary>One more successful use of <paramref name="action"/>; also marks it learned.</summary>
+        public void RecordPractice(ActionId action)
+        {
+            if (!action.IsValid)
+                return;
+            _learnedActions.Add(action);
+            _practice[action] = PracticeCount(action) + 1;
         }
 
         public bool IsTutorialCompleted(string sequenceId) =>
@@ -65,6 +88,7 @@ namespace RideSafe.Tutorial
             _completed.Clear();
             _skipped.Clear();
             _learnedActions.Clear();
+            _practice.Clear();
             SequenceCompleted = null;
         }
     }

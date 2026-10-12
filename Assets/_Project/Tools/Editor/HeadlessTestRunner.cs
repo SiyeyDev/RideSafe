@@ -16,14 +16,36 @@ namespace RideSafe.Tools.Editor
     /// sobreviviria para escribir el resultado.
     /// </para>
     /// </summary>
+    [InitializeOnLoad]
     public class HeadlessTestRunner : ScriptableObject, ICallbacks
     {
         public const string ResultPath = "Temp/ridesafe-tests.txt";
 
+        /// <summary>
+        /// A PlayMode run reloads the domain on the way in and out, which drops callbacks
+        /// registered by the code that started it. While a run is pending (result file says
+        /// RUNNING) the callback is registered again on every load, so the final domain still
+        /// writes the result.
+        /// </summary>
+        static HeadlessTestRunner()
+        {
+            if (!File.Exists(ResultPath) || !File.ReadAllText(ResultPath).StartsWith("RUNNING"))
+                return;
+            TestRunnerApi api = ScriptableObject.CreateInstance<TestRunnerApi>();
+            _active = ScriptableObject.CreateInstance<HeadlessTestRunner>();
+            _active.hideFlags = HideFlags.HideAndDontSave;
+            api.RegisterCallbacks(_active);
+        }
+
         private static HeadlessTestRunner _active;
 
         /// <summary>Lanza los tests de EditMode de las assemblies indicadas.</summary>
-        public static void Run(string[] assemblyNames)
+        public static void Run(string[] assemblyNames) => Run(assemblyNames, TestMode.EditMode);
+
+        /// <summary>Lanza los tests de PlayMode de las assemblies indicadas.</summary>
+        public static void RunPlayMode(string[] assemblyNames) => Run(assemblyNames, TestMode.PlayMode);
+
+        private static void Run(string[] assemblyNames, TestMode mode)
         {
             File.WriteAllText(ResultPath, "RUNNING\n");
 
@@ -32,7 +54,7 @@ namespace RideSafe.Tools.Editor
             _active.hideFlags = HideFlags.HideAndDontSave;
             api.RegisterCallbacks(_active);
 
-            Filter filter = new Filter { testMode = TestMode.EditMode };
+            Filter filter = new Filter { testMode = mode };
             if (assemblyNames != null && assemblyNames.Length > 0)
                 filter.assemblyNames = assemblyNames;
 

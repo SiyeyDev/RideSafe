@@ -16,4 +16,4 @@ MonoBehaviour:
   _nameKey: Module1/Item_HelmetDamaged
   _riskKey: Module1/Item_HelmetDamaged_Risk
   _category: 3
-  _displayPrefab: {fileID: 8136399587488681837, guid: 1dd5adc8b0ff71447b8a7ee0a7075404, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: 77fb396a896536145844fa18b70cee0a, type: 3}

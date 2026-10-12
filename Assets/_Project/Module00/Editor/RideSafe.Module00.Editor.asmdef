@@ -1,0 +1,31 @@
+{
+    "name": "RideSafe.Module00.Editor",
+    "rootNamespace": "RideSafe.Module00.Editor",
+    "references": [
+        "RideSafe.Module00",
+        "RideSafe.UI",
+        "TaskSequence",
+        "Tutorial",
+        "Tutorial.AutoHand",
+        "Tutorial.Presentation",
+        "Tutorial.Editor",
+        "RideSafe.Demo.Tutorial",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Sirenix.Serialization.dll",
+        "Sirenix.Utilities.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
