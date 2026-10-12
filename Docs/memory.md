@@ -1,7 +1,7 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-12 (madrugada)
+> Última actualización: 2026-10-12 (tarde)
 >
 > **Lo que falta hoy, con nombres y números: `Docs/Pendientes_Reunion_2026-10-12.md`.**
 
@@ -568,6 +568,34 @@ que conviene recordar.
 - **670.903 triángulos**, casi el doble del presupuesto de Quest. El 39 % se lo llevan tres
   maniquíes en pose T y 22 troncos de árbol, y ninguna de las dos cosas es contenido del módulo.
 - 257 EditMode y 4 PlayMode en verde, PlayMode dos corridas seguidas.
+
+**Tanda de la tarde: una sola UI de seleccion y un medidor de legibilidad.**
+
+- El reporte queda en **una sola lista** («Mi Elección»). La segunda tabla, la «referencia para
+  este recorrido», se calculaba desde las mismas filas cambiando los estados: no aportaba
+  información y duplicaba doce renglones en una pantalla que ya iba justa.
+- **Las leyendas se leen, ya no se adivinan.** Cada fila lleva su estado escrito en su propia
+  columna a la derecha, no solo el icono de color; y el id crudo (`helmet_certified`) dejó de
+  asomar en la columna de detalle.
+- **El veredicto del apto / no apto se mudó al panel.** Vivía en un rótulo suelto del HUD y se
+  cruzaba con «Ver explicación». Y no bastaba con apagarlo al abrir el reporte: `Decide()`
+  avanzaba de zona —lo que abre el reporte— **antes** de pintarlo, así que se encendía después.
+  Ahora el informe llega por el evento de sección completada y la frase se compone con la nota.
+- **El medidor de textos.** Esto es lo que conviene no perder: el recorrido de PlayMode ahora
+  mide, en cada pantalla, que ningún texto se salga de su caja, que el autoajuste no se haya
+  hundido hasta lo ilegible, y que **ningún par de textos se pise**. Encontró tres solapes que
+  mirando la pantalla no se veían.
+  - Compara **el polígono real del glifo** (`textBounds`), no el `RectTransform`: un rect ancho
+    con dos palabras cortas se cruza con el vecino sin que las letras se toquen.
+  - Y lo compara con el **teorema del eje separador**, no con cajas alineadas: la UI va rotada
+    en 3D por el `GazeFollower`, y las cajas alineadas a los ejes daban falso positivo en casi
+    todo. Tres errores de medición míos, en fila, antes de que el medidor dijera la verdad.
+- Los marcadores `!` ya no se acumulan: el verde de una zona resuelta no se apagaba nunca y, al
+  girar el vehículo, acababa cruzándose con el punto que toca mirar ahora.
+- **Los 2 EditMode que fallan no son de aquí:** `PF_Module00_UI` trae componentes `Localize` con
+  `LocalizeOnAwake`, que reescriben el título bilingüe del panel de idioma —y el test del módulo
+  0 avisa de eso textualmente—. Es trabajo en curso de la rama del tutorial; no se tocó.
+- 286/288 EditMode y 4/4 PlayMode.
 
 ### 2026-10-07 (noche) — tanda de UI sobre lo que Charlie vio corriendo
 
