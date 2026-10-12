@@ -147,12 +147,12 @@ namespace RideSafe.Module01.Editor
         {
             GameObject root = Find("Module01") ?? new GameObject("Module01");
 
-            Module01Binding binding = root.GetComponent<Module01Binding>() ?? root.AddComponent<Module01Binding>();
-            ItemInspector inspector = root.GetComponent<ItemInspector>() ?? root.AddComponent<ItemInspector>();
-            ZoneRunner runner = root.GetComponent<ZoneRunner>() ?? root.AddComponent<ZoneRunner>();
-            GuidedTour tour = root.GetComponent<GuidedTour>() ?? root.AddComponent<GuidedTour>();
-            ReportPresenter report = root.GetComponent<ReportPresenter>() ?? root.AddComponent<ReportPresenter>();
-            Module01Director director = root.GetComponent<Module01Director>() ?? root.AddComponent<Module01Director>();
+            Module01Binding binding = Module01EditorComponents.Ensure<Module01Binding>(root);
+            ItemInspector inspector = Module01EditorComponents.Ensure<ItemInspector>(root);
+            ZoneRunner runner = Module01EditorComponents.Ensure<ZoneRunner>(root);
+            GuidedTour tour = Module01EditorComponents.Ensure<GuidedTour>(root);
+            ReportPresenter report = Module01EditorComponents.Ensure<ReportPresenter>(root);
+            Module01Director director = Module01EditorComponents.Ensure<Module01Director>(root);
 
             Module01CatalogSO catalog = AssetDatabase.LoadAssetAtPath<Module01CatalogSO>(
                 "Assets/_Project/Module01/Data/SO_Module01Catalog.asset");

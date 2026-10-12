@@ -58,17 +58,21 @@ namespace RideSafe.Module01.Editor
                     continue;
                 }
 
-                if (go.GetComponent<Collider>() == null)
-                {
-                    BoxCollider box = go.AddComponent<BoxCollider>();
-                    FitCollider(go, box);
-                }
+                // El collider se reajusta SIEMPRE, no solo cuando falta: al recibir un garaje
+                // nuevo el objeto cambia de escala y de sitio, y un collider heredado del
+                // garaje anterior deja el clic desplazado respecto a lo que se ve.
+                BoxCollider box = Module01EditorComponents.Ensure<BoxCollider>(go);
+                FitCollider(go, box);
 
-                WorldObjectTaskEntity entity = go.GetComponent<WorldObjectTaskEntity>();
+                // Los colliders de los hijos se apagan: con dos volúmenes solapados gana el
+                // que el raycast toque primero, que no siempre es el que lleva la entidad.
+                foreach (Collider other in go.GetComponentsInChildren<Collider>(true))
+                    if (other != box)
+                        other.enabled = false;
+
                 bool wasActive = go.activeSelf;
                 go.SetActive(false);
-                if (entity == null)
-                    entity = go.AddComponent<WorldObjectTaskEntity>();
+                WorldObjectTaskEntity entity = Module01EditorComponents.Ensure<WorldObjectTaskEntity>(go);
                 entity.Configure(new EntityId($"module01.{zone}.{item}"), item);
                 go.SetActive(wasActive);
             }
@@ -146,8 +150,8 @@ namespace RideSafe.Module01.Editor
 
                     bool wasActive = go.activeSelf;
                     go.SetActive(false);
-                    WorldObjectTaskEntity entity = go.GetComponent<WorldObjectTaskEntity>()
-                                                   ?? go.AddComponent<WorldObjectTaskEntity>();
+                    WorldObjectTaskEntity entity =
+                        Module01EditorComponents.Ensure<WorldObjectTaskEntity>(go);
                     entity.Configure(new EntityId(id), item.ItemId);
                     go.SetActive(wasActive);
 
@@ -159,19 +163,58 @@ namespace RideSafe.Module01.Editor
             Debug.Log($"[Module01] Entidades creadas para completar las zonas: {created}.");
         }
 
-        /// <summary>Ajusta el collider al volumen visible, que los FBX no traen uno.</summary>
+        /// <summary>
+        /// Grosor mínimo de un lado del collider, en metros de mundo. La guaya y el teléfono
+        /// son láminas de 2 cm: de canto no se ven y el clic falla por un par de milímetros,
+        /// que es la mitad del «se hace clic en la nada». Un objeto plano sigue viéndose
+        /// plano; lo que se engorda es solo su volumen de acierto.
+        /// </summary>
+        private const float MinClickThickness = .06f;
+
+        /// <summary>
+        /// Ajusta el collider al volumen visible, que los FBX no traen uno.
+        /// <para>
+        /// Las ocho esquinas de cada renderer se pasan a espacio local <b>antes</b> de
+        /// encerrarlas. Tomar <c>bounds.size</c> del mundo y metérselo a <c>box.size</c>,
+        /// que es local, deja el collider descolocado en cuanto el objeto tiene escala —y
+        /// los objetos que coloca el equipo de arte la tienen casi siempre.
+        /// </para>
+        /// </summary>
         private static void FitCollider(GameObject go, BoxCollider box)
         {
             Renderer[] renderers = go.GetComponentsInChildren<Renderer>(true);
             if (renderers.Length == 0)
                 return;
 
-            Bounds b = renderers[0].bounds;
+            Bounds local = new Bounds();
+            bool first = true;
             foreach (Renderer r in renderers)
-                b.Encapsulate(r.bounds);
+            {
+                Bounds b = r.bounds;
+                for (int k = 0; k < 8; k++)
+                {
+                    Vector3 corner = b.center + Vector3.Scale(b.extents, new Vector3(
+                        (k & 1) == 0 ? -1 : 1,
+                        (k & 2) == 0 ? -1 : 1,
+                        (k & 4) == 0 ? -1 : 1));
+                    Vector3 p = go.transform.InverseTransformPoint(corner);
+                    if (first) { local = new Bounds(p, Vector3.zero); first = false; }
+                    else local.Encapsulate(p);
+                }
+            }
+            if (first)
+                return;
 
-            box.center = go.transform.InverseTransformPoint(b.center);
-            box.size = b.size;
+            box.center = local.center;
+
+            // El mínimo se expresa en mundo, así que se traduce a local por la escala del
+            // objeto: si no, en un objeto diminuto el engorde se lo come la escala.
+            Vector3 scale = go.transform.lossyScale;
+            Vector3 size = local.size;
+            size.x = Mathf.Max(size.x, MinClickThickness / Mathf.Max(Mathf.Abs(scale.x), 1e-4f));
+            size.y = Mathf.Max(size.y, MinClickThickness / Mathf.Max(Mathf.Abs(scale.y), 1e-4f));
+            size.z = Mathf.Max(size.z, MinClickThickness / Mathf.Max(Mathf.Abs(scale.z), 1e-4f));
+            box.size = size;
         }
 
         /// <summary>

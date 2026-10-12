@@ -35,8 +35,7 @@ namespace RideSafe.Module01.Editor
         /// <summary>Idempotente: reutiliza el <see cref="VehicleStage"/> que ya esté puesto.</summary>
         public static void Apply(Module01Director director)
         {
-            VehicleStage stage = director.GetComponent<VehicleStage>()
-                                 ?? director.gameObject.AddComponent<VehicleStage>();
+            VehicleStage stage = Module01EditorComponents.Ensure<VehicleStage>(director.gameObject);
             ConfigureStage(stage);
 
             SetVehicles(director, Profile("Ebike"), Profile("Escooter"));
