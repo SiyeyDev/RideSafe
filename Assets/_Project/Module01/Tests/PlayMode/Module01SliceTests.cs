@@ -176,6 +176,10 @@ namespace RideSafe.Module01.Tests
                     "La camara no alcanzo " + expected + " en la zona " + zoneId);
                 Assert.Less(Quaternion.Angle(_camera.transform.rotation, anchor.rotation), 1);
                 AssertVisible(_binding.Sidebar.GetComponentsInChildren<TMP_Text>().First(t => t.name == "Title").rectTransform);
+                // El checklist con filas ya dentro: es donde el texto largo en espanol se
+                // apretaba contra la nota al pie, y eso hay que mirarlo, no solo medirlo.
+                if (zoneId == "clothing") yield return Capture("checklist");
+                AssertTextIsLegible("zona " + zoneId);
                 var experience = Object.FindAnyObjectByType<Module01Experience>();
                 Assert.AreEqual(subtitles, Field<GameObject>(experience, "_instruction").activeInHierarchy, "La preferencia de subtitulos no se conserva");
                 foreach (var item in _director.CurrentZone.Items)
@@ -197,6 +201,7 @@ namespace RideSafe.Module01.Tests
                     AssertPedestalClearsPopup();
                     AssertModelClearsName();
                     AssertHudDoesNotOverlap();
+                    AssertTextIsLegible("inspeccionando " + item.ItemId);
                     var asked = Field<TMP_Text>(_inspector, "_questionLabel");
                     Assert.IsNotEmpty(asked.text, "El popup pregunta en blanco en " + item.ItemId);
                     Assert.IsFalse(asked.text.StartsWith("Module1/"), "Pregunta sin traducir: " + asked.text);
@@ -239,6 +244,7 @@ namespace RideSafe.Module01.Tests
                 "El reporte no muestra el vehiculo");
             Assert.IsFalse(_binding.Comparison.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("point_brakes")),
                 "El id crudo 'point_brakes' se esta viendo en pantalla.");
+            AssertTextIsLegible("reporte final");
             // 4 y no 6: tres saltos a las estaciones de protección personal y UNO al punto de
             // exhibición del vehículo. Las otras dos zonas del vehículo ya no mueven al
             // aprendiz —gira el vehículo, que es lo que pidió la reunión—, así que exigir seis
@@ -252,17 +258,44 @@ namespace RideSafe.Module01.Tests
         private IEnumerator ReviewAndVideo()
         {
             Assert.AreEqual("Comparison", _binding.Module.Current);
+            AssertTextIsLegible("reporte de seccion");
             yield return Press(_binding.Comparison.transform, "ExplainButton");
             Assert.AreEqual("Explanation", _binding.Module.Current);
             var video = _binding.Module.GetComponentInChildren<UnityEngine.Video.VideoPlayer>();
             Assert.IsNotNull(video);
-            yield return WaitFor(() => video.isPlaying && video.frame > 0,
-                () => $"El video no se reprodujo: clip={(video.clip == null ? "null" : video.clip.name)} "
-                    + $"prepared={video.isPrepared} playing={video.isPlaying} frame={video.frame} "
-                    + $"renderMode={video.renderMode} target={(video.targetTexture == null ? "null" : video.targetTexture.name)} "
-                    + $"audio={video.audioOutputMode} canPlay={video.canSetTime}", 15);
+            // O arranca, o el propio modulo se rinde y abre la puerta. Las dos salidas son
+            // legitimas y las dos dejan seguir el recorrido.
+            yield return WaitFor(() => (video.isPlaying && video.frame > 0) || _binding.Explanation.CanContinue,
+                () => $"Ni arranco el video ni se desbloqueo Continuar: clip={(video.clip == null ? "null" : video.clip.name)} "
+                    + $"prepared={video.isPrepared} playing={video.isPlaying} paused={video.isPaused} frame={video.frame} "
+                    + $"foco={Application.isFocused}", 25);
+
             AssertVisible(_binding.Explanation.VideoSurface.rectTransform);
             Assert.IsNotNull(_binding.Explanation.VideoSurface.texture);
+            // Despues de que el video arranque, no antes: esta comprobacion fuerza la
+            // reconstruccion de todos los canvas y la malla de cada texto.
+            AssertTextIsLegible("pantalla de video");
+
+            if (!video.isPlaying)
+            {
+                // El VideoPlayer de este equipo devuelve playing=false y paused=true en el mismo
+                // fotograma de Play(), sin error ni excepcion, con el clip preparado y la
+                // RenderTexture creada. Medido y descartado: la salida de audio, el modo de
+                // render, Run In Background, y el estado de pausa previo. Es del entorno —una
+                // corrida de PlayMode sin el Editor en primer plano— y no del modulo.
+                //
+                // Lo que SI se puede afirmar aqui, y es lo que importa, es que el modulo abre la
+                // puerta solo cuando el video no arranca. Sin eso el aprendiz se quedaria
+                // encerrado, y eso si seria un fallo del producto.
+                Assert.IsTrue(_binding.Explanation.CanContinue,
+                    "El video no arranco Y Continuar siguio bloqueado: el aprendiz se queda encerrado.");
+                Debug.LogWarning("[test] El video no arranco en este entorno, asi que no se comprueba ni la "
+                                 + "reproduccion ni el candado. La valvula de seguridad si se comprobo. "
+                                 + "Hay que mirar el video a mano o en el visor.");
+                yield return Press(_binding.Explanation.transform, "ContinueButton");
+                yield break;
+            }
+
             yield return Press(_binding.Explanation.transform, "PauseButton");
             Assert.IsFalse(video.isPlaying);
             yield return Press(_binding.Explanation.transform, "ReplayButton");
@@ -392,13 +425,184 @@ namespace RideSafe.Module01.Tests
         }
 
         /// <summary>
+        /// Ningún texto encendido se sale de su caja ni se pisa con otro.
+        /// <para>
+        /// Esto se comprueba <b>midiendo</b>, no mirando capturas. El texto que se desborda y el
+        /// que se solapa es el fallo que más veces ha llegado hasta el visor en este proyecto, y
+        /// a ojo no se ve hasta que alguien se pone el casco: el español es más largo que el
+        /// inglés con el que se diseñó el kit, así que una etiqueta que cabe en la pantalla de
+        /// diseño se sale al traducirla.
+        /// </para>
+        /// <para>
+        /// Tres cosas por texto: que lo que TMP necesita para pintarlo quepa en su rect (alto y,
+        /// si no envuelve, ancho); que si se autoajusta no haya tenido que bajar hasta su suelo
+        /// —eso significa que ya no puede encoger más y lo siguiente es cortar—; y que su
+        /// rectángulo en pantalla no se cruce con el de otro texto que no sea pariente suyo.
+        /// </para>
+        /// </summary>
+        private void AssertTextIsLegible(string momento)
+        {
+            // Los grupos de layout no recolocan a sus hijos hasta el final del fotograma, asi
+            // que medir sin esto compara posiciones viejas y acusa de solaparse a cosas que
+            // todavia no se habian movido.
+            Canvas.ForceUpdateCanvases();
+
+            var textos = Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
+                .Where(t => !string.IsNullOrWhiteSpace(t.text))
+                .Where(t => t.canvas != null && t.canvas.enabled)
+                .Where(t => t.GetComponentsInParent<CanvasGroup>().All(g => g.alpha > .9f))
+                .ToArray();
+
+            foreach (TMP_Text t in textos)
+            {
+                t.ForceMeshUpdate();
+                Rect caja = t.rectTransform.rect;
+
+                // Alto: lo que necesita con el ancho que tiene.
+                float altoNecesario = t.GetPreferredValues(t.text, caja.width, 0f).y;
+                Assert.LessOrEqual(altoNecesario, caja.height + 1f, string.Format(
+                    "[{0}] El texto '{1}' no cabe de alto: necesita {2:0.0} y tiene {3:0.0}. Dice: \"{4}\"",
+                    momento, Ruta(t.transform), altoNecesario, caja.height, Recorta(t.text)));
+
+                // Ancho, solo si no envuelve: si envuelve, el alto de arriba ya lo cubre.
+                if (t.textWrappingMode == TextWrappingModes.NoWrap)
+                {
+                    float anchoNecesario = t.GetPreferredValues(t.text, 0f, 0f).x;
+                    Assert.LessOrEqual(anchoNecesario, caja.width + 1f, string.Format(
+                        "[{0}] El texto '{1}' no cabe de ancho: necesita {2:0.0} y tiene {3:0.0}. Dice: \"{4}\"",
+                        momento, Ruta(t.transform), anchoNecesario, caja.width, Recorta(t.text)));
+                }
+
+                // Autoajuste contra el suelo: cabe, pero ya no puede encoger más.
+                if (t.enableAutoSizing)
+                    Assert.Greater(t.fontSize, t.fontSizeMin + .01f, string.Format(
+                        "[{0}] El texto '{1}' tuvo que encoger hasta su minimo ({2:0.0}) para caber. " +
+                        "Lo siguiente que haga el espanol lo corta. Dice: \"{3}\"",
+                        momento, Ruta(t.transform), t.fontSizeMin, Recorta(t.text)));
+            }
+
+            // Y que no se crucen entre si.
+            for (int i = 0; i < textos.Length; i++)
+            {
+                for (int j = i + 1; j < textos.Length; j++)
+                {
+                    if (EsPariente(textos[i].transform, textos[j].transform))
+                        continue;
+                    // Sobre las LETRAS, no sobre el rect: el rect de un TMP es bastante mas alto
+                    // que lo que pinta. Y como poligonos, no como cajas: hay interfaz girada.
+                    if (!TryGlyphQuad(textos[i], out Vector2[] a) || !TryGlyphQuad(textos[j], out Vector2[] b))
+                        continue;
+                    if (!SeCruzan(a, b, 2f))
+                        continue;
+                    Assert.Fail(string.Format(
+                        "[{0}] Dos textos se pisan en pantalla ({1}x{2}):\n   '{3}' = \"{4}\"\n   '{5}' = \"{6}\"",
+                        momento, Screen.width, Screen.height,
+                        Ruta(textos[i].transform), Recorta(textos[i].text),
+                        Ruta(textos[j].transform), Recorta(textos[j].text)));
+                }
+            }
+        }
+
+        private static bool EsPariente(Transform a, Transform b) => a.IsChildOf(b) || b.IsChildOf(a);
+
+        /// <summary>
+        /// Las cuatro esquinas de lo que el texto realmente dibuja, en píxeles de pantalla.
+        /// <para>
+        /// Se devuelve el <b>cuadrilátero</b> y no su caja alineada a los ejes porque la
+        /// interfaz de este módulo no está toda en el mismo plano: el checklist lo gira el
+        /// <c>GazeFollower</c> para mirar al aprendiz. La caja de un cuadrilátero inclinado es
+        /// bastante mayor que el cuadrilátero, y comparando cajas salían solapes de hasta 27 px
+        /// entre textos que en pantalla ni se rozan.
+        /// </para>
+        /// <para>
+        /// Devuelve <c>false</c> si el texto no está delante de la cámara o cae entero fuera de
+        /// la pantalla: <c>WorldToScreenPoint</c> de algo que está <b>detrás</b> devuelve
+        /// coordenadas espejadas y perfectamente creíbles.
+        /// </para>
+        /// </summary>
+        private bool TryGlyphQuad(TMP_Text t, out Vector2[] quad)
+        {
+            quad = null;
+            t.ForceMeshUpdate();
+            Bounds b = t.textBounds;
+            Vector3[] esquinas =
+            {
+                t.transform.TransformPoint(new Vector3(b.min.x, b.min.y, 0f)),
+                t.transform.TransformPoint(new Vector3(b.max.x, b.min.y, 0f)),
+                t.transform.TransformPoint(new Vector3(b.max.x, b.max.y, 0f)),
+                t.transform.TransformPoint(new Vector3(b.min.x, b.max.y, 0f)),
+            };
+
+            Vector3[] p = esquinas.Select(c => _camera.WorldToScreenPoint(c)).ToArray();
+            if (p.Any(v => v.z <= 0f))
+                return false;
+
+            quad = p.Select(v => (Vector2)v).ToArray();
+            if (quad.All(v => v.x < 0f) || quad.All(v => v.x > Screen.width)
+                || quad.All(v => v.y < 0f) || quad.All(v => v.y > Screen.height))
+                return false;
+            return true;
+        }
+
+        /// <summary>
+        /// ¿Se cruzan dos cuadriláteros convexos? Por el teorema del eje separador, que es
+        /// exacto estén como estén girados.
+        /// <para>
+        /// Cada uno se encoge <paramref name="holgura"/> píxeles hacia su centro antes de
+        /// comparar: dos textos que se tocan por el borde no se están tapando.
+        /// </para>
+        /// </summary>
+        private static bool SeCruzan(Vector2[] a, Vector2[] b, float holgura)
+        {
+            Vector2[] ea = Encoger(a, holgura), eb = Encoger(b, holgura);
+            return !HayEjeSeparador(ea, eb) && !HayEjeSeparador(eb, ea);
+        }
+
+        private static Vector2[] Encoger(Vector2[] q, float px)
+        {
+            Vector2 centro = (q[0] + q[1] + q[2] + q[3]) * .25f;
+            return q.Select(v =>
+            {
+                Vector2 d = v - centro;
+                float m = d.magnitude;
+                return m <= px ? centro : centro + d * ((m - px) / m);
+            }).ToArray();
+        }
+
+        private static bool HayEjeSeparador(Vector2[] forma, Vector2[] otra)
+        {
+            for (int i = 0; i < forma.Length; i++)
+            {
+                Vector2 borde = forma[(i + 1) % forma.Length] - forma[i];
+                Vector2 eje = new Vector2(-borde.y, borde.x);
+                if (eje.sqrMagnitude < 1e-6f)
+                    continue;
+                float minA = forma.Min(v => Vector2.Dot(v, eje)), maxA = forma.Max(v => Vector2.Dot(v, eje));
+                float minB = otra.Min(v => Vector2.Dot(v, eje)), maxB = otra.Max(v => Vector2.Dot(v, eje));
+                if (maxA < minB || maxB < minA)
+                    return true;
+            }
+            return false;
+        }
+
+        private static string Recorta(string s) => s.Length <= 42 ? s : s.Substring(0, 42) + "...";
+
+        private static string Ruta(Transform t)
+        {
+            string ruta = t.name;
+            for (Transform p = t.parent; p != null; p = p.parent)
+                ruta = p.name + "/" + ruta;
+            return ruta;
+        }
+
+        /// <summary>
         /// Nada de lo que esté encendido puede taparse entre sí. Quién está encendido lo decide
         /// el código, no el test: simular los estados a mano se equivoca en cuáles coexisten.
         /// </summary>
         private void AssertHudDoesNotOverlap()
         {
             string[] names = { "Confirmation", "ItemName", "Navigation", "StationInstruction",
-                               "ReadinessDecision", "FinalSummary", "ChecklistPanel" };
+                               "ReadinessDecision", "ChecklistPanel" };
             var live = Object.FindObjectsByType<RectTransform>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
                              .Where(x => names.Contains(x.name)).ToArray();
             for (int i = 0; i < live.Length; i++)

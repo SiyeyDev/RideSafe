@@ -47,6 +47,21 @@ namespace RideSafe.Module01
         private Vector3 _baseScale;
         private bool _highlighted;
         private bool _resolved;
+        private bool _obscured;
+
+        /// <summary>
+        /// Lo tapa algo y no debe verse, pase lo que pase con su estado. Lo usa el recorrido
+        /// mientras hay un objeto en el pedestal: el popup de confirmación ocupa el centro de la
+        /// pantalla y un marcador por detrás se le cruza por encima —está en la capa de overlay,
+        /// así que no lo tapa la geometría—.
+        /// </summary>
+        public void SetObscured(bool value)
+        {
+            if (_obscured == value)
+                return;
+            _obscured = value;
+            Repaint();
+        }
 
         /// <summary>¿Es el punto que toca revisar ahora?</summary>
         public bool IsHighlighted => _highlighted;
@@ -109,11 +124,24 @@ namespace RideSafe.Module01
             Repaint();
         }
 
+        /// <summary>
+        /// Solo se ven los puntos de la zona en curso y los ya resueltos. Los de otras zonas se
+        /// apagan del todo.
+        /// <para>
+        /// No es solo orden: es que <b>se montaban unos sobre otros</b>. Los cinco cuelgan a
+        /// distintas profundidades a lo largo del vehículo, y cuando este se gira de frente para
+        /// enseñar el manubrio, el de las llantas y el del sistema eléctrico se proyectan casi
+        /// en el mismo punto de la pantalla: dos signos de exclamación pisados. Medido en
+        /// PlayMode, no supuesto.
+        /// </para>
+        /// </summary>
         private void Repaint()
         {
             if (_glyph == null)
                 return;
-            _glyph.color = _resolved ? _resolvedColor : _highlighted ? _activeColor : _idleColor;
+            _glyph.color = _resolved ? _resolvedColor : _activeColor;
+            if (_billboard != null)
+                _billboard.gameObject.SetActive(!_obscured && (_highlighted || _resolved));
         }
 
         /// <summary>Solo para tests y para el montador de escena.</summary>

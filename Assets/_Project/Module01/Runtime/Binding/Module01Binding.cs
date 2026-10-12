@@ -78,8 +78,14 @@ namespace RideSafe.Module01
                 // mas sitio que el ingles con el que se diseno el kit.
                 // A la derecha y abajo, para dejar libre el centro del campo visual: en el
                 // centro es donde esta el objeto que el aprendiz tiene que mirar.
+                //
+                // 520 de ancho y no 420. Medido en PlayMode: con 420, la nota al pie en espanol
+                // ocupaba 128 px de alto -o sea que envolvia a mas lineas de las que el layout
+                // habia contado- y su primera linea se montaba sobre la ultima fila del
+                // checklist. Es la misma causa de siempre: el espanol es mas largo que el ingles
+                // con el que se diseno el kit.
                 rect.anchoredPosition = new Vector2(520, 60);
-                rect.sizeDelta = new Vector2(420, 300);
+                rect.sizeDelta = new Vector2(520, 300);
 
                 // Y que acompañe la vista en vez de ir clavado a la cabeza. Una UI pegada a la
                 // cabeza 1:1 es la causa habitual de incomodidad en VR; esta solo se mueve

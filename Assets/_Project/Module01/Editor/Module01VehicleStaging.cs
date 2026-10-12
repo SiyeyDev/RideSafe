@@ -51,13 +51,18 @@ namespace RideSafe.Module01.Editor
         /// </summary>
         private static readonly Dictionary<string, Vector3> Mounts = new Dictionary<string, Vector3>
         {
-            { "point_steering",  new Vector3(.86f, .94f, .50f) }, // manubrio
-            { "point_brakes",    new Vector3(.79f, .78f, .50f) }, // maneta de freno
+            // Los tres de la zona 'cockpit' van separados EN ANCHURA, no solo en altura.
+            // Medido: con los tres centrados (w = .50), al girar el vehiculo de frente para
+            // ensenar el manubrio, la profundidad deja de separar en pantalla y los tres signos
+            // de exclamacion se montan unos sobre otros. Repartirlos a lo ancho los separa, y
+            // ademas es donde estan de verdad: la maneta de freno a un lado, la bateria al otro.
+            { "point_steering",  new Vector3(.86f, .94f, .50f) }, // manubrio, al centro
+            { "point_brakes",    new Vector3(.79f, .78f, .18f) }, // maneta de freno, a un lado
             { "point_lights",    new Vector3(.95f, .62f, .50f) }, // faro delantero
             // La rueda sube de .13 a .18: a .13 la esfera del punto bajaba 1.41 m por debajo de
             // la linea de ojos y se salia del encuadre por abajo. Sigue sobre la rueda.
             { "point_wheels",    new Vector3(.10f, .18f, .50f) }, // rueda
-            { "point_electrics", new Vector3(.45f, .36f, .50f) }, // bateria
+            { "point_electrics", new Vector3(.45f, .36f, .82f) }, // bateria, al otro lado
         };
 
         /// <summary>
@@ -329,10 +334,17 @@ namespace RideSafe.Module01.Editor
             // cuelgue de donde cuelgue.
             float compensate = point.transform.lossyScale.x <= 0f ? 1f : 1f / point.transform.lossyScale.x;
             marker.transform.localPosition = new Vector3(0f, .26f * compensate, 0f);
-            marker.transform.localScale = Vector3.one * .009f * compensate;
+            // 0.0018 y no 0.009. La cuenta: el rect mide 112 unidades de alto, asi que con
+            // 0.009 de escala en mundo el signo medía UN METRO. Por eso se pisaban entre ellos
+            // y con el HUD: no era que estuvieran mal colocados, es que eran enormes. A 0.0018
+            // mide unos 20 cm, que desde los 2.7 m del punto de exhibicion ocupa un 6 % de la
+            // altura de pantalla: se ve de sobra y no tapa nada.
+            marker.transform.localScale = Vector3.one * .0018f * compensate;
 
             RectTransform rect = (RectTransform)marker.transform;
-            rect.sizeDelta = new Vector2(60f, 90f);
+            // 70x112 y no 60x90: medido, una '!' a 86 pt pide 96.1 de alto, asi que en 90 se
+            // recortaba por abajo. No se ve de un vistazo; lo caza AssertTextIsLegible.
+            rect.sizeDelta = new Vector2(70f, 112f);
 
             Canvas canvas = marker.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;

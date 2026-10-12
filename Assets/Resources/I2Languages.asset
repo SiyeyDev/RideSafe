@@ -1070,8 +1070,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Added does not mean correct. Click a row to remove it.
-      - "A\xF1adido no significa correcto. Pulsa una fila para quitarla."
+      - Added is not correct. Click a row to remove it.
+      - "A\xF1adido no es acierto. Pulsa una fila para quitarla."
       Flags: 0000
       Languages_Touch: []
     - Term: Module1/Review_Title

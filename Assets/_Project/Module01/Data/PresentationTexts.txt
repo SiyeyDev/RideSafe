@@ -42,7 +42,7 @@ Module1/Start|Comenzar|Start
 Module1/RepeatAudio|Repetir instrucciones|Repeat instructions
 Module1/Sidebar_Title|Mi preparación|My preparation
 Module1/Sidebar_Empty|Todavía no has añadido elementos.|No items added yet.
-Module1/Sidebar_Note|Añadido no significa correcto. Pulsa una fila para quitarla.|Added does not mean correct. Click a row to remove it.
+Module1/Sidebar_Note|Añadido no es acierto. Pulsa una fila para quitarla.|Added is not correct. Click a row to remove it.
 Module1/Review_Title|Revisa tus elecciones|Review your choices
 Module1/Review_Subtitle|Puedes volver y cambiarlas antes de enviar.|You can go back and change them before submitting.
 Module1/Review_Lock|Al confirmar se evaluará esta sección.|Confirm to evaluate this section.

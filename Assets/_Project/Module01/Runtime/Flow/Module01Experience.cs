@@ -29,7 +29,6 @@ namespace RideSafe.Module01
         [SerializeField] private GameObject _decision;
         [SerializeField] private GameObject _instruction;
         [SerializeField] private TMP_Text _instructionText;
-        [SerializeField] private TMP_Text _summary;
         [SerializeField] private Module01CatalogSO _allItems;
         [Tooltip("Atenúa el garaje durante los videos. Opcional: sin él no hay efecto cine.")]
         [SerializeField] private TheaterMode _theater;
@@ -55,6 +54,7 @@ namespace RideSafe.Module01
         private bool _started;
         private bool _videoComplete;
         private bool _readinessCorrect;
+        private ReadinessChoice _choice;
         private List<ComparisonEntry> _personalEntries;
         private List<ComparisonEntry> _vehicleEntries;
         private string _instructionKey;
@@ -189,7 +189,6 @@ namespace RideSafe.Module01
         {
             if (Phase != "Finished") return;
             if (_result != null) _result.SetActive(false);
-            _summary.gameObject.SetActive(false);
             _binding.Module.HideAll();
             _personalEntries = null;
             _vehicleEntries = null;
@@ -268,17 +267,27 @@ namespace RideSafe.Module01
         private string NameOf(string id) => _allItems.TryGetItem(id, out var item) ? UIText.Resolve(item.NameKey) : id;
         private void KeepChoosing() => EnterZone(_director.CurrentZone);
         private void Submit() { if (Phase == "Review") _director.AdvanceZone(); }
+        /// <summary>
+        /// El apto / no apto del vehiculo. Solo registra la eleccion y avanza: el veredicto se
+        /// lee en la nota del reporte que viene a continuacion, no en un rotulo suelto.
+        /// </summary>
         private void Decide(ReadinessChoice choice)
         {
             if (Phase != "Decision") return;
             _decision.SetActive(false);
+            _choice = choice;
             _director.AdvanceZone();
-            _readinessCorrect = ReadinessDecision.IsCorrect(choice, _director.VehicleReport);
-            _summary.text = UIText.Resolve(_readinessCorrect ? "Module1/Decision_Correct" : "Module1/Decision_Review");
-            _summary.gameObject.SetActive(true);
         }
         private void ShowPersonalReport(SelectionReport report) { _personalEntries = Entries(report); ShowReport(_personalEntries); }
-        private void ShowVehicleReport(SelectionReport report) { _vehicleEntries = Entries(report); ShowReport(_vehicleEntries); }
+        private void ShowVehicleReport(SelectionReport report)
+        {
+            // El informe llega por el evento porque todavia no esta publicado en el director:
+            // se asigna justo antes de avisar.
+            _readinessCorrect = ReadinessDecision.IsCorrect(_choice, report);
+            _vehicleEntries = Entries(report);
+            ShowReport(_vehicleEntries,
+                UIText.Resolve(_readinessCorrect ? "Module1/Decision_Correct" : "Module1/Decision_Review"));
+        }
         private List<ComparisonEntry> Entries(SelectionReport report)
         {
             var ids = new HashSet<string>(report.CoreSelected.Concat(report.CoreOmitted).Concat(report.OptionalSelected).Concat(report.ConditionDependentSelected).Concat(report.InappropriateSelected));
@@ -293,13 +302,18 @@ namespace RideSafe.Module01
         /// duplicaba doce renglones en una pantalla que ya iba justa.
         /// </para>
         /// </summary>
-        private void ShowReport(List<ComparisonEntry> entries)
+        private void ShowReport(List<ComparisonEntry> entries, string verdict = null)
         {
             Phase = "Report";
             _binding.Module.Show("Comparison");
+            // El veredicto de la decision va aqui, en la nota del panel, y no en un rotulo
+            // flotante sobre el HUD: medido en PlayMode, aquel se cruzaba con "Ver explicacion".
+            string note = UIText.Resolve("Module1/MyChoice_Note");
+            if (!string.IsNullOrEmpty(verdict))
+                note += "   " + verdict;
             _binding.Comparison.SetSingleList(
                 UIText.Resolve("Module1/MyChoice_Title"),
-                UIText.Resolve("Module1/MyChoice_Note"),
+                note,
                 entries);
         }
 
@@ -322,7 +336,7 @@ namespace RideSafe.Module01
         private void PlayVideo()
         {
             if (Phase != "Report") return;
-            Phase = "Video"; _summary.gameObject.SetActive(false);
+            Phase = "Video";
             _binding.Module.Show("Explanation");
             // No se puede saltar el video: la reunion lo pidio. Se apaga el boton en vez de
             // ignorar el clic, porque un boton que responde y no hace nada parece roto.
@@ -358,6 +372,10 @@ namespace RideSafe.Module01
         {
             _video.waitForFirstFrame = false;
 
+            // Stop() antes de preparar, siempre: devuelve el reproductor a un estado limpio y es
+            // barato aunque no estuviera reproduciendo.
+            _video.Stop();
+
             if (!_video.isPrepared)
             {
                 _video.Prepare();
@@ -374,8 +392,45 @@ namespace RideSafe.Module01
                 yield break;
             }
 
-            if (Phase == "Video")
+            if (Phase != "Video")
+            {
+                Debug.LogWarning($"[Module01] La fase paso a '{Phase}' mientras el video se preparaba; no se arranca.");
+                yield break;
+            }
+
+            _video.Play();
+
+            // Un reintento, y despues rendirse abriendo la puerta.
+            //
+            // VideoPlayer puede devolver playing=false y paused=true en el mismo fotograma de
+            // Play(), sin error ni excepcion. La causa mas comun no es el clip: es que la
+            // aplicacion no tiene el foco —Unity pausa el video entonces—, que es lo que pasa
+            // siempre en una corrida automatizada. Tambien puede serlo un archivo que la maquina
+            // no sepa decodificar.
+            //
+            // Pase lo que pase, lo que NO puede ocurrir es que el aprendiz se quede encerrado en
+            // una pantalla cuyo boton solo se abre al terminar un video que nunca empieza.
+            float hasta = Time.realtimeSinceStartup + 1.5f;
+            while (!_video.isPlaying && Phase == "Video" && Time.realtimeSinceStartup < hasta)
+                yield return null;
+            if (!_video.isPlaying && Phase == "Video")
                 _video.Play();
+
+            hasta = Time.realtimeSinceStartup + 4f;
+            while (!_video.isPlaying && Phase == "Video" && Time.realtimeSinceStartup < hasta)
+                yield return null;
+
+            if (!_video.isPlaying && Phase == "Video")
+            {
+                // Aviso, no error: es una condicion de la que el modulo sabe salir, y marcarla
+                // como error tiñe de rojo cualquier test que pase por aqui.
+                Debug.LogWarning(
+                    "[Module01] El video no arranca (prepared=" + _video.isPrepared + ", paused=" + _video.isPaused
+                    + "). Se desbloquea Continuar para no dejar al aprendiz encerrado en una pantalla cuyo boton "
+                    + "solo abre al terminar un video que nunca empieza.");
+                _videoComplete = true;
+                _binding.Explanation.SetContinueEnabled(true);
+            }
         }
         [SerializeField] private VideoClip _personalVideo;
         [SerializeField] private VideoClip _vehicleVideo;
@@ -415,10 +470,6 @@ namespace RideSafe.Module01
             ShowVerdict(entries, score);
             Phase = "Finished";
             Find<Button>(_binding.Comparison.transform, "ExplainButton").gameObject.SetActive(false);
-
-            // El resumen suelto se apaga: su frase ya va en el subtitulo del panel, y en el
-            // sitio que ocupaba ahora estan los botones de salida.
-            _summary.gameObject.SetActive(false);
 
             if (_result != null) _result.SetActive(true);
             // Solo el aprobado abre el modulo 2. Los demas rangos dejan repetir, y nada mas:

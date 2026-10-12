@@ -131,15 +131,20 @@ namespace RideSafe.Module01.Editor
             // comia el techo del popup, dibujandose encima por estar mas cerca. Comparar
             // alturas en el mundo no lo detecta. El popup se cuelga debajo de esa silueta
             // proyectada, no de una altura a ojo, para que siga cuadrando si cambia el disco.
-            const float confirmH=185f, margin=25f;
+            // 212 y no 185: medido, la pregunta en espanol -"¿Quieres anadir este elemento a tu
+            // preparacion?"- parte en dos lineas y pide 87.4 de alto, pero su caja eran 70, asi
+            // que la segunda linea se desbordaba hacia los botones. El panel crece hacia ABAJO
+            // -su borde superior sale de confirmTop menos el margen, que no depende del alto-
+            // asi que el pedestal sigue despejado igual.
+            const float confirmH=212f, margin=25f;
             float rimZ=pedestal.transform.localPosition.z-pedestal.transform.localScale.z*.5f;
             float rimY=pedestal.transform.localPosition.y-pedestal.transform.localScale.y;
             float rimOnCanvas=rimY/rimZ*inspection.transform.localPosition.z;
             float confirmTop=(rimOnCanvas-inspection.transform.localPosition.y)/inspection.transform.localScale.x;
             var confirm=Panel("Confirmation",inspection.transform,new Vector2(0,confirmTop-confirmH*.5f-margin),new Vector2(620,confirmH),"Panel_Modal_Dark",2.4f/px);
-            var question=Text("Question",confirm,new Vector2(0,48),new Vector2(580,70),"",_kit.H1OnDark.With(24f*px));
-            var yes=Button("AcceptButton",confirm,new Vector2(-125,-45),new Vector2(230,50f*px),"Module1/Yes",true,17f*px);
-            var no=Button("DeclineButton",confirm,new Vector2(125,-45),new Vector2(230,50f*px),"Module1/No",false,17f*px);
+            var question=Text("Question",confirm,new Vector2(0,54),new Vector2(580,95),"",_kit.H1OnDark.With(24f*px));
+            var yes=Button("AcceptButton",confirm,new Vector2(-125,-55),new Vector2(230,50f*px),"Module1/Yes",true,17f*px);
+            var no=Button("DeclineButton",confirm,new Vector2(125,-55),new Vector2(230,50f*px),"Module1/No",false,17f*px);
             Set(inspector,"_stage",stage); Set(inspector,"_nameLabel",name); Set(inspector,"_confirmRoot",confirm.gameObject); Set(inspector,"_questionLabel",question); Set(inspector,"_acceptButton",yes); Set(inspector,"_declineButton",no); Set(inspector,"_pedestal",pedestal);
 
             // Auxiliary controls live outside the generated prefab and are resolved at runtime.
@@ -153,9 +158,19 @@ namespace RideSafe.Module01.Editor
             // si dos cosas se tapan en pantalla cuando estan a distinta profundidad: el
             // checklist flota a 1.6 m y 24 grados a la derecha, asi que ocupa de 7.8 a 33.5
             // grados; la navegacion, a 1.8 m, ocupa de -31 a -1.3. Disjuntos.
-            var nav=Rect("Navigation",hud.transform,new Vector2(-250,-330),new Vector2(560,55));
-            Button("PreviousZoneButton",nav,new Vector2(-190,0),new Vector2(210,48),"Module1/Previous",false,17f);
-            Button("NextZoneButton",nav,new Vector2(90,0),new Vector2(270,48),"Module1/Next",true,17f);
+            // Fuera de la silueta del vehiculo, no solo mas abajo.
+            //
+            // Bajarla no servia: el vehiculo ocupa el centro de la pantalla de arriba abajo, asi
+            // que cada vez que se bajaba la barra, el siguiente punto de inspeccion mas bajo
+            // quedaba debajo de un boton y el clic se lo comia el boton -primero la bateria,
+            // luego las llantas-. Hay que salir por el LADO.
+            //
+            // El vehiculo, de costado y a 2.7 m, abarca de -20 a +20 grados. La barra acaba en
+            // -20 (borde derecho en x=-328 unidades) y arranca en -39.7, dentro de los 45.7 que
+            // da el campo horizontal. El checklist vive al otro lado, de +4 a +33.
+            var nav=Rect("Navigation",hud.transform,new Vector2(-538,-330),new Vector2(420,55));
+            Button("PreviousZoneButton",nav,new Vector2(-105,0),new Vector2(200,48),"Module1/Previous",false,16f);
+            Button("NextZoneButton",nav,new Vector2(105,0),new Vector2(200,48),"Module1/Next",true,16f);
             Set(exp,"_navigation",nav.gameObject);
             var instructions=Panel("StationInstruction",hud.transform,new Vector2(-110,220),new Vector2(610,85),"Panel_Modal_Dark",2.4f);
             Set(exp,"_instruction",instructions.gameObject);
@@ -176,7 +191,6 @@ namespace RideSafe.Module01.Editor
             Tint(Button("DoNotRideButton",decision,new Vector2(245,-35),new Vector2(230,56),"Module1/DoNotRide",false,16f),
                  new Color32(0xE8,0x7E,0x72,0xFF));
             Set(exp,"_decision",decision.gameObject);
-            var summary=Text("FinalSummary",hud.transform,new Vector2(0,-235),new Vector2(850,55),"",_kit.BodyOnDark.With(22f)); Set(exp,"_summary",summary); summary.gameObject.SetActive(false);
 
             // Barra de salida del reporte final: solo los dos botones.
             //
@@ -202,6 +216,20 @@ namespace RideSafe.Module01.Editor
             result.gameObject.SetActive(false);
             var vp = ui.GetComponent<VideoPlayer>(); if(vp==null) vp=ui.gameObject.AddComponent<VideoPlayer>();
             vp.playOnAwake=false; vp.isLooping=false; vp.renderMode=VideoRenderMode.RenderTexture; vp.waitForFirstFrame=false;
+            // El audio sale por un AudioSource, no en modo Direct.
+            //
+            // Direct manda el sonido a la salida del sistema y el reproductor se NIEGA a
+            // arrancar si esa salida no esta disponible: medido, Play() dejaba playing=false en
+            // el mismo fotograma, sin error ni excepcion, con prepared=true y el clip puesto.
+            // Pasa en el editor automatizado y pasaria en cualquier maquina con el audio
+            // ocupado. Ademas es lo que conviene en VR: por AudioSource el sonido se puede
+            // espacializar y controlar de volumen, por Direct no.
+            var speaker=ui.gameObject.GetComponent<AudioSource>();
+            if(speaker==null) speaker=ui.gameObject.AddComponent<AudioSource>();
+            speaker.playOnAwake=false;
+            vp.audioOutputMode=VideoAudioOutputMode.AudioSource;
+            vp.EnableAudioTrack(0,true);
+            vp.SetTargetAudioSource(0,speaker);
             var rt=AssetDatabase.LoadAssetAtPath<RenderTexture>("Assets/_Project/Video/VideoScreen_RT.renderTexture"); vp.targetTexture=rt;
             Set(exp,"_video",vp);
             var clip=AssetDatabase.LoadAssetAtPath<VideoClip>("Assets/_Project/Video/VideoTest.mp4"); Set(exp,"_personalVideo",clip); Set(exp,"_vehicleVideo",clip);

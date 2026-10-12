@@ -53,6 +53,8 @@ namespace RideSafe.Module01
                 return;
             _inspector.Accepted += HandleAccepted;
             _inspector.Declined += HandleDeclined;
+            _inspector.Presenting += HideMarkersWhileInspecting;
+            _inspector.Dismissed += ShowMarkersAgain;
             _subscribed = true;
         }
 
@@ -62,6 +64,8 @@ namespace RideSafe.Module01
                 return;
             _inspector.Accepted -= HandleAccepted;
             _inspector.Declined -= HandleDeclined;
+            _inspector.Presenting -= HideMarkersWhileInspecting;
+            _inspector.Dismissed -= ShowMarkersAgain;
             _subscribed = false;
         }
 
@@ -117,6 +121,22 @@ namespace RideSafe.Module01
             }
         }
 
+        private void HideMarkersWhileInspecting(SafetyItemSO _) => ObscureMarkers(true);
+
+        private void ShowMarkersAgain() => ObscureMarkers(false);
+
+        /// <summary>
+        /// Aparta los signos de la zona mientras hay un objeto en el pedestal. El popup de
+        /// confirmación ocupa el centro y los marcadores viven en la capa de overlay, así que
+        /// sin esto se le cruzan por encima: medido, uno se montaba sobre la pregunta.
+        /// </summary>
+        private void ObscureMarkers(bool value)
+        {
+            foreach (WorldObjectTaskEntity entity in _entities)
+                if (entity != null)
+                    entity.GetComponent<InspectionMarker>()?.SetObscured(value);
+        }
+
         /// <summary>
         /// Pone el marcador del punto en su estado. Silencioso cuando no hay marcador: los
         /// elementos de protección personal no lo llevan, y no es un fallo.
@@ -128,9 +148,12 @@ namespace RideSafe.Module01
             InspectionMarker marker = entity.GetComponent<InspectionMarker>();
             if (marker == null)
                 return;
+            // Se limpia el "resuelto" tanto al entrar como al salir de la zona: un punto marcado
+            // en verde de una zona anterior se queda visible y, al girar el vehiculo, acaba
+            // cruzandose con el punto que toca revisar ahora. El marcador habla de la zona en
+            // curso y de ninguna otra.
             marker.SetHighlighted(highlighted);
-            if (highlighted)
-                marker.SetResolved(false);
+            marker.SetResolved(false);
         }
 
         private void HandleEntityConfirmed(ITaskEntity entity)
