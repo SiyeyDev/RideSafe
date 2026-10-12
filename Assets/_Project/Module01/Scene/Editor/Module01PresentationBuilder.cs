@@ -156,43 +156,146 @@ namespace RideSafe.Module01.Editor
             var catalog=AssetDatabase.LoadAssetAtPath<Module01CatalogSO>("Assets/_Project/Module01/Data/SO_Module01Catalog.asset");
             var vehicle=AssetDatabase.LoadAssetAtPath<VehicleProfileSO>("Assets/_Project/Module01/Data/SO_VehicleProfile_Ebike.asset");
             all.ConfigureForTests(catalog.Zones.Concat(vehicle.InspectionZones)); EditorUtility.SetDirty(all); Set(exp,"_allItems",all);
+            // Quien esconde el EPP de la mesa mientras gira en el pedestal, y lo deja escondido
+            // cuando el aprendiz se lo lleva puesto. Solo los del catalogo personal: los puntos
+            // del vehiculo no se "llevan", se validan.
+            var worn=root.GetComponent<WornItemVisibility>();
+            if(worn==null) worn=root.AddComponent<WornItemVisibility>();
+            Set(worn,"_runner",root.GetComponent<ZoneRunner>());
+            Set(worn,"_inspector",inspector);
+            Set(worn,"_wearable",catalog);
+
             ArrangeStations(catalog,vehicle);
+            AssignUiLayer();
             // Un sprite mal escrito dibuja nada y se ve como "quedo feo". Que reviente, no que calle.
             if(_kit.MissingSprites.Count>0) throw new System.InvalidOperationException("Sprites que no estan en el atlas: "+string.Join(" | ",_kit.MissingSprites));
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             EditorSceneManager.SaveOpenScenes(); AssetDatabase.SaveAssets();
         }
+        /// <summary>Altura de los ojos del aprendiz de pie, en metros.</summary>
+        private const float k_EyeHeight = 1.45f;
+
+        /// <summary>
+        /// Manda a la capa <c>UI</c> todo lo que debe dibujar la cámara de overlay.
+        /// <para>
+        /// Hace falta una pasada propia al final porque <see cref="BuildUiCamera"/> corre al
+        /// principio, cuando el HUD todavía no existe: su asignación de capa no lo alcanzaba y
+        /// el HUD se quedaba en <c>Default</c>, donde cualquier malla más cercana lo atraviesa.
+        /// </para>
+        /// <para>
+        /// Se hace así, y no moviendo <c>BuildUiCamera</c> al final, porque reordenar el
+        /// montador disparó una regresión en la fuente del <c>BeginButton</c>. Esto toca
+        /// capas y nada más, que es justo lo que faltaba.
+        /// </para>
+        /// <para>
+        /// El canvas del inspector se queda fuera <b>a propósito</b>: su popup va detrás del
+        /// modelo que gira sobre el pedestal, y en la capa de overlay se dibujaría encima.
+        /// </para>
+        /// </summary>
+        private static void AssignUiLayer()
+        {
+            int ui=LayerMask.NameToLayer("UI");
+            if(ui<0) { Debug.LogError("[Module01] No existe la capa 'UI'."); return; }
+
+            string[] roots={ "Module01Controls","PF_Module01_UI","PF_Module00_UI" };
+            int moved=0;
+            foreach(string name in roots)
+            {
+                var found=Object.FindObjectsByType<Transform>(FindObjectsInactive.Include,FindObjectsSortMode.None)
+                    .FirstOrDefault(t=>t.name==name);
+                if(found==null) { Debug.LogWarning($"[Module01] No encuentro '{name}' para asignarle la capa UI."); continue; }
+                foreach(var t in found.GetComponentsInChildren<Transform>(true))
+                { t.gameObject.layer=ui; moved++; }
+            }
+            Debug.Log($"[Module01] Objetos puestos en la capa UI: {moved}.");
+        }
+
+        /// <summary>
+        /// Coloca el punto de vista de cada zona personal frente a los objetos **donde el
+        /// equipo de arte los dejó**, y no toca los objetos.
+        /// <para>
+        /// Antes esto reparentaba los 7 EPP a <c>Module01_Spawned</c>, los ponía en fila
+        /// flotando a 1.5 m del ancla y los normalizaba a 32 cm en su lado mayor. De ahí
+        /// salían tres problemas a la vez: los objetos no se apoyaban en nada —y por eso
+        /// «se hacía clic en la nada»—, la escala dejaba una linterna enana al lado de un
+        /// casco gigante, y el trabajo de colocación del equipo de arte se perdía en cada
+        /// montaje. El garaje v6 ya los trae puestos sobre el mostrador, cada uno a su
+        /// altura; lo único que falta es mirar desde donde se ven.
+        /// </para>
+        /// <para>
+        /// Las zonas del vehículo conservan su ancla fija: ahí manda el punto único de
+        /// exhibición, que vive en el ancla <c>vehicle</c> y lo coloca otro comando.
+        /// </para>
+        /// </summary>
         private static void ArrangeStations(Module01CatalogSO catalog, VehicleProfileSO vehicle)
         {
             var entities=Object.FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Include,FindObjectsSortMode.None);
-            var zones=catalog.Zones.Concat(vehicle.InspectionZones).ToArray();
-            for(int z=0;z<zones.Length;z++)
+            var personal=catalog.Zones.ToArray();
+
+            for(int z=0;z<personal.Length;z++)
+                PlaceViewpoint(personal[z],entities);
+
+            // Zonas del vehiculo: ancla fija hasta que exista el punto de exhibicion.
+            var vehicleZones=vehicle.InspectionZones;
+            for(int z=0;z<vehicleZones.Count;z++)
             {
-                Vector3 eye=z<3?new Vector3(-2+z*2,1.65f,-1.7f):new Vector3(-2+(z-3)*1.5f,1.65f,2.3f);
-                var anchor=Find("anchor_"+zones[z].ZoneId).transform; anchor.position=eye; anchor.rotation=Quaternion.Euler(0,180,0);
-                for(int i=0;i<zones[z].Items.Count;i++)
-                {
-                    var item=zones[z].Items[i]; var e=entities.First(x=>x.ItemId==item.ItemId);
-                    e.transform.SetParent(Find("Module01_Spawned").transform,true);
-                    e.transform.position=eye+new Vector3((i-(zones[z].Items.Count-1)*.5f)*-.5f,-.35f,-1.5f);
-                    var renderers=e.GetComponentsInChildren<Renderer>();
-                    if(renderers.Length>0)
-                    {
-                        var b=renderers[0].bounds; foreach(var r in renderers) b.Encapsulate(r.bounds);
-                        float size=Mathf.Max(b.size.x,b.size.y,b.size.z); if(size>0) e.transform.localScale*=.32f/size;
-                        b=renderers[0].bounds; foreach(var r in renderers) b.Encapsulate(r.bounds);
-                        e.transform.position+=eye+new Vector3((i-(zones[z].Items.Count-1)*.5f)*-.5f,-.35f,-1.5f)-b.center;
-                    }
-                    foreach(var c in e.GetComponentsInChildren<Collider>()) if(c.gameObject!=e.gameObject) c.enabled=false;
-                    var box=e.GetComponent<BoxCollider>();
-                    if(box!=null)
-                    {
-                        Bounds local=new Bounds(Vector3.zero,Vector3.zero); bool first=true;
-                        foreach(var r in renderers) { var b=r.bounds; for(int k=0;k<8;k++) { Vector3 p=e.transform.InverseTransformPoint(b.center+Vector3.Scale(b.extents,new Vector3((k&1)==0?-1:1,(k&2)==0?-1:1,(k&4)==0?-1:1))); if(first) {local=new Bounds(p,Vector3.zero);first=false;} else local.Encapsulate(p); } }
-                        if(!first) {box.center=local.center;box.size=local.size;}
-                    }
-                }
+                var anchor=Find("anchor_"+vehicleZones[z].ZoneId).transform;
+                anchor.position=new Vector3(-2+z*1.5f,k_EyeHeight,2.3f);
+                anchor.rotation=Quaternion.Euler(0,180,0);
             }
+        }
+
+        /// <summary>
+        /// Pone el ancla de la zona a la distancia justa para que entren todos sus elementos
+        /// en pantalla, mirándolos.
+        /// <para>
+        /// La distancia se deriva del ancho real que ocupan y del campo de visión, no de un
+        /// número a ojo: si el equipo de arte junta o separa los objetos, el punto de vista
+        /// se ajusta solo. Se avisa cuando una zona queda demasiado desparramada, porque eso
+        /// no se arregla alejando la cámara —los objetos se ven diminutos— sino acercándolos
+        /// entre ellos en la escena.
+        /// </para>
+        /// </summary>
+        private static void PlaceViewpoint(ZoneSO zone,WorldObjectTaskEntity[] entities)
+        {
+            var anchor=Find("anchor_"+zone.ZoneId).transform;
+
+            var mine=zone.Items.Where(i=>i!=null)
+                .Select(i=>entities.FirstOrDefault(e=>e.ItemId==i.ItemId))
+                .Where(e=>e!=null).ToArray();
+            if(mine.Length==0)
+            {
+                Debug.LogWarning($"[Module01] La zona '{zone.ZoneId}' no tiene ningun objeto en la escena; su ancla se queda donde estaba.");
+                return;
+            }
+
+            // Caja que encierra lo visible de la zona, en mundo.
+            Bounds box=new Bounds(mine[0].transform.position,Vector3.zero);
+            foreach(var e in mine)
+            {
+                var renderers=e.GetComponentsInChildren<Renderer>();
+                if(renderers.Length==0) { box.Encapsulate(e.transform.position); continue; }
+                foreach(var r in renderers) box.Encapsulate(r.bounds);
+            }
+
+            // Medio campo horizontal de la camara de juego: FOV 60 vertical sobre 16:9.
+            const float halfFovTan=1.026f;
+            float width=Mathf.Max(box.size.x,box.size.y);
+            float distance=Mathf.Clamp(width*.5f/halfFovTan+.45f,1.30f,3.00f);
+
+            if(width>2.5f)
+                Debug.LogWarning(
+                    $"[Module01] La zona '{zone.ZoneId}' ocupa {width:F2} m de ancho: desde un solo punto "+
+                    "sus elementos se ven diminutos. Hay que juntarlos en la escena, no alejar la camara.");
+
+            // El mostrador esta contra la pared del fondo (z negativo), asi que se mira hacia
+            // -z y el aprendiz se coloca por delante. El signo sale de la propia caja para que
+            // siga valiendo si el arte mueve la estacion a otra pared.
+            Vector3 eye=new Vector3(box.center.x,k_EyeHeight,box.center.z+(box.center.z<0f?distance:-distance));
+            anchor.position=eye;
+
+            Vector3 look=box.center-eye; look.y=0f;
+            anchor.rotation=look.sqrMagnitude>1e-4f?Quaternion.LookRotation(look,Vector3.up):Quaternion.Euler(0,180,0);
         }
         private static void PlaceCanvas(Canvas canvas)
         { canvas.transform.SetParent(_camera,false); canvas.transform.localPosition=new Vector3(0,0,1.8f); canvas.transform.localRotation=Quaternion.identity; canvas.transform.localScale=Vector3.one*.002f; canvas.worldCamera=_camera.GetComponent<Camera>(); }

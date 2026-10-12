@@ -54,6 +54,15 @@ namespace RideSafe.Module01
         public event Action<SafetyItemSO> Accepted;
         public event Action<SafetyItemSO> Declined;
 
+        /// <summary>
+        /// Un elemento acaba de salir al pedestal. Lo escucha quien tenga que esconder su
+        /// gemelo de la mesa: lo que gira aquí es una copia, así que sin eso se ven dos.
+        /// </summary>
+        public event Action<SafetyItemSO> Presenting;
+
+        /// <summary>Se cerró la presentación, por aceptar, por rechazar o por presentar otro.</summary>
+        public event Action Dismissed;
+
         public SafetyItemSO Current { get; private set; }
         public bool IsPresenting => Current != null;
 
@@ -91,6 +100,9 @@ namespace RideSafe.Module01
                 return;
             Dismiss();
             Current = item;
+            // Antes de instanciar la copia: así el de la mesa ya está escondido cuando el del
+            // pedestal aparece, y no hay un fotograma con los dos a la vista.
+            Presenting?.Invoke(item);
             if (_stage != null)
             {
                 _instance = new GameObject("PresentedItem");
@@ -143,7 +155,10 @@ namespace RideSafe.Module01
 
         private void Dismiss()
         {
+            bool was = Current != null;
             Current = null;
+            if (was)
+                Dismissed?.Invoke();
             if (_instance != null)
             {
                 // DestroyImmediate en editor fuera de Play; Destroy en runtime.
