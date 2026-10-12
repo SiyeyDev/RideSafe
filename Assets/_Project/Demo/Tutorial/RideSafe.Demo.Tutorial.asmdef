@@ -1,0 +1,22 @@
+{
+    "name": "RideSafe.Demo.Tutorial",
+    "rootNamespace": "RideSafe.Demo",
+    "references": [
+        "Tutorial",
+        "TaskSequence",
+        "Cachacos"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Sirenix.Serialization.dll",
+        "Sirenix.Utilities.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

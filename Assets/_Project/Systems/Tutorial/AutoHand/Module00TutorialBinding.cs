@@ -36,11 +36,14 @@ namespace RideSafe.Tutorial.AutoHand
             (VehiclePanel, "ConfirmButton", "onboarding.vehicle.confirm")
         };
 
-        private const string LanguageBackButton = "BackButton";
+        private const string BackButton = "BackButton";
 
         [Tooltip("Placed in front of the learner when the onboarding appears. Holds PF_Module00_UI and the instruction.")]
         [SerializeField] private HeadRelativePlacement _anchor;
         [SerializeField] private TutorialSession _session;
+        [Tooltip("Location -> Language -> Vehicle (approved UI system, 01A/01B/01C) instead of " +
+                 "Language -> Location -> Vehicle. The onboarding sequence must follow the same order.")]
+        [SerializeField] private bool _locationFirst;
 
         private ModuleUI _module;
         private ChoicePanel _language;
@@ -73,39 +76,45 @@ namespace RideSafe.Tutorial.AutoHand
             _location = _module.Get<ChoicePanel>(LocationPanel);
             _vehicle = _module.Get<ChoicePanel>(VehiclePanel);
 
-            // Language is the first screen after the gate: nothing to go back to.
-            Find(_module, LanguagePanel, LanguageBackButton).gameObject.SetActive(false);
+            // The first screen after the gate has nothing to go back to.
+            Find(_module, FirstPanel, BackButton).gameObject.SetActive(false);
+            Find(_module, SecondPanel, BackButton).gameObject.SetActive(true);
 
             _language.onSelectionChanged.AddListener(_session.SetLanguage);
-            _language.onContinue.AddListener(ShowLocation);
             _location.onContinue.AddListener(_session.SetJurisdiction);
-            _location.onContinue.AddListener(ShowVehicle);
-            _location.onBack.AddListener(ShowLanguage);
             _vehicle.onContinue.AddListener(_session.SetVehicle);
             _vehicle.onContinue.AddListener(ShowComfort);
+            First.onContinue.AddListener(ShowSecond);
+            Second.onContinue.AddListener(ShowVehicle);
+            Second.onBack.AddListener(ShowFirst);
         }
+
+        private string FirstPanel => _locationFirst ? LocationPanel : LanguagePanel;
+        private string SecondPanel => _locationFirst ? LanguagePanel : LocationPanel;
+        private ChoicePanel First => _locationFirst ? _location : _language;
+        private ChoicePanel Second => _locationFirst ? _language : _location;
 
         protected virtual void OnDestroy()
         {
             if (_language == null)
                 return;
             _language.onSelectionChanged.RemoveListener(_session.SetLanguage);
-            _language.onContinue.RemoveListener(ShowLocation);
             _location.onContinue.RemoveListener(_session.SetJurisdiction);
-            _location.onContinue.RemoveListener(ShowVehicle);
-            _location.onBack.RemoveListener(ShowLanguage);
             _vehicle.onContinue.RemoveListener(_session.SetVehicle);
             _vehicle.onContinue.RemoveListener(ShowComfort);
+            First.onContinue.RemoveListener(ShowSecond);
+            Second.onContinue.RemoveListener(ShowVehicle);
+            Second.onBack.RemoveListener(ShowFirst);
         }
 
-        /// <summary>Brings the onboarding in front of the learner and opens Language. Wired from the gate stage.</summary>
+        /// <summary>Brings the onboarding in front of the learner and opens its first screen. Wired from the gate stage.</summary>
         public void Show()
         {
             if (_module == null)
                 return;
             _anchor.Place();
             _anchor.gameObject.SetActive(true);
-            _module.Show(LanguagePanel);
+            _module.Show(FirstPanel);
         }
 
         /// <summary>Every panel and object this binding needs, as "Panel/Child", that the module lacks.</summary>
@@ -127,13 +136,16 @@ namespace RideSafe.Tutorial.AutoHand
                 if (Find(module, entity.Panel, entity.Child) == null)
                     missing.Add(entity.Panel + "/" + entity.Child);
             }
-            if (Find(module, LanguagePanel, LanguageBackButton) == null)
-                missing.Add(LanguagePanel + "/" + LanguageBackButton);
+            foreach (string panel in new[] { LanguagePanel, LocationPanel })
+            {
+                if (Find(module, panel, BackButton) == null)
+                    missing.Add(panel + "/" + BackButton);
+            }
             return missing;
         }
 
-        private void ShowLanguage() => _module.Show(LanguagePanel);
-        private void ShowLocation(string _) => _module.Show(LocationPanel);
+        private void ShowFirst() => _module.Show(FirstPanel);
+        private void ShowSecond(string _) => _module.Show(SecondPanel);
         private void ShowVehicle(string _) => _module.Show(VehiclePanel);
         private void ShowComfort(string _) => _module.Show(ComfortPanel);
 

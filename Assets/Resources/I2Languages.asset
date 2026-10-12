@@ -375,6 +375,22 @@ MonoBehaviour:
       - "Confirma tu veh\xEDculo."
       Flags: 0000
       Languages_Touch: []
+    - Term: Tutorial/Point
+      TermType: 0
+      Description: 
+      Languages:
+      - Point at the target.
+      - Apunta al objetivo.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Tutorial/Select
+      TermType: 0
+      Description: 
+      Languages:
+      - Now select it with the highlighted button.
+      - "Ahora selecci\xF3nalo con el bot\xF3n resaltado."
+      Flags: 0000
+      Languages_Touch: []
     - Term: M0/Welcome_Tagline
       TermType: 0
       Description: 

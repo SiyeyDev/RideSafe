@@ -16,9 +16,26 @@ namespace RideSafe.Tools.Editor
     /// sobreviviria para escribir el resultado.
     /// </para>
     /// </summary>
+    [InitializeOnLoad]
     public class HeadlessTestRunner : ScriptableObject, ICallbacks
     {
         public const string ResultPath = "Temp/ridesafe-tests.txt";
+
+        /// <summary>
+        /// A PlayMode run reloads the domain on the way in and out, which drops callbacks
+        /// registered by the code that started it. While a run is pending (result file says
+        /// RUNNING) the callback is registered again on every load, so the final domain still
+        /// writes the result.
+        /// </summary>
+        static HeadlessTestRunner()
+        {
+            if (!File.Exists(ResultPath) || !File.ReadAllText(ResultPath).StartsWith("RUNNING"))
+                return;
+            TestRunnerApi api = ScriptableObject.CreateInstance<TestRunnerApi>();
+            _active = ScriptableObject.CreateInstance<HeadlessTestRunner>();
+            _active.hideFlags = HideFlags.HideAndDontSave;
+            api.RegisterCallbacks(_active);
+        }
 
         private static HeadlessTestRunner _active;
 

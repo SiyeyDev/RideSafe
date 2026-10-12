@@ -1,3 +1,4 @@
+using Cachacos;
 using UnityEngine;
 
 namespace RideSafe.Tutorial.AutoHand
@@ -25,9 +26,20 @@ namespace RideSafe.Tutorial.AutoHand
         public float ForwardDistance => _forwardDistance;
         public float VerticalOffset => _verticalOffset;
 
-        /// <summary>Moves this object in front of the head as it is right now, facing the learner.</summary>
+        /// <summary>
+        /// Moves this object in front of the head as it is right now, facing the learner. The head
+        /// comes from the <see cref="IXRPoseProvider"/> when there is one (the XR head in VR, the
+        /// desktop camera when simulating without a headset), else from the serialized head.
+        /// </summary>
         public void Place()
         {
+            IXRPoseProvider poses = ServiceLocator.Instance.RequestService<IXRPoseProvider>();
+            Pose head;
+            if (poses != null && poses.TryGetPose(XRNodeRole.Head, out head))
+            {
+                Place(transform, head, _forwardDistance, _verticalOffset);
+                return;
+            }
             if (_head == null)
             {
                 Debug.LogError("[Tutorial] HeadRelativePlacement on '" + name + "' has no head assigned.", this);
