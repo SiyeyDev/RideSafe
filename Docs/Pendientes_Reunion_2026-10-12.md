@@ -201,9 +201,10 @@ También hay dos detalles técnicos:
 
 ### Lo que falta para el hito del Quest 3
 
-La plataforma de build **ya está en Android** y hay 2 escenas en la lista de build. **Ojo con el
-orden:** la primera es `RideSafe_Garaje.unity`, la vieja, así que un build arrancaría en esa y no
-en la del garaje v6. Hay que subir `RideSafe_Garaje_v5.unity` al primer puesto antes de compilar.
+La plataforma de build **ya está en Android**. La lista de build tenía primero
+`RideSafe_Garaje.unity`, la vieja, así que un build habría arrancado en esa y no se habría visto
+nada de esto; **ya está corregido**, con la del v6 en primer lugar. Es un cambio en
+`ProjectSettings`, así que conviene mirarlo al integrar con Cindy.
 
 No he compilado el APK. Con 670.000 triángulos el build saldría, pero la experiencia en el visor
 no sería representativa hasta bajar el presupuesto.
@@ -216,8 +217,9 @@ no sería representativa hasta bajar el presupuesto.
   escena y no viaja con el trasplante del mundo.
 - **El casco `df_g_helmet_01` que no se dibujaba en Game y sí en Scene** ya no da problema: se ve
   correctamente en las capturas de PlayMode. Lo dejo como resuelto salvo que reaparezca.
-- **El logo en el encabezado** está puesto pero se queda pequeño y cae cerca de una lámpara del
-  techo, así que casi no se lee. Falta decidir tamaño y sitio.
+- **El logo en el encabezado** ya se lee: el título y el logo van sobre una barra oscura, que de
+  paso cierra el viejo «fondo para el título del reporte». Sigue siendo pequeño; si lo quieres
+  más grande o en otro sitio, es un número.
 - **Los marcadores de los puntos siguen verdes en la pantalla final**, sobre el vehículo, detrás
   del panel. No molesta, pero quizá deban apagarse al salir de la sección del vehículo.
 - **`MenuRuntimeTextLocalizer` sigue sin unificar** con `UIText`.

@@ -293,7 +293,8 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 - [x] ~~**Partir `Module01SceneBuilder` en comandos no destructivos**~~ — hecho: `Module01WorldSwap`
       cambia el mundo sobre la escena abierta, `Module01EppLayout` agrupa el mostrador y
       `Module01VehicleStaging` monta el vehículo. El destructivo ya no hace falta.
-- [ ] Fondo para el título del reporte (se pierde contra el techo) y subtítulos más abajo.
+- [x] ~~Fondo para el título del reporte~~ — hecho el 2026-10-12: el título y el logo van sobre
+      una barra oscura. Los subtítulos siguen sin bajar.
 - [ ] Panel Vehicle del módulo 0: título y subtítulo se solapan, y la barra de confirmación
       se pisa consigo misma.
 - [ ] Integrar `feat/garaje-v6` en `dev` (avisar a Cindy)
@@ -303,8 +304,9 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       lo obvio, esto hace que toda comprobación de oclusión por raycast mienta (ver §9)
 - [ ] **670.903 triángulos**, casi el doble del presupuesto de Quest. El 39 % son tres maniquíes
       en pose T y 22 troncos de árbol
-- [ ] **El orden de la lista de build pone primero `RideSafe_Garaje.unity`**, la vieja: un build
-      arrancaría en esa y no en la del v6
+- [x] ~~**El orden de la lista de build**~~ — corregido el 2026-10-12: la escena del v6 ya es la
+      primera. Antes un build habría arrancado en `RideSafe_Garaje.unity`, la vieja. Es un
+      cambio en `ProjectSettings`: mirarlo al integrar con Cindy
 - [ ] Unificar `MenuRuntimeTextLocalizer` con `UIText`
 - [ ] Autorar los pasos de las 9 `TaskSequenceSO` cuando existan los términos; hoy ninguna
       tiene pasos y nada las ejecuta
