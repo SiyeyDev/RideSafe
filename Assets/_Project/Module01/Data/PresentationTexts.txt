@@ -69,7 +69,7 @@ Module1/Rank_Reconsider_Title|Recapacitar|Reconsider
 Module1/Rank_Reconsider|Faltó buena parte del equipo imprescindible. Vuelve a recorrer el garaje sin prisa antes de circular.|A good part of the essential gear was missing. Walk the garage again, without rushing, before riding.
 Module1/Rank_Inexperienced_Title|Inexperto|Inexperienced
 Module1/Rank_Inexperienced|Casi nada de lo imprescindible quedó cubierto. Repite el módulo y revisa cada estación con calma.|Almost none of the essentials were covered. Repeat the module and go through each station calmly.
-Module1/Legend_Correct|Selección correcta|Correct choice
-Module1/Legend_Incorrect|Selección incorrecta|Incorrect choice
-Module1/Legend_Omission|Omisión: elemento faltante|Omission: missing item
-Module1/Legend_AtRisk|Elemento en riesgo o deteriorado|Item at risk or damaged
+Module1/Legend_Correct|Correcta|Correct
+Module1/Legend_Incorrect|Incorrecta|Incorrect
+Module1/Legend_Omission|Omisión|Omission
+Module1/Legend_AtRisk|En riesgo|At risk

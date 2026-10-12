@@ -1293,32 +1293,32 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Correct choice
-      - "Selecci\xF3n correcta"
+      - Correct
+      - Correcta
       Flags: 0000
       Languages_Touch: []
     - Term: Module1/Legend_Incorrect
       TermType: 0
       Description: 
       Languages:
-      - Incorrect choice
-      - "Selecci\xF3n incorrecta"
+      - Incorrect
+      - Incorrecta
       Flags: 0000
       Languages_Touch: []
     - Term: Module1/Legend_Omission
       TermType: 0
       Description: 
       Languages:
-      - 'Omission: missing item'
-      - "Omisi\xF3n: elemento faltante"
+      - Omission
+      - "Omisi\xF3n"
       Flags: 0000
       Languages_Touch: []
     - Term: Module1/Legend_AtRisk
       TermType: 0
       Description: 
       Languages:
-      - Item at risk or damaged
-      - Elemento en riesgo o deteriorado
+      - At risk
+      - En riesgo
       Flags: 0000
       Languages_Touch: []
     CaseInsensitiveTerms: 0

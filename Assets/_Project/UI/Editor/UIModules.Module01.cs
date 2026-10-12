@@ -163,17 +163,24 @@ namespace RideSafe.UI.EditorTools
         {
             Transform group = UIBuilderKit.Group(panel, "Header");
 
-            // El logo a la izquierda del titulo, a la altura de su linea base.
+            // Barra oscura detras del logo y del titulo. Sin ella el texto blanco cae sobre el
+            // techo claro del garaje y se pierde -es el pendiente de "fondo para el titulo del
+            // reporte"- y el logo, que ya es pequeño, directamente no se distingue.
+            Transform bar = K.Slice(group, "Panel_Modal_Dark", 232f, 22f, 770f, 92f, 2.4f,
+                                    new Color(1f, 1f, 1f, .96f), "TitleBar").transform;
+            Vector2 o = Origin(232f, 22f, 2.4f);
+
+            // El logo a la izquierda del titulo, centrado en la barra.
             if (K.Logo != null)
             {
-                RectTransform logo = UIBuilderKit.Rect(group, "Logo", 45f, 34f, 45f + 46f, 34f + 46f);
+                RectTransform logo = UIBuilderKit.Rect(bar, "Logo", 252f + o.x, 30f + o.y, 252f + 54f + o.x, 30f + 54f + o.y);
                 UnityEngine.UI.Image image = logo.gameObject.AddComponent<UnityEngine.UI.Image>();
                 image.sprite = K.Logo;
                 image.preserveAspect = true;
                 image.raycastTarget = false;
             }
 
-            titleText = K.TC(group, title, K.H1OnDark.With(30f), 501f, 36f, 820f, "Title");
+            titleText = K.TC(bar, title, K.H1OnDark.With(28f), 525f + o.x, 36f + o.y, 480f, "Title");
 
             GameObject card = _ui.AutoLabel(group, "Body", note,
                 K.Body.With(15f, Color.black), "Card_Default", 2.8f, 18f, 7f, 501f, 78f, true);
@@ -215,7 +222,14 @@ namespace RideSafe.UI.EditorTools
             BakeSamples(template, leftRows, left, glyphs);
             BakeSamples(template, rightRows, right, glyphs);
 
-            Transform legend = K.Slice(panel, "Checklist_Row_Selected", 176f, 421f, 827f, 466f, 2.4f, Color.white, "Legend").transform;
+            // La leyenda se ensancha de 651 a 760 y los cuatro estados se reparten a intervalos
+            // iguales de 190. Con el reparto apretado de antes, las etiquetas en espanol
+            // -"Seleccion incorrecta", "Elemento en riesgo o deteriorado"- se montaban unas
+            // sobre otras: el espanol es mas largo que el ingles con el que se diseno el kit, y
+            // esta leyenda era el ultimo sitio donde quedaba sin arreglar. Las etiquetas
+            // tambien se acortaron: con el icono al lado, "Correcta" dice lo mismo que
+            // "Seleccion correcta" y cabe.
+            Transform legend = K.Slice(panel, "Checklist_Row_Selected", 120f, 421f, 880f, 466f, 2.4f, Color.white, "Legend").transform;
             float pad = UIBuilderKit.PadFor(2.4f);
             // Los cuatro estados que pidio la reunion, en su orden: correcto, incorrecto,
             // omision y en riesgo. Lo condicional no entra en la leyenda: no es ni acierto ni
@@ -223,10 +237,10 @@ namespace RideSafe.UI.EditorTools
             //
             // El nombre del objeto no lleva el texto ingles: el binding localiza por nombre,
             // y si el nombre cambia con el idioma de diseno la clave se pierde.
-            LegendItem(legend, "Status_Independent", 27f + pad, "Correct choice", "Legend_Correct");
-            LegendItem(legend, "Status_Retry", 190f + pad, "Incorrect choice", "Legend_Incorrect");
-            LegendItem(legend, "Status_Supported", 353f + pad, "Omission", "Legend_Omission");
-            LegendItem(legend, "Status_Attention", 476f + pad, "At risk or damaged", "Legend_AtRisk");
+            LegendItem(legend, "Status_Independent", 30f + pad, "Correct", "Legend_Correct");
+            LegendItem(legend, "Status_Retry", 220f + pad, "Incorrect", "Legend_Incorrect");
+            LegendItem(legend, "Status_Supported", 410f + pad, "Omission", "Legend_Omission");
+            LegendItem(legend, "Status_Attention", 600f + pad, "At risk", "Legend_AtRisk");
 
             _ui.Button(panel, "ExplainButton", "Explain each one", true, 397f, 473f, 604f, 523f);
 
