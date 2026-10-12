@@ -73,7 +73,8 @@ namespace RideSafe.UI.EditorTools
             H1OnDark = new TextStyle(manropeBold, 30f, Color.white);
             Sub = new TextStyle(interRegular, 18f, Muted);
             SubOnDark = new TextStyle(interRegular, 17f, OnDark);
-            H2 = new TextStyle(manropeSemiBold, 21f, BeamNavy);
+            // Manrope Bold y no SemiBold: la reunion pidio H1 y H2 en negrilla.
+            H2 = new TextStyle(manropeBold, 21f, BeamNavy);
             Body = new TextStyle(interRegular, 16f, WordNavy);
             BodyOnDark = new TextStyle(interMedium, 16f, Color.white);
             Small = new TextStyle(interRegular, 13f, Muted);

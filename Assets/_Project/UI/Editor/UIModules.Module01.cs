@@ -150,28 +150,64 @@ namespace RideSafe.UI.EditorTools
         }
 
         // 10 / 13 — the learner's list beside the reference, four-state key, "Explain each one".
+        /// <summary>
+        /// Encabezado de «Mi Elección»: logo de RideSafe, título en negrilla y la línea
+        /// descriptiva dentro de una tarjeta blanca con texto negro.
+        /// <para>
+        /// La línea iba antes en gris claro sobre fondo oscuro, que es el contraste más flojo
+        /// de todo el módulo y lo primero que la reunión mandó arreglar. En tarjeta blanca con
+        /// texto negro se lee incluso con el visor mal calibrado.
+        /// </para>
+        /// </summary>
+        private TMP_Text BrandedHeader(Transform panel, string title, string note, out TMP_Text titleText)
+        {
+            Transform group = UIBuilderKit.Group(panel, "Header");
+
+            // El logo a la izquierda del titulo, a la altura de su linea base.
+            if (K.Logo != null)
+            {
+                RectTransform logo = UIBuilderKit.Rect(group, "Logo", 45f, 34f, 45f + 46f, 34f + 46f);
+                UnityEngine.UI.Image image = logo.gameObject.AddComponent<UnityEngine.UI.Image>();
+                image.sprite = K.Logo;
+                image.preserveAspect = true;
+                image.raycastTarget = false;
+            }
+
+            titleText = K.TC(group, title, K.H1OnDark.With(30f), 501f, 36f, 820f, "Title");
+
+            GameObject card = _ui.AutoLabel(group, "Body", note,
+                K.Body.With(15f, Color.black), "Card_Default", 2.8f, 18f, 7f, 501f, 78f, true);
+            return UIBuilderKit.Find<TMP_Text>(card, "Text");
+        }
+
         private void Comparison(Transform panel)
         {
-            CardView header = Header(panel, "What you took", "Your selection beside the reference for this ride.", 45f, 79f, 30f, true);
+            TMP_Text noteText = BrandedHeader(panel, "My choice",
+                "Optional items carry no penalty: only core gear and unsuitable choices count.",
+                out TMP_Text titleText);
 
+            // Muestras de edicion: una sola lista repartida entre las dos columnas, que es como
+            // la pinta SetSingleList en runtime. Antes eran "lo tuyo" contra "la referencia", y
+            // la referencia era la misma lista con los estados cambiados: cero informacion
+            // nueva y doce renglones duplicados.
             List<ComparisonEntry> left = new List<ComparisonEntry>
             {
                 new ComparisonEntry(ItemStatus.Selected, "Helmet · undamaged"),
                 new ComparisonEntry(ItemStatus.Selected, "Closed-toe shoes"),
-                new ComparisonEntry(ItemStatus.Selected, "Reflective layer"),
-                new ComparisonEntry(ItemStatus.NotSuited, "Bag hung on handlebar", "Unsafe load — shifts weight and can foul the steering")
+                new ComparisonEntry(ItemStatus.AtRisk, "Cracked helmet", "Damaged — it will not protect you"),
             };
             List<ComparisonEntry> right = new List<ComparisonEntry>
             {
-                new ComparisonEntry(ItemStatus.Selected, "Helmet · undamaged"),
-                new ComparisonEntry(ItemStatus.Selected, "Closed-toe shoes"),
-                new ComparisonEntry(ItemStatus.CoreOmitted, "Fitted clothing", "Core item — you did not take it"),
-                new ComparisonEntry(ItemStatus.ConditionDependent, "Reflective layer", "Depends on light and weather")
+                new ComparisonEntry(ItemStatus.CoreOmitted, "Secured load", "Core item — you did not take it"),
+                new ComparisonEntry(ItemStatus.NotSuited, "Phone in hand", "Unsafe load — it takes a hand off the bars"),
+                new ComparisonEntry(ItemStatus.ConditionDependent, "Reflective layer", "Depends on light and weather"),
             };
 
             RectTransform leftRows, rightRows;
-            TMP_Text leftHeading = Column(panel, "LeftColumn", 57f, "Your choices", out leftRows);
-            TMP_Text rightHeading = Column(panel, "RightColumn", 553f, "Reference · this ride", out rightRows);
+            // Encabezados vacios: en una lista unica no significan nada, y SetSingleList los
+            // apaga. Se siguen creando porque el binding los busca por nombre.
+            TMP_Text leftHeading = Column(panel, "LeftColumn", 57f, string.Empty, out leftRows);
+            TMP_Text rightHeading = Column(panel, "RightColumn", 553f, string.Empty, out rightRows);
 
             RectTransform template = _ui.StatusRowTemplate(leftRows);
             template.gameObject.SetActive(false);
@@ -181,20 +217,24 @@ namespace RideSafe.UI.EditorTools
 
             Transform legend = K.Slice(panel, "Checklist_Row_Selected", 176f, 421f, 827f, 466f, 2.4f, Color.white, "Legend").transform;
             float pad = UIBuilderKit.PadFor(2.4f);
+            // Los cuatro estados que pidio la reunion, en su orden: correcto, incorrecto,
+            // omision y en riesgo. Lo condicional no entra en la leyenda: no es ni acierto ni
+            // fallo, y meterlo obligaba a explicar una quinta cosa que no se evalua.
+            //
             // El nombre del objeto no lleva el texto ingles: el binding localiza por nombre,
             // y si el nombre cambia con el idioma de diseno la clave se pierde.
-            LegendItem(legend, "Status_Independent", 27f + pad, "Selected", "Legend_Selected");
-            LegendItem(legend, "Status_Supported", 130f + pad, "Core item omitted", "Legend_Omitted");
-            LegendItem(legend, "Status_Attention", 292f + pad, "Condition-dependent", "Legend_Conditional");
-            LegendItem(legend, "Status_Retry", 476f + pad, "Not suited to this ride", "Legend_Inappropriate");
+            LegendItem(legend, "Status_Independent", 27f + pad, "Correct choice", "Legend_Correct");
+            LegendItem(legend, "Status_Retry", 190f + pad, "Incorrect choice", "Legend_Incorrect");
+            LegendItem(legend, "Status_Supported", 353f + pad, "Omission", "Legend_Omission");
+            LegendItem(legend, "Status_Attention", 476f + pad, "At risk or damaged", "Legend_AtRisk");
 
             _ui.Button(panel, "ExplainButton", "Explain each one", true, 397f, 473f, 604f, 523f);
 
             ComparisonView view = panel.gameObject.AddComponent<ComparisonView>();
             UIWire.Refs(view, "_glyphs.Sprites", _ui.StatusSprites());
             UIWire.Ref(view, "_rowTemplate", template);
-            UIWire.Ref(view, "_title", header.transform.Find("Title").GetComponent<TMP_Text>());
-            UIWire.Ref(view, "_subtitle", header.transform.Find("Body").GetComponent<TMP_Text>());
+            UIWire.Ref(view, "_title", titleText);
+            UIWire.Ref(view, "_subtitle", noteText);
             UIWire.Ref(view, "_leftHeading", leftHeading);
             UIWire.Ref(view, "_leftRows", leftRows);
             UIWire.Ref(view, "_rightHeading", rightHeading);
@@ -224,11 +264,15 @@ namespace RideSafe.UI.EditorTools
             }
         }
 
+        /// <summary>
+        /// Un estado de la leyenda. Iconos a 24 en vez de 18 y a blanco pleno: la reunion
+        /// pidio subirles el brillo, y a 18 con el tinte heredado se perdian contra la pastilla.
+        /// </summary>
         private void LegendItem(Transform legend, string glyph, float x, string label, string name)
         {
             float cy = 23f + UIBuilderKit.PadFor(2.4f) - 1f;
-            K.Icon(legend, glyph, x, cy, 18f);
-            K.TL(legend, label, K.LabelBold.With(14f), x + 16f, cy, 170f, name);
+            K.Icon(legend, glyph, x, cy, 24f, Color.white);
+            K.TL(legend, label, K.LabelBold.With(14f), x + 20f, cy, 150f, name);
         }
 
         // 10B / 13B — video card, item card, explanation, subtitle.

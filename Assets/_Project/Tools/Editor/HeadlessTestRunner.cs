@@ -22,12 +22,27 @@ namespace RideSafe.Tools.Editor
         public const string ResultPath = "Temp/ridesafe-tests.txt";
 
         /// <summary>
-        /// A PlayMode run reloads the domain on the way in and out, which drops callbacks
-        /// registered by the code that started it. While a run is pending (result file says
-        /// RUNNING) the callback is registered again on every load, so the final domain still
-        /// writes the result.
+        /// Una corrida de PlayMode recarga el dominio al entrar y al salir, y eso se lleva los
+        /// callbacks que registró quien la lanzó. Mientras hay una corrida pendiente —el
+        /// archivo de resultado dice RUNNING— el callback se vuelve a registrar en cada carga,
+        /// para que el dominio final sea el que escriba el resultado.
+        /// <para>
+        /// El registro se aplaza a <see cref="EditorApplication.delayCall"/> y <b>no</b> se hace
+        /// en el constructor estático: <c>ScriptableObject.CreateInstance</c> no está permitido
+        /// desde el constructor de un <c>ScriptableObject</c>, y como esta clase lo es, hacerlo
+        /// ahí revienta con <c>TypeInitializationException</c>. Solo pasaba si quedaba un
+        /// RUNNING de una corrida anterior, así que se escondía hasta que algo fallaba — y
+        /// entonces dejaba el runner inservible justo cuando hacía falta.
+        /// </para>
         /// </summary>
         static HeadlessTestRunner()
+        {
+            if (!File.Exists(ResultPath) || !File.ReadAllText(ResultPath).StartsWith("RUNNING"))
+                return;
+            EditorApplication.delayCall += Reattach;
+        }
+
+        private static void Reattach()
         {
             if (!File.Exists(ResultPath) || !File.ReadAllText(ResultPath).StartsWith("RUNNING"))
                 return;

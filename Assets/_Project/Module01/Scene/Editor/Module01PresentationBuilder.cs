@@ -148,7 +148,12 @@ namespace RideSafe.Module01.Editor
             ((RectTransform)hud.transform).sizeDelta=new Vector2(1002,556);
             // El HUD ya cuelga de PF_Module01_UI con marco 1002x556 y escala heredada 0.002,
             // o sea el storyboard del kit: aqui las medidas entran directas, sin convertir.
-            var nav=Rect("Navigation",hud.transform,new Vector2(-80,-330),new Vector2(640,55));
+            // La navegacion se corre a la izquierda para dejarle la derecha al checklist, que
+            // la reunion mando apartar del centro. Calculado en angulos, que es lo que decide
+            // si dos cosas se tapan en pantalla cuando estan a distinta profundidad: el
+            // checklist flota a 1.6 m y 24 grados a la derecha, asi que ocupa de 7.8 a 33.5
+            // grados; la navegacion, a 1.8 m, ocupa de -31 a -1.3. Disjuntos.
+            var nav=Rect("Navigation",hud.transform,new Vector2(-250,-330),new Vector2(560,55));
             Button("PreviousZoneButton",nav,new Vector2(-190,0),new Vector2(210,48),"Module1/Previous",false,17f);
             Button("NextZoneButton",nav,new Vector2(90,0),new Vector2(270,48),"Module1/Next",true,17f);
             Set(exp,"_navigation",nav.gameObject);
@@ -157,11 +162,19 @@ namespace RideSafe.Module01.Editor
             Set(exp,"_instructionText",Text("Instruction",instructions,Vector2.zero,new Vector2(585,80),"",_kit.BodyOnDark.With(18f)));
             var decision=Panel("ReadinessDecision",hud.transform,Vector2.zero,new Vector2(760,290),"Panel_Modal_Light",2.4f);
             Text("Title",decision,new Vector2(0,85),new Vector2(720,70),"Module1/Decision_Question",_kit.H1.With(27f));
-            // Los tres secundarios a proposito: esto es una evaluacion, no una accion sugerida.
-            // Un pill coral en RoadReady estaria insinuando la respuesta antes de que lea el texto.
-            Button("RoadReadyButton",decision,new Vector2(-245,-35),new Vector2(230,56),"Module1/RoadReady",false,16f);
-            Button("NeedsServiceButton",decision,new Vector2(0,-35),new Vector2(230,56),"Module1/NeedsService",false,16f);
-            Button("DoNotRideButton",decision,new Vector2(245,-35),new Vector2(230,56),"Module1/DoNotRide",false,16f);
+            // Verde / ambar / rojo, como pidio la reunion.
+            //
+            // OJO, esto REVIERTE una decision anterior que esta escrita en Docs/memory.md: los
+            // tres se dejaron secundarios y grises a proposito, porque en una evaluacion un
+            // boton destacado insinua la respuesta antes de que el aprendiz lea la pregunta.
+            // La reunion es posterior y manda la reunion, pero el motivo de entonces sigue
+            // siendo valido y conviene mirar en el visor si el verde arrastra la eleccion.
+            Tint(Button("RoadReadyButton",decision,new Vector2(-245,-35),new Vector2(230,56),"Module1/RoadReady",false,16f),
+                 new Color32(0x74,0xC6,0x8A,0xFF));
+            Tint(Button("NeedsServiceButton",decision,new Vector2(0,-35),new Vector2(230,56),"Module1/NeedsService",false,16f),
+                 new Color32(0xF2,0xC4,0x5A,0xFF));
+            Tint(Button("DoNotRideButton",decision,new Vector2(245,-35),new Vector2(230,56),"Module1/DoNotRide",false,16f),
+                 new Color32(0xE8,0x7E,0x72,0xFF));
             Set(exp,"_decision",decision.gameObject);
             var summary=Text("FinalSummary",hud.transform,new Vector2(0,-235),new Vector2(850,55),"",_kit.BodyOnDark.With(22f)); Set(exp,"_summary",summary); summary.gameObject.SetActive(false);
 
@@ -322,8 +335,18 @@ namespace RideSafe.Module01.Editor
 
             // Medio campo horizontal de la camara de juego: FOV 60 vertical sobre 16:9.
             const float halfFovTan=1.026f;
+
+            // Distancia minima: el popup de confirmacion del inspector flota a 1.15 m del ojo y
+            // el frente del mostrador sobresale unos 30 cm por delante de los objetos. A 1.30 m
+            // -lo que pedia el encuadre- el aprendiz quedaba a 1.00 m del mueble y el popup
+            // caia DENTRO del armario: medido, el panel estaba en pantalla (y de 0.03 a 0.26)
+            // pero no se veia, tapado por la madera. Se vio en una captura de PlayMode, porque
+            // la comprobacion de "esta en pantalla" no sabe de oclusion.
+            const float popupDistance=1.15f, counterOverhang=.30f, clearance=.45f;
+            float minDistance=popupDistance+counterOverhang+clearance;
+
             float width=Mathf.Max(box.size.x,box.size.y);
-            float distance=Mathf.Clamp(width*.5f/halfFovTan+.45f,1.30f,3.00f);
+            float distance=Mathf.Clamp(width*.5f/halfFovTan+.45f,minDistance,3.00f);
 
             if(width>2.5f)
                 Debug.LogWarning(
@@ -379,6 +402,21 @@ namespace RideSafe.Module01.Editor
             var b=_ui.Button(parent,name,key,primary,x0,y0,x0+size.x,y0+size.y,font);
             if(!string.IsNullOrEmpty(key)) b.transform.Find("Label").gameObject.AddComponent<Module01Text>().Configure(key);
             return b;
+        }
+
+        /// <summary>
+        /// Tiñe la pastilla de un botón sin tocar su sprite ni sus estados.
+        /// <para>
+        /// El atlas solo trae dos pastillas, la primaria coral y la secundaria clara, así que
+        /// el color sale del tinte del <c>Image</c>. La etiqueta se queda en azul marino: los
+        /// tres tintes son claros y el texto blanco se perdería encima.
+        /// </para>
+        /// </summary>
+        private static Button Tint(Button button, Color color)
+        {
+            var image=button.GetComponent<Image>();
+            if(image!=null) image.color=color;
+            return button;
         }
 
         /// <summary>

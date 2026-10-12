@@ -33,6 +33,17 @@ namespace RideSafe.Module01
         /// <summary>Último giro pedido, en grados. Lo que se está mostrando o se va a mostrar.</summary>
         public float TargetYaw { get; private set; }
 
+        /// <summary>
+        /// ¿Está el vehículo girando ahora mismo?
+        /// <para>
+        /// Lo consulta el flujo para no dar la zona por lista mientras la malla se mueve. Sin
+        /// esto, el aprendiz puede pulsar el punto de las llantas cuando el vehículo todavía
+        /// está de frente: el marcador aún no ha llegado a su sitio —medido, se queda a un 5 %
+        /// por debajo del borde inferior de la pantalla— y el clic cae en el aire.
+        /// </para>
+        /// </summary>
+        public bool IsTurning => _turning != null;
+
         /// <summary>La malla encendida ahora mismo, o null si no hay ninguna.</summary>
         public Transform ActiveModel => _active?.Model == null ? null : _active.Model.transform;
 

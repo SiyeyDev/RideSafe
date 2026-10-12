@@ -19,6 +19,9 @@ namespace RideSafe.UI
         [SerializeField] private float _distance = 2f;
         [Tooltip("Degrees below the eye line. Reading below the horizon is more comfortable and keeps the view clear.")]
         [SerializeField] private float _pitchOffsetDegrees = 14f;
+
+        [Tooltip("Grados a la derecha de la mirada. Positivo aparta el panel del centro.")]
+        [SerializeField] private float _yawOffsetDegrees;
         [Tooltip("The panel does not move while it stays within this angle of the gaze.")]
         [SerializeField] private float _deadZoneDegrees = 16f;
         [Tooltip("Once moving, it stops again when it gets this close to the resting spot.")]
@@ -63,6 +66,14 @@ namespace RideSafe.UI
             FaceHead();
         }
 
+        /// <summary>Ajusta dónde descansa el panel sin pasar por el inspector.</summary>
+        public void Configure(float distance, float pitchDegrees, float yawDegrees)
+        {
+            _distance = distance;
+            _pitchOffsetDegrees = pitchDegrees;
+            _yawOffsetDegrees = yawDegrees;
+        }
+
         private bool ResolveHead()
         {
             if (_head != null)
@@ -73,10 +84,20 @@ namespace RideSafe.UI
             return _head != null;
         }
 
+        /// <summary>
+        /// Dónde descansa el panel: delante de la mirada, un poco por debajo y —si se pide— a
+        /// un lado.
+        /// <para>
+        /// El desplazamiento lateral existe porque la reunión pidió «liberar el centro del
+        /// campo visual»: sin él, este componente deja el checklist <b>justo delante</b> de lo
+        /// que el aprendiz está mirando, que es el objeto que tiene que inspeccionar.
+        /// </para>
+        /// </summary>
         private Vector3 RestingPosition()
         {
             Quaternion pitch = Quaternion.AngleAxis(_pitchOffsetDegrees, _head.right);
-            return _head.position + pitch * _head.forward * _distance;
+            Quaternion yaw = Quaternion.AngleAxis(_yawOffsetDegrees, Vector3.up);
+            return _head.position + yaw * pitch * _head.forward * _distance;
         }
 
         /// <summary>Canvases are read from behind their forward axis, so forward points away from the head.</summary>

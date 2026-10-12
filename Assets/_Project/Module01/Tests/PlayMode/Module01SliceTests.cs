@@ -165,8 +165,15 @@ namespace RideSafe.Module01.Tests
             {
                 yield return WaitFor(() => _director.CurrentZone != null && _director.CurrentZone.ZoneId == zoneId && Object.FindAnyObjectByType<Module01Experience>().Phase == "Choosing" && Field<CanvasGroup>(Object.FindAnyObjectByType<GuidedTour>(), "_fade").alpha == 0, "Llegada a " + zoneId);
                 var tour = Object.FindAnyObjectByType<GuidedTour>();
-                var anchor = GameObject.Find("anchor_" + zoneId).transform;
-                Assert.Less(Vector3.Distance(_camera.transform.position, anchor.position), .05f, "La camara no alcanzo el ancla " + zoneId);
+                // En las zonas del vehiculo el aprendiz NO viaja: se queda en el punto unico de
+                // exhibicion y es el vehiculo el que gira, que es lo que pidio la reunion. Antes
+                // este test exigia una ancla por zona tambien ahi, que es justo el recorrido
+                // alrededor de la moto que se quiso quitar.
+                bool singleViewpoint = _director.InVehicleSection && tour.HasAnchor(Module01Director.VehicleAnchorId);
+                string expected = singleViewpoint ? "anchor_" + Module01Director.VehicleAnchorId : "anchor_" + zoneId;
+                var anchor = GameObject.Find(expected).transform;
+                Assert.Less(Vector3.Distance(_camera.transform.position, anchor.position), .05f,
+                    "La camara no alcanzo " + expected + " en la zona " + zoneId);
                 Assert.Less(Quaternion.Angle(_camera.transform.rotation, anchor.rotation), 1);
                 AssertVisible(_binding.Sidebar.GetComponentsInChildren<TMP_Text>().First(t => t.name == "Title").rectTransform);
                 var experience = Object.FindAnyObjectByType<Module01Experience>();
@@ -226,10 +233,13 @@ namespace RideSafe.Module01.Tests
             Assert.AreEqual("Comparison", _binding.Module.Current);
             AssertVisible(_binding.Comparison.GetComponentsInChildren<TMP_Text>().First(t => t.name == "Title").rectTransform);
             Assert.IsTrue(_binding.Comparison.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("point_brakes")), "El reporte no muestra el vehiculo");
-            // 6 y no 7: volver a la misma zona (KeepChoosing) ya no repite el salto, porque el
-            // director solo llama al recorrido cuando el ancla cambia de verdad. Lo que sigue
-            // guardado es que CADA salto ocurre con la pantalla en negro, arriba en ZoneReached.
-            Assert.GreaterOrEqual(blackTeleports, 6, "No se probaron todos los cambios de zona con fade");
+            // 4 y no 6: tres saltos a las estaciones de protección personal y UNO al punto de
+            // exhibición del vehículo. Las otras dos zonas del vehículo ya no mueven al
+            // aprendiz —gira el vehículo, que es lo que pidió la reunión—, así que exigir seis
+            // saltos sería exigir justamente el recorrido alrededor de la moto que se quitó.
+            // Lo que sigue guardado, y es lo que importa, es que CADA salto que sí ocurre pasa
+            // con la pantalla en negro; eso se comprueba arriba, en ZoneReached.
+            Assert.GreaterOrEqual(blackTeleports, 4, "No se probaron todos los cambios de zona con fade");
             if (!omitHelmet) yield return Capture("final-report");
             CollectionAssert.IsEmpty(_problems, string.Join("\n", _problems));
         }
@@ -254,11 +264,17 @@ namespace RideSafe.Module01.Tests
 
             // La reunion pidio que no se pueda saltar el video. Antes este test pulsaba
             // Continuar a mitad y seguia, que es justo lo que ya no debe poder hacerse.
+            //
+            // No se intenta pulsarlo: Press() exige que el boton este habilitado, y aqui lo
+            // que se afirma es precisamente que NO lo esta. Se comprueba sobre el propio
+            // Selectable, que es lo que decide si el clic llega a alguna parte.
             Assert.IsFalse(_binding.Explanation.CanContinue,
                 "Se puede continuar con el video a medias: el boton deberia estar apagado.");
-            yield return Press(_binding.Explanation.transform, "ContinueButton");
-            Assert.AreEqual("Explanation", _binding.Module.Current,
-                "Pulsar Continuar antes de tiempo saco de la pantalla del video.");
+            var continueButton = _binding.Explanation.GetComponentsInChildren<Button>(true)
+                .First(b => b.name == "ContinueButton");
+            Assert.IsFalse(continueButton.IsInteractable(),
+                "ContinueButton sigue activo con el video a medias.");
+            Assert.AreEqual("Explanation", _binding.Module.Current);
 
             // Se salta al final en vez de esperar el clip entero: lo que se comprueba es que
             // la puerta se abre al terminar, no cuanto dura el archivo de prueba.
@@ -451,7 +467,18 @@ namespace RideSafe.Module01.Tests
             Physics.SyncTransforms();
             var collider = entity.GetComponent<Collider>();
             Vector3 p = _camera.WorldToScreenPoint(collider.bounds.center);
-            Assert.IsTrue(p.z > 0 && p.x > 0 && p.x < Screen.width && p.y > 0 && p.y < Screen.height, "Objeto fuera de pantalla: " + entity.ItemId);
+            // El mensaje lleva los numeros: "fuera de pantalla" a secas obliga a adivinar por
+            // que lado se sale y desde donde se estaba mirando, y eso cuesta una vuelta entera
+            // de PlayMode por cada hipotesis.
+            Assert.IsTrue(p.z > 0 && p.x > 0 && p.x < Screen.width && p.y > 0 && p.y < Screen.height,
+                string.Format(
+                    "Objeto fuera de pantalla: {0}. pantalla={1}x{2} viewport=({3:0.000}, {4:0.000}, {5:0.00}) "
+                    + "mundo={6} camara={7} rot={8}",
+                    entity.ItemId, Screen.width, Screen.height,
+                    p.x / Mathf.Max(1, Screen.width), p.y / Mathf.Max(1, Screen.height), p.z,
+                    collider.bounds.center.ToString("F2"),
+                    _camera.transform.position.ToString("F2"),
+                    _camera.transform.eulerAngles.ToString("F0")));
             yield return Dispatch(p, entity.gameObject);
         }
         private IEnumerator Dispatch(Vector2 point, GameObject expected)

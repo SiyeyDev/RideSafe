@@ -30,6 +30,9 @@ namespace RideSafe.Module01
         [Tooltip("Opcional: enciende la malla del vehículo elegido y apaga las demás.")]
         [SerializeField] private VehicleStage _stage;
 
+        /// <summary>El escenario del vehículo, para que el flujo pueda esperar a que acabe de girar.</summary>
+        public VehicleStage Stage => _stage;
+
         [SerializeField] private GuidedTour _tour;
         [SerializeField] private ZoneRunner _runner;
         [SerializeField] private ReportPresenter _report;

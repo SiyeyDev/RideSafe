@@ -39,7 +39,7 @@ namespace RideSafe.Module01.Editor
         /// Dónde se planta el aprendiz respecto al vehículo. Suficiente para que una bici de
         /// casi dos metros quepa de costado sin que los marcadores se salgan por los lados.
         /// </summary>
-        private const float ViewDistance = 2.4f;
+        private const float ViewDistance = 2.7f;
 
         /// <summary>
         /// Dónde cuelga cada punto, en fracciones de la caja del vehículo:
@@ -54,7 +54,9 @@ namespace RideSafe.Module01.Editor
             { "point_steering",  new Vector3(.86f, .94f, .50f) }, // manubrio
             { "point_brakes",    new Vector3(.79f, .78f, .50f) }, // maneta de freno
             { "point_lights",    new Vector3(.95f, .62f, .50f) }, // faro delantero
-            { "point_wheels",    new Vector3(.10f, .13f, .50f) }, // rueda
+            // La rueda sube de .13 a .18: a .13 la esfera del punto bajaba 1.41 m por debajo de
+            // la linea de ojos y se salia del encuadre por abajo. Sigue sobre la rueda.
+            { "point_wheels",    new Vector3(.10f, .18f, .50f) }, // rueda
             { "point_electrics", new Vector3(.45f, .36f, .50f) }, // bateria
         };
 
@@ -72,7 +74,12 @@ namespace RideSafe.Module01.Editor
         private static readonly Dictionary<string, float> Yaws = new Dictionary<string, float>
         {
             { "cockpit",    90f },   // de frente: manubrio, frenos, electrico
-            { "wheels",      0f },   // de costado: se ven las dos ruedas
+            // De costado, pero por el lado 180 y no el 0. Son la misma vista en espejo, y la
+            // diferencia es donde cae el marcador en pantalla: a 0 grados se iba al 64 % de
+            // ancho, justo debajo del checklist -que ahora vive a la derecha-, y el clic
+            // chocaba con una fila de la lista en vez de llegar a la rueda. A 180 cruza al
+            // otro lado y queda despejado.
+            { "wheels",    180f },   // de costado: se ven las dos ruedas
             { "visibility", -90f },  // por detras: luces y reflectivos
         };
 
@@ -94,8 +101,7 @@ namespace RideSafe.Module01.Editor
                 AssetDatabase.LoadAssetAtPath<VehicleProfileSO>($"{DataFolder}/SO_VehicleProfile_Escooter.asset"),
             };
 
-            PlaceAnchor(display);
-
+            float tallest = 0f;
             foreach (VehicleProfileSO profile in profiles)
             {
                 if (profile == null || profile.Model == null)
@@ -112,9 +118,13 @@ namespace RideSafe.Module01.Editor
                 }
 
                 MoveToDisplay(model, display);
+                if (TryBounds(model, out Bounds box))
+                    tallest = Mathf.Max(tallest, box.size.y);
                 CreateMounts(model);
                 ApplyYaws(profile);
             }
+
+            PlaceAnchor(display, tallest);
 
             // En el editor los dos vehiculos estan encendidos a la vez y, ahora que comparten
             // el punto de exhibicion, se interpenetran. Se deja visible el primero, que es el
@@ -184,7 +194,7 @@ namespace RideSafe.Module01.Editor
         /// llevando al aprendiz a un ancla por zona y el vehículo no gira: la guarda de
         /// <c>Module01Director.EnterZone</c> lo comprueba justo por eso.
         /// </summary>
-        private static void PlaceAnchor(Vector3 display)
+        private static void PlaceAnchor(Vector3 display, float vehicleHeight)
         {
             GameObject root = Find(AnchorsRoot);
             if (root == null)
@@ -201,11 +211,22 @@ namespace RideSafe.Module01.Editor
                 Undo.RegisterCreatedObjectUndo(anchor.gameObject, "Ancla del vehiculo");
             }
 
-            // El aprendiz se coloca hacia +Z y mira hacia el vehiculo, o sea hacia -Z.
+            // El aprendiz se coloca hacia +Z y mira al vehiculo, EN HORIZONTAL.
+            //
+            // Se probó a inclinar el ancla hacia el centro del vehículo para encuadrarlo mejor
+            // y fue peor por dos motivos. Uno: en VR el cabeceo lo pone el visor, no el rig, así
+            // que inclinar el ancla no es algo que el aprendiz vaya a ver. Y dos: el pedestal
+            // del inspector cuelga de la cámara, y al inclinarse, su caja envolvente alineada
+            // con los ejes del mundo crece y pasa a comerse el techo del popup de confirmación
+            // —lo caza AssertPedestalClearsPopup—.
+            //
+            // El encuadre se resuelve con la distancia, no con el ángulo: a 2.7 m y 60° de
+            // campo vertical, la mitad inferior alcanza 1.56 m, de sobra para el marcador más
+            // bajo, que cuelga a unos 1.37 por debajo de la línea de ojos.
             Vector3 eye = new Vector3(display.x, EyeHeight, display.z + ViewDistance);
-            anchor.SetPositionAndRotation(eye, Quaternion.LookRotation(
-                new Vector3(0f, 0f, -1f), Vector3.up));
-            Debug.Log($"[Module01] {VehicleAnchor} en {eye:F2}, mirando al punto de exhibición.");
+            anchor.SetPositionAndRotation(eye, Quaternion.LookRotation(new Vector3(0f, 0f, -1f), Vector3.up));
+            Debug.Log($"[Module01] {VehicleAnchor} en {eye:F2}, en horizontal. " +
+                      $"Vehículo más alto: {vehicleHeight:F2} m.");
         }
 
         /// <summary>Apoya el vehículo en el suelo y lo centra en el punto de exhibición.</summary>

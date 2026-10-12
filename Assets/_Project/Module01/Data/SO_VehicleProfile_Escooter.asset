@@ -22,6 +22,6 @@ MonoBehaviour:
   - Zone: {fileID: 11400000, guid: 2e812fb54e2d7364fa3302d91d7e907d, type: 2}
     Yaw: 90
   - Zone: {fileID: 11400000, guid: 65b474ed86641f9468aec537c0de391d, type: 2}
-    Yaw: 0
+    Yaw: 180
   - Zone: {fileID: 11400000, guid: 01bccd36419332147ae3c3be8d6e16f1, type: 2}
     Yaw: -90

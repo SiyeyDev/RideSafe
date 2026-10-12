@@ -213,6 +213,11 @@ namespace RideSafe.Module01
             _runner.Begin(null);
             _binding.Module.HideAll(); _sidebar.SetActive(false); _navigation.SetActive(false); _instruction.SetActive(false);
             while (_tour.IsMoving) yield return null;
+            // Y tambien a que el vehiculo acabe de girar. En las zonas del vehiculo no hay
+            // teletransporte, asi que sin esta espera la zona se daba por lista al instante y
+            // el aprendiz podia pulsar un punto que todavia estaba viajando: medido, el de las
+            // llantas se quedaba un 5 % por debajo del borde inferior de la pantalla.
+            while (_director.Stage != null && _director.Stage.IsTurning) yield return null;
             _runner.Begin(zone);
             _inspector.SetQuestion(_director.InVehicleSection ? "Module1/Inspect_Question" : "Module1/Confirm_Question");
             _sidebar.SetActive(true); _navigation.SetActive(true);
@@ -228,7 +233,17 @@ namespace RideSafe.Module01
         }
         private void Update()
         {
-            if (Phase == "Choosing") { _navigation.SetActive(!_inspector.IsPresenting); _instruction.SetActive(SubtitlesEnabled && !_inspector.IsPresenting); }
+            if (Phase == "Choosing")
+            {
+                _navigation.SetActive(!_inspector.IsPresenting);
+                _instruction.SetActive(SubtitlesEnabled && !_inspector.IsPresenting);
+                // El checklist tambien se aparta mientras hay un objeto en el pedestal.
+                // Al bajarlo para liberar el centro del campo visual paso a solaparse con el
+                // popup de confirmacion -lo caza AssertHudDoesNotOverlap-, y ademas mientras
+                // el aprendiz responde "si o no" a un objeto que tiene delante, la lista de lo
+                // que lleva elegido no le aporta nada.
+                _sidebar.SetActive(!_inspector.IsPresenting);
+            }
             if (Phase == "Video")
             {
                 _binding.Explanation.SetPlaying(_video.isPlaying);

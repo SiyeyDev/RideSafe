@@ -76,8 +76,21 @@ namespace RideSafe.Module01
                 // con 44 por la izquierda y 90 por la derecha, en 54 px. Por eso "Casco
                 // deteriorado" salia partido en trozos de seis letras. El espanol necesita
                 // mas sitio que el ingles con el que se diseno el kit.
-                rect.anchoredPosition = new Vector2(470, 200);
+                // A la derecha y abajo, para dejar libre el centro del campo visual: en el
+                // centro es donde esta el objeto que el aprendiz tiene que mirar.
+                rect.anchoredPosition = new Vector2(520, 60);
                 rect.sizeDelta = new Vector2(420, 300);
+
+                // Y que acompañe la vista en vez de ir clavado a la cabeza. Una UI pegada a la
+                // cabeza 1:1 es la causa habitual de incomodidad en VR; esta solo se mueve
+                // cuando el aprendiz gira lo suficiente, y vuelve despacio.
+                GazeFollower follower = Sidebar.GetComponent<GazeFollower>();
+                if (follower == null)
+                    follower = Sidebar.AddComponent<GazeFollower>();
+                // 1.6 m de distancia, 10° por debajo de la linea de ojos y 24° a la derecha.
+                // Sin el desplazamiento lateral el componente deja el checklist justo delante
+                // del objeto a inspeccionar, que es lo contrario de lo que se pidio.
+                follower.Configure(1.6f, 10f, 24f);
             }
             Localize(OrientationPanel, "Title", "Orientation_Title");
             Localize(OrientationPanel, "Body", "Orientation_Body");
@@ -91,10 +104,14 @@ namespace RideSafe.Module01
             LocalizeButton(ComparisonPanel, "ExplainButton", "WatchVideo");
             // La leyenda estaba escrita a mano en ingles y nunca pasaba por I2, asi que salia
             // en ingles incluso con el resto del modulo en espanol.
-            Localize(ComparisonPanel, "Legend_Selected", "Selected");
-            Localize(ComparisonPanel, "Legend_Omitted", "Omitted");
-            Localize(ComparisonPanel, "Legend_Conditional", "Conditional");
-            Localize(ComparisonPanel, "Legend_Inappropriate", "Inappropriate");
+            // Los cuatro estados que pidio la reunion. Los nombres de objeto cambiaron con la
+            // leyenda nueva, y como esto localiza POR NOMBRE, dejarlos como estaban hacia que
+            // no encontrara ninguno y la leyenda saliera en ingles con el resto del modulo en
+            // espanol. Se vio en la captura de PlayMode, no en los tests.
+            Localize(ComparisonPanel, "Legend_Correct", "Legend_Correct");
+            Localize(ComparisonPanel, "Legend_Incorrect", "Legend_Incorrect");
+            Localize(ComparisonPanel, "Legend_Omission", "Legend_Omission");
+            Localize(ComparisonPanel, "Legend_AtRisk", "Legend_AtRisk");
             LocalizeButton(ExplanationPanel, "PauseButton", "Pause");
             LocalizeButton(ExplanationPanel, "ReplayButton", "Replay");
             LocalizeButton(ExplanationPanel, "ContinueButton", "Continue");
@@ -119,8 +136,26 @@ namespace RideSafe.Module01
             _module.HideAll();
         }
 
+        /// <summary>
+        /// Cuelga la clave de I2 del texto que se llame <paramref name="name"/> dentro del panel.
+        /// <para>
+        /// Avisa si no lo encuentra. Antes callaba, y por eso renombrar los cuatro objetos de la
+        /// leyenda la dejó entera en inglés —con el resto del módulo en español— sin que ningún
+        /// test se enterara: solo se vio en una captura de PlayMode.
+        /// </para>
+        /// </summary>
         private void Localize(string panel, string name, string key)
-        { Attach(Module01Experience.Find<TMPro.TMP_Text>(_module.Get<RectTransform>(panel), name), key); }
+        {
+            TMPro.TMP_Text text = Module01Experience.Find<TMPro.TMP_Text>(_module.Get<RectTransform>(panel), name);
+            if (text == null)
+            {
+                Debug.LogWarning(
+                    $"[Module01] En el panel '{panel}' no hay ningun texto llamado '{name}': " +
+                    $"la clave Module1/{key} no se aplica y ese texto saldra como lo dejo el prefab.", this);
+                return;
+            }
+            Attach(text, key);
+        }
         private void LocalizeButton(string panel, string name, string key)
         { var button = Module01Experience.Find<UnityEngine.UI.Button>(_module.Get<RectTransform>(panel), name); if(button != null) Attach(button.GetComponentInChildren<TMPro.TMP_Text>(true), key); }
         private static void Attach(TMPro.TMP_Text text, string key)

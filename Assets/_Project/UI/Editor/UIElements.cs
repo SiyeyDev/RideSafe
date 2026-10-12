@@ -283,8 +283,18 @@ namespace RideSafe.UI.EditorTools
             check.anchorMin = check.anchorMax = check.pivot = new Vector2(0f, 0.5f);
             check.anchoredPosition = new Vector2(3f, 0f);
 
-            _kit.AddText(UIBuilderKit.Stretch(row.transform, "Label", 44f, 0f, 90f, 0f).gameObject, sampleLabel, _kit.Row,
-                         TextAlignmentOptions.Left);
+            TMP_Text label = _kit.AddText(UIBuilderKit.Stretch(row.transform, "Label", 44f, 0f, 90f, 0f).gameObject,
+                                          sampleLabel, _kit.Row, TextAlignmentOptions.Left);
+            // El espanol es mas largo que el ingles con el que se diseno el kit, y la fila mide
+            // 40 de alto fijos: con el cuerpo a 17 una etiqueta larga saltaba a dos lineas, se
+            // salia del rect y se pisaba con la fila de abajo. Autoajuste con suelo: encoge
+            // hasta 12 antes que desbordar, y si ni asi cabe corta con puntos suspensivos en
+            // vez de invadir al vecino.
+            label.enableAutoSizing = true;
+            label.fontSizeMin = 12f;
+            label.fontSizeMax = _kit.Row.Size;
+            label.textWrappingMode = TextWrappingModes.Normal;
+            label.overflowMode = TextOverflowModes.Ellipsis;
             _kit.AddText(UIBuilderKit.Stretch(row.transform, "Tag", 240f, 0f, 8f, 0f).gameObject, "Added", _kit.Caps.With(11f),
                          TextAlignmentOptions.Right);
             return (RectTransform)row.transform;
@@ -323,10 +333,20 @@ namespace RideSafe.UI.EditorTools
             return (RectTransform)row.transform;
         }
 
-        /// <summary>Sprites for the four-state key, in ItemStatus order.</summary>
+        /// <summary>
+        /// Iconos de estado, en el orden de <c>ItemStatus</c>:
+        /// Selected, CoreOmitted, ConditionDependent, NotSuited, AtRisk.
+        /// <para>
+        /// <c>Status_Attention</c> pasa de «depende de la condición» a «en riesgo o
+        /// deteriorado», que es lo que el aviso significa de verdad y lo que pidió la reunión
+        /// como cuarto estado; lo condicional —el chaleco en un día claro— se queda con
+        /// <c>Status_Ready</c>, que es neutro y no reclama nada.
+        /// </para>
+        /// </summary>
         public Sprite[] StatusSprites() => new[]
         {
-            _kit.S("Status_Independent"), _kit.S("Status_Supported"), _kit.S("Status_Attention"), _kit.S("Status_Retry")
+            _kit.S("Status_Independent"), _kit.S("Status_Supported"), _kit.S("Status_Ready"),
+            _kit.S("Status_Retry"), _kit.S("Status_Attention")
         };
 
         #endregion
