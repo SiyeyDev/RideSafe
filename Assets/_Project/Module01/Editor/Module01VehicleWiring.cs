@@ -108,17 +108,39 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>
-        /// Borra las copias sueltas que dejó el paquete de arte: el nombre del modelo
-        /// más " (1)". El escenario solo apaga la malla que conoce, así que un gemelo
-        /// huérfano se quedaría a la vista al elegir el otro vehículo.
+        /// Borra el gemelo del vehículo: el nombre del modelo más " (1)", <b>y solo si está
+        /// encima del punto de exhibición</b>. El escenario apaga únicamente la malla que
+        /// conoce, así que un gemelo ahí se quedaría a la vista al elegir el otro vehículo.
+        /// <para>
+        /// El radio no sobra. El garaje v7 trae <b>dos e-bikes colgadas de una estantería</b> a
+        /// casi 7 m del pedestal, que son decorado y no gemelos, y la regla sin radio se las
+        /// llevaba por delante sin que nadie se enterara: el módulo seguía pasando sus pruebas
+        /// y la escena perdía arte recién entregado.
+        /// </para>
         /// </summary>
         private static void RemoveStrayCopies(string modelName, GameObject keep)
         {
+            // Lo que cabe confundir con el vehículo en exhibición. Mas lejos que esto, es
+            // decorado: el aprendiz no va a creer que una bici en una balda es la suya.
+            const float confusingRadius = 1.5f;
+
             foreach (GameObject go in Object.FindObjectsByType<GameObject>(
                          FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
                 if (go == keep || !go.name.StartsWith(modelName + " ("))
                     continue;
+
+                float distance = keep == null
+                    ? 0f
+                    : Vector3.Distance(go.transform.position, keep.transform.position);
+
+                if (keep != null && distance > confusingRadius)
+                {
+                    Debug.Log(
+                        $"[Module01] '{go.name}' se queda: esta a {distance:F1} m del vehiculo en " +
+                        "exhibicion, asi que es decorado y no un gemelo.");
+                    continue;
+                }
 
                 Debug.Log($"[Module01] Borrada la copia suelta '{go.name}' en {go.transform.position}.");
                 Undo.DestroyObjectImmediate(go);
