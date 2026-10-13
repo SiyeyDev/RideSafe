@@ -3056,7 +3056,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &3176581165072410269
 Transform:
@@ -3067,7 +3067,7 @@ Transform:
   m_GameObject: {fileID: 3140393139762263890}
   serializedVersion: 2
   m_LocalRotation: {x: 0.70710677, y: 2.131628e-13, z: 2.8421706e-14, w: 0.7071069}
-  m_LocalPosition: {x: 0, y: 0.153, z: 1.292}
+  m_LocalPosition: {x: -0, y: 0.153, z: 1.134}
   m_LocalScale: {x: 0.3638051, y: 0.3638051, z: 0.3638051}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4242,7 +4242,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &9209554613582055357
 Transform:
@@ -10140,6 +10140,10 @@ PrefabInstance:
       propertyPath: m_ScaleInLightmap
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: -8308775189458439325, guid: 1638d90bc6a72f345a6dea007892b5e1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4e41e328c60d4e144a8345d951ca9a84, type: 2}
     - target: {fileID: -835275807727185885, guid: 1638d90bc6a72f345a6dea007892b5e1, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -10186,7 +10190,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7987396622277038808, guid: 1638d90bc6a72f345a6dea007892b5e1, type: 3}
       propertyPath: m_ScaleInLightmap
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8381248738983231681, guid: 1638d90bc6a72f345a6dea007892b5e1, type: 3}
       propertyPath: m_StaticEditorFlags
