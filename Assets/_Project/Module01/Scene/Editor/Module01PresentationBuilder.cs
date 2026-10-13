@@ -387,12 +387,66 @@ namespace RideSafe.Module01.Editor
             // El mostrador esta contra la pared del fondo (z negativo), asi que se mira hacia
             // -z y el aprendiz se coloca por delante. El signo sale de la propia caja para que
             // siga valiendo si el arte mueve la estacion a otra pared.
-            Vector3 eye=new Vector3(box.center.x,k_EyeHeight,box.center.z+(box.center.z<0f?distance:-distance));
+            float sign=box.center.z<0f?1f:-1f;
+            distance=PushBackUntilBodyIsClear(box.center,distance,sign,zone.ZoneId);
+            Vector3 eye=new Vector3(box.center.x,k_EyeHeight,box.center.z+sign*distance);
             anchor.position=eye;
 
             Vector3 look=box.center-eye; look.y=0f;
             anchor.rotation=look.sqrMagnitude>1e-4f?Quaternion.LookRotation(look,Vector3.up):Quaternion.Euler(0,180,0);
         }
+        /// <summary>
+        /// Aparta el punto de observacion hasta que el aprendiz no quede dentro de nada.
+        /// <para>
+        /// El encuadre decide a que distancia se ve bien la estacion; esto decide si ahi se
+        /// puede estar. El garaje v7 dejo una bufanda y una mascada colgadas a z≈-2.9, y el
+        /// punto de la zona de ropa caia justo encima: medido, la tela quedaba a 5 cm del
+        /// cuerpo y a la altura de la cara. Apartarse 15 cm lo resuelve y no se nota en el
+        /// encuadre, pero habia que <b>mirarlo</b>, no suponerlo.
+        /// </para>
+        /// <para>
+        /// Se mide contra las cajas de los renderers y no con fisica: el arte importado llega
+        /// casi siempre sin colliders, asi que un <c>Raycast</c> habria dicho que todo estaba
+        /// despejado. Se dejan fuera las mallas enormes —suelo, muros, techo— porque el cuerpo
+        /// siempre esta «dentro» de la caja del suelo, y la UI, que vive colgada de la camara.
+        /// </para>
+        /// </summary>
+        private static float PushBackUntilBodyIsClear(Vector3 target,float distance,float sign,string zoneId)
+        {
+            const float bodyRadius=.30f,bodyHeight=1.80f,step=.05f,maxDistance=3.00f;
+
+            var art=Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude,FindObjectsSortMode.None)
+                .Where(r=>r.enabled
+                    && r.bounds.size.magnitude<=8f
+                    && r.GetComponentInParent<Canvas>()==null)
+                .ToArray();
+
+            for(float d=distance;d<=maxDistance+1e-3f;d+=step)
+            {
+                Vector3 feet=new Vector3(target.x,0f,target.z+sign*d);
+                Bounds body=new Bounds(feet+Vector3.up*(bodyHeight*.5f),
+                    new Vector3(bodyRadius*2f,bodyHeight,bodyRadius*2f));
+
+                Renderer blocker=art.FirstOrDefault(r=>r.bounds.Intersects(body));
+                if(blocker==null)
+                {
+                    if(d>distance+1e-3f)
+                        Debug.Log($"[Module01] El punto de la zona '{zoneId}' se aparto "+
+                            $"{(d-distance)*100f:F0} cm ({distance:F2} -> {d:F2} m) para no quedar dentro del arte.");
+                    return d;
+                }
+
+                if(d+step>maxDistance)
+                {
+                    Debug.LogWarning($"[Module01] En la zona '{zoneId}' no hay sitio despejado entre "+
+                        $"{distance:F2} y {maxDistance:F2} m: a {d:F2} m el aprendiz sigue dentro de "+
+                        $"'{blocker.name}'. Hay que mover ese objeto en la escena.");
+                    return d;
+                }
+            }
+            return distance;
+        }
+
         private static void PlaceCanvas(Canvas canvas)
         { canvas.transform.SetParent(_camera,false); canvas.transform.localPosition=new Vector3(0,0,1.8f); canvas.transform.localRotation=Quaternion.identity; canvas.transform.localScale=Vector3.one*.002f; canvas.worldCamera=_camera.GetComponent<Camera>(); }
         private static Canvas Canvas(string name,Transform parent,RenderMode mode)

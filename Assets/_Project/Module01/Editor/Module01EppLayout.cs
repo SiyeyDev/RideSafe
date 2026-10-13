@@ -145,56 +145,121 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>
-        /// Aparta de delante del mostrador los maniquíes del paquete de arte.
+        /// Aparta lo que el paquete de arte planta entre el aprendiz y la tapa del mostrador.
         /// <para>
-        /// El garaje v6 trae <c>Ch20_nonPBR (2)</c> plantado entre el aprendiz y la tapa,
-        /// ocupando x de −1.47 a 0.35: tapa las gafas y el calzado. No se detecta con un rayo
-        /// —en esta escena <b>ni los maniquíes ni los armarios tienen collider</b>, así que
-        /// toda comprobación de oclusión por física sale «despejado» y miente—; se vio en una
-        /// captura.
+        /// No se busca por nombre. El v6 ponía ahí tres maniquíes <c>Ch20_nonPBR</c>; el v7 se
+        /// los llevó y puso en su lugar <b>seis prendas de pie</b> —dos bufandas, un tapabocas
+        /// y tres pantalones— ocupando x de −0.01 a 1.85 justo delante de la zona de ropa. Una
+        /// lista de nombres habría que reescribirla en cada entrega, y entre entrega y entrega
+        /// la estación queda inservible sin que nada avise.
         /// </para>
         /// <para>
-        /// Se aparta en vez de apagarse porque es decorado del equipo de arte, no basura. Y se
-        /// hace aquí, y no a mano en la escena, para que vuelva a apartarse solo cuando llegue
-        /// el garaje v7 y lo coloque otra vez en medio.
+        /// <b>Esto no se detecta con física ni con un rayo.</b> En esta escena el arte llega sin
+        /// colliders, así que un <c>Raycast</c> contesta «despejado» y miente. Y un solo rayo al
+        /// centro del objeto tampoco vale: medido, la línea de visión pasaba a 4 cm de la
+        /// bufanda y daba por buena una estación que en la captura no se veía. Se mide contra la
+        /// caja de cada renderer, que es lo que de verdad ocupa sitio.
+        /// </para>
+        /// <para>
+        /// Se aparta, no se apaga: es decorado del equipo de arte, no basura. Van a una fila
+        /// contra la pared de al lado, fuera del encuadre de las tres estaciones.
         /// </para>
         /// </summary>
         private static void ClearCounterFrontage(float eppMinX, float eppMaxX, float counterZ)
         {
-            // Franja que hay que dejar libre: el ancho de los EPP y el metro y medio por
-            // delante, que es donde se pone el aprendiz a mirarlos.
-            const float sideMargin = .30f;
-            const float frontDepth = 1.8f;
+            // La franja a dejar libre: el ancho de los EPP y lo que hay por delante hasta donde
+            // se planta el aprendiz. Empieza por delante del vuelo de la tapa para no coger el
+            // propio mueble, que tambien esta "en la franja".
+            const float sideMargin = .30f, overhang = .35f, frontDepth = 2.60f;
+            // Solo estorba lo que cae en la banda que el ojo recorre. Asi las luces del techo
+            // -que tambien estan por delante del mostrador- se quedan donde estan.
+            const float eyeBand = 1.75f;
 
-            foreach (GameObject go in Object.FindObjectsByType<GameObject>(
-                         FindObjectsInactive.Include, FindObjectsSortMode.None))
+            // A que lado se aparta y hasta donde se busca sitio.
+            float sideX = eppMinX - 2.00f;
+            Debug.Log($"[Module01] despeje: EPP en x {eppMinX:F2}..{eppMaxX:F2}; franja a dejar libre " +
+                $"z {counterZ + overhang:F2}..{counterZ + frontDepth:F2}; se aparta a x={sideX:F2}.");
+
+            Renderer[] todos = Object.FindObjectsByType<Renderer>(
+                FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+            List<Renderer> estorban = todos.Where(r =>
+                r.GetComponentInParent<WorldObjectTaskEntity>() == null
+                && r.GetComponentInParent<Canvas>() == null
+                && r.bounds.size.magnitude <= 8f
+                && r.bounds.min.y <= eyeBand
+                && r.bounds.min.z > counterZ + overhang
+                && r.bounds.max.z < counterZ + frontDepth
+                && r.bounds.max.x > eppMinX - sideMargin
+                && r.bounds.min.x < eppMaxX + sideMargin).ToList();
+
+            if (estorban.Count == 0)
+                return;
+
+            // Contra lo que hay que no chocar: todo lo demas que ocupa sitio. Las mallas enormes
+            // -suelo, muros, techo- se quedan fuera porque cualquier caja las toca siempre.
+            List<Renderer> ocupado = todos.Where(r =>
+                !estorban.Contains(r) && r.bounds.size.magnitude <= 8f
+                && r.GetComponentInParent<Canvas>() == null).ToList();
+
+            List<Bounds> puestos = new List<Bounds>();
+            int moved = 0;
+
+            foreach (Renderer r in estorban)
             {
-                if (!go.name.StartsWith("Ch20_nonPBR") || go.transform.parent != null)
+                Bounds b = r.bounds;
+                if (!TryFindSpot(b, sideX, counterZ, ocupado, puestos, out Vector3 destino))
+                {
+                    Debug.LogWarning(
+                        $"[Module01] '{r.name}' esta delante del mostrador y tapa los EPP, pero no he " +
+                        $"encontrado sitio libre en la pared de x={sideX:F2}. Se queda donde esta: " +
+                        "hay que moverlo a mano o liberar esa pared.");
                     continue;
+                }
 
-                Renderer[] renderers = go.GetComponentsInChildren<Renderer>(true);
-                if (renderers.Length == 0)
-                    continue;
-                Bounds b = renderers[0].bounds;
-                foreach (Renderer r in renderers)
-                    b.Encapsulate(r.bounds);
-
-                bool inX = b.max.x > eppMinX - sideMargin && b.min.x < eppMaxX + sideMargin;
-                bool inZ = b.max.z > counterZ - .4f && b.min.z < counterZ + frontDepth;
-                if (!inX || !inZ)
-                    continue;
-
-                // Al extremo libre del mostrador, por el lado que quede mas lejos del grupo.
-                float half = b.size.x * .5f;
-                float targetX = eppMinX - sideMargin - half - .5f;
-                Undo.RecordObject(go.transform, "Apartar maniqui");
-                go.transform.position += new Vector3(targetX - b.center.x, 0f, 0f);
+                Undo.RecordObject(r.transform, "Apartar del mostrador");
+                r.transform.position += destino - b.center;
+                puestos.Add(new Bounds(destino, b.size));
+                moved++;
 
                 Debug.LogWarning(
-                    $"[Module01] '{go.name}' estaba delante del mostrador (x {b.min.x:F2}..{b.max.x:F2}) " +
-                    $"y tapaba los EPP. Apartado a x={targetX:F2}. " +
+                    $"[Module01] '{r.name}' estaba delante del mostrador (x {b.min.x:F2}..{b.max.x:F2}, " +
+                    $"z {b.min.z:F2}..{b.max.z:F2}) y tapaba los EPP. Apartado a " +
+                    $"x={destino.x:F2}, z={destino.z:F2}. " +
                     "Conviene que el equipo de arte no lo coloque ahi en la proxima entrega.");
             }
+
+            if (moved > 0)
+                Debug.Log($"[Module01] {moved} objetos de decorado apartados del frente del mostrador.");
+        }
+
+        /// <summary>
+        /// Busca un hueco libre en la pared de al lado, recorriendola en profundidad.
+        /// <para>
+        /// Hace falta buscar y no calcular: la primera version dejaba las prendas en una fila a
+        /// intervalos fijos y cuatro de las seis acabaron metidas dentro de la estanteria. Un
+        /// sitio «libre» hay que comprobarlo contra lo que ya hay y contra lo que acabamos de
+        /// poner, o se apilan entre ellas.
+        /// </para>
+        /// </summary>
+        private static bool TryFindSpot(Bounds piece, float sideX, float counterZ,
+            List<Renderer> ocupado, List<Bounds> puestos, out Vector3 spot)
+        {
+            const float step = .25f, margin = .08f;
+            float from = counterZ + .60f, to = counterZ + 9.00f;
+
+            for (float z = from; z <= to; z += step)
+            {
+                spot = new Vector3(sideX, piece.center.y, z);
+                Bounds probe = new Bounds(spot, piece.size + Vector3.one * margin);
+
+                if (ocupado.Any(r => r.bounds.Intersects(probe))) continue;
+                if (puestos.Any(b => b.Intersects(probe))) continue;
+                return true;
+            }
+
+            spot = default;
+            return false;
         }
 
         private static bool SameZoneNext(

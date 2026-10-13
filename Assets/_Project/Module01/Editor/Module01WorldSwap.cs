@@ -28,6 +28,12 @@ namespace RideSafe.Module01.Editor
     public static class Module01WorldSwap
     {
         private const string ArtScene = "Assets/_Project/Models/CITY/scenas/Garage.unity";
+
+        /// <summary>
+        /// Donde vive el arte importado. Lo que está hecho solo de mallas de aquí es mundo,
+        /// aunque el paquete nuevo ya no sepa cómo se llamaba.
+        /// </summary>
+        private const string ArtFolder = "Assets/_Project/Models/";
         private const string CatalogAsset = "Assets/_Project/Module01/Data/SO_Module01Catalog.asset";
         private const string SpawnedRoot = "Module01_Spawned";
 
@@ -131,18 +137,69 @@ namespace RideSafe.Module01.Editor
                 if (ProtectedRoots.Contains(go.name))
                     continue;
 
-                if (!worldNames.Contains(go.name))
+                bool porNombre = worldNames.Contains(go.name);
+                bool porArte = MadeOfArt(go, out int pieces);
+
+                if (!porNombre && !porArte)
                 {
                     Debug.LogWarning(
-                        $"[Module01] La raíz '{go.name}' no está protegida y el paquete de arte " +
-                        "no la conoce: se queda tal cual. Míralo, puede ser un resto del garaje viejo.");
+                        $"[Module01] La raíz '{go.name}' no está protegida, el paquete de arte no la " +
+                        "conoce y no está hecha solo de arte importado: se queda tal cual. Míralo, " +
+                        "puede ser un resto del garaje viejo.");
                     continue;
                 }
+
+                Debug.Log($"[Module01] Fuera la raíz '{go.name}' " + (porNombre
+                    ? "(el paquete nuevo la trae)."
+                    : $"(no viene en el paquete, pero son {pieces} mallas de {ArtFolder} y nada más)."));
 
                 Object.DestroyImmediate(go);
                 removed++;
             }
             return removed;
+        }
+
+        /// <summary>
+        /// ¿Es esta raíz puro arte importado?
+        /// <para>
+        /// Hace falta porque el nombre no basta. El v7 <b>reemplazó</b> la raíz
+        /// <c>enviroment</c> por tres prefabs nuevos y se llevó los tres maniquíes en pose T,
+        /// así que con la regla del nombre esas raíces no se reconocían, se quedaban puestas y
+        /// la escena acababa con dos garajes encima. Y poner una lista de «lo que el v7 retiró»
+        /// solo aplaza el problema hasta el v8.
+        /// </para>
+        /// <para>
+        /// Se miran las mallas y no los componentes: la lógica del módulo se <b>engancha</b> a
+        /// los objetos de arte —<c>botas</c> y <c>df_g_helmet_01</c> llevan su entidad dentro de
+        /// <c>enviroment</c>—, así que buscar scripts nuestros protegería justo lo que hay que
+        /// cambiar. Las entidades se vuelven a poner después, con <c>Module01SceneEntities</c>.
+        /// </para>
+        /// <para>
+        /// Una raíz sin mallas no se considera arte: ni se afirma ni se niega, se avisa. Es el
+        /// caso de <c>Box Volume</c> y de un <c>GameObject</c> vacío que arrastra la escena.
+        /// </para>
+        /// </summary>
+        private static bool MadeOfArt(GameObject root, out int pieces)
+        {
+            pieces = 0;
+            int foreign = 0;
+
+            foreach (MeshFilter mf in root.GetComponentsInChildren<MeshFilter>(true))
+                Classify(mf.sharedMesh, ref pieces, ref foreign);
+            foreach (SkinnedMeshRenderer smr in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                Classify(smr.sharedMesh, ref pieces, ref foreign);
+
+            return pieces > 0 && foreign == 0;
+        }
+
+        private static void Classify(Mesh mesh, ref int pieces, ref int foreign)
+        {
+            if (mesh == null)
+                return;
+            if (AssetDatabase.GetAssetPath(mesh).StartsWith(ArtFolder))
+                pieces++;
+            else
+                foreign++;
         }
 
         /// <summary>
