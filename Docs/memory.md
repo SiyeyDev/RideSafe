@@ -1,7 +1,7 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-12 (tarde)
+> Última actualización: 2026-10-12 (noche)
 >
 > **Lo que falta hoy, con nombres y números: `Docs/Pendientes_Reunion_2026-10-12.md`.**
 
@@ -533,6 +533,49 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-12 (noche) — el garaje v7
+
+Daniel entregó el v7 y se cambió igual que el v6, pero esta vez las reglas tuvieron que dejar de
+depender de los nombres: un paquete nuevo reagrupa las cosas y una lista escrita a mano no
+sobrevive a eso.
+
+- **El v7 es, sobre todo, el horneado de luz.** De sus 596 GUID, 434 ya estaban y solo **34
+  ficheros cambian**: 4 lightmaps, 2 sondas, el `LightingData` y `generateSecondaryUV` activado en
+  `garage/interior.fbx`. Y nos entra gratis porque **nuestra escena ya referenciaba el mismo
+  `LightingDataAsset`**: 330 de 423 renderers quedan con bake sin hornear nada aquí. Esto conviene
+  no perderlo: si alguna vez se rompe esa referencia, se pierde la iluminación entera.
+- **Qué es mundo ya no se decide por el nombre, sino por de qué está hecho.** El v7 reemplaza la
+  raíz `enviroment` por tres prefabs y se lleva los maniquíes; con la regla vieja esas raíces no se
+  reconocían y la escena se quedaba con **dos garajes encima**. Ahora: lo que son solo mallas de
+  `_Project/Models` es mundo. Lo que no tiene mallas (un `Box Volume`, un `GameObject` vacío) ni se
+  afirma ni se niega: se avisa.
+- **Lo que se planta delante del mostrador se aparta buscando hueco.** El v7 pone seis prendas de
+  pie justo delante de la estación de ropa. Tres mediciones, y las dos primeras estaban mal:
+  apartar el **cuerpo** del aprendiz no basta (la captura seguía enseñando el mostrador tapado: lo
+  que hay que dejar libre es por donde se **mira**), y **un solo rayo al centro** tampoco (pasaba a
+  4 cm de la bufanda y daba la estación por despejada). Hay que comparar cajas. Y nada de esto se
+  ve con física: el arte llega **sin colliders**, así que cualquier `Raycast` contesta «despejado».
+  Además la primera colocación fue a ciegas, en fila a intervalos fijos, y cuatro de las seis
+  acabaron dentro de la estantería: el hueco se **busca**.
+- **Una regla nuestra se comía arte nuevo sin que nadie se enterara.** `RemoveStrayCopies` borraba
+  toda copia `<modelo> (N)`; en el v7 eso son **dos e-bikes de adorno** colgadas de una balda. El
+  módulo seguía pasando sus cuatro pruebas y la escena perdía arte recién entregado. Lo cacé
+  **contando triángulos por raíz**, no mirando. Ahora solo borra lo que está a menos de 1,5 m del
+  punto de exhibición, y dice en voz alta lo que deja estar.
+- **Dos trampas del entorno, las dos caras:**
+  - Un fichero editado **desde fuera** del Editor puede no verlo el `AssetDatabase.Refresh()` del
+    relay. Tocarlo desde dentro (`File.WriteAllText` del mismo contenido + `ImportAsset`) sí lo
+    despierta.
+  - Y sobre todo: **el relay no avisa de que el proyecto no compila**. Me cargué un helper al
+    reemplazar un método, el ensamblado llevaba media hora sin construirse, y cada orden seguía
+    corriendo contra el dll viejo con `isCompilationSuccessful: true`. Hay que mirar
+    `Logs/Editor.log` buscando `error CS`, no fiarse de `isCompiling`.
+- **611.411 triángulos**, no baja: se van los maniquíes (−150.000) pero entra más decorado. El
+  39 % es `barrio_exterior`, el vecindario que solo se ve por una ventana.
+- **El v7 trae seis prendas que parecen pensadas como EPP** (bufanda, jean, tapabocas, mascada,
+  guantes). No están en el catálogo. Añadirlas cambia las respuestas correctas del ejercicio, así
+  que es decisión del cliente, no mía.
 
 ### 2026-10-12 — el garaje v6 y las tareas de la reunión
 

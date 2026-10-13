@@ -1,13 +1,46 @@
-# Qué falta — tareas de la reunión, garaje v6
+# Qué falta — tareas de la reunión, garaje v7
 
-> Fecha: 2026-10-12. Rama **`feat/garaje-v6`** (sale de `feat/garaje-v5` tras el merge del tutorial).
-> Escena: `Assets/_Project/Scene/RideSafe_Garaje_v5.unity` — conserva el nombre, pero ya es el v6.
-> Estado de pruebas al cerrar: **257 EditMode y 4 PlayMode en verde**, PlayMode dos corridas seguidas.
+> Fecha: 2026-10-12 (actualizado por la noche, con el garaje **v7** ya dentro).
+> Escena: `Assets/_Project/Scene/RideSafe_Garaje_v5.unity` — conserva el nombre, pero ya es el v7.
+> Estado de pruebas al cerrar: **4/4 PlayMode y 286/288 EditMode**. Los dos que fallan son del
+> tutorial del módulo 0 (`PF_Module00_UI` trae `Localize` con `LocalizeOnAwake` y reescribe el
+> título bilingüe del panel de idioma); vienen de esa rama y no se tocaron.
+
+---
 
 Este documento es la respuesta a «si falta algo en 3D o UI/UX, avisa en un documento nuevo».
 Está ordenado por lo que **bloquea**: primero lo que no se puede hacer sin que llegue algo de
 fuera, luego lo que se hizo con una decisión mía que conviene que confirmes, y al final lo
 menor.
+
+---
+
+## 0. Lo que cambia con el v7
+
+**Lo que resuelve.** El v7 es, sobre todo, **el horneado de luz**: 4 lightmaps, 2 sondas de
+reflexión y el `LightingData`. De los 596 GUID del paquete, 434 ya estaban y solo **34 ficheros
+cambian de verdad**; casi todos son el bake. Y nos entra gratis: nuestra escena de trabajo ya
+referenciaba el mismo `LightingDataAsset`, así que **330 de 423 renderers** quedan iluminados por
+el bake de Daniel sin hornear nada aquí.
+
+También se lleva los **tres maniquíes en pose T** que eran el 22 % del presupuesto de triángulos,
+y reemplaza la raíz `enviroment` por tres prefabs (`interior garage`, `barrio_exterior`,
+`enviroment_decoration`).
+
+**Lo que trae y hay que decidir.** 162 ficheros nuevos: una mesa de herramientas y **seis prendas
+que parecen pensadas como EPP**: bufanda, jean ajustado, pantalón ancho, «pant low», tapabocas y
+mascada, más dos pares de guantes y unos de látex. Ninguna está en el catálogo, así que hoy son
+solo decorado. **Esto necesita decisión del cliente**, porque añadir una prenda al catálogo cambia
+las respuestas correctas del ejercicio: hasta ahora la zona de ropa tiene dos elementos (chaleco y
+calzado) y ningún distractor de vestuario.
+
+**Lo que hubo que corregir.** El v7 planta esas seis prendas **de pie, en el pasillo, delante de
+la estación de ropa** (x de −0,01 a 1,85, z ≈ −3,0). Desde ese punto llenaban el encuadre y
+tapaban el mostrador. Se apartan solas a la pared de al lado, a un hueco que se busca. Y una regla
+nuestra, `RemoveStrayCopies`, **borraba las dos e-bikes de adorno** que el v7 cuelga de una
+estantería, porque se llamaban `ebike (1)` y `ebike (2)`; ahora solo borra lo que está encima del
+punto de exhibición.
+
 
 ---
 
@@ -163,8 +196,9 @@ de culo, se intercambian los 90 por −90 en `Module01VehicleStaging.Yaws`.
 
 Dos cambios sobre lo que entregó el equipo de arte, los dos con motivo:
 
-- **Un maniquí estaba plantado delante del mostrador**, tapando las gafas y el calzado. Lo aparto
-  al extremo libre. El comando lo vuelve a apartar solo si el v7 lo coloca otra vez ahí.
+- **Lo que se planta delante del mostrador se aparta.** En el v6 eran tres maniquíes; en el v7
+  son seis prendas de pie que tapaban la estación de ropa entera. Van a la pared de al lado, a un
+  hueco libre. Si el v8 las vuelve a poner en medio, se vuelven a apartar solas.
 - **Los 7 EPP estaban desparramados** a lo largo de 5 metros de mostrador (la zona `head` ocupaba
   4,99 m), así que desde un punto de vista se veían diminutos. Los agrupé por zona. Además tres
   estaban **hundidos en la tapa** —`casco 1` tenía la base 16 cm por debajo—; ahora los siete
@@ -174,29 +208,31 @@ Dos cambios sobre lo que entregó el equipo de arte, los dos con motivo:
 
 ## 3. Rendimiento: el problema más gordo que queda
 
-### 670.903 triángulos. El presupuesto de Quest es 150.000–350.000.
+### 611.411 triángulos con el v7. El presupuesto de Quest es 150.000–350.000.
 
-Casi el doble, y ha subido desde los ~370.000 que tenía v5. Medido sobre la escena real, contando
-solo renderers activos.
+Sigue siendo casi el doble. El v7 **no baja el conteo**: se lleva los maniquíes (−150.000) pero
+mete más decorado. Medido sobre la escena real, por raíz:
 
 | Triángulos | Qué | % |
 |---:|---|---:|
-| **149.601** | Los **3 maniquíes** `Ch20_nonPBR` (49.867 cada uno) | 22 % |
-| **112.726** | **22 troncos de árbol** `Tree_Trunk` (16 skinned + 6 estáticos) | 17 % |
-| ~95.000 | Las casas `House01`…`House06` del exterior | 14 % |
-| 51.426 | `scooter` + `ebike` | 8 % |
-| 26.881 | Los 7 EPP | 4 % |
-| 11.228 | `botas` — usa la malla `Ch20`, la del personaje | 2 % |
+| **239.170** | `barrio_exterior` — el vecindario que se ve por la ventana | 39 % |
+| **115.042** | `interior garage` | 19 % |
+| 66.156 | `enviroment_decoration` | 11 % |
+| 64.601 | `epps` — los 7 del ejercicio **y** las prendas nuevas | 11 % |
+| 76.710 | Las **3** e-bikes: la del ejercicio y 2 de adorno en una estantería | 13 % |
+| 25.856 | `scooter` | 4 % |
+| 14.928 | `House04` | 2 % |
 
-**Las dos primeras filas son el 39 % del presupuesto y ninguna de las dos es el contenido del
-módulo.** Tres cosas que darían margen rápido, por orden de ganancia:
+**El 39 % se va en el exterior, que solo se ve por una ventana.** Por orden de ganancia:
 
-1. **Los maniquíes.** 50.000 triángulos cada uno es coste de personaje protagonista, y además
-   están **en pose T**, que es como se ve un modelo sin animar. O se cambian por versiones de
-   bajo polígono con una pose, o se quitan. Solo esto son 150.000.
-2. **Los árboles.** Un tronco *skinned* de 5.283 triángulos repetido 22 veces, para decorado que
-   se ve a través de la ventana. Con un modelo de bajo polígono o un billboard bajan a casi nada.
-3. **Las casas.** 12.768 triángulos por casa para fachadas de fondo.
+1. **`barrio_exterior`.** 239.000 triángulos de fachadas y árboles para un fondo de ventana.
+   Las mallas más caras siguen siendo las mismas: `House03` (34.377), `Tree_Trunk` (28.182
+   sumando repeticiones), `House01` (25.536). Un *impostor* o un recorte del vecindario a lo que
+   de verdad entra por el hueco de la ventana es, solo, la mitad del exceso.
+2. **Las dos e-bikes de adorno**, 51.140 triángulos de la malla completa del vehículo para dos
+   bicis colgadas de una balda. Una versión de bajo polígono las deja en nada.
+3. **`df_g_container_01` (36.528) y `df_g_canister_01` (25.494)**, sumando repeticiones: cajas y
+   bidones de almacén.
 
 También hay dos detalles técnicos:
 
