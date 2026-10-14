@@ -7,6 +7,16 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: e_bike
+    second: {fileID: 2100000, guid: c1443623ecc844e43a3557b335cf646d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert3
+    second: {fileID: 2100000, guid: 9d9aeff9bbb71dd4f861ab33719fb571, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: standardSurface1
     second: {fileID: 2100000, guid: 56c4a401539d43041973ae4e419b8c6e, type: 2}
   materials:

@@ -774,7 +774,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 0.7688679, g: 0.86668324, b: 1, a: 1}
-  m_Intensity: 0.8
+  m_Intensity: 1
   m_Range: 4
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -1028,7 +1028,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 1.5
   m_Range: 6
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -4257,71 +4257,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1878165017883396853, guid: 18ef994c2fb72d94cb011844c34dca80, type: 3}
   m_PrefabInstance: {fileID: 987289153}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &996635022
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -4.916
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.432
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 5.854
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0.000000024383382
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0.000000014901159
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: -90
-      objectReference: {fileID: 0}
-    - target: {fileID: -7511558181221131132, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 56c4a401539d43041973ae4e419b8c6e, type: 2}
-    - target: {fileID: 919132149155446097, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_Name
-      value: ebike (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: e8019823d73f27347a191ddac608b826, type: 3}
 --- !u!1 &1008569126
 GameObject:
   m_ObjectHideFlags: 0
@@ -4395,7 +4330,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 0.8443396, g: 1, b: 0.97797674, a: 1}
-  m_Intensity: 0.8
+  m_Intensity: 1
   m_Range: 4
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -4884,7 +4819,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 1.2
   m_Range: 6
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -5370,7 +5305,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 0.8443396, g: 1, b: 0.97797674, a: 1}
-  m_Intensity: 0.8
+  m_Intensity: 1
   m_Range: 4
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -5571,7 +5506,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 0.8443396, g: 1, b: 0.97797674, a: 1}
-  m_Intensity: 0.8
+  m_Intensity: 1
   m_Range: 4
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -5759,7 +5694,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 0.7688679, g: 0.86668324, b: 1, a: 1}
-  m_Intensity: 0.8
+  m_Intensity: 1
   m_Range: 4
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -5886,7 +5821,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 0.7688679, g: 0.86668324, b: 1, a: 1}
-  m_Intensity: 0.8
+  m_Intensity: 1
   m_Range: 4
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -5940,71 +5875,6 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!1001 &1832903460
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -4.916
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.432
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 5.24
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0.000000024383382
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0.000000014901159
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: -90
-      objectReference: {fileID: 0}
-    - target: {fileID: -7511558181221131132, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 56c4a401539d43041973ae4e419b8c6e, type: 2}
-    - target: {fileID: 919132149155446097, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_Name
-      value: ebike (2)
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: e8019823d73f27347a191ddac608b826, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: e8019823d73f27347a191ddac608b826, type: 3}
 --- !u!1 &1904550454
 GameObject:
   m_ObjectHideFlags: 0
@@ -6078,7 +5948,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 4
   m_Range: 6
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -6205,7 +6075,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 0.8
+  m_Intensity: 2
   m_Range: 6
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -6989,8 +6859,6 @@ SceneRoots:
   - {fileID: 809883035}
   - {fileID: 1162945478}
   - {fileID: 510820571}
-  - {fileID: 996635022}
-  - {fileID: 1832903460}
   - {fileID: 1787540360}
   - {fileID: 298797867}
   - {fileID: 7867361503415690572}
