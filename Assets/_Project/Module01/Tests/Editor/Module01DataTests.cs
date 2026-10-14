@@ -25,7 +25,7 @@ namespace RideSafe.Module01.Tests
             Assert.IsNotNull(catalog, Missing);
 
             CollectionAssert.IsEmpty(catalog.Validate());
-            Assert.AreEqual(7, new List<SafetyItemSO>(catalog.AllItems).Count);
+            Assert.AreEqual(11, new List<SafetyItemSO>(catalog.AllItems).Count);
             Assert.AreEqual(3, catalog.Zones.Count);
         }
 
@@ -36,8 +36,8 @@ namespace RideSafe.Module01.Tests
         /// </summary>
         private static readonly Dictionary<string, string> ZonesWithoutRisk = new Dictionary<string, string>
         {
-            // Charlie, 2026-10-07: no hay modelo de ropa suelta, así que se apaga el riesgo.
-            { "clothing", "clothing_loose apagado hasta que exista modelo o se sustituya el riesgo" }
+            // Vacía desde el 2026-10-14: el garaje v7 trajo las prendas y `clothing_loose`
+            // volvió al catálogo con la bufanda. Las tres zonas vuelven a poder enseñarse mal.
         };
 
         [Test]

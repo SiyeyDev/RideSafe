@@ -52,6 +52,9 @@ namespace RideSafe.Module01
         public AudioClip PromptClip => _promptClip;
 
         /// <summary>Solo para tests: evita tener que crear assets en disco.</summary>
+        /// <summary>Solo para tests y para el generador de datos.</summary>
+        public void ConfigureDisplayForTests(GameObject prefab) => _displayPrefab = prefab;
+
         public void ConfigureForTests(string itemId, string nameKey, string riskKey, SafetyItemCategory category)
         {
             _itemId = itemId;

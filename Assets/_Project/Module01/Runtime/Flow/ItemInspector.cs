@@ -91,13 +91,36 @@ namespace RideSafe.Module01
                 _declineButton.onClick.RemoveListener(Decline);
         }
 
+        /// <summary>
+        /// ¿Lo que hay en el pedestal es un objeto, o el signo de los puntos sin pieza? El signo
+        /// <b>no gira</b>: es texto plano y al dar media vuelta se quedaría de canto y luego del
+        /// revés. Lo que gira es lo que tiene volumen.
+        /// </summary>
+        private bool _spins;
+
+        /// <summary>Lo que se ve en el pedestal, para que un test afirme sin mirar la pantalla.</summary>
+        public bool PresentsSolid => _spins;
+
         private void Update()
         {
-            if (_instance != null)
+            if (_instance != null && _spins)
                 _instance.transform.Rotate(Vector3.up, _rotationSpeed * Time.deltaTime, Space.World);
         }
 
-        public void Present(SafetyItemSO item)
+        public void Present(SafetyItemSO item) => Present(item, null);
+
+        /// <summary>
+        /// Presenta el elemento en el pedestal. <paramref name="realPart"/> es la pieza del
+        /// vehículo que le corresponde, cuando la hay.
+        /// <para>
+        /// <b>Nunca una esfera blanca.</b> Los cinco puntos del vehículo no tienen modelo propio
+        /// —no existe «el freno» como asset—, y antes se les fabricaba una primitiva: al pulsar
+        /// «llantas» lo que giraba era una bola. Desde el garaje v8 el manubrio y la rueda
+        /// trasera existen de verdad, así que se enseña <b>una copia de la pieza</b>; y donde no
+        /// hay pieza se enseña el <c>!</c>, que es el mismo idioma que el marcador del mundo.
+        /// </para>
+        /// </summary>
+        public void Present(SafetyItemSO item, Transform realPart)
         {
             if (item == null)
                 return;
@@ -110,8 +133,9 @@ namespace RideSafe.Module01
             {
                 _instance = new GameObject("PresentedItem");
                 _instance.transform.SetParent(_stage, false);
-                GameObject model = item.DisplayPrefab != null ? Instantiate(item.DisplayPrefab, _instance.transform) : GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                GameObject model = BuildDisplay(item, realPart);
                 model.transform.SetParent(_instance.transform, false);
+                _spins = model.GetComponentsInChildren<Renderer>().Length > 0;
                 foreach (Collider collider in model.GetComponentsInChildren<Collider>()) collider.enabled = false;
                 var renderers = model.GetComponentsInChildren<Renderer>();
                 if (renderers.Length > 0)
@@ -129,6 +153,72 @@ namespace RideSafe.Module01
             SetChromeVisible(true);
             Speak(item);
         }
+
+        /// <summary>
+        /// Qué se pone sobre el pedestal, por orden: su propio modelo, la pieza real del
+        /// vehículo, o el signo de exclamación. Lo que no se pone nunca es una esfera.
+        /// </summary>
+        private GameObject BuildDisplay(SafetyItemSO item, Transform realPart)
+        {
+            if (item.DisplayPrefab != null)
+                return Instantiate(item.DisplayPrefab, _instance.transform);
+
+            if (realPart != null)
+            {
+                MeshFilter source = realPart.GetComponent<MeshFilter>();
+                MeshRenderer paint = realPart.GetComponent<MeshRenderer>();
+                if (source != null && source.sharedMesh != null)
+                {
+                    // Una COPIA. Mover la pieza original la haría desaparecer de la bici justo
+                    // mientras el aprendiz la inspecciona.
+                    GameObject copy = new GameObject(realPart.name, typeof(MeshFilter), typeof(MeshRenderer));
+                    copy.transform.SetParent(_instance.transform, false);
+                    copy.GetComponent<MeshFilter>().sharedMesh = source.sharedMesh;
+                    if (paint != null)
+                        copy.GetComponent<MeshRenderer>().sharedMaterials = paint.sharedMaterials;
+                    return copy;
+                }
+            }
+
+            return BuildGlyph();
+        }
+
+        /// <summary>
+        /// El mismo <c>!</c> que marca el punto en el mundo, para los que no tienen ni modelo ni
+        /// pieza: el freno vive dentro del manubrio, la batería dentro del marco y el faro no
+        /// existe como objeto.
+        /// </summary>
+        private GameObject BuildGlyph()
+        {
+            GameObject go = new GameObject("Glyph", typeof(RectTransform), typeof(Canvas));
+            go.transform.SetParent(_instance.transform, false);
+            ((RectTransform)go.transform).sizeDelta = new Vector2(70f, 112f);
+            go.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+            // El escalado generico de Present mide Renderers, y un canvas no tiene: si no se
+            // escala aqui, el signo mide 112 METROS. Ya paso con el marcador del mundo.
+            go.transform.localScale = Vector3.one * (DisplaySize / 112f);
+
+            GameObject label = new GameObject("Text", typeof(RectTransform));
+            label.transform.SetParent(go.transform, false);
+            RectTransform rect = (RectTransform)label.transform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+
+            TMPro.TextMeshProUGUI text = label.AddComponent<TMPro.TextMeshProUGUI>();
+            text.text = "!";
+            text.fontSize = 86f;
+            text.fontStyle = TMPro.FontStyles.Bold;
+            text.alignment = TMPro.TextAlignmentOptions.Center;
+            text.raycastTarget = false;
+            text.color = new Color(1f, .42f, .05f, 1f);
+            text.outlineColor = new Color32(10, 20, 35, 255);
+            text.outlineWidth = .22f;
+            return go;
+        }
+
+        /// <summary>Solo para tests y para el montador de escena.</summary>
+        public void ConfigureForTests(Transform stage) => _stage = stage;
 
         /// <summary>
         /// Suelta la locución del elemento, si existe.

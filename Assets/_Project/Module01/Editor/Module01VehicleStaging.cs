@@ -84,7 +84,7 @@ namespace RideSafe.Module01.Editor
             // ancho, justo debajo del checklist -que ahora vive a la derecha-, y el clic
             // chocaba con una fila de la lista en vez de llegar a la rueda. A 180 cruza al
             // otro lado y queda despejado.
-            { "wheels",    180f },   // de costado: se ven las dos ruedas
+            { "wheels",      0f },   // de costado: se ven las dos ruedas
             { "visibility", -90f },  // por detras: luces y reflectivos
         };
 
@@ -136,6 +136,7 @@ namespace RideSafe.Module01.Editor
             // que el escenario enciende tambien en runtime mientras nadie elija.
             ShowOnlyFirst(profiles);
             AttachPointsToMounts();
+            WireOutlines(profiles);
 
             // Y el escenario se queda con la lista de puntos, para recolgarlos del vehiculo que
             // el aprendiz elija.
@@ -149,6 +150,83 @@ namespace RideSafe.Module01.Editor
             Debug.Log(
                 $"[Module01] Vehículos en el punto de exhibición {display:F2}, ancla a {ViewDistance} m. " +
                 "Los sitios de los puntos son aproximados: conviene repasarlos a ojo en la escena.");
+        }
+
+        /// <summary>
+        /// Qué pieza de la malla delinea cada punto, por vehículo.
+        /// <para>
+        /// La e-bike del garaje v8 llega despiezada en cuatro: <c>manubrio</c>, <c>marco</c>,
+        /// <c>pedales</c> y <c>rueda_trasera</c>. Solo dos de los cinco puntos tienen pieza
+        /// propia. <c>point_brakes</c> vive dentro del manubrio, <c>point_electrics</c> dentro
+        /// del marco y <c>point_lights</c> no existe como pieza, así que esos tres se quedan
+        /// con el signo de exclamación: delinear el marco entero para decir «revisa el sistema
+        /// eléctrico» enseñaría algo falso. Cuando Daniel entregue la maneta, la batería y el
+        /// faro, esto es una línea más por pieza.
+        /// </para>
+        /// <para>
+        /// El patinete no aparece: sigue siendo <c>Scooter_2:Mesh</c>, una malla única sin
+        /// hijos, así que todos sus puntos caen al signo.
+        /// </para>
+        /// </summary>
+        private static readonly Dictionary<string, Dictionary<string, string>> Parts =
+            new Dictionary<string, Dictionary<string, string>>
+            {
+                ["ebike"] = new Dictionary<string, string>
+                {
+                    { "point_steering", "manubrio" },
+                    { "point_wheels", "rueda_trasera" },
+                },
+            };
+
+        private const string OutlineMaterialPath =
+            "Assets/_Project/Module01/Art/M_InspectionOutline.mat";
+
+        /// <summary>
+        /// Le pone a cada punto su <see cref="InspectionHighlight"/> con el material del
+        /// contorno, y escribe en cada perfil qué pieza le toca. Idempotente.
+        /// </summary>
+        private static void WireOutlines(VehicleProfileSO[] profiles)
+        {
+            Material outline = AssetDatabase.LoadAssetAtPath<Material>(OutlineMaterialPath);
+            if (outline == null)
+            {
+                Debug.LogError(
+                    $"[Module01] Falta el material del contorno en {OutlineMaterialPath}; " +
+                    "los puntos se quedan solo con el signo.");
+                return;
+            }
+
+            foreach (VehicleProfileSO profile in profiles)
+            {
+                if (profile == null)
+                    continue;
+                Dictionary<string, string> table = Parts.TryGetValue(profile.VehicleContextValue, out var t)
+                    ? t
+                    : new Dictionary<string, string>();
+                Undo.RecordObject(profile, "Piezas del vehiculo");
+                profile.ConfigurePartBindings(table.Select(p => (p.Key, p.Value)));
+                EditorUtility.SetDirty(profile);
+                Debug.Log($"[Module01] {profile.name}: {table.Count} pieza(s) a delinear"
+                          + (table.Count == 0 ? " (malla unica: todo al signo)." : ": "
+                              + string.Join(", ", table.Select(p => $"{p.Key}->{p.Value}")) + "."));
+            }
+
+            int wired = 0;
+            foreach (WorldObjectTaskEntity point in Object
+                         .FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                         .Where(e => e.ItemId.StartsWith("point_")))
+            {
+                InspectionHighlight highlight =
+                    Module01EditorComponents.Ensure<InspectionHighlight>(point.gameObject);
+                Undo.RecordObject(highlight, "Contorno del punto");
+                // Los mismos colores que el signo: naranja lo que toca, verde lo resuelto.
+                highlight.ConfigureForTests(
+                    outline, new Color(1f, .42f, .05f, 1f), new Color(.46f, .83f, .54f, .9f));
+                EditorUtility.SetDirty(highlight);
+                wired++;
+            }
+            Debug.Log($"[Module01] {wired} puntos con contorno disponible. Cuál se usa de verdad " +
+                      "lo decide el escenario al encender el vehículo.");
         }
 
         /// <summary>Deja encendida solo la malla del primer perfil.</summary>

@@ -11,16 +11,17 @@ namespace RideSafe.Module01
     /// y cambiar de estado cuando el punto de su zona está en revisión o ya se ha resuelto.
     /// </para>
     /// <para>
-    /// <b>El resplandor va en el marcador y no en la malla del componente.</b> La reunión pidió
-    /// delinear «la sub-malla del componente activo», y eso hoy no se puede: el <c>ebike</c> y
-    /// el <c>scooter</c> que entregó el equipo de arte son <b>una malla única sin hijos</b>, así
-    /// que no existe «el freno» ni «la rueda» como objeto al que ponerle un contorno. Mientras
-    /// no lleguen los vehículos despiezados, el marcador es lo que se ilumina.
+    /// <b>Es el aviso de respaldo, no el principal.</b> Donde el vehículo viene despiezado y la
+    /// pieza existe de verdad, quien señala es <see cref="InspectionHighlight"/> con un contorno
+    /// sobre la malla, y este signo se silencia: los dos a la vez marcan lo mismo dos veces. El
+    /// signo sigue siendo lo único que hay para los puntos sin pieza propia —el freno vive dentro
+    /// del <c>manubrio</c>, la batería dentro del <c>marco</c> y el faro no existe— y para el
+    /// patinete entero, que sigue siendo una malla única sin hijos.
     /// </para>
     /// </summary>
     [AddComponentMenu("RideSafe/Module 01/Inspection Marker")]
     [DisallowMultipleComponent]
-    public class InspectionMarker : MonoBehaviour
+    public class InspectionMarker : MonoBehaviour, IInspectionCue
     {
         [Tooltip("La '!' que flota sobre el punto.")]
         [SerializeField] private TMP_Text _glyph;
@@ -48,6 +49,29 @@ namespace RideSafe.Module01
         private bool _highlighted;
         private bool _resolved;
         private bool _obscured;
+        private bool _suppressed;
+
+        /// <summary>
+        /// Lo silencia porque su punto ya se señala delineando la pieza real. Lo decide
+        /// <see cref="VehicleStage"/> al encender el vehículo, y cambia con el vehículo: el
+        /// mismo punto tiene pieza en la e-bike y no la tiene en el patinete.
+        /// <para>
+        /// Es una bandera aparte de <see cref="SetObscured"/> a propósito. Tapar es transitorio
+        /// —dura lo que dura el popup— y el recorrido lo quita solo al cerrarlo; silenciar dura
+        /// lo que dure el vehículo. Con una sola bandera, cerrar el popup devolvería el signo
+        /// encima del contorno.
+        /// </para>
+        /// </summary>
+        public void SetSuppressed(bool value)
+        {
+            if (_suppressed == value)
+                return;
+            _suppressed = value;
+            Repaint();
+        }
+
+        /// <summary>¿Se está viendo el signo? Para que un test afirme sin mirar la pantalla.</summary>
+        public bool IsVisible => _billboard != null && _billboard.gameObject.activeSelf;
 
         /// <summary>
         /// Lo tapa algo y no debe verse, pase lo que pase con su estado. Lo usa el recorrido
@@ -137,11 +161,13 @@ namespace RideSafe.Module01
         /// </summary>
         private void Repaint()
         {
-            if (_glyph == null)
-                return;
-            _glyph.color = _resolved ? _resolvedColor : _activeColor;
+            // Que se vea o no es independiente de que haya glifo: un marcador sin texto sigue
+            // teniendo que apagarse cuando lo silencian.
+            if (_glyph != null)
+                _glyph.color = _resolved ? _resolvedColor : _activeColor;
             if (_billboard != null)
-                _billboard.gameObject.SetActive(!_obscured && (_highlighted || _resolved));
+                _billboard.gameObject.SetActive(
+                    !_obscured && !_suppressed && (_highlighted || _resolved));
         }
 
         /// <summary>Solo para tests y para el montador de escena.</summary>

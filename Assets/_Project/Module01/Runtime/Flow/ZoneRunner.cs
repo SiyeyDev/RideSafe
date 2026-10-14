@@ -133,27 +133,33 @@ namespace RideSafe.Module01
         private void ObscureMarkers(bool value)
         {
             foreach (WorldObjectTaskEntity entity in _entities)
-                if (entity != null)
-                    entity.GetComponent<InspectionMarker>()?.SetObscured(value);
+            {
+                if (entity == null)
+                    continue;
+                foreach (IInspectionCue cue in entity.GetComponents<IInspectionCue>())
+                    cue.SetObscured(value);
+            }
         }
 
         /// <summary>
-        /// Pone el marcador del punto en su estado. Silencioso cuando no hay marcador: los
-        /// elementos de protección personal no lo llevan, y no es un fallo.
+        /// Pone el punto en su estado, avisando por igual al signo de exclamación y al contorno
+        /// de la pieza: cuál de los dos hay depende del vehículo, y eso no es cosa del
+        /// recorrido. Silencioso cuando no hay ninguno: los elementos de protección personal no
+        /// llevan aviso, y no es un fallo.
         /// </summary>
         private static void Mark(WorldObjectTaskEntity entity, bool highlighted)
         {
             if (entity == null)
                 return;
-            InspectionMarker marker = entity.GetComponent<InspectionMarker>();
-            if (marker == null)
-                return;
-            // Se limpia el "resuelto" tanto al entrar como al salir de la zona: un punto marcado
-            // en verde de una zona anterior se queda visible y, al girar el vehiculo, acaba
-            // cruzandose con el punto que toca revisar ahora. El marcador habla de la zona en
-            // curso y de ninguna otra.
-            marker.SetHighlighted(highlighted);
-            marker.SetResolved(false);
+            foreach (IInspectionCue cue in entity.GetComponents<IInspectionCue>())
+            {
+                // Se limpia el "resuelto" tanto al entrar como al salir de la zona: un punto
+                // marcado en verde de una zona anterior se queda visible y, al girar el
+                // vehiculo, acaba cruzandose con el punto que toca revisar ahora. El aviso
+                // habla de la zona en curso y de ninguna otra.
+                cue.SetHighlighted(highlighted);
+                cue.SetResolved(false);
+            }
         }
 
         private void HandleEntityConfirmed(ITaskEntity entity)
@@ -167,7 +173,9 @@ namespace RideSafe.Module01
             {
                 if (item.ItemId == world.ItemId)
                 {
-                    _inspector.Present(item);
+                    // Con la pieza real cuando la hay: es lo que el pedestal ensena en vez de
+                    // la esfera blanca que se fabricaba para los puntos sin modelo.
+                    _inspector.Present(item, world.GetComponent<InspectionHighlight>()?.Part);
                     return;
                 }
             }
@@ -194,8 +202,12 @@ namespace RideSafe.Module01
                 return;
 
             foreach (WorldObjectTaskEntity entity in _entities)
-                if (entity != null && entity.ItemId == item.ItemId)
-                    entity.GetComponent<InspectionMarker>()?.SetResolved(true);
+            {
+                if (entity == null || entity.ItemId != item.ItemId)
+                    continue;
+                foreach (IInspectionCue cue in entity.GetComponents<IInspectionCue>())
+                    cue.SetResolved(true);
+            }
 
             if (!_resolved.Add(item.ItemId))
                 return;

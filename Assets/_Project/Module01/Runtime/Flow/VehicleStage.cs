@@ -48,11 +48,27 @@ namespace RideSafe.Module01
         public Transform ActiveModel => _active?.Model == null ? null : _active.Model.transform;
 
         /// <summary>
+        /// Enciende la malla del vehículo del perfil y delinea las piezas que ese perfil
+        /// declara. Es la entrada buena: la otra sobrecarga no sabe qué piezas hay.
+        /// </summary>
+        public void Show(VehicleProfileSO profile)
+        {
+            if (profile == null)
+            {
+                Debug.LogError("[Module01] Se pidio encender un vehiculo sin perfil.", this);
+                return;
+            }
+            Show(profile.VehicleContextValue, profile);
+        }
+
+        /// <summary>
         /// Enciende la malla del vehículo pedido y apaga las demás. Si no hay malla para
         /// ese valor avisa y deja el garaje como estaba: apagarlo todo dejaría al
         /// aprendiz inspeccionando el aire.
         /// </summary>
-        public void Show(string vehicleContextValue)
+        public void Show(string vehicleContextValue) => Show(vehicleContextValue, null);
+
+        private void Show(string vehicleContextValue, VehicleProfileSO profile)
         {
             string wanted = Normalize(vehicleContextValue);
             Entry match = null;
@@ -78,8 +94,109 @@ namespace RideSafe.Module01
 
             _active = match;
             AttachInspectionPoints(match);
+            BindParts(profile);
             FaceYaw(TargetYaw, immediate: true);
         }
+
+        /// <summary>
+        /// Cuelga el contorno de la pieza real de cada punto que tenga una, y silencia su signo
+        /// de exclamación. Los que no la tengan —y todos, si el vehículo no declara piezas— se
+        /// quedan exactamente como estaban: con el signo y con su esfera clicable.
+        /// <para>
+        /// Se llama en <b>cada</b> <c>Show</c>, también cuando no hay perfil, porque lo primero
+        /// que tiene que pasar al cambiar de vehículo es soltar el contorno del anterior: cuelga
+        /// de la malla que se acaba de apagar.
+        /// </para>
+        /// </summary>
+        private void BindParts(VehicleProfileSO profile)
+        {
+            Transform model = ActiveModel;
+
+            foreach (WorldObjectTaskEntity point in _inspectionPoints)
+            {
+                if (point == null || string.IsNullOrEmpty(point.ItemId))
+                    continue;
+
+                InspectionHighlight highlight = point.GetComponent<InspectionHighlight>();
+                bool bound = false;
+
+                if (highlight != null)
+                {
+                    string partName = profile == null ? string.Empty : profile.PartNameFor(point.ItemId);
+                    Transform part = string.IsNullOrEmpty(partName) || model == null
+                        ? null
+                        : FindPart(model, partName);
+
+                    if (part == null)
+                        highlight.Release();
+                    else if (highlight.Bind(part))
+                    {
+                        MoveToPart(point, part);
+                        bound = true;
+                    }
+                }
+
+                point.GetComponent<InspectionMarker>()?.SetSuppressed(bound);
+            }
+        }
+
+        /// <summary>
+        /// Lleva la esfera clicable del punto encima de la pieza que se delinea, y la cuelga de
+        /// ella para que viaje con el vehículo al girar.
+        /// <para>
+        /// <b>Esto sustituye a un collider sobre la propia pieza, que es lo primero que se
+        /// probó y hubo que descartar.</b> Un <c>MeshCollider</c> en <c>manubrio</c> parece la
+        /// solución exacta —el blanco es la silueta que brilla— pero esa pieza no es el
+        /// manillar: es todo el tren delantero, 0,66 × 1,11 × 0,76, y al hacerse opaca al
+        /// raycast entierra las esferas de <c>point_brakes</c> y <c>point_electrics</c>, que
+        /// cuelgan por detrás de ella. Lo cazó el recorrido de PlayMode con un «clic bloqueado
+        /// por manubrio».
+        /// </para>
+        /// <para>
+        /// Así no aparece ningún bloqueador nuevo: sigue habiendo un collider por punto, como
+        /// siempre, solo que ahora el del punto delineado está sobre su pieza.
+        /// </para>
+        /// <para>
+        /// <b>Y se mueve lo mínimo: al punto de la pieza más cercano a donde ya estaba.</b> No
+        /// al centro de la pieza, que fue el segundo intento y también lo tumbó PlayMode: la
+        /// rueda se iba a su centro, que en la vista de llantas cae <i>detrás del checklist</i>,
+        /// y el clic chocaba con la fila «Frenos» en vez de llegar a la rueda. Donde están hoy
+        /// los mounts no es casual —se ajustaron a ojo contra capturas, y la rueda subió de .13
+        /// a .18 justo para no salirse por abajo del encuadre—, así que ese ajuste se respeta:
+        /// si el mount ya cae dentro de la pieza, la esfera no se mueve ni un milímetro.
+        /// </para>
+        /// </summary>
+        private static void MoveToPart(WorldObjectTaskEntity point, Transform part)
+        {
+            // Donde lo dejo AttachInspectionPoints: el sitio ajustado a mano.
+            Vector3 tuned = point.transform.position;
+
+            // worldPositionStays para no heredar la escala de la pieza: el FBX no trae las
+            // cuatro a la misma, y con false la esfera cambiaria de tamaño segun la pieza.
+            point.transform.SetParent(part, worldPositionStays: true);
+
+            Renderer renderer = part.GetComponent<Renderer>();
+            if (renderer != null)
+                point.transform.position = renderer.bounds.ClosestPoint(tuned);
+        }
+
+        /// <summary>
+        /// Busca la pieza por nombre en toda la jerarquía del vehículo, no solo entre sus hijos
+        /// directos: un FBX puede reagrupar sus piezas bajo un nulo intermedio al reexportarlo,
+        /// y comparar solo el primer nivel dejaría de encontrarlas sin decir por qué.
+        /// </summary>
+        private static Transform FindPart(Transform model, string partName)
+        {
+            foreach (Transform candidate in model.GetComponentsInChildren<Transform>(true))
+                if (candidate != model && candidate.name == partName)
+                    return candidate;
+
+            Debug.LogWarning(
+                $"[Module01] '{model.name}' no tiene la pieza '{partName}' que declara su " +
+                "perfil; ese punto se queda con el signo de exclamacion.", model);
+            return null;
+        }
+
 
         /// <summary>
         /// Cuelga cada punto de inspección del mount correspondiente del vehículo encendido.
@@ -172,6 +289,12 @@ namespace RideSafe.Module01
             _vehicles = new List<Entry>();
             foreach ((string value, GameObject model) in entries)
                 _vehicles.Add(new Entry { VehicleContextValue = value, Model = model });
+        }
+
+        /// <summary>Solo para tests y para el montador de escena.</summary>
+        public void ConfigurePointsForTests(params WorldObjectTaskEntity[] points)
+        {
+            _inspectionPoints = new List<WorldObjectTaskEntity>(points);
         }
     }
 }

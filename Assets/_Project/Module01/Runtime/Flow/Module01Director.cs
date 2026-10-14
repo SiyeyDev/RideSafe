@@ -287,8 +287,10 @@ namespace RideSafe.Module01
                     continue;
 
                 _selected = profile;
+                // Con el perfil y no con su clave: es el perfil quien sabe qué piezas de la
+                // malla se delinean, y sin él el escenario solo puede encender y apagar.
                 if (_stage != null)
-                    _stage.Show(profile.VehicleContextValue);
+                    _stage.Show(profile);
                 return;
             }
 

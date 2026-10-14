@@ -42,6 +42,34 @@ namespace RideSafe.Module01
         [Tooltip("Giro del vehículo en cada zona, en grados. Ajustar a ojo contra la malla.")]
         [SerializeField] private List<ZoneView> _zoneViews = new List<ZoneView>();
 
+        /// <summary>
+        /// Qué pieza de la malla delinea cada punto de inspección, por nombre.
+        /// <para>
+        /// Es dato y por vehículo porque cada uno despieza su FBX a su manera: la e-bike del
+        /// garaje v8 trae <c>manubrio</c>, <c>marco</c>, <c>pedales</c> y <c>rueda_trasera</c>,
+        /// y el patinete todavía es una malla única sin hijos. Y es un <b>nombre</b>, no una
+        /// referencia a la escena, porque hay una sola entidad por punto para los dos vehículos
+        /// y la pieza se busca en el que esté encendido.
+        /// </para>
+        /// <para>
+        /// Lo que no esté aquí no es un fallo: el freno vive dentro del manubrio, la batería
+        /// dentro del marco y el faro no existe como pieza. Esos puntos caen al signo de
+        /// exclamación de <see cref="InspectionMarker"/>, que es lo que había antes de esto.
+        /// </para>
+        /// </summary>
+        [Serializable]
+        private class PartBinding
+        {
+            [Tooltip("Id del punto, p. ej. point_steering.")]
+            public string ItemId;
+
+            [Tooltip("Nombre de la pieza dentro de la malla, p. ej. manubrio.")]
+            public string PartName;
+        }
+
+        [Tooltip("Pieza que delinea cada punto. Vacío = ese punto se queda con el signo.")]
+        [SerializeField] private List<PartBinding> _partBindings = new List<PartBinding>();
+
         public string VehicleContextValue =>
             string.IsNullOrWhiteSpace(_vehicleContextValue)
                 ? string.Empty
@@ -60,6 +88,38 @@ namespace RideSafe.Module01
                     return view.Yaw;
             return 0f;
         }
+
+        /// <summary>
+        /// Nombre de la pieza que delinea ese punto, o cadena vacía si no tiene ninguna.
+        /// Vacío es la respuesta normal, no un error: ver <see cref="PartBinding"/>.
+        /// </summary>
+        public string PartNameFor(string itemId)
+        {
+            string wanted = Normalize(itemId);
+            if (wanted.Length == 0)
+                return string.Empty;
+
+            foreach (PartBinding binding in _partBindings)
+            {
+                if (binding == null || Normalize(binding.ItemId) != wanted)
+                    continue;
+                return string.IsNullOrWhiteSpace(binding.PartName)
+                    ? string.Empty
+                    : binding.PartName.Trim();
+            }
+            return string.Empty;
+        }
+
+        /// <summary>Usado por el montador de escena y por los tests.</summary>
+        public void ConfigurePartBindings(IEnumerable<(string ItemId, string PartName)> bindings)
+        {
+            _partBindings = new List<PartBinding>();
+            foreach ((string itemId, string partName) in bindings)
+                _partBindings.Add(new PartBinding { ItemId = itemId, PartName = partName });
+        }
+
+        private static string Normalize(string value) =>
+            string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToLowerInvariant();
 
         /// <summary>Usado por el generador de escena y por los tests.</summary>
         public void ConfigureZoneViews(IEnumerable<(ZoneSO Zone, float Yaw)> views)

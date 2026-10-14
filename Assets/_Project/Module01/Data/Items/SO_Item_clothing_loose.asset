@@ -16,4 +16,6 @@ MonoBehaviour:
   _nameKey: Module1/Item_ClothingLoose
   _riskKey: Module1/Item_ClothingLoose_Risk
   _category: 3
-  _displayPrefab: {fileID: 705340424121578367, guid: 73a67a4ae39f28647aae36afb3f6161a, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: ca220a86bb7b3ea4ba2ef8d80273f400, type: 3}
+  _deteriorated: 0
+  _promptClip: {fileID: 0}

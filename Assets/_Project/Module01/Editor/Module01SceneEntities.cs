@@ -26,6 +26,13 @@ namespace RideSafe.Module01.Editor
             ("gafas",              "head",     "glasses"),
             ("botas",              "clothing", "shoes_ok"),
             ("chaleco refectivo",  "clothing", "reflective"),
+            // La bufanda es "ropa o cordones sueltos": el riesgo que le faltaba a la zona de
+            // ropa desde que se apago clothing_loose por no haber modelo. El v7 lo trajo.
+            ("bufanda 01",         "clothing", "clothing_loose"),
+            // Los pantalones: ajustado bien, ancho se engancha en la cadena, deportivo da igual.
+            ("jean ajustado",      "clothing", "trousers_fitted"),
+            ("pantalon ancho",     "clothing", "trousers_loose"),
+            ("pant low",           "clothing", "trousers_tech"),
             ("guaya candado",      "load",     "cargo_secured"),
             ("MobilePhone_01",     "load",     "cargo_handheld")
         };
@@ -125,9 +132,13 @@ namespace RideSafe.Module01.Editor
                     }
                     else
                     {
+                        // Esfera SOLO como volumen de clic: el renderer nace apagado. Lo que
+                        // se ve es el signo o el contorno de la pieza, nunca una bola blanca.
                         go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                         go.name = item.ItemId;
                         go.transform.localScale = Vector3.one * 0.15f;
+                        foreach (MeshRenderer mr in go.GetComponentsInChildren<MeshRenderer>(true))
+                            mr.enabled = false;
                     }
 
                     if (onVehicle && bike != null)

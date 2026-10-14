@@ -179,7 +179,24 @@ namespace RideSafe.Module01.Tests
                 // El checklist con filas ya dentro: es donde el texto largo en espanol se
                 // apretaba contra la nota al pie, y eso hay que mirarlo, no solo medirlo.
                 if (zoneId == "clothing") yield return Capture("checklist");
+                // Una captura por estacion personal: desde el 2026-10-14 cada una vive en un
+                // mueble distinto del garaje, y que se vean despejadas no lo dice ningun
+                // assert -el arte llega sin colliders, asi que el raycast miente-.
+                if (!_director.InVehicleSection) yield return Capture("estacion-" + zoneId);
                 AssertTextIsLegible("zona " + zoneId);
+                if (_director.InVehicleSection)
+                {
+                    // El vehiculo gira al entrar en la zona; el contorno cuelga de su malla, asi
+                    // que medir antes de que pare es medir un fotograma a medio camino.
+                    var stage = Object.FindAnyObjectByType<VehicleStage>();
+                    if (stage != null) yield return WaitFor(() => !stage.IsTurning, "El vehiculo deja de girar en " + zoneId);
+                    AssertInspectionCues(zoneId, vehicleId);
+                    // Las dos piezas que hoy se delinean: el tren delantero en cockpit y la
+                    // rueda en wheels. El casco invertido se abre en las aristas duras y eso no
+                    // lo dice ningun assert, hay que mirarlo.
+                    if (zoneId == "cockpit") yield return Capture("vehiculo-contorno-cockpit");
+                    if (zoneId == "wheels") yield return Capture("vehiculo-contorno-wheels");
+                }
                 var experience = Object.FindAnyObjectByType<Module01Experience>();
                 Assert.AreEqual(subtitles, Field<GameObject>(experience, "_instruction").activeInHierarchy, "La preferencia de subtitulos no se conserva");
                 foreach (var item in _director.CurrentZone.Items)
@@ -190,14 +207,27 @@ namespace RideSafe.Module01.Tests
                     var label = Field<TMP_Text>(_inspector, "_nameLabel");
                     AssertVisible(label.rectTransform);
                     Assert.IsFalse(string.IsNullOrWhiteSpace(label.text));
-                    Assert.IsFalse(label.text.StartsWith("Module1/"), "Nombre sin traducir");
+                    Assert.IsFalse(label.text.StartsWith("Module1/") && !PendienteDeTraducir(item.ItemId),
+                        "Nombre sin traducir: " + label.text);
                     var stage = Field<Transform>(_inspector, "_stage");
                     Assert.Greater(stage.childCount, 0, "No aparece el modelo");
                     var model = stage.GetChild(0);
-                    Assert.IsTrue(model.GetComponentsInChildren<Renderer>().Any(r => r.enabled));
+                    // Lo que aparece es un objeto con volumen, o el signo de los puntos del
+                    // vehiculo que no tienen pieza. Lo que NO puede aparecer es una esfera
+                    // blanca, ni el pedestal vacio.
+                    bool solido = model.GetComponentsInChildren<Renderer>().Any(r => r.enabled);
+                    bool signo = model.GetComponentsInChildren<TMP_Text>().Any(t => t.enabled && t.text == "!");
+                    Assert.IsTrue(solido || signo, "El pedestal no ensena nada para " + item.ItemId);
+                    Assert.IsFalse(model.GetComponentsInChildren<MeshFilter>()
+                        .Any(mf => mf.sharedMesh != null && mf.sharedMesh.name.StartsWith("Sphere")),
+                        "Esfera blanca en el pedestal: " + item.ItemId);
                     Quaternion before = model.rotation;
                     yield return new WaitForSeconds(.15f);
-                    Assert.Greater(Quaternion.Angle(before, model.rotation), 1, "El EPP no gira");
+                    if (solido)
+                        Assert.Greater(Quaternion.Angle(before, model.rotation), 1, "El EPP no gira");
+                    else
+                        Assert.AreEqual(0f, Quaternion.Angle(before, model.rotation), .01f,
+                            "El signo no debe girar: es texto plano y se quedaria de canto.");
                     AssertPedestalClearsPopup();
                     AssertModelClearsName();
                     AssertHudDoesNotOverlap();
@@ -205,7 +235,14 @@ namespace RideSafe.Module01.Tests
                     var asked = Field<TMP_Text>(_inspector, "_questionLabel");
                     Assert.IsNotEmpty(asked.text, "El popup pregunta en blanco en " + item.ItemId);
                     Assert.IsFalse(asked.text.StartsWith("Module1/"), "Pregunta sin traducir: " + asked.text);
+                    if (PendienteDeTraducir(item.ItemId))
+                        Assert.IsTrue(label.text.StartsWith("Module1/"),
+                            item.ItemId + " ya esta traducido: quitalo de PendienteDeTraducir.");
                     if (!omitHelmet && item.ItemId == "helmet_ok") yield return Capture("inspector");
+                    // La prueba de que el pedestal ya no fabrica esferas blancas: un punto con
+                    // pieza real y otro sin ella. Ningun assert ensena como queda.
+                    if (!omitHelmet && item.ItemId == "point_steering") yield return Capture("pedestal-con-pieza");
+                    if (!omitHelmet && item.ItemId == "point_brakes") yield return Capture("pedestal-sin-pieza");
                     bool take = item.Category == SafetyItemCategory.Core || item.Category == SafetyItemCategory.ConditionDependent;
                     if (item.ItemId == "helmet_ok" && omitHelmet) take = false;
                     var button = Field<Button>(_inspector, take ? "_acceptButton" : "_declineButton");
@@ -627,9 +664,26 @@ namespace RideSafe.Module01.Tests
         /// <summary>El modelo tampoco puede taparle el nombre, y por la misma razón: perspectiva.</summary>
         private void AssertModelClearsName()
         {
-            var renderers = Field<Transform>(_inspector, "_stage").GetComponentsInChildren<Renderer>();
-            Bounds model = renderers[0].bounds;
-            foreach (var r in renderers) model.Encapsulate(r.bounds);
+            // Lo del pedestal puede ser un objeto o el signo de un punto sin pieza, y el signo
+            // es un canvas: no tiene Renderer. Indexar renderers[0] a secas reventaba con un
+            // IndexOutOfRange en cuanto el inspector dejo de fabricar la esfera blanca.
+            var stage = Field<Transform>(_inspector, "_stage");
+            var renderers = stage.GetComponentsInChildren<Renderer>();
+            Bounds model;
+            if (renderers.Length > 0)
+            {
+                model = renderers[0].bounds;
+                foreach (var r in renderers) model.Encapsulate(r.bounds);
+            }
+            else
+            {
+                var glyph = stage.GetComponentsInChildren<TMP_Text>().FirstOrDefault();
+                if (glyph == null) return;          // pedestal vacio: ya lo afirma el recorrido
+                var esquinas = new Vector3[4];
+                glyph.rectTransform.GetWorldCorners(esquinas);
+                model = new Bounds(esquinas[0], Vector3.zero);
+                foreach (var c in esquinas) model.Encapsulate(c);
+            }
             var label = Field<TMP_Text>(_inspector, "_nameLabel").rectTransform;
             var corners = new Vector3[4];
             label.GetWorldCorners(corners);
@@ -703,6 +757,56 @@ namespace RideSafe.Module01.Tests
             ExecuteEvents.Execute(target, data, ExecuteEvents.pointerClickHandler);
             yield return null; yield return null;
         }
+        /// <summary>
+        /// Cada punto de la zona del vehículo señala <b>de una sola manera</b>: con el contorno
+        /// sobre la pieza real si su perfil declara una, y si no con el signo de exclamación de
+        /// siempre. Nunca con las dos, y nunca con ninguna.
+        /// <para>
+        /// Qué puntos tienen pieza no se escribe aquí: se le pregunta al perfil del vehículo que
+        /// se está recorriendo. Así el test sigue valiendo cuando Daniel entregue la maneta de
+        /// freno o el faro, y falla si alguien declara una pieza que la malla no tiene.
+        /// </para>
+        /// </summary>
+        private void AssertInspectionCues(string zoneId, string vehicleId)
+        {
+            var profile = _director.SelectedVehicle;
+            Assert.IsNotNull(profile, "La seccion del vehiculo sin perfil elegido en " + zoneId);
+            Assert.AreEqual(vehicleId, profile.VehicleContextValue, "Perfil equivocado en " + zoneId);
+
+            foreach (var item in _director.CurrentZone.Items)
+            {
+                var entity = Object.FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                    .Single(e => e.ItemId == item.ItemId);
+                var highlight = entity.GetComponent<InspectionHighlight>();
+                var marker = entity.GetComponent<InspectionMarker>();
+                Assert.IsNotNull(highlight, "Sin InspectionHighlight: " + item.ItemId);
+                Assert.IsNotNull(marker, "Sin InspectionMarker: " + item.ItemId);
+
+                string part = profile.PartNameFor(item.ItemId);
+                if (string.IsNullOrEmpty(part))
+                {
+                    Assert.IsNull(highlight.Outline,
+                        item.ItemId + " no declara pieza y sin embargo tiene contorno.");
+                    Assert.IsTrue(marker.IsVisible,
+                        item.ItemId + " se quedo sin ningun aviso: ni contorno ni signo.");
+                    continue;
+                }
+
+                Assert.IsNotNull(highlight.Outline,
+                    item.ItemId + " declara la pieza '" + part + "' y no se delineo: "
+                    + "o la malla del vehiculo no la tiene, o el escenario no la encontro.");
+                Assert.AreEqual(part, highlight.Outline.transform.parent.name,
+                    "El contorno de " + item.ItemId + " cuelga de la pieza equivocada.");
+                Assert.IsTrue(highlight.Outline.enabled,
+                    item.ItemId + " es de la zona en curso y su contorno esta apagado.");
+                Assert.IsFalse(marker.IsVisible,
+                    item.ItemId + " muestra el signo encima del contorno: se marca dos veces.");
+                Assert.AreSame(highlight.Outline.transform.parent, entity.transform.parent,
+                    "La esfera clicable de " + item.ItemId + " no se mudo a su pieza: el aprendiz "
+                    + "apunta a lo que brilla y pulsa el aire.");
+            }
+        }
+
         private void AssertVisible(RectTransform rect)
         {
             Assert.IsTrue(rect.gameObject.activeInHierarchy, "UI inactiva " + rect.name);
@@ -749,6 +853,24 @@ namespace RideSafe.Module01.Tests
         private static void SetField(object o, string name, object value) =>
             o.GetType().GetField(name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(o, value);
         private static T Field<T>(object o, string name) => (T)o.GetType().GetField(name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(o);
+        /// <summary>
+        /// Elementos cuyos terminos todavia no estan en I2, con su motivo. La lista esta aqui a
+        /// proposito y no se desactiva la comprobacion: lo que no esta traducido sale en pantalla
+        /// como la clave cruda, y eso no puede llegar a una demo sin que nadie se entere.
+        /// <para>
+        /// Charlie, 2026-10-14: «sobre la localizacion, yo me encargo despues». Los tres
+        /// pantalones entraron al catalogo ese dia; sus textos van en la hoja del Drive.
+        /// <b>Vaciar esta lista al ponerlos.</b> El test avisa si alguno ya esta traducido.
+        /// </para>
+        /// </summary>
+        private static readonly string[] SinTraducirTodavia =
+        {
+            "trousers_fitted", "trousers_loose", "trousers_tech",
+        };
+
+        private static bool PendienteDeTraducir(string itemId) =>
+            System.Array.IndexOf(SinTraducirTodavia, itemId) >= 0;
+
         private static IEnumerator WaitFor(System.Func<bool> condition, string label, float seconds = 5)
         { yield return WaitFor(condition, () => label, seconds); }
         /// <summary>Mensaje diferido: se arma al expirar, con el estado real en vez de un "Timeout" pelado.</summary>

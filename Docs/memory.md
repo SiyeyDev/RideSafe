@@ -1,7 +1,7 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-12 (noche)
+> Última actualización: 2026-10-14
 >
 > **Lo que falta hoy, con nombres y números: `Docs/Pendientes_Reunion_2026-10-12.md`.**
 
@@ -75,8 +75,9 @@ atajo. Verdes dos corridas seguidas el 2026-10-12, junto con **257 de EditMode**
 
 Desde la tanda del 2026-10-12 el módulo además: esconde el EPP de la mesa mientras gira en el
 pedestal y lo deja escondido al llevárselo puesto; atenúa el garaje durante los videos; no deja
-saltarse el video; exhibe el vehículo en un punto único y lo gira por zona con marcadores `!`
-colgando de su malla; y cierra con «Mi Elección», la nota con rango y los dos botones que esa
+saltarse el video; exhibe el vehículo en un punto único y lo gira por zona; y desde el v8 **delinea la
+pieza real** del punto que toca (manubrio y rueda trasera), dejando el `!` solo donde no hay
+pieza; y cierra con «Mi Elección», la nota con rango y los dos botones que esa
 nota desbloquea.
 
 | Lo que se pidió | Estado |
@@ -143,14 +144,17 @@ quedó obsoleto frente a `UIText`; falta unificar.
 | Pieza | Qué hace |
 |---|---|
 | `SafetyItemSO` / `ZoneSO` / `Module01CatalogSO` | catálogo con las 4 categorías |
-| `VehicleProfileSO` | vehículo, su modelo y sus zonas de inspección |
+| `VehicleProfileSO` | vehículo, su modelo, sus zonas y **qué pieza delinea cada punto** |
 | `SelectionLedger` / `SelectionReport` / `SelectionGrader` | puntuación pura, sin Unity |
 | `ReadinessDecision` | go/no-go contra lo encontrado |
 | `WorldObjectTaskEntity` | entidad 3D vía EventSystem; sirve con mouse y con AutoHand |
 | `Module01Binding` | enlaza `PF_Module01_UI` por nombre, con `FindMissing` |
 | `ReportPresenter` | pinta el reporte, repinta al cambiar idioma |
 | `ItemInspector` | presenta el objeto y confirma |
-| `ZoneRunner` | conecta entidad, inspector y libro por zona |
+| `ZoneRunner` | conecta entidad, inspector y libro por zona; avisa a los `IInspectionCue` |
+| `IInspectionCue` | cómo señala un punto: el signo `!` o el contorno. El recorrido no sabe cuál |
+| `InspectionMarker` | el signo `!` flotante. Se **silencia** si su punto tiene contorno |
+| `InspectionHighlight` | delinea la pieza real: hijo con su misma malla y casco invertido |
 | `GuidedTour` | fade y reposición del rig |
 | `VehicleStage` | enciende la malla del vehículo elegido, apaga la otra y la gira por zona |
 | `Module01Director` | encadena las seis zonas y los dos reportes; elige perfil de vehículo |
@@ -174,7 +178,7 @@ deja el resultado en `Temp/ridesafe-tests.txt`.
 
 ## 6. Contenido
 
-### Catálogo de EPP — 7 elementos en 3 zonas
+### Catálogo de EPP — 11 elementos en 3 zonas
 
 | Zona | Elemento | Categoría | Modelo |
 |---|---|---|---|
@@ -183,12 +187,16 @@ deja el resultado en `Temp/ridesafe-tests.txt`.
 | head | Gafas | Opcional | `gafas.fbx` |
 | clothing | Calzado | Núcleo | `botas.fbx` |
 | clothing | Chaleco reflectivo | Según condición | `chaleco refectivo.fbx` |
+| clothing | Ropa o cordones sueltos | Inapropiado | `bufanda 01.fbx` |
+| clothing | Pantalón ajustado | Núcleo | `jean ajustado.fbx` |
+| clothing | Pantalón ancho | Inapropiado | `pantalon ancho.fbx` |
+| clothing | Pantalón deportivo | Opcional | `pant low.fbx` |
 | load | Carga asegurada | Núcleo | `guaya candado.fbx` |
 | load | Objeto en mano | Inapropiado | `MobilePhone_01.fbx` |
 
 **Cuál casco es cuál lo confirmó Charlie el 2026-10-07: el bueno es `df_g_helmet_01`.** Hasta
-entonces estaba al revés y el módulo enseñaba lo contrario. La zona `clothing` se quedó sin
-elemento de riesgo al apagar la ropa suelta; ver §8.
+entonces estaba al revés y el módulo enseñaba lo contrario. La zona `clothing` recuperó su
+riesgo el 2026-10-14 con la bufanda; `ZonesWithoutRisk` quedó vacía.
 
 **Sin confirmar:** cuál de los dos cascos se ve dañado. Si está al revés, el aprendiz
 aprende lo contrario. Hay un tercero disponible, `casco.fbx`.
@@ -256,6 +264,9 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 
 ### Contenido
 
+- [ ] **Pedirle a Daniel las piezas que faltan de la e-bike**: maneta de freno, batería y faro
+      —y el patinete despiezado—. Cada una que llegue es una fila más en `Module01VehicleStaging.Parts`,
+      sin tocar código, y un `!` menos.
 - [ ] Alinear la hoja de I2 con el asset (la hoja va detrás; ver §6)
 - [ ] Voz del módulo 1 y los dos videos. **Bloqueados a propósito:** Charlie quiere dejar
       primero los textos bien en el Drive, y sacar de ahí locución y guion de video.
@@ -520,12 +531,12 @@ de escooter y no la de ebike. El test de la e-bike afirma lo simétrico.
 | Qué | Dónde |
 |---|---|
 | `piso` | centro `(-0.14, 0.02, 0.78)`, 9.54 × 11.28 |
-| `ebike` | `(-0.99, 0.04, -0.27)`, bounds 0.66 × 1.11 × 1.97, **malla única sin hijos** |
-| `scooter` | `(1.70, 0.06, -0.30)`, bounds 0.55 × 1.35 × 1.27, **malla única sin hijos** |
+| `ebike` | desde el v8, **4 piezas**: `manubrio` (todo el tren delantero, 0.66 × 1.11 × 0.76), `marco`, `pedales`, `rueda_trasera` |
+| `scooter` | `Scooter_2:Mesh`, bounds 0.55 × 1.35 × 1.27, **sigue siendo malla única sin hijos** |
 | `scooter.fbx` | `Assets/_Project/Models/CITY/MODELADOS 3d/scooter.fbx` |
-| anclas EPP | `z=-1.70`, x = -2 / 0 / 2 |
-| anclas vehículo | `z=2.30`, x = -2 / -0.5 / 1, todas mirando a 180° |
-| los 5 puntos | esferas en fila en `y=1.30, z=0.80`, bajo `Module01_Spawned`, **sin tocar ningún vehículo** |
+| estaciones EPP | `head` mostrador del fondo, `clothing` mesa metálica (izq.), `load` banco (der.) |
+| giros por zona | `cockpit` 90°, `wheels` 0°, `visibility` −90° |
+| los 5 puntos | cuelgan de `mount_*` en la malla; los 2 con pieza se mudan encima de ella al encender el vehículo |
 
 Los ids de entidad son `module01.{zoneId}.{itemId}`: **no llevan vehículo**, así que una sola
 entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zonas.
@@ -533,6 +544,129 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-14 (noche) — los pantalones entran al ejercicio y se acaban las esferas blancas
+
+- **Los tres pantalones tapaban la puerta de la casa**, y no era culpa del arte: la regla de
+  despeje de una sesión anterior los había empujado a esa pared. `pantalon ancho` estaba justo en
+  mitad del vano (`Door_Windowed_Brown (1)`, `z = −2.88`, 1,02 m de hueco) y `pant low` flotaba
+  18 cm sobre el suelo.
+- **Ahora son parte del ejercicio**, dentro de `clothing` —que literalmente se llama «Ropa y
+  calzado»—, con la misma forma que la zona de cascos: `jean ajustado` núcleo, `pantalon ancho`
+  inapropiado (la pernera se engancha en la cadena), `pant low` opcional. Charlie pidió además
+  uno **reflectivo o corta-viento**: ese modelo no existe, hay que pedírselo a Daniel y entrará
+  como «según condición», igual que el chaleco.
+- **El montador aprende a apoyar en el suelo.** Lo que mide más de 70 cm se planta en el suelo en
+  vez de sobre la tapa, conservando su hueco en la fila. Se probó primero con una franja **por
+  delante** de todo el mueble y era peor: un pantalón de 1,16 m plantado delante de unas botas
+  que descansan a 0,92 las tapa.
+- **Y si la fila no cabe en el mueble, arranca en su borde en vez de centrarse.** Con seis
+  elementos la fila de ropa mide 3,62 m y la mesa da 2,62: centrada, las botas quedaban 32 cm
+  fuera de la mesa, flotando. Como los altos van al final del catálogo, arrancar por el borde
+  deja en la tapa justo a los que les toca.
+- **Se acabaron las esferas blancas.** Los cinco puntos del vehículo no tienen modelo propio y
+  `ItemInspector` les fabricaba una `PrimitiveType.Sphere`: al pulsar «frenos» lo que giraba en
+  el pedestal era una bola. Ahora el pedestal enseña, por orden: su propio modelo, **una copia de
+  la pieza real** del vehículo si la hay, o el **`!`**. Y el signo **no gira** —es texto plano y
+  al dar media vuelta se queda de canto—. Las esferas que fabrica el montador para entidades que
+  faltan nacen con el renderer apagado: son volumen de clic, no se ven.
+- **Dos asserts del recorrido daban por hecho que en el pedestal siempre hay un `Renderer`.**
+  `AssertModelClearsName` reventaba con `IndexOutOfRange` en cuanto dejó de haber esfera. Ahora
+  mide el glifo cuando no hay malla.
+- **Los textos de los tres pantalones no están en I2**; los pone Charlie en el Drive. No se
+  desactivó la comprobación de «nombre sin traducir»: la deuda está declarada en
+  `Module01SliceTests.SinTraducirTodavia`, y el test **avisa cuando ya estén puestos** para
+  vaciar la lista.
+- 340/342 EditMode y 4/4 PlayMode, dos corridas seguidas. Capturas nuevas:
+  `pedestal-con-pieza`, `pedestal-sin-pieza`.
+
+### 2026-10-14 (tarde) — las estaciones repartidas por el garaje
+
+Las tres zonas personales estaban en el mismo mostrador del fondo: el aprendiz se
+teletransportaba tres veces para mirar siempre a la misma pared. Charlie: «tenemos un entorno
+bonito, podemos usarlo». Ahora cada zona vive en un mueble distinto.
+
+| Zona | Mueble | Tapa | Cómo se midió |
+|---|---|---|---|
+| `head` | `cabinetmid 1`, pared del fondo | 1.079 | las bases de los 7 EPP que dejó el arte |
+| `clothing` | `metal table`, pared izquierda | 0.92 | mesa de una pieza: su caja **es** la tapa |
+| `load` | `otra mesa`, banco de la derecha | 1.04 | la regla y el medidor ya apoyados |
+
+- **La estructura ya estaba:** cada zona tenía su ancla desde siempre. Lo que faltaba era que
+  el ancla **se derivara** del grupo en vez de ser una posición escrita. Ahora sale del mueble,
+  y por eso mover una estación es cambiar una fila de `Module01Stations`.
+- **Las tapas son dato, no derivadas, y eso tiene motivo:** cada mueble del garaje es **un solo
+  renderer**. No hay sub-malla «tapa» que medir, y la caja del mueble incluye las alacenas —la
+  del banco derecho llega a 2.43—. Un test comprueba que la tapa declarada cae dentro de la caja,
+  para que una entrega que cambie el mobiliario no pase en silencio.
+- **Vuelve `clothing_loose`, con la bufanda.** Existía desde siempre con su clave de I2 ya
+  traducida («Ropa o cordones sueltos»); se apagó el 2026-10-07 por no haber modelo y el v7 lo
+  trajo. **Cero términos nuevos.** Con esto la zona `clothing` recupera su respuesta equivocada
+  —hasta hoy el aprendiz aceptaba las dos cosas y acertaba— y `ZonesWithoutRisk` queda vacía.
+- **El despeje de pasillo casi se carga el garaje.** La primera regla cogía la caja que envuelve
+  al grupo y al ojo, y apartó **catorce herramientas** del banco de la derecha —regla, martillo,
+  machete, segueta—; dos acabaron fuera del garaje. Estaban AL LADO de la estación, no ENTRE el
+  aprendiz y ella. Lo correcto: el pasillo empieza **un palmo por delante** del grupo, no en su
+  borde, y se mide el **centro** del objeto, no el roce. Y el buscador de hueco se queda dentro
+  de la planta del garaje. Se restauró con `git checkout` del `.unity` y se rehizo con los
+  comandos, que para eso son idempotentes.
+- **Tres mediciones para el encuadre, y las dos primeras mal.** El checklist ocupa de la mitad
+  de la pantalla a la derecha, así que un grupo centrado delante del aprendiz pierde lo que cae
+  a su derecha: el **casco bueno** desaparecía entero. (1) Empujar el grupo a la izquierda sacó
+  las botas por el otro borde. (2) Centrar sobre `cabinet (1)` metió el casco dentro de un
+  armario alto: ese módulo abarca de x=−4.14 a −0.80 pero **su tapa útil no llega hasta ahí**,
+  y el arte había dejado los EPP entre −2.22 y 2.58. Lo que funciona: **centrar el grupo en la
+  mitad limpia** y **alejarse si no cabe**, las dos cosas derivadas del campo de visión
+  (`HudClearFraction`, `HalfWidthPerMeter`). La fila de ropa mide 1.70 m y a 1.90 m no cabía.
+- La aritmética vive en `StationLayout`, fuera del montador, y se afirma sin abrir una escena:
+  13 tests. La captura es lo que caza lo demás.
+- 329/331 EditMode y 4/4 PlayMode, dos corridas seguidas. Los 2 de siempre son del módulo 0.
+
+### 2026-10-14 — el garaje v8 y el delineado de la pieza
+
+Daniel entregó el v8 y, con él, **la e-bike despiezada**. Eso es lo que permitió por fin hacer lo
+que la reunión del 12 había pedido: delinear la pieza que toca revisar en vez de marcarla con un
+signo flotante.
+
+- **El v8 entra prácticamente entero en sitio.** De sus 603 GUID, **595 ya estaban**, así que
+  sobrescriben bajo `_Project/Models/CITY` sin duplicar carpeta. Solo 8 ficheros son nuevos
+  —seis son la ropa del `E_BAKE`: `e_bike.mat`, sus tres mapas, el AO y `Pantalla.mat`— y caen
+  en `Assets/CITY`, el layout viejo; se mueven con `AssetDatabase.MoveAsset`, que arrastra el
+  `.meta` y conserva el GUID. Lo demás que cambia es, otra vez, **el horneado**: 4 lightmaps, 2
+  sondas, el `LightingData` y la escena de arte.
+- **`ebike.fbx` cambió conservando su GUID, y ahora viene en cuatro piezas**: `manubrio`,
+  `marco`, `pedales` y `rueda_trasera`. Como el GUID es el mismo, el perfil y la instancia de la
+  escena lo recogieron solos: los 5 mounts siguen ahí y no hubo que recablear nada. El
+  `E_BAKE.fbx` que Daniel mandó aparte **sobra**: es el mismo archivo con otro nombre.
+- **`manubrio` no es el manillar.** Es todo el tren delantero —0,66 × 1,11 × 0,76, con horquilla
+  y rueda delantera—, y es el detalle del que cuelga medio diseño. Solo 2 de los 5 puntos tienen
+  pieza propia (`point_steering`→`manubrio`, `point_wheels`→`rueda_trasera`); el freno vive
+  dentro del manubrio, la batería dentro del marco y el faro no existe. Esos tres se quedan con
+  el signo, **y eso es la decisión, no una carencia**: delinear el marco entero para decir
+  «revisa el sistema eléctrico» enseña algo falso. El patinete sigue siendo malla única.
+- **Dos intentos de hacer clicable la pieza, los dos tumbados por PlayMode.** Conviene no
+  repetirlos:
+  1. `MeshCollider` sobre la pieza más un reenviador de eventos. Exacto sobre el papel y
+     **entierra dos puntos**: al hacerse opaco al raycast, el tren delantero tapa las esferas de
+     `point_brakes` y `point_electrics`, que cuelgan por detrás. «Clic bloqueado por manubrio».
+  2. Mudar la esfera del punto **al centro de la pieza**. La rueda se iba a su centro, que en la
+     vista de llantas cae detrás del checklist: «clic bloqueado por Row · Frenos».
+  Lo que funciona es mudarla **al punto de la pieza más cercano a donde ya estaba**
+  (`Bounds.ClosestPoint`): si el mount ya caía dentro, no se mueve ni un milímetro, y el ajuste
+  a ojo de sesiones anteriores se respeta. Sigue habiendo **un collider por punto**, como
+  siempre: no se añade ninguno nuevo al arte.
+- **El giro de la zona `wheels` pasó de 180° a 0°.** Con el signo daba igual —estaba colocado a
+  mano en un hueco despejado—, pero el contorno va sobre la rueda de verdad, y a 180° la rueda
+  trasera queda **detrás del checklist**. El test pasaba igual (el clic iba bien); lo cazó la
+  captura. Cambiar el aviso cambió qué encuadres valen.
+- **El contorno es un hijo con la misma malla, no un material añadido al renderer del arte.**
+  Añadir un material a la lista de un renderer repite solo la *primera* submalla, y la bici tiene
+  dos; además así cambiar de vehículo no deja nada que restaurar, se borra el hijo.
+- **El shader está fuera del `CBUFFER` de `UnityPerMaterial` a propósito.** El SRP Batcher
+  ignora los `MaterialPropertyBlock`: si alguien «arregla» eso metiendo las propiedades dentro,
+  los cinco puntos se delinean del mismo color y el verde de resuelto deja de verse.
+- 312/314 EditMode y 4/4 PlayMode, dos corridas seguidas. Los 2 que fallan son los de siempre
+  del módulo 0 (título bilingüe y `Manrope-SemiBold`), que vienen de la rama del tutorial.
 
 ### 2026-10-12 (noche) — el garaje v7
 
