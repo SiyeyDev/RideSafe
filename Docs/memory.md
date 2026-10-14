@@ -264,9 +264,17 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 
 ### Contenido
 
+- [ ] **Los 3 términos de I2 de los pantalones.** Hoy el panel enseña la clave cruda
+      (`Module1/Item_TrousersFitted`). Son `Module1/Item_TrousersFitted`, `_TrousersLoose` y
+      `_TrousersTech`, en inglés y español. Los pone Charlie en el Drive; el test de PlayMode
+      avisa cuando estén para vaciar `Module01SliceTests.SinTraducirTodavia`.
 - [ ] **Pedirle a Daniel las piezas que faltan de la e-bike**: maneta de freno, batería y faro
       —y el patinete despiezado—. Cada una que llegue es una fila más en `Module01VehicleStaging.Parts`,
       sin tocar código, y un `!` menos.
+- [ ] **Pantalón reflectivo o corta-viento**, que pidió Charlie. No existe modelo. Entrará como
+      «según condición», igual que el chaleco. **No bloquea esta build**: `jean ajustado` ya es
+      el pantalón correcto (núcleo) y la zona ya enseña algo sin él.
+- [ ] **Pushear `feat/garaje-v6`**: lleva 3 commits propios sin subir.
 - [ ] Alinear la hoja de I2 con el asset (la hoja va detrás; ver §6)
 - [ ] Voz del módulo 1 y los dos videos. **Bloqueados a propósito:** Charlie quiere dejar
       primero los textos bien en el Drive, y sacar de ahí locución y guion de video.
@@ -318,6 +326,7 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 - [x] ~~**El orden de la lista de build**~~ — corregido el 2026-10-12: la escena del v6 ya es la
       primera. Antes un build habría arrancado en `RideSafe_Garaje.unity`, la vieja. Es un
       cambio en `ProjectSettings`: mirarlo al integrar con Cindy
+- [x] ~~Esferas blancas en el pedestal~~ — resuelto el 2026-10-14: enseña la pieza real o el `!`.
 - [ ] Unificar `MenuRuntimeTextLocalizer` con `UIText`
 - [ ] Autorar los pasos de las 9 `TaskSequenceSO` cuando existan los términos; hoy ninguna
       tiene pasos y nada las ejecuta
