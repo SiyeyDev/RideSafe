@@ -108,6 +108,12 @@ namespace RideSafe.Module01
             LocalizeButton(ReviewPanel, "KeepChoosingButton", "KeepChoosing");
             LocalizeButton(ReviewPanel, "ConfirmButton", "Confirm");
             LocalizeButton(ComparisonPanel, "ExplainButton", "WatchVideo");
+            // El boton se coloca DEBAJO de la lista, no en un sitio fijo: la columna crece con
+            // las filas y a partir de 7 se le echaba encima.
+            var explain = Module01Experience.Find<UnityEngine.UI.Button>(
+                _module.Get<RectTransform>(ComparisonPanel), "ExplainButton");
+            if (_comparison != null && explain != null)
+                _comparison.KeepBelow((RectTransform)explain.transform, 24f);
             // La leyenda estaba escrita a mano en ingles y nunca pasaba por I2, asi que salia
             // en ingles incluso con el resto del modulo en espanol.
             // Ya no se localiza ninguna leyenda al pie: no la hay. La palabra del estado la

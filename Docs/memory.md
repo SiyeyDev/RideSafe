@@ -545,6 +545,27 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 
 ## 11. Bitácora
 
+### 2026-10-14 (madrugada) — repaso de diagramacion, texto por texto
+
+Charlie pidio una revision lenta: «que nada se solape ni quede encima de nada, sobre todo el
+panel de seleccion». Se le anadio al recorrido un **volcado** que escribe cada texto visible con
+sus medidas a `Temp/ridesafe-textos.txt`, para poder revisarlo renglon a renglon en vez de a ojo
+sobre una captura.
+
+- **El resultado del repaso:** ningun texto se sale de su caja en ninguna pantalla, y los
+  avisos de cercania que salen son todos filas consecutivas de una lista (4,3 cm entre letras)
+  y el pie del video con sus botones. Ningun solape de verdad.
+- **Pero salio un fallo que ningun test tocaba, y es del panel de seleccion.** `LeftColumn`
+  lleva `ContentSizeFitter` y crece con las filas; el boton «Ver explicacion» estaba clavado en
+  `y = -469`. Medido: con 5 filas sobran 62 px y **a partir de 7 la lista se le echa encima**.
+  La seccion personal tiene ahora 11 elementos y todos son aceptables, asi que es alcanzable.
+  El recorrido solo acepta 5 —nucleo y segun-condicion— y por eso nunca lo destapo.
+  Arreglado con `ComparisonView.KeepBelow`: el boton se coloca **debajo de la columna**, no en
+  un sitio fijo. Lo guarda un test de PlayMode que llena la lista a 11 filas.
+- El separador entre la leyenda y el veredicto pasa de tres espacios a `·`, que es el mismo que
+  ya usaba el titulo dos lineas mas abajo. En la captura el hueco se leia como un error.
+- 340/342 EditMode y **5/5 PlayMode**, dos corridas seguidas.
+
 ### 2026-10-14 (noche) — los pantalones entran al ejercicio y se acaban las esferas blancas
 
 - **Los tres pantalones tapaban la puerta de la casa**, y no era culpa del arte: la regla de

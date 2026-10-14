@@ -309,8 +309,10 @@ namespace RideSafe.Module01
             // El veredicto de la decision va aqui, en la nota del panel, y no en un rotulo
             // flotante sobre el HUD: medido en PlayMode, aquel se cruzaba con "Ver explicacion".
             string note = UIText.Resolve("Module1/MyChoice_Note");
+            // Separador de punto medio, el mismo que usa el titulo dos lineas mas abajo. Antes
+            // eran tres espacios y en la captura se leia como un hueco raro, no como dos frases.
             if (!string.IsNullOrEmpty(verdict))
-                note += "   " + verdict;
+                note += "  ·  " + verdict;
             _binding.Comparison.SetSingleList(
                 UIText.Resolve("Module1/MyChoice_Title"),
                 note,
@@ -329,7 +331,7 @@ namespace RideSafe.Module01
             _binding.Comparison.SetSingleList(
                 UIText.Resolve("Module1/MyChoice_Title") + "  ·  "
                     + UIText.Resolve(score.Rank.TitleKey()) + "  ·  " + score.Percent + "%",
-                UIText.Resolve(score.Rank.FeedbackKey()) + "   "
+                UIText.Resolve(score.Rank.FeedbackKey()) + "  ·  "
                     + UIText.Resolve(_readinessCorrect ? "Module1/Final_Complete" : "Module1/Decision_Review"),
                 entries);
         }

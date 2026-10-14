@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace RideSafe.UI
 {
@@ -132,6 +133,48 @@ namespace RideSafe.UI
 
         private readonly List<ComparisonEntry> _current = new List<ComparisonEntry>();
 
+        private RectTransform _below;
+        private float _belowGap;
+
+        /// <summary>
+        /// Lo que tiene que quedar siempre por debajo de la lista, mida lo que mida.
+        /// <para>
+        /// La columna crece con el contenido —lleva un <c>ContentSizeFitter</c>— pero el botón
+        /// «Ver explicación» estaba clavado 469 px por debajo del borde del panel. Medido: con
+        /// 5 filas sobran 62 px y <b>a partir de 7 la lista se le echa encima</b>. Y la sección
+        /// personal puede llegar a 11 filas, porque el aprendiz puede aceptar todo lo que hay.
+        /// </para>
+        /// </summary>
+        public void KeepBelow(RectTransform follower, float gap)
+        {
+            _below = follower;
+            _belowGap = gap;
+            ArrangeBelow();
+        }
+
+        /// <summary>Baja lo que sigue a la lista hasta justo debajo de ella.</summary>
+        public void ArrangeBelow()
+        {
+            if (_below == null || _leftRows == null)
+                return;
+
+            RectTransform column = _leftRows.parent as RectTransform;
+            if (column == null)
+                return;
+
+            // Sin esto se mide el alto del fotograma anterior: el ContentSizeFitter no ha
+            // recalculado todavia y el boton se coloca para la lista que habia antes.
+            LayoutRebuilder.ForceRebuildLayoutImmediate(column);
+
+            Vector2 sitio = _below.anchoredPosition;
+            sitio.y = column.anchoredPosition.y - column.rect.height - _belowGap;
+            _below.anchoredPosition = sitio;
+        }
+
+        /// <summary>Solo para tests: el alto que ocupa ahora la columna de la lista.</summary>
+        public float ColumnHeight =>
+            _leftRows != null && _leftRows.parent is RectTransform c ? c.rect.height : 0f;
+
         /// <summary>
         /// Lo que el panel está mostrando. Público para que un test pueda afirmar sobre el
         /// contenido sin depender del idioma ni de leer píxeles.
@@ -231,6 +274,7 @@ namespace RideSafe.UI
 
             if (container == _leftRows)
             {
+                ArrangeBelow();
                 _current.Clear();
                 _current.AddRange(entries);
             }

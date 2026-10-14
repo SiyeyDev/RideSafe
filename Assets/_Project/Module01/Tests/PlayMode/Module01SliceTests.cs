@@ -123,6 +123,54 @@ namespace RideSafe.Module01.Tests
             yield return null;
         }
 
+
+        /// <summary>
+        /// La lista de «Mi Elección» crece con lo que el aprendiz haya aceptado, y la sección
+        /// personal tiene 11 elementos: todos son aceptables, aunque aceptar los equivocados
+        /// reste. Con el botón clavado en un sitio fijo, medido, <b>a partir de 7 filas la
+        /// lista se le echaba encima</b>. Este test llena la lista a tope y exige que siga
+        /// quedando por debajo.
+        /// </summary>
+        [UnityTest] public IEnumerator El_panel_de_seleccion_no_se_come_el_boton_con_la_lista_llena()
+        {
+            var comparison = _binding.Comparison;
+            Assert.IsNotNull(comparison, "La escena no tiene ComparisonView.");
+            // El modulo 0 sigue en pantalla en este test aislado -no se ha recorrido nada- y su
+            // boton Comenzar se cruzaria con las filas. En el juego nunca coinciden.
+            foreach (var otro in Object.FindObjectsByType<ModuleUI>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                if (otro != _binding.Module) otro.gameObject.SetActive(false);
+
+            var panel = _binding.Module.Get<RectTransform>("Comparison");
+            _binding.Module.gameObject.SetActive(true);
+            panel.gameObject.SetActive(true);
+
+            var boton = Module01Experience.Find<Button>(panel, "ExplainButton");
+            Assert.IsNotNull(boton, "Sin ExplainButton no hay nada que comprobar.");
+            comparison.KeepBelow((RectTransform)boton.transform, 24f);
+
+            var filas = Enumerable.Range(0, 11)
+                .Select(i => new ComparisonEntry(ItemStatus.Selected, "Elemento de prueba numero " + i))
+                .ToList();
+
+            comparison.SetSingleList("Mi Elección", "nota", filas);
+            yield return null;
+            Canvas.ForceUpdateCanvases();
+            yield return null;
+
+            var columna = (RectTransform)comparison.transform.Find("LeftColumn");
+            Assert.IsNotNull(columna);
+            float abajoDeLaLista = columna.anchoredPosition.y - columna.rect.height;
+            float arribaDelBoton = ((RectTransform)boton.transform).anchoredPosition.y;
+
+            Assert.LessOrEqual(arribaDelBoton, abajoDeLaLista + .01f,
+                "Con " + filas.Count + " filas la lista llega a y=" + abajoDeLaLista.ToString("F0")
+                + " y el boton esta en y=" + arribaDelBoton.ToString("F0") + ": se solapan.");
+
+            yield return Capture("panel-seleccion-lleno");
+            AssertTextIsLegible("panel de seleccion lleno");
+            DumpTexts("panel de seleccion lleno");
+        }
+
         private IEnumerator RunFlow(bool omitHelmet, bool subtitles, string vehicleId = "ebike")
         {
             // Solo las Base: la del stack de URP que dibuja la capa UI por encima no es un
@@ -184,6 +232,7 @@ namespace RideSafe.Module01.Tests
                 // assert -el arte llega sin colliders, asi que el raycast miente-.
                 if (!_director.InVehicleSection) yield return Capture("estacion-" + zoneId);
                 AssertTextIsLegible("zona " + zoneId);
+                DumpTexts("zona " + zoneId);
                 if (_director.InVehicleSection)
                 {
                     // El vehiculo gira al entrar en la zona; el contorno cuelga de su malla, asi
@@ -232,6 +281,7 @@ namespace RideSafe.Module01.Tests
                     AssertModelClearsName();
                     AssertHudDoesNotOverlap();
                     AssertTextIsLegible("inspeccionando " + item.ItemId);
+                    DumpTexts("inspeccionando " + item.ItemId);
                     var asked = Field<TMP_Text>(_inspector, "_questionLabel");
                     Assert.IsNotEmpty(asked.text, "El popup pregunta en blanco en " + item.ItemId);
                     Assert.IsFalse(asked.text.StartsWith("Module1/"), "Pregunta sin traducir: " + asked.text);
@@ -296,6 +346,8 @@ namespace RideSafe.Module01.Tests
         {
             Assert.AreEqual("Comparison", _binding.Module.Current);
             AssertTextIsLegible("reporte de seccion");
+            DumpTexts("reporte de seccion");
+            yield return Capture("reporte-seccion");
             yield return Press(_binding.Comparison.transform, "ExplainButton");
             Assert.AreEqual("Explanation", _binding.Module.Current);
             var video = _binding.Module.GetComponentInChildren<UnityEngine.Video.VideoPlayer>();
@@ -312,6 +364,7 @@ namespace RideSafe.Module01.Tests
             // Despues de que el video arranque, no antes: esta comprobacion fuerza la
             // reconstruccion de todos los canvas y la malla de cada texto.
             AssertTextIsLegible("pantalla de video");
+            DumpTexts("pantalla de video");
 
             if (!video.isPlaying)
             {
@@ -477,6 +530,84 @@ namespace RideSafe.Module01.Tests
         /// rectángulo en pantalla no se cruce con el de otro texto que no sea pariente suyo.
         /// </para>
         /// </summary>
+        private const string TextDumpPath = "Temp/ridesafe-textos.txt";
+
+        /// <summary>
+        /// Vuelca cada texto visible con sus medidas, para poder revisarlo renglon a renglon en
+        /// vez de a ojo sobre una captura. Lo pidio Charlie el 2026-10-14: «revisa texto por
+        /// texto, que nada se solape ni quede encima de nada».
+        /// <para>
+        /// Mide en unidades de canvas, no en pixeles de pantalla: los pixeles dependen de la
+        /// distancia y de la escala del canvas, asi que no sirven para comparar. Esa confusion
+        /// ya costo revertir un arreglo que era correcto.
+        /// </para>
+        /// </summary>
+        private void DumpTexts(string momento)
+        {
+            Canvas.ForceUpdateCanvases();
+            var textos = Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
+                .Where(t => !string.IsNullOrWhiteSpace(t.text))
+                .Where(t => t.canvas != null && t.canvas.enabled)
+                .Where(t => t.GetComponentsInParent<CanvasGroup>().All(g => g.alpha > .9f))
+                .OrderBy(t => Ruta(t.transform))
+                .ToArray();
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("=== " + momento + " (" + textos.Length + " textos) ===");
+            foreach (TMP_Text t in textos)
+            {
+                t.ForceMeshUpdate();
+                Rect caja = t.rectTransform.rect;
+                Vector2 pide = t.GetPreferredValues(t.text, caja.width, 0f);
+                var p = _camera.WorldToScreenPoint(t.rectTransform.TransformPoint(caja.center));
+                sb.AppendLine(string.Format(
+                    "  {0,-52} caja={1,6:0.0}x{2,-6:0.0} pide={3,6:0.0}x{4,-6:0.0} holgura={5,6:0.0} " +
+                    "pt={6,5:0.0}{7} pantalla=({8:0.00},{9:0.00}) [{10}]",
+                    Ruta(t.transform), caja.width, caja.height, pide.x, pide.y,
+                    caja.height - pide.y, t.fontSize,
+                    t.enableAutoSizing ? "auto" : "    ",
+                    p.x / Mathf.Max(1, Screen.width), p.y / Mathf.Max(1, Screen.height),
+                    Recorta(t.text)));
+            }
+
+            // Y la distancia real entre letras de textos distintos, que es lo que se solapa.
+            for (int i = 0; i < textos.Length; i++)
+                for (int j = i + 1; j < textos.Length; j++)
+                {
+                    if (EsPariente(textos[i].transform, textos[j].transform)) continue;
+                    float d = SeparacionEntreLetras(textos[i], textos[j]);
+                    if (d < .06f)
+                        sb.AppendLine(string.Format("  CERCA ({0:0.000} m): {1}  <->  {2}",
+                            d, Ruta(textos[i].transform), Ruta(textos[j].transform)));
+                }
+
+            System.IO.File.AppendAllText(TextDumpPath, sb.ToString());
+        }
+
+        /// <summary>Distancia minima entre los poligonos de letras de dos textos, en metros.</summary>
+        private static float SeparacionEntreLetras(TMP_Text a, TMP_Text b)
+        {
+            Vector3[] ca = Esquinas(a), cb = Esquinas(b);
+            float best = float.MaxValue;
+            foreach (Vector3 p in ca)
+                foreach (Vector3 q in cb)
+                    best = Mathf.Min(best, Vector3.Distance(p, q));
+            return best;
+        }
+
+        private static Vector3[] Esquinas(TMP_Text t)
+        {
+            Bounds b = t.textBounds;
+            Transform tr = t.rectTransform;
+            return new[]
+            {
+                tr.TransformPoint(new Vector3(b.min.x, b.min.y, 0f)),
+                tr.TransformPoint(new Vector3(b.max.x, b.min.y, 0f)),
+                tr.TransformPoint(new Vector3(b.min.x, b.max.y, 0f)),
+                tr.TransformPoint(new Vector3(b.max.x, b.max.y, 0f)),
+            };
+        }
+
         private void AssertTextIsLegible(string momento)
         {
             // Los grupos de layout no recolocan a sus hijos hasta el final del fotograma, asi
