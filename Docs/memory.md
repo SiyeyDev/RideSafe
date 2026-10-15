@@ -502,6 +502,16 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
   cierra la escena abierta; hay que reabrirla y volver a montar la presentación. Y **no** usar
   `BuildMenu()` desde un script: llama a `SaveCurrentModifiedScenesIfUserWantsTo()`, que es el
   diálogo modal de más arriba.
+- **El suelo del garaje lo entrega el arte en baldosa blanca, y el acabado bueno es otro.** La
+  escena de arte pone en `piso` el material `suelo 1` —`Poliigon_TilesCeramicWhite`, tiling 2×2,
+  smoothness 0.90—, que pinta el garaje de blanco con juntas de metro y medio. El acabado del
+  proyecto es **`SUELO.mat`**: `plaster_grey_04` a 6×6 y smoothness 0.20, hormigón continuo. Lo
+  reaplica `Module01WorldSwap.ApplyGarageFinishes()` después de cada cambio de mundo, porque el
+  cambio sustituye el objeto `piso` entero y un ajuste a mano se pierde en la siguiente entrega.
+  **Costó una tarde atribuirlo**, porque ni la malla ni los materiales habían cambiado en git —lo
+  que había cambiado era *cuál de los tres* llevaba puesto el suelo—, así que parecía «han traído
+  otro garaje». Hay tres: `SUELO` (hormigón, el bueno), `suelo 1` (baldosa blanca) y `suelo 2`
+  (terrazo, crema). Y ojo: el **techo** también lleva `suelo 1`, y ahí sí está bien.
 - **Un `LightingData` prestado de otra escena se ve bien hasta que algo se mueve.** La escena
   de trabajo referenciaba el de la escena de arte —y era gratis: 330 y pico renderers con bake
   sin hornear aquí—. Pero el horneado **es por escena**: en cuanto las estaciones y el vehículo

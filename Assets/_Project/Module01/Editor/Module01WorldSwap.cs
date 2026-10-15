@@ -111,6 +111,8 @@ namespace RideSafe.Module01.Editor
 
             EditorSceneManager.CloseScene(art, true);
 
+            ApplyGarageFinishes();
+
             SceneManager.SetActiveScene(work);
             EditorSceneManager.MarkSceneDirty(work);
 
@@ -157,6 +159,59 @@ namespace RideSafe.Module01.Editor
                 removed++;
             }
             return removed;
+        }
+
+        /// <summary>Acabado de hormigón del suelo. El arte lo entrega en baldosa blanca.</summary>
+        private const string FloorMaterial = "Assets/_Project/Models/CITY/Materials/SUELO.mat";
+        private const string FloorObject = "piso";
+
+        /// <summary>
+        /// Devuelve al suelo del garaje su acabado de hormigón.
+        /// <para>
+        /// <b>La escena de arte trae el suelo con <c>suelo 1</c>, que es baldosa cerámica blanca
+        /// brillante</b> —<c>Poliigon_TilesCeramicWhite</c>, tiling 2×2, smoothness 0.90—, y eso
+        /// pinta el garaje de blanco con juntas de metro y medio. El acabado que usa el proyecto
+        /// es <c>SUELO.mat</c>: <c>plaster_grey_04</c> a 6×6 y smoothness 0.20, hormigón
+        /// continuo sin juntas.
+        /// </para>
+        /// <para>
+        /// Se hace <b>aquí</b> y no a mano en la escena porque el cambio de mundo sustituye el
+        /// objeto <c>piso</c> entero por el del arte, así que cualquier ajuste manual se pierde
+        /// en la siguiente entrega. Pasó, y costó caro atribuirlo: ni la malla ni los materiales
+        /// habían cambiado en git —lo que había cambiado era <b>cuál de los dos</b> llevaba
+        /// puesto el suelo—, así que parecía «han traído otro garaje».
+        /// </para>
+        /// <para>
+        /// Si algún día el arte entrega el suelo ya con el acabado bueno, esto se vuelve
+        /// inofensivo: asigna lo que ya estaba.
+        /// </para>
+        /// </summary>
+        private static void ApplyGarageFinishes()
+        {
+            Material floor = AssetDatabase.LoadAssetAtPath<Material>(FloorMaterial);
+            if (floor == null)
+            {
+                Debug.LogWarning(
+                    $"[Module01] No está {FloorMaterial}; el suelo se queda con el acabado que " +
+                    "traiga el arte, que es baldosa blanca brillante.");
+                return;
+            }
+
+            int painted = 0;
+            foreach (MeshRenderer renderer in Object
+                         .FindObjectsByType<MeshRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                         .Where(r => r.name == FloorObject))
+            {
+                Undo.RecordObject(renderer, "Acabado del suelo");
+                renderer.sharedMaterials = renderer.sharedMaterials.Select(_ => floor).ToArray();
+                EditorUtility.SetDirty(renderer);
+                painted++;
+            }
+
+            if (painted == 0)
+                Debug.LogWarning($"[Module01] El mundo nuevo no trae ningún '{FloorObject}'.");
+            else
+                Debug.Log($"[Module01] Suelo con acabado de hormigón ({floor.name}) en {painted} objeto(s).");
         }
 
         /// <summary>
