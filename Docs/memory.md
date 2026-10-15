@@ -46,15 +46,19 @@ y `docs/superpowers/plans/2026-10-05-modulo-01.md`.
 
 ## 3. Ramas y estado de git
 
-- **`main`** — rama compartida. Cindy trabaja aquí.
-- **`dev`** — reestructura `DriveSafe → _Project` y módulo 1 completo en lógica. Pusheada.
-- **`feat/garaje-v5`** — `dev` + el paquete de arte de 1.7 GB + la escena nueva. **Sin mezclar.**
-- **`feat/garaje-v6`** — la rama viva. Sale de `feat/garaje-v5` tras el merge del tutorial, e
-  incluye el garaje v6 y las tareas de la reunión del 2026-10-12. **Sin mezclar.**
+- **`main`** — rama compartida. Cindy trabaja aquí. Va por detrás: su punta (`ffcc058`) es
+  ancestro de `dev`.
+- **`dev`** — **al día desde el 2026-10-14 y pusheada.** Tiene todo: el garaje v8, el módulo 1
+  entero, el patinete despiezado y los materiales e iluminación de Cindy.
+- **`feat/garaje-v6`** — la rama de trabajo. **Apunta al mismo commit que `dev`** (`77d2f55`),
+  así que ya no hay nada «sin mezclar».
+- **`feat/garaje-v5`** — congelada, muy por detrás. No usarla.
+- **`Feature/tutorial`** — la de Cindy. Su último commit ya está integrado; lo que suba a partir
+  de ahora hay que traerlo **con cuidado**, porque sus importaciones caen en `Assets/CITY` y
+  duplican GUID. Ver §9.
 
-El merge de `main` en `dev` ya se hizo: integra el tutorial y TaskSequence de Cindy.
-**Avisar a Cindy antes de integrar `feat/garaje-v6`**, porque ella trabaja sobre
-`RideSafe_Garaje.unity`.
+**Falta avisar a Cindy de que `dev` se movió**, porque ella trabaja sobre
+`RideSafe_Garaje.unity` y ahora `dev` trae el mundo del v8 y el horneado nuevo.
 
 **La escena sigue llamándose `RideSafe_Garaje_v5.unity` pero su mundo ya es el v6.** El nombre
 se conservó a propósito: cambiarlo habría roto las referencias de la lista de build, el montador
@@ -286,14 +290,11 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       `git ls-remote`: el remoto tiene la misma punta que el local. Lo de «3 commits sin subir»
       llevaba tiempo siendo falso. Y **no hay nada que traer de `dev`**: su punta (`718a6e9`) es
       ancestro de esta rama, igual que `main` y `feat/garaje-v5`.
-- [ ] **Decidir qué hacer con `Feature/tutorial`.** Cindy subió ahí el 2026-10-14
-      «Update => scene material and lighting», 186 ficheros, y es **la única rama con algo que
-      no esté aquí**. No se puede mezclar tal cual: **149 de esos ficheros caen en
-      `Assets/CITY/`, el layout viejo, con los mismos GUID que los nuestros bajo
-      `_Project/Models/CITY/`** —verificado fichero a fichero, p. ej. `Carretera.fbx` comparte
-      el guid `5d6d994f…`—. Mezclarlo deja el proyecto con dos copias de cada asset y Unity
-      reasignando GUID por su cuenta. La vía es la de siempre: tomar el contenido y moverlo con
-      su `.meta` al lado (`AssetDatabase.MoveAsset`), como se hizo con los paquetes v6 y v8.
+- [x] ~~**Decidir qué hacer con `Feature/tutorial`**~~ — **integrado el 2026-10-14.** De sus 186
+      ficheros, 149 caían en `Assets/CITY` con los mismos GUID que los nuestros; comparados uno a
+      uno, 126 eran idénticos, 0 nuevos y solo 23 traían contenido distinto. Se copiaron los 16
+      que importaban sobre su pareja en `_Project` y se borró `Assets/CITY`. Detalle en §9 y en
+      el mensaje del merge.
 - [ ] Alinear la hoja de I2 con el asset (la hoja va detrás; ver §6)
 - [ ] Voz del módulo 1 y los dos videos. **Bloqueados a propósito:** Charlie quiere dejar
       primero los textos bien en el Drive, y sacar de ahí locución y guion de video.
@@ -335,9 +336,15 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       una barra oscura. Los subtítulos siguen sin bajar.
 - [ ] Panel Vehicle del módulo 0: título y subtítulo se solapan, y la barra de confirmación
       se pisa consigo misma.
-- [ ] Integrar `feat/garaje-v6` en `dev` (avisar a Cindy)
-- [ ] Rehornear luz y occlusion en la escena; el horneado es por escena y no viaja con el
-      trasplante del mundo
+- [x] ~~Integrar `feat/garaje-v6` en `dev`~~ — **hecho el 2026-10-14.** Fue avance directo:
+      `dev` no se había movido. **Queda avisar a Cindy.**
+- [x] ~~Rehornear la luz~~ — **vino de Cindy el 2026-10-14**: su commit trae el `LightingData`,
+      los 12 lightmaps y las 2 sondas, y se tomaron enteros. Cambia el aspecto del garaje: el
+      suelo pasa a baldosa blanca y la escena queda más luminosa.
+- [ ] **El occlusion sigue pendiente, y ahora también el de la escena de arte.** El de las tres
+      escenas jugables es el de siempre, intacto. El de `CITY/scenas/Garage.unity` se perdió al
+      integrar: Unity le reasignó el GUID al copiarlo y quedó huérfano, así que se borró. Se
+      rehornea desde esa escena cuando haga falta; no está en la lista de build.
 - [ ] **Reponer colliders: ni los armarios ni los maniquíes del v6 tienen ninguno.** Además de
       lo obvio, esto hace que toda comprobación de oclusión por raycast mienta (ver §9)
 - [ ] **670.903 triángulos**, casi el doble del presupuesto de Quest. El 39 % son tres maniquíes
@@ -492,6 +499,24 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
   cierra la escena abierta; hay que reabrirla y volver a montar la presentación. Y **no** usar
   `BuildMenu()` desde un script: llama a `SaveCurrentModifiedScenesIfUserWantsTo()`, que es el
   diálogo modal de más arriba.
+- **Lo que suba Cindy no se mezcla tal cual: sus importaciones caen en `Assets/CITY`.** Su rama
+  nunca tuvo la reestructura a `_Project`, así que cuando importa un paquete de arte, parte de
+  los ficheros sobrescriben en sitio y el resto aterriza en el layout viejo —**con los mismos
+  GUID que los nuestros**—. Un merge directo deja el proyecto con dos copias de cada asset y
+  Unity reasignando GUID por su cuenta. La receta, del 2026-10-14: comparar cada fichero de
+  `Assets/CITY/` con su pareja en `_Project` (la mayoría son idénticos: 126 de 149), copiar
+  encima solo los que difieren **tras comprobar que el `.meta` lleva el mismo GUID**, y borrar
+  `Assets/CITY` entero.
+- **Un `.meta` copiado a mano no conserva su GUID si el viejo sigue registrado.** Se intentó
+  guardar el `OcclusionCullingData` de Cindy al lado del nuestro copiando su `.meta`; Unity vio
+  el GUID todavía registrado en el árbol recién borrado y le asignó uno nuevo, dejando el
+  fichero huérfano. Para conservar un GUID hay que **mover** el asset (`AssetDatabase.MoveAsset`),
+  no copiarlo a un sitio donde ya vive otro con el mismo id.
+- **Un horneado se toma entero o no se toma.** `LightingData` y sus lightmaps son un conjunto
+  coherente: resolver el conflicto quedándose el `LightingData` de uno y algún lightmap del otro
+  da una iluminación que no corresponde a nada. En el merge del 2026-10-14 se tomaron los 15
+  ficheros del lado de Cindy. La comprobación barata de que no se ha roto: que el índice de
+  lightmap más alto que pide la escena no se salga de los disponibles —era 1 de 4—.
 - **Las dos mallas de vehículo están en espejo, y el giro de zona no es compartible.** La
   e-bike trae el morro en la X local **baja** (`manubrio` en u=0.19) y el patinete en la **alta**
   (`control_de_direccion` en u=0.74), así que el giro que presenta una de frente presenta la otra
@@ -585,6 +610,35 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-14 (noche, 3) — lo de Cindy entra, y `dev` se pone al día
+
+- **`dev` queda al día y pusheada**, con todo: garaje v8, módulo 1 entero, patinete despiezado y
+  los materiales e iluminación de Cindy. Fue avance directo porque `dev` no se había movido, así
+  que **no hizo falta hacer checkout de `dev`**: se empujó la referencia con
+  `git push origin feat/garaje-v6:dev`, que con Unity abierto evita mover miles de ficheros
+  atrás y adelante. `feat/garaje-v6` apunta al mismo commit.
+- **El merge de `Feature/tutorial` no se podía hacer tal cual.** 149 de sus 186 ficheros caen en
+  `Assets/CITY`, el layout viejo, con los mismos GUID que los nuestros. Comparados uno a uno:
+  **126 idénticos, 0 nuevos, 23 distintos**; de esos 23, siete son `.meta` de carpeta que no hay
+  que tocar. Se copiaron los 16 que importaban sobre su pareja en `_Project` y se borró
+  `Assets/CITY`. Resultado: 24 ficheros, todos en `_Project`, cero duplicados.
+- **Los 13 conflictos se resolvieron tomando un lado entero**, nunca fusionando a mano. Las
+  cuatro fuentes TMP, las nuestras: medido sobre `Inter-Regular`, lo nuestro tiene 9428 glifos y
+  74 caracteres dinámicos y lo suyo 8958 y ninguno, así que lo nuestro es superconjunto. El
+  horneado y `House04.prefab`, los suyos. `OpenXRPackageSettings`, el nuestro: solo churn de
+  fileID.
+- **El garaje se ve distinto, y es a propósito.** El suelo pasa de hormigón gris moteado a
+  baldosa blanca —viene de `suelo 2.mat`— y la escena queda más luminosa. Es el cambio de Cindy,
+  no una regresión; conviene que Charlie lo mire.
+- **Lo que confirma que no se rompió nada:** 0 materiales con shader roto, y el índice de
+  lightmap más alto que pide la escena v5 es 1 de los 4 disponibles, así que ninguna referencia
+  se sale de rango. Los 112 de 436 renderers con horneado no los cambió el merge: la escena v5
+  no está entre los ficheros tocados.
+- **Dos trampas nuevas en §9**, las dos caras de lo mismo: copiar un `.meta` a mano no conserva
+  el GUID si el viejo sigue registrado —Unity le asignó uno nuevo al occlusion de Cindy y lo
+  dejó huérfano, así que se borró—, y un horneado se toma entero o no se toma.
+- 347/349 EditMode y 6/6 PlayMode, los mismos números que antes del merge.
 
 ### 2026-10-14 (noche, 2) — el patinete despiezado
 
