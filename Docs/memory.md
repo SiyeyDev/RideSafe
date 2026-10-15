@@ -48,9 +48,10 @@ y `docs/superpowers/plans/2026-10-05-modulo-01.md`.
 
 - **`main`** — rama compartida. Cindy trabaja aquí. Va por detrás: su punta (`ffcc058`) es
   ancestro de `dev`.
-- **`dev`** — **al día desde el 2026-10-14 y pusheada.** Tiene todo: el garaje v8, el módulo 1
-  entero, el patinete despiezado y los materiales e iluminación de Cindy.
-- **`feat/garaje-v6`** — la rama de trabajo. **Apunta al mismo commit que `dev`** (`77d2f55`),
+- **`dev`** — **al día desde el 2026-10-15 y pusheada** (`545dd19`). Tiene todo: el garaje
+  **v9**, el módulo 1 entero con sus 4 estaciones, el patinete despiezado y los materiales e
+  iluminación de Cindy.
+- **`feat/garaje-v6`** — la rama de trabajo. **Apunta al mismo commit que `dev`** (`545dd19`),
   así que ya no hay nada «sin mezclar».
 - **`feat/garaje-v5`** — congelada, muy por detrás. No usarla.
 - **`Feature/tutorial`** — la de Cindy. Su último commit ya está integrado; lo que suba a partir
@@ -58,9 +59,10 @@ y `docs/superpowers/plans/2026-10-05-modulo-01.md`.
   duplican GUID. Ver §9.
 
 **Falta avisar a Cindy de que `dev` se movió**, porque ella trabaja sobre
-`RideSafe_Garaje.unity` y ahora `dev` trae el mundo del v8 y el horneado nuevo.
+`RideSafe_Garaje.unity` y ahora `dev` trae el mundo del **v9**, el horneado nuevo y una
+estación más.
 
-**La escena sigue llamándose `RideSafe_Garaje_v5.unity` pero su mundo ya es el v6.** El nombre
+**La escena sigue llamándose `RideSafe_Garaje_v5.unity` pero su mundo ya es el v9.** El nombre
 se conservó a propósito: cambiarlo habría roto las referencias de la lista de build, el montador
 de presentación y los tests, a cambio de nada.
 
