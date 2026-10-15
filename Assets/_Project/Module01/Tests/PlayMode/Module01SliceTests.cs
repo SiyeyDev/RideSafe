@@ -19,6 +19,14 @@ namespace RideSafe.Module01.Tests
         private const string ResultPath = "Temp/ridesafe-playmode.txt";
         private readonly List<string> _problems = new List<string>();
 
+        /// <summary>
+        /// Sufijo de las capturas, para que la corrida del patinete no sobrescriba la evidencia
+        /// de la bici. Las dos recorren las mismas seis zonas y capturan con los mismos
+        /// nombres: sin esto, la ultima en correr se queda con los PNG y la otra queda sin
+        /// revisar aunque su test diga verde.
+        /// </summary>
+        private string _captureTag = string.Empty;
+
         private Module01Director _director;
         private ItemInspector _inspector;
         private Module01Binding _binding;
@@ -30,6 +38,7 @@ namespace RideSafe.Module01.Tests
         {
             LogAssert.ignoreFailingMessages = true;
             _problems.Clear();
+            _captureTag = string.Empty;
             Application.logMessageReceived += Collect;
             SceneManager.LoadScene("RideSafe_Garaje_v5");
             yield return null; yield return null;
@@ -53,6 +62,23 @@ namespace RideSafe.Module01.Tests
         { yield return RunFlow(false, true); }
         [UnityTest] public IEnumerator Rechazar_el_casco_correcto_lo_reporta_como_omision_critica()
         { yield return RunFlow(true, false); }
+
+        /// <summary>
+        /// El patinete recorre sus seis zonas enteras, no solo se enciende.
+        /// <para>
+        /// Hasta el 2026-10-14 el unico test del patinete se quedaba justo despues del
+        /// onboarding: afirmaba que el director usaba su perfil y que la bici quedaba apagada, y
+        /// ahi terminaba. Con el patinete en malla unica eso bastaba, porque no habia nada mas
+        /// que comprobar: sus cinco puntos caian todos al signo. Desde que llega despiezado y
+        /// delinea tres piezas, lo que hay que afirmar es el recorrido: que el contorno cuelga
+        /// de la pieza correcta, que el signo se calla donde hay contorno, que la esfera
+        /// clicable se muda encima de lo que brilla, y que el giro de cada zona deja eso
+        /// mirando al aprendiz. Todo eso lo hace ya <see cref="AssertInspectionCues"/> leyendo
+        /// el perfil, asi que el patinete solo necesitaba que alguien lo recorriera.
+        /// </para>
+        /// </summary>
+        [UnityTest] public IEnumerator El_patinete_recorre_sus_zonas_y_delinea_sus_piezas()
+        { yield return RunFlow(false, true, "escooter"); }
 
         /// <summary>
         /// Elegir patinete en el módulo 0 tiene que llegar hasta el perfil que usa el
@@ -173,6 +199,7 @@ namespace RideSafe.Module01.Tests
 
         private IEnumerator RunFlow(bool omitHelmet, bool subtitles, string vehicleId = "ebike")
         {
+            _captureTag = vehicleId == "ebike" ? string.Empty : "-" + vehicleId;
             // Solo las Base: la del stack de URP que dibuja la capa UI por encima no es un
             // rig aparte, y lo que este assert vigila es que no haya dos rigs encendidos.
             var gameCameras = Object.FindObjectsByType<Camera>(FindObjectsSortMode.None)
@@ -292,7 +319,10 @@ namespace RideSafe.Module01.Tests
                     // La prueba de que el pedestal ya no fabrica esferas blancas: un punto con
                     // pieza real y otro sin ella. Ningun assert ensena como queda.
                     if (!omitHelmet && item.ItemId == "point_steering") yield return Capture("pedestal-con-pieza");
-                    if (!omitHelmet && item.ItemId == "point_brakes") yield return Capture("pedestal-sin-pieza");
+                    // 'electrics' y no 'brakes': el freno dejo de servir de ejemplo de punto sin
+                    // pieza cuando el patinete llego con su maneta despiezada. La bateria sigue
+                    // dentro del chasis en los dos vehiculos, asi que vale para los dos.
+                    if (!omitHelmet && item.ItemId == "point_electrics") yield return Capture("pedestal-sin-pieza");
                     bool take = item.Category == SafetyItemCategory.Core || item.Category == SafetyItemCategory.ConditionDependent;
                     if (item.ItemId == "helmet_ok" && omitHelmet) take = false;
                     var button = Field<Button>(_inspector, take ? "_acceptButton" : "_declineButton");
@@ -958,7 +988,7 @@ namespace RideSafe.Module01.Tests
             System.IO.Directory.CreateDirectory(folder);
             // CaptureScreenshot a archivo, no CaptureScreenshotAsTexture: la variante en memoria
             // devolvia el frame sin la UI desde que esta vive en la camara de overlay del stack.
-            string path = folder + "/" + name + ".png";
+            string path = folder + "/" + name + _captureTag + ".png";
             // Exigir escritura NUEVA, no solo que el archivo exista: si el borrado falla, un
             // File.Exists sobre la captura vieja da verde y la evidencia queda caducada.
             System.DateTime before = System.IO.File.Exists(path)
@@ -970,7 +1000,7 @@ namespace RideSafe.Module01.Tests
                    && (!System.IO.File.Exists(path) || System.IO.File.GetLastWriteTimeUtc(path) <= before))
                 yield return null;
             Assert.Greater(System.IO.File.GetLastWriteTimeUtc(path), before,
-                "La captura '" + name + "' no se reescribio: la evidencia seria la de la corrida anterior.");
+                "La captura '" + name + _captureTag + "' no se reescribio: la evidencia seria la de la corrida anterior.");
         }
         private static string Path(Transform t)
         {

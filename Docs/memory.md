@@ -70,15 +70,17 @@ subtítulos palabra por palabra, video final, colliders del garaje.
 
 ### Módulo 1 — lógica y presentación, las dos probadas corriendo
 
-Los **4** tests de PlayMode corren sobre la escena real y **entran pulsando Begin**, no por
-atajo. Verdes dos corridas seguidas el 2026-10-12, junto con **257 de EditMode**.
+Los **6** tests de PlayMode corren sobre la escena real y **entran pulsando Begin**, no por
+atajo. Verdes dos corridas seguidas el 2026-10-14, junto con **347 de 349 de EditMode** —los 2
+que fallan son los de siempre del módulo 0, que vienen de la rama del tutorial—.
 
 Desde la tanda del 2026-10-12 el módulo además: esconde el EPP de la mesa mientras gira en el
 pedestal y lo deja escondido al llevárselo puesto; atenúa el garaje durante los videos; no deja
 saltarse el video; exhibe el vehículo en un punto único y lo gira por zona; y desde el v8 **delinea la
 pieza real** del punto que toca (manubrio y rueda trasera), dejando el `!` solo donde no hay
 pieza; y cierra con «Mi Elección», la nota con rango y los dos botones que esa
-nota desbloquea.
+nota desbloquea. **Desde el 2026-10-14 el patinete también llega despiezado**, y delinea tres de
+sus cinco puntos: dirección, freno y rueda trasera.
 
 | Lo que se pidió | Estado |
 |---|---|
@@ -91,7 +93,7 @@ nota desbloquea.
 | Lista lateral siempre visible | hecho |
 | Reporte final en pantalla | hecho; el test exige ver `point_brakes` |
 
-Los tres recorren el **módulo 0 real** (Language → Jurisdiction → Vehicle → Comfort) y ninguno
+Todos recorren el **módulo 0 real** (Language → Jurisdiction → Vehicle → Comfort) y ninguno
 escribe en la escena: el interruptor es `Module01Experience._quickStart`, que hoy va **vacío**
 para que al abrir la escena a mano se vean las cinco pantallas. Si alguien se lo asigna, los
 tests se marcan *ignorados* diciendo por qué, en vez de fallar sin explicación.
@@ -100,6 +102,10 @@ tests se marcan *ignorados* diciendo por qué, en vez de fallar sin explicación
 - `Rechazar_el_casco...` — rechaza el casco bueno y lo reporta como omisión crítica
 - `Elegir_patinete...` — pulsa la tarjeta del patinete y afirma que el director usa ese perfil,
   que el patinete se ve y que la bici queda apagada
+- `El_patinete_recorre_sus_zonas...` — las seis zonas enteras con el patinete, afirmando que cada
+  contorno cuelga de su pieza, que el signo se calla donde hay contorno y que la esfera clicable
+  se muda encima de lo que brilla. **Hasta el 2026-10-14 nadie recorría el patinete**: el test de
+  arriba se paraba en el onboarding, y con el patinete en malla única eso bastaba
 
 **Lo que ya no cubre ningún test:** la entrada rápida con `SO_Module00_TestSettings`.
 
@@ -268,9 +274,11 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       (`Module1/Item_TrousersFitted`). Son `Module1/Item_TrousersFitted`, `_TrousersLoose` y
       `_TrousersTech`, en inglés y español. Los pone Charlie en el Drive; el test de PlayMode
       avisa cuando estén para vaciar `Module01SliceTests.SinTraducirTodavia`.
-- [ ] **Pedirle a Daniel las piezas que faltan de la e-bike**: maneta de freno, batería y faro
-      —y el patinete despiezado—. Cada una que llegue es una fila más en `Module01VehicleStaging.Parts`,
-      sin tocar código, y un `!` menos.
+- [ ] **Pedirle a Daniel las piezas que faltan de la e-bike**: maneta de freno, batería y faro.
+      Cada una que llegue es una fila más en `Module01VehicleStaging.Parts`, sin tocar código, y
+      un `!` menos. ~~El patinete despiezado~~ **llegó el 2026-10-14**, y con él la maneta de
+      freno que la bici no tiene. Del patinete faltaría el faro; la batería va dentro de la
+      plataforma y seguramente no tiene sentido sacarla.
 - [ ] **Pantalón reflectivo o corta-viento**, que pidió Charlie. No existe modelo. Entrará como
       «según condición», igual que el chaleco. **No bloquea esta build**: `jean ajustado` ya es
       el pantalón correcto (núcleo) y la zona ya enseña algo sin él.
@@ -473,6 +481,19 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
   cierra la escena abierta; hay que reabrirla y volver a montar la presentación. Y **no** usar
   `BuildMenu()` desde un script: llama a `SaveCurrentModifiedScenesIfUserWantsTo()`, que es el
   diálogo modal de más arriba.
+- **Las dos mallas de vehículo están en espejo, y el giro de zona no es compartible.** La
+  e-bike trae el morro en la X local **baja** (`manubrio` en u=0.19) y el patinete en la **alta**
+  (`control_de_direccion` en u=0.74), así que el giro que presenta una de frente presenta la otra
+  de espaldas. Con el signo `!` daba igual —se colocaba a mano en un hueco despejado—; desde que
+  el aviso es el contorno de la pieza real, el giro decide si esa pieza se ve. `Yaws` pasó a ser
+  por vehículo, con los del patinete **invertidos**: cockpit −90, wheels 180, visibility 90. Y la
+  tabla de *mounts* sí se comparte, pero por casualidad: sus fracciones se escribieron con el
+  morro en la X alta y en la bici el punto acaba en el borde correcto porque `MoveToPart` usa
+  `Bounds.ClosestPoint`.
+- **Un test del vehículo que se para en el onboarding no prueba el vehículo.** El del patinete
+  afirmaba el perfil elegido y que la bici quedaba apagada, y ahí terminaba: nunca entró en sus
+  tres zonas. Mientras fue malla única no faltaba nada por ver; en cuanto llegó despiezado, todo
+  lo nuevo —contornos, giros, el pedestal— quedó sin afirmar y los tests seguían en verde.
 - **La Scene View no dibuja el stack de cámaras de URP.** Lo que vive en la capa `UI` —el HUD,
   los marcadores `!`— no sale en una captura de Scene View, aunque en el juego se vea perfecto.
   Para verlo de verdad, la captura de la Game View que deja el test de PlayMode en
@@ -541,7 +562,7 @@ de escooter y no la de ebike. El test de la e-bike afirma lo simétrico.
 |---|---|
 | `piso` | centro `(-0.14, 0.02, 0.78)`, 9.54 × 11.28 |
 | `ebike` | desde el v8, **4 piezas**: `manubrio` (todo el tren delantero, 0.66 × 1.11 × 0.76), `marco`, `pedales`, `rueda_trasera` |
-| `scooter` | `Scooter_2:Mesh`, bounds 0.55 × 1.35 × 1.27, **sigue siendo malla única sin hijos** |
+| `scooter` | desde el 2026-10-14, **7 piezas en dos niveles**: `control_de_direccion` (con `freno`, `guardabarros` y `rueda_frontal` dentro) y `cuerpo` (con `rueda_tracera` y `soporte`). Caja igual que antes: 1.27 × 1.35 × 0.55 |
 | `scooter.fbx` | `Assets/_Project/Models/CITY/MODELADOS 3d/scooter.fbx` |
 | estaciones EPP | `head` mostrador del fondo, `clothing` mesa metálica (izq.), `load` banco (der.) |
 | giros por zona | `cockpit` 90°, `wheels` 0°, `visibility` −90° |
@@ -553,6 +574,45 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-14 (noche, 2) — el patinete despiezado
+
+Daniel entregó el `scooter.fbx` partido, y con él se le hizo al patinete lo mismo que al v8 le
+había hecho a la bici: delinear la pieza real en vez de marcarla con un signo flotante.
+
+- **Llega en siete piezas y en dos niveles**, con el GUID intacto, así que el perfil y la
+  instancia de la escena lo recogieron solos: `control_de_direccion` (con `freno`,
+  `guardabarros` y `rueda_frontal` colgando) y `cuerpo` (con `rueda_tracera` y `soporte`). El
+  anidamiento no estorba porque `VehicleStage.FindPart` busca en toda la jerarquía. La caja
+  total no cambia —1.27 × 1.35 × 0.55—, así que los cinco mounts siguen valiendo y no hubo que
+  recolocar ninguno.
+- **Tres de cinco puntos con contorno, uno más que la bici**, porque el patinete sí trae la
+  maneta de freno como pieza: `point_steering`→`control_de_direccion`, `point_brakes`→`freno`,
+  `point_wheels`→`rueda_tracera`. `point_electrics` y `point_lights` se quedan con el `!`, y es
+  la misma decisión que en la bici: la batería va dentro de `cuerpo` —la plataforma entera, 1,16
+  m— y delinearla para decir «revisa el sistema eléctrico» enseña algo falso; el faro no existe
+  como pieza. Ojo con `rueda_tracera`, con la falta: es como viene en el FBX y se copia tal cual.
+- **Lo que no se veía venir: las dos mallas están en espejo.** La bici tiene el morro en la X
+  local baja y el patinete en la alta, así que la tabla de giros compartida presentaba el
+  patinete **de culo** en la zona de manubrio y con la rueda detrás del checklist en la de
+  llantas. `Yaws` pasa a ser por vehículo. Está en §9.
+- **El invariante se afirma, no se repite.** `VehiclePartsTests` no comprueba «el giro vale −90»:
+  comprueba que, girado para esa zona, la pieza de la dirección queda del lado del aprendiz y la
+  rueda del lado libre del checklist, derivándolo de la geometría del FBX. Así una entrega que
+  reexporte una malla girada lo rompe. Y otro test exige que cada pieza declarada **exista** en
+  su malla: si Daniel renombra una, hoy eso solo dejaba un warning en la consola y el punto caía
+  al signo sin que nada fallara.
+- **El patinete no lo recorría nadie.** Su único test de PlayMode se paraba en el onboarding. Se
+  añadió `El_patinete_recorre_sus_zonas...`, que es `RunFlow` con `escooter`: el helper ya estaba
+  parametrizado y `AssertInspectionCues` ya leía el perfil, solo faltaba llamarlo. Las capturas
+  llevan sufijo por vehículo para que las dos corridas no se pisen los PNG.
+- **El contorno del freno mide 58 × 12 px** de 2560×1440 a los 2,7 m del punto de exhibición —el
+  más pequeño con diferencia; el siguiente es la rueda con 125 × 32—. Se ve en la captura, pero
+  al delinearse se calla su `!`, así que **es decisión de Charlie** si ese punto se queda con los
+  dos avisos. No se tocó: la regla pedida era la de la bici.
+- Ninguna esfera blanca encendida en toda la escena: medido, 0.
+- 347/349 EditMode y **6/6 PlayMode**, dos corridas seguidas. Capturas nuevas con sufijo
+  `-escooter`, entre ellas `vehiculo-contorno-cockpit-escooter` y `-wheels-escooter`.
 
 ### 2026-10-14 (madrugada) — repaso de diagramacion, texto por texto
 

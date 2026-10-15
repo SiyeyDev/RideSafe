@@ -109,8 +109,9 @@ namespace RideSafe.Module01.Tests
         }
 
         /// <summary>
-        /// Al pasar de la bici despiezada al patinete —que sigue siendo una malla única— el
-        /// mismo punto se queda sin pieza, y entonces el signo tiene que volver.
+        /// Al cambiar a un vehículo que no despieza ese componente, el mismo punto se queda
+        /// sin pieza, y entonces el signo tiene que volver. Pasa de verdad en los dos
+        /// sentidos: el freno es pieza en el patinete y no en la bici.
         /// </summary>
         [Test]
         public void Dejar_de_silenciarlo_lo_devuelve()
@@ -301,7 +302,7 @@ namespace RideSafe.Module01.Tests
         }
 
         /// <summary>
-        /// El patinete sigue siendo una malla única. Al cambiar de vehículo, el contorno de la
+        /// El vehículo al que se cambia no declara pieza para ese punto. El contorno de la
         /// bici tiene que irse —si no, se queda colgando de una malla apagada— y el signo del
         /// punto tiene que volver.
         /// </summary>

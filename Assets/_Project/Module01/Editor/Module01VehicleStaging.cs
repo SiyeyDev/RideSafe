@@ -19,11 +19,20 @@ namespace RideSafe.Module01.Editor
     /// <c>anchor_vehicle</c>. Esto crea el ancla y cuelga los puntos, que es lo que faltaba.
     /// </para>
     /// <para>
-    /// <b>Los sitios de los puntos son aproximados y necesitan ojo humano.</b> Salen de
-    /// fracciones de la caja de cada vehículo, no de huesos ni de sub-mallas, porque las mallas
-    /// que entregó el equipo de arte son una pieza única sin hijos: no hay "el manubrio" ni "la
-    /// rueda delantera" que agarrar. Quedan donde se ven razonables; moverlos a mano en la
-    /// escena es rápido y no lo pisa nada, porque este comando solo los crea si faltan.
+    /// <b>Los sitios de los puntos salen de fracciones de la caja del vehículo, y se respetan
+    /// una vez puestos.</b> Vienen de cuando las mallas eran una pieza única sin hijos y no
+    /// había "el manubrio" que agarrar; se ajustaron a ojo contra capturas, así que este
+    /// comando solo los crea si faltan y nunca los mueve. Desde que los vehículos llegan
+    /// despiezados, el punto que tiene pieza se muda además encima de ella en runtime, al sitio
+    /// de la pieza <b>más cercano a donde ya estaba</b> —ver <c>VehicleStage.MoveToPart</c>—,
+    /// que es lo que conserva ese ajuste.
+    /// </para>
+    /// <para>
+    /// Esa indirección es también lo que hace que una sola tabla de mounts sirva a los dos
+    /// vehículos <b>aunque estén en espejo</b>: las fracciones se escribieron con el morro en la
+    /// X alta, que es el caso del patinete, y en la bici —morro en la X baja— el punto acaba en
+    /// el borde de la pieza correcta igualmente. Los <i>giros</i>, en cambio, no se salvan así:
+    /// esos sí van por vehículo. Ver <see cref="Yaws"/>.
     /// </para>
     /// </summary>
     public static class Module01VehicleStaging
@@ -67,26 +76,48 @@ namespace RideSafe.Module01.Editor
 
         /// <summary>
         /// Giro del vehículo en cada zona, en grados y <b>absolutos</b>: <c>VehicleStage</c>
-        /// asigna la rotación local, no la suma.
+        /// asigna la rotación local, no la suma. <b>Por vehículo, y no hay forma de evitarlo:
+        /// las dos mallas están en espejo.</b>
         /// <para>
         /// Con el aprendiz mirando hacia −Z: a 0° el eje largo del vehículo queda a lo ancho de
         /// la vista, que es el costado; a ±90° queda de frente o de espaldas. Cuál de los dos
-        /// extremos es el morro <b>no se puede saber desde el código</b> —la malla no tiene ni
-        /// hijos ni nombres—, así que esto es una primera aproximación: si el vehículo sale de
-        /// culo en la zona de manubrio, se intercambian los 90 por −90 en este diccionario.
+        /// extremos es el morro depende del FBX, y los dos que entregó Daniel no coinciden:
+        /// medido el 2026-10-14, la bici trae el <c>manubrio</c> en la X local <b>baja</b>
+        /// (u=0.19) y el patinete el <c>control_de_direccion</c> en la <b>alta</b> (u=0.74).
+        /// Así que el giro que presenta la bici de frente presenta el patinete de espaldas.
+        /// </para>
+        /// <para>
+        /// Hasta el garaje v8 esto daba igual y la tabla podía ser una sola: el aviso era un
+        /// signo flotante que se colocaba a mano en un hueco despejado, y daba lo mismo por
+        /// dónde cayera el morro. Desde que el aviso es el <b>contorno de la pieza real</b>, el
+        /// giro decide si esa pieza se ve o queda detrás. Lo guarda
+        /// <c>VehiclePartsTests</c>, que lo afirma derivándolo de la geometría del FBX en vez
+        /// de repetir estos números.
         /// </para>
         /// </summary>
-        private static readonly Dictionary<string, float> Yaws = new Dictionary<string, float>
-        {
-            { "cockpit",    90f },   // de frente: manubrio, frenos, electrico
-            // De costado, pero por el lado 180 y no el 0. Son la misma vista en espejo, y la
-            // diferencia es donde cae el marcador en pantalla: a 0 grados se iba al 64 % de
-            // ancho, justo debajo del checklist -que ahora vive a la derecha-, y el clic
-            // chocaba con una fila de la lista en vez de llegar a la rueda. A 180 cruza al
-            // otro lado y queda despejado.
-            { "wheels",      0f },   // de costado: se ven las dos ruedas
-            { "visibility", -90f },  // por detras: luces y reflectivos
-        };
+        private static readonly Dictionary<string, Dictionary<string, float>> Yaws =
+            new Dictionary<string, Dictionary<string, float>>
+            {
+                ["ebike"] = new Dictionary<string, float>
+                {
+                    { "cockpit",    90f },   // de frente: manubrio, frenos, electrico
+                    // De costado. Bajó de 180 a 0 con el v8: el signo estaba colocado a mano en
+                    // un hueco despejado y daba igual, pero el contorno va sobre la rueda de
+                    // verdad, y a 180 la rueda trasera queda detrás del checklist —que vive a
+                    // la derecha—. El test pasaba igual; lo cazó la captura.
+                    { "wheels",      0f },   // de costado: se ven las dos ruedas
+                    { "visibility", -90f },  // por detras: luces y reflectivos
+                },
+                // El patinete, espejado: cada zona lleva el giro contrario al de la bici. No es
+                // una convención elegida, es lo que sale de que su morro esté en el otro
+                // extremo de la X local.
+                ["escooter"] = new Dictionary<string, float>
+                {
+                    { "cockpit",   -90f },   // de frente: control_de_direccion y su freno
+                    { "wheels",    180f },   // de costado, con rueda_tracera a la izquierda
+                    { "visibility", 90f },   // por detras
+                },
+            };
 
         [MenuItem("RideSafe/Módulo 1/Montar el punto de exhibición del vehículo")]
         public static void StageOpenScene()
@@ -164,8 +195,20 @@ namespace RideSafe.Module01.Editor
         /// faro, esto es una línea más por pieza.
         /// </para>
         /// <para>
-        /// El patinete no aparece: sigue siendo <c>Scooter_2:Mesh</c>, una malla única sin
-        /// hijos, así que todos sus puntos caen al signo.
+        /// El patinete llegó despiezado el 2026-10-14 y viene en <b>siete</b> piezas, anidadas
+        /// en dos niveles: <c>control_de_direccion</c> (con <c>freno</c>, <c>guardabarros</c> y
+        /// <c>rueda_frontal</c> dentro) y <c>cuerpo</c> (con <c>rueda_tracera</c> y
+        /// <c>soporte</c>). Son tres de cinco los puntos con pieza, uno más que la bici, porque
+        /// <b>el patinete sí trae la maneta de freno como pieza propia</b>. El anidamiento no
+        /// molesta: <c>VehicleStage.FindPart</c> busca en toda la jerarquía, no solo en los
+        /// hijos directos.
+        /// </para>
+        /// <para>
+        /// <c>point_electrics</c> se queda con el signo por el mismo motivo que en la bici: la
+        /// batería va dentro de <c>cuerpo</c>, que es la plataforma entera —1,16 m—, y
+        /// delinearla para decir «revisa el sistema eléctrico» enseña algo falso. Y
+        /// <c>point_lights</c> porque el FBX no trae faro: <c>guardabarros</c> es el
+        /// guardabarros y <c>soporte</c> es la pata de cabra.
         /// </para>
         /// </summary>
         private static readonly Dictionary<string, Dictionary<string, string>> Parts =
@@ -175,6 +218,14 @@ namespace RideSafe.Module01.Editor
                 {
                     { "point_steering", "manubrio" },
                     { "point_wheels", "rueda_trasera" },
+                },
+                ["escooter"] = new Dictionary<string, string>
+                {
+                    { "point_steering", "control_de_direccion" },
+                    { "point_brakes", "freno" },
+                    // 'tracera', con la falta, es como viene en el FBX. Se copia tal cual: la
+                    // pieza se busca por nombre y corregirla aqui la dejaria sin encontrar.
+                    { "point_wheels", "rueda_tracera" },
                 },
             };
 
@@ -207,7 +258,7 @@ namespace RideSafe.Module01.Editor
                 profile.ConfigurePartBindings(table.Select(p => (p.Key, p.Value)));
                 EditorUtility.SetDirty(profile);
                 Debug.Log($"[Module01] {profile.name}: {table.Count} pieza(s) a delinear"
-                          + (table.Count == 0 ? " (malla unica: todo al signo)." : ": "
+                          + (table.Count == 0 ? " (sin piezas declaradas: todo al signo)." : ": "
                               + string.Join(", ", table.Select(p => $"{p.Key}->{p.Value}")) + "."));
             }
 
@@ -465,12 +516,21 @@ namespace RideSafe.Module01.Editor
 
         private static void ApplyYaws(VehicleProfileSO profile)
         {
+            if (!Yaws.TryGetValue(profile.VehicleContextValue, out Dictionary<string, float> table))
+            {
+                Debug.LogWarning(
+                    $"[Module01] No hay tabla de giros para '{profile.VehicleContextValue}', asi que " +
+                    "se queda a 0° en todas las zonas: el vehiculo no girara y las piezas que se " +
+                    "delinean pueden quedar de espaldas. Hay que añadirla en Module01VehicleStaging.Yaws.");
+                table = new Dictionary<string, float>();
+            }
+
             List<(ZoneSO Zone, float Yaw)> views = new List<(ZoneSO, float)>();
             foreach (ZoneSO zone in profile.InspectionZones)
             {
                 if (zone == null)
                     continue;
-                views.Add((zone, Yaws.TryGetValue(zone.ZoneId, out float yaw) ? yaw : 0f));
+                views.Add((zone, table.TryGetValue(zone.ZoneId, out float yaw) ? yaw : 0f));
             }
             profile.ConfigureZoneViews(views);
             EditorUtility.SetDirty(profile);

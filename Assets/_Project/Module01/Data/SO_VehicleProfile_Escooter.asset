@@ -20,9 +20,15 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 01bccd36419332147ae3c3be8d6e16f1, type: 2}
   _zoneViews:
   - Zone: {fileID: 11400000, guid: 2e812fb54e2d7364fa3302d91d7e907d, type: 2}
-    Yaw: 90
-  - Zone: {fileID: 11400000, guid: 65b474ed86641f9468aec537c0de391d, type: 2}
-    Yaw: 0
-  - Zone: {fileID: 11400000, guid: 01bccd36419332147ae3c3be8d6e16f1, type: 2}
     Yaw: -90
-  _partBindings: []
+  - Zone: {fileID: 11400000, guid: 65b474ed86641f9468aec537c0de391d, type: 2}
+    Yaw: 180
+  - Zone: {fileID: 11400000, guid: 01bccd36419332147ae3c3be8d6e16f1, type: 2}
+    Yaw: 90
+  _partBindings:
+  - ItemId: point_steering
+    PartName: control_de_direccion
+  - ItemId: point_brakes
+    PartName: freno
+  - ItemId: point_wheels
+    PartName: rueda_tracera

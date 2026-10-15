@@ -14,9 +14,10 @@ namespace RideSafe.Module01.Tests
     /// «no quiero ver más esferas blancas; si en alguna no hay, usemos el `!`».
     /// </para>
     /// <para>
-    /// Desde el garaje v8 dos de esos puntos <b>sí</b> tienen pieza real —<c>manubrio</c> y
-    /// <c>rueda_trasera</c>—, así que el pedestal puede enseñar la pieza de verdad. Los otros
-    /// tres se quedan con el signo, que es el mismo idioma que ya usan en el mundo.
+    /// Desde que los vehículos llegan despiezados, algunos de esos puntos <b>sí</b> tienen
+    /// pieza real —en la bici, <c>manubrio</c> y <c>rueda_trasera</c>; en el patinete, además,
+    /// su <c>freno</c>—, así que el pedestal puede enseñar la pieza de verdad. Los demás se
+    /// quedan con el signo, que es el mismo idioma que ya usan en el mundo.
     /// </para>
     /// </summary>
     public class ItemInspectorFallbackTests : CatalogFixture

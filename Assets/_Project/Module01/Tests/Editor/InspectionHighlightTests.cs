@@ -29,8 +29,9 @@ namespace RideSafe.Module01.Tests
     /// <summary>
     /// Qué pieza de la malla le toca a cada punto de inspección es <b>dato del perfil</b>, no
     /// una referencia de escena: una sola entidad por punto sirve a los dos vehículos, y cada
-    /// vehículo despieza su malla a su manera —la e-bike trae <c>manubrio</c> y
-    /// <c>rueda_trasera</c>, el patinete todavía es una pieza única—.
+    /// vehículo despieza su malla a su manera, y no coinciden —la e-bike trae <c>manubrio</c>
+    /// y <c>rueda_trasera</c>; el patinete, <c>control_de_direccion</c>, <c>freno</c> y
+    /// <c>rueda_tracera</c>—.
     /// </summary>
     public class VehiclePartBindingTests
     {

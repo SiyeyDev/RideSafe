@@ -14,9 +14,10 @@ namespace RideSafe.Module01
     /// <b>Es el aviso de respaldo, no el principal.</b> Donde el vehículo viene despiezado y la
     /// pieza existe de verdad, quien señala es <see cref="InspectionHighlight"/> con un contorno
     /// sobre la malla, y este signo se silencia: los dos a la vez marcan lo mismo dos veces. El
-    /// signo sigue siendo lo único que hay para los puntos sin pieza propia —el freno vive dentro
-    /// del <c>manubrio</c>, la batería dentro del <c>marco</c> y el faro no existe— y para el
-    /// patinete entero, que sigue siendo una malla única sin hijos.
+    /// signo sigue siendo lo único que hay para los puntos sin pieza propia, y ningún vehículo
+    /// las trae todas: en la bici el freno vive dentro del <c>manubrio</c> y la batería dentro
+    /// del <c>marco</c>; en el patinete el freno sí es pieza, pero la batería va dentro del
+    /// <c>cuerpo</c>. Y el faro no existe en ninguno de los dos.
     /// </para>
     /// </summary>
     [AddComponentMenu("RideSafe/Module 01/Inspection Marker")]

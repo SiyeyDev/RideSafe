@@ -69,8 +69,8 @@ namespace RideSafe.Module01
 
         /// <summary>
         /// Cuelga el contorno de <paramref name="part"/>. Devuelve si pudo: un punto sin pieza
-        /// real —el freno, la batería y el faro no existen como objeto, y el patinete entero es
-        /// una sola malla— devuelve <c>false</c> y se queda con el signo de exclamación.
+        /// real —la batería vive dentro del chasis en los dos vehículos y el faro no existe en
+        /// ninguno— devuelve <c>false</c> y se queda con el signo de exclamación.
         /// </summary>
         public bool Bind(Transform part)
         {

@@ -45,16 +45,18 @@ namespace RideSafe.Module01
         /// <summary>
         /// Qué pieza de la malla delinea cada punto de inspección, por nombre.
         /// <para>
-        /// Es dato y por vehículo porque cada uno despieza su FBX a su manera: la e-bike del
-        /// garaje v8 trae <c>manubrio</c>, <c>marco</c>, <c>pedales</c> y <c>rueda_trasera</c>,
-        /// y el patinete todavía es una malla única sin hijos. Y es un <b>nombre</b>, no una
-        /// referencia a la escena, porque hay una sola entidad por punto para los dos vehículos
-        /// y la pieza se busca en el que esté encendido.
+        /// Es dato y por vehículo porque cada uno despieza su FBX a su manera, y no coinciden
+        /// ni en los nombres ni en el corte: la e-bike trae <c>manubrio</c>, <c>marco</c>,
+        /// <c>pedales</c> y <c>rueda_trasera</c>; el patinete, <c>control_de_direccion</c> con
+        /// <c>freno</c>, <c>guardabarros</c> y <c>rueda_frontal</c> dentro, y <c>cuerpo</c> con
+        /// <c>rueda_tracera</c> y <c>soporte</c>. Y es un <b>nombre</b>, no una referencia a la
+        /// escena, porque hay una sola entidad por punto para los dos vehículos y la pieza se
+        /// busca en el que esté encendido.
         /// </para>
         /// <para>
-        /// Lo que no esté aquí no es un fallo: el freno vive dentro del manubrio, la batería
-        /// dentro del marco y el faro no existe como pieza. Esos puntos caen al signo de
-        /// exclamación de <see cref="InspectionMarker"/>, que es lo que había antes de esto.
+        /// Lo que no esté aquí no es un fallo: la batería va dentro del chasis en los dos y el
+        /// faro no existe como pieza en ninguno. Esos puntos caen al signo de exclamación de
+        /// <see cref="InspectionMarker"/>, que es lo que había antes de esto.
         /// </para>
         /// </summary>
         [Serializable]
