@@ -1,7 +1,7 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-15 (madrugada)
+> Última actualización: 2026-10-15 (mañana)
 >
 > **Lo que falta hoy, con nombres y números: `Docs/Pendientes_Reunion_2026-10-12.md`.**
 
@@ -188,7 +188,7 @@ deja el resultado en `Temp/ridesafe-tests.txt`.
 
 ## 6. Contenido
 
-### Catálogo de EPP — 11 elementos en 3 zonas
+### Catálogo de EPP — 13 elementos en 4 zonas
 
 | Zona | Elemento | Categoría | Modelo |
 |---|---|---|---|
@@ -198,9 +198,11 @@ deja el resultado en `Temp/ridesafe-tests.txt`.
 | clothing | Calzado | Núcleo | `botas.fbx` |
 | clothing | Chaleco reflectivo | Según condición | `chaleco refectivo.fbx` |
 | clothing | Ropa o cordones sueltos | Inapropiado | `bufanda 01.fbx` |
-| clothing | Pantalón ajustado | Núcleo | `jean ajustado.fbx` |
-| clothing | Pantalón ancho | Inapropiado | `pantalon ancho.fbx` |
-| clothing | Pantalón deportivo | Opcional | `pant low.fbx` |
+| trousers | Pantalón ajustado | Núcleo | `jean_ajustado_doblado 1.fbx` |
+| trousers | Pantalón ancho | Inapropiado | `jean ancho doblado.fbx` |
+| trousers | Pantalón deportivo | Opcional | `pantalon deportivo doblado.fbx` |
+| clothing | Coderas | Opcional | `codera.fbx` (par) |
+| clothing | Rodilleras | Opcional | `rodillera.fbx` (par) |
 | load | Carga asegurada | Núcleo | `guaya candado.fbx` |
 | load | Objeto en mano | Inapropiado | `MobilePhone_01.fbx` |
 
@@ -274,17 +276,28 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 
 ### Contenido
 
-- [ ] **Los 3 términos de I2 de los pantalones.** Hoy el panel enseña la clave cruda
-      (`Module1/Item_TrousersFitted`). Son `Module1/Item_TrousersFitted`, `_TrousersLoose` y
-      `_TrousersTech`, en inglés y español. Los pone Charlie en el Drive; el test de PlayMode
-      avisa cuando estén para vaciar `Module01SliceTests.SinTraducirTodavia`.
+- [ ] **Los 5 términos de I2 que faltan: los 3 pantalones y los 2 pares.** Hoy el panel enseña
+      la clave cruda (`Module1/Item_TrousersFitted`). Son `Module1/Item_TrousersFitted`,
+      `_TrousersLoose`, `_TrousersTech`, **`_ElbowPads`** y **`_KneePads`**, cada una con su
+      `_Risk`, en inglés y español. Los pone Charlie en el Drive; el test de PlayMode avisa
+      cuando estén para vaciar `Module01SliceTests.SinTraducirTodavia`.
+- [ ] **Decidir la categoría de coderas y rodilleras.** Entraron como **Opcional** —se
+      recomiendan y no se exigen, igual que las gafas—, y eso es una suposición mía, no una
+      decisión de Charlie. Cambiarlas es una línea en `Module01Greybox.Items` más repetir el
+      comando. Si fueran de núcleo, omitirlas pasaría a ser omisión crítica y cambiaría el
+      veredicto del reporte.
+- [ ] **El título de la zona nueva de pantalones en I2.** La estación propia existe desde el
+      2026-10-15 y su clave es `Module1/Zone_Trousers`, **sin texto todavía**: en pantalla se ve
+      la clave cruda. Hacen falta las dos cadenas, inglés y español. Las pone Charlie.
 - [ ] **Pedirle a Daniel las piezas que faltan de la e-bike**: maneta de freno, batería y faro.
       Cada una que llegue es una fila más en `Module01VehicleStaging.Parts`, sin tocar código, y
       un `!` menos. ~~El patinete despiezado~~ **llegó el 2026-10-14**, y con él la maneta de
       freno que la bici no tiene. Del patinete faltaría el faro; la batería va dentro de la
       plataforma y seguramente no tiene sentido sacarla.
-- [ ] **La estación propia de los pantalones.** Charlie los quiere **delante de las dos
-      estanterías** de la pared izquierda (`df_g_shelf_01 (2)` y `(3)`, de z=−2.01 a 1.84).
+- [x] ~~**La estación propia de los pantalones**~~ — **hecha el 2026-10-15**, en el banco
+      largo y vacío del fondo derecho (`mesa`, 3.72 m), por decisión de Charlie. Lo que sigue
+      abajo es el estudio de la opción de las estanterías, que queda descartada.
+      ~~Charlie los quiere **delante de las dos estanterías** de la pared izquierda (`df_g_shelf_01 (2)` y `(3)`, de z=−2.01 a 1.84).
       Medido: ahí **no caben dentro de la zona `clothing`** —desde su ancla, a 3,31 m de la
       pared, el encuadre cubre de z=2.01 a 8.81, y el test falla con `trousers_fitted` en
       viewport x=−0.205—. Hace falta zona nueva: una fila en `Module01Stations`, un `ZoneSO`
@@ -584,6 +597,54 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
   afirmaba el perfil elegido y que la bici quedaba apagada, y ahí terminaba: nunca entró en sus
   tres zonas. Mientras fue malla única no faltaba nada por ver; en cuanto llegó despiezado, todo
   lo nuevo —contornos, giros, el pedestal— quedó sin afirmar y los tests seguían en verde.
+- **Con un error de compilación, Unity no recarga el dominio y sigue ejecutando el build
+  anterior.** Reconstruye los ensamblados que sí compilan, deja el resto, y por el relay no se
+  nota: los comandos funcionan pero corren el código viejo. El 2026-10-15 costó media hora y lo
+  atribuí mal dos veces. Los síntomas engañan todos a la vez: `isCompiling` en false, el
+  `AssetDatabase` **veía** el texto nuevo del fichero, `Assembly.Location` apuntaba al DLL bueno
+  y el DLL del disco **sí** tenía el método nuevo. La causa eran 5 `CS0103` en
+  `StationLayoutTests.cs` —unos tests metidos en la clase de al lado, que no tenía los
+  ayudantes—. **El detector correcto es la consola** (`GetConsoleLogs` con `logTypes: Error`),
+  no `Editor.log`. Y la verdad última es el comportamiento: dejar un `Debug.Log` con un texto
+  distinguible y ver qué frase sale. Buscar un **literal de cadena** en un DLL con `grep` da
+  falso negativo siempre —van en UTF-16—; los nombres de método sí se encuentran.
+- **`Editor.log` es de un solo Editor, y puede no ser el nuestro.** Charlie tiene abierto a
+  ratos `Alphatecn-NavalConquestV1`, y `AppData/Local/Unity/Editor/Editor.log` es el del Editor
+  que arrancó último. Buscar ahí `error CS` y no encontrar nada **no prueba nada**.
+- **Con dos Editores abiertos, el relay puede contestar desde el otro proyecto.** Pasó el
+  2026-10-15: un comando reventó con un `DirectoryNotFoundException` sobre una ruta de
+  `Alphatecn-NavalConquestV1`, y la escena abierta allí era `Login.unity`. No hubo daño porque
+  murió al leer, pero una escritura habría ido al proyecto equivocado. **Comprobar
+  `Application.dataPath` antes de escribir nada**, y si no es el nuestro, pedir que cierren el
+  otro Editor: desde aquí no se elige.
+- **Medir el FBX crudo para decidir una colocación engaña.** El `jean_ajustado_doblado` del v9
+  mide 2.56 × 3.17 × 0.48 como asset, y en la escena mide 0.26 × 0.32 × 0.05: la instancia de la
+  escena de arte lleva **escala 0.1**. Y encima el arte **rota** las instancias, así que el lado
+  largo del objeto no cae por el eje que uno supone —las botas son 0.349 de ancho en el FBX y
+  0.295 en la escena, con el otro valor por el eje de la fila—. Con las medidas del FBX calculé
+  que los seis de ropa pedían 1.11 m de fila; en la escena pedían 2.81. **Medir siempre la
+  instancia, nunca el asset.**
+- **Un EPP que el arte entrega por pares es UN elemento del catálogo, no dos.** El v9 trae
+  `codera` + `codera (1)` y `rodillera` + `rodillera (1)`. Si cada pieza va suelta, la segunda
+  se queda sin entidad y aparece como decorado encima de la mesa. Se agrupan bajo un padre
+  (`coderas`, `rodilleras`) y la entidad va en el padre. Y las dos piezas se colocan **a lo
+  ancho** de la tapa y alineadas en el eje de la fila: si no, el par pisa dos huecos y no se gana
+  sitio. La primera versión solo las alineó a lo ancho y la fila siguió midiendo lo mismo.
+- **Un nombre de objeto con un espacio al final deja un EPP fuera del ejercicio en silencio.** El
+  v9 entrega `"jean_ajustado_doblado "`. `Module01SceneEntities.Find` comparaba el nombre tal
+  cual, así que no lo encontraba y solo quedaba un aviso en consola. Ahora compara con `Trim()`:
+  un carácter invisible no puede decidir si un elemento entra al ejercicio.
+- **Cuando la fila no cabe en la tapa, la salida es el fondo del mueble, no apretar más.** Con 8
+  elementos la zona de ropa pedía 3.51 m sobre una mesa de 2.62, y **los objetos solos ya sumaban
+  2.81**: ningún reparto de huecos lo arregla. Lo que sí: **lo plano delante y lo alto detrás.**
+  Un pantalón doblado de 5 cm de canto no puede tapar nada —la vista y el rayo del clic le pasan
+  por encima—, así que ocupa la fila de delante y libera la de atrás. Al contrario sería peor: el
+  chaleco mide 60 cm y esconde detrás de sí cualquier cosa. Quedó en 5 detrás con hueco 0.15 y 3
+  planos delante con hueco 0.34, los 8 sobre la tapa y sin una caja solapada.
+- **El hueco declarado entre elementos es un máximo cómodo, no una medida sagrada.** Antes, si la
+  fila no cabía, arrancaba en el borde del mueble y colgaba por el otro lado. Ahora
+  `StationLayout.FittingGap` reparte el sobrante y nunca baja de `MinGap` (10 cm), dejando
+  `EdgeInset` (10 cm) libre en cada canto.
 - **La Scene View no dibuja el stack de cámaras de URP.** Lo que vive en la capa `UI` —el HUD,
   los marcadores `!`— no sale en una captura de Scene View, aunque en el juego se vea perfecto.
   Para verlo de verdad, la captura de la Game View que deja el test de PlayMode en
@@ -664,6 +725,80 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-15 (mañana) — el garaje v9: pantalones doblados y dos EPP nuevos
+
+Daniel entregó el v9 y Charlie pidió dos cosas: cambiar el garaje y meter los EPP nuevos en la
+lista de seleccionables.
+
+- **El v9 no cambia la malla del garaje.** De sus 636 GUID, **589 son byte a byte los que ya
+  teníamos**, 14 cambian y 33 son nuevos. `interior.fbx` no se toca —sigue sin cambiar desde el
+  v6—. Lo que cambia es la escena de arte (donde Daniel colocó lo nuevo), su horneado,
+  `House04.prefab`, `suelo 2.mat` y los dos materiales de pantalón. Se comprobó **antes** de
+  importar, hasheando cada entrada del paquete al vuelo por una tubería, sin extraer 1,5 GB a un
+  disco que tenía 11 GB libres. Y el patinete despiezado **no se pisó esta vez**: el `scooter.fbx`
+  del v9 es idéntico al nuestro, igual que el `ebike.fbx`.
+- **Los 33 nuevos son 5 modelos y sus materiales**: los tres pantalones **doblados** y las
+  **coderas** y **rodilleras**, estas dos por pares. Cayeron en `Assets/CITY` y se movieron con
+  `MoveAsset`, que conserva el GUID.
+- **Los pantalones doblados arreglan un apaño.** De pie medían 1,16 m y había una regla para
+  plantarlos en el suelo porque no cabían en la tapa; doblados miden 5 cm de canto y se apoyan en
+  la mesa como el resto, que es lo que Charlie pedía.
+- **Coderas y rodilleras entran al catálogo como Opcional**, en la zona `clothing`. La zona pasa
+  de 6 a 8 elementos y el catálogo de 11 a 13. **La categoría es una suposición mía** —se
+  recomiendan y no se exigen, igual que las gafas— y está en la lista de pendientes para que
+  Charlie la confirme: si fueran de núcleo, omitirlas cambiaría el veredicto.
+- **Lo que costó de verdad fue que los 8 no caben en una fila.** Los objetos solos suman 2,81 m
+  sobre una mesa de 2,62, así que ningún reparto de huecos lo arregla, y mi primera estimación
+  —1,11 m— era mala porque medí los FBX en vez de las instancias, que el arte escala y rota. La
+  salida fue usar el **fondo** del mueble: lo plano delante, lo alto detrás. Quedó en 5 detrás con
+  hueco 0,15 y 3 planos delante con 0,34, **los 8 sobre la tapa, apoyados en y=0,92 y sin una
+  caja solapada**. De paso el hueco entre elementos dejó de ser fijo: se aprieta hasta 10 cm
+  antes de dejar la fila colgando, que es lo que hacía antes.
+- **Tres cosas del v9 que habrían pasado en silencio:** el objeto del jean ajustado se llama
+  `"jean_ajustado_doblado "` **con un espacio al final** y el buscador por nombre no lo
+  encontraba; un par de coderas son **un** elemento y no dos, así que hay que agruparlas bajo un
+  padre; y `Module01Greybox` seguía declarando la zona de ropa con **dos** elementos desde el
+  7 de octubre, así que volver a correr ese comando borraba la bufanda y los tres pantalones.
+- **La puerta, otra vez.** El cambio de mundo se llevó `Module01Experience._door`, como en el v8.
+  Recableada y con sus partes fuera de estático.
+- **488.648 triángulos**, suben desde 459.652 por el decorado nuevo. Sigue por encima del
+  presupuesto de Quest.
+- **Media hora perdida por un error mío mal diagnosticado:** metí cuatro tests nuevos en la
+  clase equivocada de `StationLayoutTests.cs` y, con el error de compilación presente, Unity
+  **no recarga el dominio** y sigue ejecutando el build anterior sin que nada lo diga. Lo
+  atribuí al relay, y era falso. El detector era la consola, que es lo que no miré. En §9.
+- **Los pantalones acabaron con estación propia, y eso lo pidió Charlie al ver el garaje.** En
+  vez de apretar ocho elementos en la mesa de ropa, los tres doblados se van al **banco largo y
+  vacío del fondo derecho** (`mesa`, 3.72 m, el más largo del garaje) y la ropa se queda en
+  cinco. El recorrido pasa de 6 zonas a **7** y el reporte gana una sección. Su tapa **no se
+  pudo derivar de lo que el arte dejara encima, porque el banco está vacío**: se midió la malla
+  quedándose con la franja horizontal de más área por debajo de la balda alta —2.78 m² mirando
+  hacia arriba a **1.02 m**, frente a 1.39 m² a 1.74—. Falta el título de la zona en I2
+  (`Module1/Zone_Trousers`), que lo pone Charlie.
+- **Los tres pantalones de pie se apagan.** Quedaban en la escena sin entidad, duplicando el
+  ejercicio —dos pantalones anchos y solo uno pulsable— y, al no pertenecer ya a ninguna
+  estación, nadie los colocaba: el despeje de pasillo arrinconó el ajustado contra la pared del
+  fondo. `Module01SceneEntities.HideSuperseded` declara el par (viejo → sustituto) y los apaga,
+  **sin borrarlos**, y solo si el sustituto está en la escena.
+- **El test del recorrido llevaba la lista de zonas escrita a mano** y por eso, al meter la
+  estación nueva, tres tests de PlayMode se quedaron esperando `load` mientras el recorrido
+  estaba en `trousers` —y el fallo apuntaba a un sitio que no era—. Ahora la deriva del catálogo
+  y del perfil del vehículo, que es justo lo que recorre el director.
+- **322 de 322 en EditMode y 6 de 6 en PlayMode, dos corridas seguidas.** Captura nueva:
+  `estacion-trousers`. Los 322 son las tres assemblies del módulo 1; el histórico de «347/349»
+  incluía además la del módulo 0, con sus 2 fallos de siempre.
+- **Horneado rehecho tras mover las estaciones**, y comprobado: **379 de 430** renderers con
+  mapa, índice más alto 3 de los 4 disponibles, y post-proceso encendido en las tres cámaras
+  base. Son 430 y no 433 porque los tres pantalones de pie quedaron apagados.
+
+**Para retomar, por orden:**
+
+1. Pedirle a Charlie el título de la zona en I2 (`Module1/Zone_Trousers`, ES/EN) y los 5
+   términos de elementos que faltan; hoy se ven las claves crudas.
+2. Que confirme la categoría de coderas y rodilleras: entraron como **Opcional** y es
+   suposición mía.
+3. Avisar a Cindy de que `dev` se movió otra vez, que ella trabaja sobre `RideSafe_Garaje.unity`.
 
 ### 2026-10-15 (madrugada) — el garaje del v8 en la escena, y la luz vuelve a su sitio
 
