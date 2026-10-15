@@ -338,9 +338,12 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       se pisa consigo misma.
 - [x] ~~Integrar `feat/garaje-v6` en `dev`~~ — **hecho el 2026-10-14.** Fue avance directo:
       `dev` no se había movido. **Queda avisar a Cindy.**
-- [x] ~~Rehornear la luz~~ — **vino de Cindy el 2026-10-14**: su commit trae el `LightingData`,
-      los 12 lightmaps y las 2 sondas, y se tomaron enteros. Cambia el aspecto del garaje: el
-      suelo pasa a baldosa blanca y la escena queda más luminosa.
+- [x] ~~Rehornear la luz~~ — **horneado de verdad el 2026-10-14, y era el fallo que Charlie
+      veía.** La escena tenía su `LightingData` **prestado de la escena de arte**, y tras mover
+      estaciones y vehículo ese préstamo dejó de corresponder: manchas duras de luz en el suelo
+      y paredes apagadas. Ahora tiene el suyo en
+      `Assets/_Project/Scene/RideSafe_Garaje_v5/` (2 lightmaps, 3 sondas, 64 MB, 378 de 436
+      renderers). **Esto hay que repetirlo cada vez que se mueva el mundo o las estaciones.**
 - [ ] **El occlusion sigue pendiente, y ahora también el de la escena de arte.** El de las tres
       escenas jugables es el de siempre, intacto. El de `CITY/scenas/Garage.unity` se perdió al
       integrar: Unity le reasignó el GUID al copiarlo y quedó huérfano, así que se borró. Se
@@ -499,6 +502,23 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
   cierra la escena abierta; hay que reabrirla y volver a montar la presentación. Y **no** usar
   `BuildMenu()` desde un script: llama a `SaveCurrentModifiedScenesIfUserWantsTo()`, que es el
   diálogo modal de más arriba.
+- **Un `LightingData` prestado de otra escena se ve bien hasta que algo se mueve.** La escena
+  de trabajo referenciaba el de la escena de arte —y era gratis: 330 y pico renderers con bake
+  sin hornear aquí—. Pero el horneado **es por escena**: en cuanto las estaciones y el vehículo
+  cambiaron de sitio, el mapa dejó de corresponder y el garaje salió con manchas duras en el
+  suelo y las paredes apagadas. **Se diagnostica mal a ojo:** parecía «otro garaje» o «el suelo
+  cambió de material», y no era ninguna de las dos —la malla, el material y la textura del suelo
+  llevaban sin tocarse desde el 5 de octubre, y la propia escena de arte de Daniel tiene el suelo
+  blanco—. Lo que lo zanja es hornear la escena y mirar.
+- **El post-proceso estaba apagado en las tres cámaras base.** El `Box Volume` con su perfil
+  —Bloom, ColorAdjustments, WhiteBalance— llevaba ahí todo el tiempo, pero sin
+  `renderPostProcessing` en la cámara no se aplica nada, así que el garaje salía lavado. Ojo
+  también: ese volumen **no es global**, su caja es el interior del garaje (10.0 × 3.6 × 12.1),
+  así que fuera no grada — y el aprendiz empieza fuera, a `z = 9.3`, a propósito.
+- **Reimportar el `.unitypackage` de arte puede retroceder trabajo.** Reimportar `garage v8` el
+  2026-10-14 no trajo **nada** nuevo —`Garage.unity`, `suelo 1.mat` e `interior.fbx` salieron con
+  el mismo hash— y en cambio pisó el `scooter.fbx` despiezado con el de malla única del paquete.
+  Antes de reimportar, comparar hashes; después, `git status` y restaurar lo que haya retrocedido.
 - **Lo que suba Cindy no se mezcla tal cual: sus importaciones caen en `Assets/CITY`.** Su rama
   nunca tuvo la reestructura a `_Project`, así que cuando importa un paquete de arte, parte de
   los ficheros sobrescriben en sitio y el resto aterriza en el layout viejo —**con los mismos
