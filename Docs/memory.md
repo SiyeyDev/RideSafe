@@ -1,7 +1,7 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-14
+> Última actualización: 2026-10-15 (madrugada)
 >
 > **Lo que falta hoy, con nombres y números: `Docs/Pendientes_Reunion_2026-10-12.md`.**
 
@@ -283,6 +283,18 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       un `!` menos. ~~El patinete despiezado~~ **llegó el 2026-10-14**, y con él la maneta de
       freno que la bici no tiene. Del patinete faltaría el faro; la batería va dentro de la
       plataforma y seguramente no tiene sentido sacarla.
+- [ ] **La estación propia de los pantalones.** Charlie los quiere **delante de las dos
+      estanterías** de la pared izquierda (`df_g_shelf_01 (2)` y `(3)`, de z=−2.01 a 1.84).
+      Medido: ahí **no caben dentro de la zona `clothing`** —desde su ancla, a 3,31 m de la
+      pared, el encuadre cubre de z=2.01 a 8.81, y el test falla con `trousers_fitted` en
+      viewport x=−0.205—. Hace falta zona nueva: una fila en `Module01Stations`, un `ZoneSO`
+      con los tres pantalones sacados de `clothing`, el ancla sale sola, y el recorrido de
+      PlayMode pasa de 6 zonas a 7. **Bloqueado por el título de zona en I2 (ES/EN), que lo pone
+      Charlie.** Consecuencia de diseño: 4 estaciones personales en vez de 3 y una sección más
+      en el reporte. La alternativa sin término nuevo es mover la estación de ropa **entera** a
+      las estanterías, que es una sola línea.
+- [ ] **`tapabocas` tapa la estación de cascos** y el despeje no encontró hueco libre donde
+      apartarlo: avisa y lo deja. Hay que moverlo a mano en la escena.
 - [ ] **Pantalón reflectivo o corta-viento**, que pidió Charlie. No existe modelo. Entrará como
       «según condición», igual que el chaleco. **No bloquea esta build**: `jean ajustado` ya es
       el pantalón correcto (núcleo) y la zona ya enseña algo sin él.
@@ -350,8 +362,8 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       rehornea desde esa escena cuando haga falta; no está en la lista de build.
 - [ ] **Reponer colliders: ni los armarios ni los maniquíes del v6 tienen ninguno.** Además de
       lo obvio, esto hace que toda comprobación de oclusión por raycast mienta (ver §9)
-- [ ] **670.903 triángulos**, casi el doble del presupuesto de Quest. El 39 % son tres maniquíes
-      en pose T y 22 troncos de árbol
+- [ ] **459.652 triángulos visibles** tras el cambio de mundo al v8 —bajan desde los 670.903 del
+      v6—, pero siguen por encima del presupuesto de Quest (150–350k)
 - [x] ~~**El orden de la lista de build**~~ — corregido el 2026-10-12: la escena del v6 ya es la
       primera. Antes un build habría arrancado en `RideSafe_Garaje.unity`, la vieja. Es un
       cambio en `ProjectSettings`: mirarlo al integrar con Cindy
@@ -502,6 +514,18 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
   cierra la escena abierta; hay que reabrirla y volver a montar la presentación. Y **no** usar
   `BuildMenu()` desde un script: llama a `SaveCurrentModifiedScenesIfUserWantsTo()`, que es el
   diálogo modal de más arriba.
+- **Una regresión de arte no siempre está en un `git diff`.** Dos veces seguidas aquí: el suelo
+  blanco no era un fichero cambiado sino **cuál de los tres materiales** llevaba puesto el
+  objeto, y las bicis invisibles no eran un fichero borrado sino un `MeshFilter` que se quedó
+  **sin malla** al despiezarse el FBX. Buscar «qué fichero cambió» no podía dar con ninguna de
+  las dos. Lo que sirve: medir en la escena —qué material lleva cada objeto, qué bounds tiene— y
+  comparar **contenido**, no commits.
+- **`git diff <commit> -- <ruta>` sobre una ruta que no existe responde «sin cambios».** Me hizo
+  afirmar que `interior.fbx` era idéntico al del v8 cuando estaba mirando una ruta inventada —le
+  faltaba `MODELADOS 3d/`—. Si la comparación va a sostener una conclusión, comprobar antes que
+  la ruta existe. Y para ficheros de LFS, `git show <commit>:<ruta>` da el **puntero**, no el
+  contenido: sirve para ver si cambió, no para hashear el modelo. Para comparar de verdad contra
+  un `.unitypackage`, extraerlo (es un tar.gz con una carpeta por GUID) y hacer `sha1sum`.
 - **El suelo del garaje lo entrega el arte en baldosa blanca, y el acabado bueno es otro.** La
   escena de arte pone en `piso` el material `suelo 1` —`Poliigon_TilesCeramicWhite`, tiling 2×2,
   smoothness 0.90—, que pinta el garaje de blanco con juntas de metro y medio. El acabado del
@@ -640,6 +664,41 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-15 (madrugada) — el garaje del v8 en la escena, y la luz vuelve a su sitio
+
+Charlie vio el garaje «distinto» y con la luz rota. Costó varias vueltas porque **no era una
+cosa, eran tres**, y ninguna se veía en un `git diff`.
+
+- **La luz: la escena no horneaba la suya, la tomaba prestada de la escena de arte.** Era gratis
+  mientras nada se moviera, pero el horneado es por escena: en cuanto las estaciones y el
+  vehículo cambiaron de sitio, el mapa dejó de corresponder y salieron manchas duras en el suelo
+  con las paredes apagadas. Ahora tiene el suyo en `Assets/_Project/Scene/RideSafe_Garaje_v5/`,
+  2 lightmaps y 3 sondas, 378 de 436 renderers. **Hay que repetirlo cada vez que se mueva el
+  mundo o las estaciones.**
+- **El post-proceso estaba apagado en las tres cámaras base.** El `Box Volume` —Bloom,
+  ColorAdjustments, WhiteBalance— llevaba ahí todo el tiempo sin aplicarse.
+- **El suelo: no era el material que parecía.** El objeto `piso` llevaba `suelo 1` —baldosa
+  cerámica blanca brillante, tiling 2×2— en vez de `SUELO.mat` —`plaster_grey_04` a 6×6, mate,
+  hormigón continuo—. Hay tres materiales de suelo y el bueno no lo usaba nadie. Se reaplica
+  desde `Module01WorldSwap.ApplyGarageFinishes()` porque el cambio de mundo sustituye el `piso`
+  entero y un ajuste a mano se pierde en la siguiente entrega.
+- **Cambiado el mundo al del paquete de arte**, con los tres comandos que eso obliga a rehacer
+  detrás: entidades, estaciones y vehículo. **459.652 triángulos.** Y hubo que recablear a mano
+  `Module01Experience._door`: la puerta es arte, así que el cambio se llevó la instancia. Lo cazó
+  PlayMode con una `UnassignedReferenceException`.
+- **Vuelven las dos bicis colgadas.** Seguían en la escena y activas pero **invisibles**: eran
+  copias de la e-bike de antes del v8 y su `MeshFilter` se quedó sin malla al despiezarse el FBX.
+  Bounds `(0,0,0)`. Rehechas desde el `ebike.fbx` actual.
+- **Reimportar `garage v8.unitypackage` no trajo nada** y encima pisó el scooter despiezado con
+  el de malla única. Comprobado abriendo el paquete por fuera de Unity: `Garage.unity`,
+  `interior.fbx` y `suelo 1.mat` son **byte a byte** los que ya había. La malla del garaje no se
+  toca desde el **v6** del 12 de octubre: el v7 fue horneado y el v8 fue la e-bike y horneado.
+- **Lo que más tiempo costó fue diagnosticar por ojo.** Atribuí el suelo blanco al merge de
+  Cindy y me equivoqué; también di por buena una comparación de `git diff` sobre una **ruta que
+  no existía** —y git responde «sin cambios»—. Lo que zanjó cada punto fue comparar hashes y
+  medir, no mirar capturas. Está en §9.
+- 347/349 EditMode y 6/6 PlayMode. `dev` y `feat/garaje-v6` al día en `3dff540`.
 
 ### 2026-10-14 (noche, 3) — lo de Cindy entra, y `dev` se pone al día
 
