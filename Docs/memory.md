@@ -282,7 +282,18 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 - [ ] **Pantalón reflectivo o corta-viento**, que pidió Charlie. No existe modelo. Entrará como
       «según condición», igual que el chaleco. **No bloquea esta build**: `jean ajustado` ya es
       el pantalón correcto (núcleo) y la zona ya enseña algo sin él.
-- [ ] **Pushear `feat/garaje-v6`**: lleva 3 commits propios sin subir.
+- [x] ~~**Pushear `feat/garaje-v6`**~~ — **ya está subida.** Comprobado el 2026-10-14 contra
+      `git ls-remote`: el remoto tiene la misma punta que el local. Lo de «3 commits sin subir»
+      llevaba tiempo siendo falso. Y **no hay nada que traer de `dev`**: su punta (`718a6e9`) es
+      ancestro de esta rama, igual que `main` y `feat/garaje-v5`.
+- [ ] **Decidir qué hacer con `Feature/tutorial`.** Cindy subió ahí el 2026-10-14
+      «Update => scene material and lighting», 186 ficheros, y es **la única rama con algo que
+      no esté aquí**. No se puede mezclar tal cual: **149 de esos ficheros caen en
+      `Assets/CITY/`, el layout viejo, con los mismos GUID que los nuestros bajo
+      `_Project/Models/CITY/`** —verificado fichero a fichero, p. ej. `Carretera.fbx` comparte
+      el guid `5d6d994f…`—. Mezclarlo deja el proyecto con dos copias de cada asset y Unity
+      reasignando GUID por su cuenta. La vía es la de siempre: tomar el contenido y moverlo con
+      su `.meta` al lado (`AssetDatabase.MoveAsset`), como se hizo con los paquetes v6 y v8.
 - [ ] Alinear la hoja de I2 con el asset (la hoja va detrás; ver §6)
 - [ ] Voz del módulo 1 y los dos videos. **Bloqueados a propósito:** Charlie quiere dejar
       primero los textos bien en el Drive, y sacar de ahí locución y guion de video.
