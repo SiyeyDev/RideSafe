@@ -235,7 +235,16 @@ namespace RideSafe.Module01.Tests
             SelectionReport personal = null, vehicle = null;
             _director.PersonalSectionCompleted += r => personal = r;
             _director.VehicleSectionCompleted += r => vehicle = r;
-            string[] zones = { "head", "clothing", "load", "cockpit", "wheels", "visibility" };
+            // Las zonas NO se escriben a mano: se derivan de lo que el director va a recorrer
+            // -el catalogo primero, el perfil del vehiculo despues-. Escritas a mano, el dia que
+            // se anadio la estacion de pantalones el test se quedo esperando 'load' mientras el
+            // recorrido estaba en 'trousers', y el fallo apuntaba a un sitio que no era.
+            Module01CatalogSO catalogo = Field<Module01CatalogSO>(_director, "_catalog");
+            Assert.IsNotNull(catalogo, "El director se quedo sin catalogo.");
+            string[] zones = catalogo.Zones.Select(z => z.ZoneId)
+                .Concat(_director.SelectedVehicle.InspectionZones.Select(z => z.ZoneId))
+                .ToArray();
+            Assert.That(zones, Is.EquivalentTo(zones.Distinct()), "Hay zonas repetidas en el recorrido.");
             foreach (string zoneId in zones)
             {
                 yield return WaitFor(() => _director.CurrentZone != null && _director.CurrentZone.ZoneId == zoneId && Object.FindAnyObjectByType<Module01Experience>().Phase == "Choosing" && Field<CanvasGroup>(Object.FindAnyObjectByType<GuidedTour>(), "_fade").alpha == 0, "Llegada a " + zoneId);
@@ -1027,6 +1036,9 @@ namespace RideSafe.Module01.Tests
         private static readonly string[] SinTraducirTodavia =
         {
             "trousers_fitted", "trousers_loose", "trousers_tech",
+            // Del v9. Las claves son Module1/Item_ElbowPads y Module1/Item_KneePads, con su
+            // _Risk, en ingles y espanol. Las pone Charlie en el Drive.
+            "elbow_pads", "knee_pads",
         };
 
         private static bool PendienteDeTraducir(string itemId) =>

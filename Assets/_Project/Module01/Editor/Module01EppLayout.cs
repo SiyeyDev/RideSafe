@@ -130,15 +130,36 @@ namespace RideSafe.Module01.Editor
             }
 
             List<Vector3> sizes = plan.Select(p => p.Box.size).ToList();
-            float span = StationLayout.Span(sizes, station.Axis, Module01Stations.Gap);
+
+            // El hueco declarado es un maximo comodo: si la fila no entra, se aprieta hasta el
+            // minimo legible antes de dejarla colgando por los lados. Con los pantalones
+            // doblados y los dos pares, la ropa pide mas de lo que da la mesa al hueco de
+            // siempre, y apretar es mejor que que las botas floten fuera de la tapa.
+            float gap = StationLayout.FittingGap(surface, station.Axis, sizes, Module01Stations.Gap);
+            float span = StationLayout.Span(sizes, station.Axis, gap);
             float room = station.Axis == StationAxis.X ? surface.size.x : surface.size.z;
+
+            Vector3[] spots;
+            string forma;
+            if (span <= room)
+            {
+                spots = StationLayout.Arrange(surface, station.WorktopHeight, station.Axis, sizes, gap);
+                forma = "una fila";
+            }
+            else
+            {
+                // No cabe en una sola fila, asi que se usa el FONDO de la tapa: lo plano
+                // delante y lo alto detras. Lo plano no puede tapar nada -5 cm de canto- y la
+                // alternativa es dejar la fila colgando por los lados, que es lo que pasaba.
+                spots = ArrangeTwoRanks(surface, station, sizes, out gap, out span, out int delante);
+                forma = $"dos filas ({delante} planos delante)";
+            }
+
             if (span > room)
                 Debug.LogWarning(
                     $"[Module01] Los {plan.Count} elementos de '{zone.ZoneId}' miden {span:F2} m y " +
-                    $"'{station.SurfaceName}' solo da {room:F2} m: van a colgar por los lados.");
-
-            Vector3[] spots = StationLayout.Arrange(
-                surface, station.WorktopHeight, station.Axis, sizes, Module01Stations.Gap);
+                    $"'{station.SurfaceName}' solo da {room:F2} m, ya en {forma} y con el hueco " +
+                    $"apretado a {gap:F2}: van a colgar por los lados.");
 
             float floorY = GarageFloorTop();
             for (int i = 0; i < plan.Count; i++)
@@ -168,8 +189,71 @@ namespace RideSafe.Module01.Editor
 
             Debug.Log(
                 $"[Module01] '{zone.ZoneId}' -> {station.SurfaceName}: {plan.Count} elementos sobre " +
-                $"y={station.WorktopHeight:F3}, {span:F2} m de fila, ancla en {pose.position:F2}.");
+                $"y={station.WorktopHeight:F3}, {forma}, {span:F2} m de los {room:F2} que da el " +
+                $"mueble, hueco {gap:F2}, ancla en {pose.position:F2}.");
             return true;
+        }
+
+        /// <summary>
+        /// Reparte en <b>dos filas</b>: lo plano delante, hacia el aprendiz, y lo alto detras.
+        /// <para>
+        /// Es lo que permite meter ocho elementos en una mesa de 2.62 m. El orden importa y es
+        /// este y no el contrario: un elemento plano delante de uno alto no lo tapa —la vista y
+        /// el rayo del clic le pasan por encima—, mientras que el chaleco, que mide 60 cm,
+        /// esconderia detras de si un pantalon doblado de 5 cm.
+        /// </para>
+        /// <para>
+        /// Cada fila se coloca con <see cref="StationLayout.Arrange"/> sobre la misma tapa
+        /// corrida en profundidad, de modo que la aritmetica de centrado y de huecos es la misma
+        /// y no hay una segunda version que se pueda desincronizar.
+        /// </para>
+        /// </summary>
+        private static Vector3[] ArrangeTwoRanks(
+            Bounds surface, Station station, List<Vector3> sizes,
+            out float gap, out float span, out int flatCount)
+        {
+            List<int> planos = new List<int>();
+            List<int> altos = new List<int>();
+            for (int i = 0; i < sizes.Count; i++)
+            {
+                if (StationLayout.IsFlat(sizes[i]))
+                    planos.Add(i);
+                else
+                    altos.Add(i);
+            }
+
+            flatCount = planos.Count;
+
+            float fondo = station.Axis == StationAxis.X ? surface.size.z : surface.size.x;
+            float corrimiento = fondo * StationLayout.RankOffset;
+
+            Bounds detras = StationLayout.Rank(surface, station.Outward, -corrimiento);
+            Bounds delante = StationLayout.Rank(surface, station.Outward, corrimiento);
+
+            Vector3[] spots = new Vector3[sizes.Count];
+            gap = Module01Stations.Gap;
+            span = 0f;
+
+            // La fila de atras manda en el hueco y en el ancho, que es la que va justa.
+            foreach ((List<int> fila, Bounds tapa) in new[] { (altos, detras), (planos, delante) })
+            {
+                if (fila.Count == 0)
+                    continue;
+
+                List<Vector3> tam = fila.Select(i => sizes[i]).ToList();
+                float g = StationLayout.FittingGap(tapa, station.Axis, tam, Module01Stations.Gap);
+                float s = StationLayout.Span(tam, station.Axis, g);
+
+                Vector3[] sitios = StationLayout.Arrange(
+                    tapa, station.WorktopHeight, station.Axis, tam, g);
+
+                for (int k = 0; k < fila.Count; k++)
+                    spots[fila[k]] = sitios[k];
+
+                if (s > span) { span = s; gap = g; }
+            }
+
+            return spots;
         }
 
         /// <summary>Crea o recoloca <c>anchor_&lt;zona&gt;</c> con la pose derivada del grupo.</summary>

@@ -112,6 +112,14 @@ namespace RideSafe.Module01
             // pertenecen donde están las herramientas, no en la encimera de los cascos. Tapa
             // medida por la regla y el medidor que ya descansan ahí, en 1.04.
             new Station("load", "otra mesa", 1.04f, StationAxis.Z, Vector3.left),
+
+            // Los pantalones doblados tienen banco propio desde el v9, por decisión de Charlie:
+            // el banco largo y vacío del fondo derecho. Da 3.72 m -el más largo del garaje- y
+            // así la ropa deja de ir apretada y el recorrido gana un punto más del garaje.
+            // La tapa no se pudo derivar de lo que el arte dejara encima, porque está vacío: se
+            // midió la malla, quedándose con la franja horizontal de más área por debajo de la
+            // balda alta -2.78 m2 mirando hacia arriba a 1.02, frente a 1.39 m2 a 1.74-.
+            new Station("trousers", "mesa", 1.02f, StationAxis.Z, Vector3.left),
         };
 
         /// <summary>Todas las estaciones, en el orden del recorrido.</summary>
@@ -139,6 +147,81 @@ namespace RideSafe.Module01
     /// </summary>
     public static class StationLayout
     {
+        /// <summary>
+        /// Hueco mínimo al que se puede apretar la fila. Por debajo de esto dos elementos se
+        /// leen como uno solo y el aprendiz no sabe cuántas cosas hay que revisar.
+        /// </summary>
+        public const float MinGap = .10f;
+
+        /// <summary>
+        /// Lo que se deja libre en cada punta de la tapa. Un elemento con su borde justo en el
+        /// canto del mueble se lee como que se va a caer.
+        /// </summary>
+        public const float EdgeInset = .10f;
+
+        /// <summary>
+        /// El hueco que de verdad cabe: el declarado si la fila entra en la tapa, y si no el
+        /// que reparte el sobrante entre los huecos, nunca por debajo de <see cref="MinGap"/>.
+        /// <para>
+        /// El hueco declarado es un <b>máximo cómodo</b>, no una medida sagrada: apretar la fila
+        /// es mejor que dejarla colgando por los lados, que es lo que pasaba antes —medido, los
+        /// 6 elementos de ropa pedían 2.81 m sobre una mesa de 2.62 y las botas se salían—.
+        /// </para>
+        /// <para>
+        /// Devuelve el declarado tal cual con menos de dos elementos: sin huecos no hay nada
+        /// que repartir.
+        /// </para>
+        /// </summary>
+        public static float FittingGap(
+            Bounds surface, StationAxis axis, IReadOnlyList<Vector3> sizes, float declaredGap)
+        {
+            if (sizes == null || sizes.Count < 2)
+                return declaredGap;
+
+            float room = (axis == StationAxis.X ? surface.size.x : surface.size.z) - 2f * EdgeInset;
+
+            float occupied = 0f;
+            for (int i = 0; i < sizes.Count; i++)
+                occupied += Along(sizes[i], axis);
+
+            float spare = room - occupied;
+            if (spare <= 0f)
+                return MinGap;
+
+            return Mathf.Clamp(spare / (sizes.Count - 1), MinGap, declaredGap);
+        }
+
+        /// <summary>
+        /// Altura por debajo de la cual un elemento <b>no puede tapar nada</b>: puesto delante
+        /// de otro, la vista y el rayo del clic le pasan por encima.
+        /// <para>
+        /// Los pantalones doblados del v9 miden 5 cm de canto. Un elemento asi en la fila de
+        /// delante no esconde al de detras, y eso es lo que permite usar el fondo de la tapa en
+        /// vez de alargar la fila hasta que cuelgue por los lados.
+        /// </para>
+        /// </summary>
+        public const float FlatHeight = .12f;
+
+        /// <summary>¿Este elemento es lo bastante plano para ir en la fila de delante?</summary>
+        public static bool IsFlat(Vector3 size) => size.y < FlatHeight;
+
+        /// <summary>
+        /// La misma tapa, corrida <paramref name="offset"/> metros hacia el lado del aprendiz.
+        /// Sirve para sacar dos filas a distinta profundidad reusando <see cref="Arrange"/>.
+        /// </summary>
+        public static Bounds Rank(Bounds surface, Vector3 outward, float offset)
+        {
+            Vector3 flat = new Vector3(outward.x, 0f, outward.z);
+            flat = flat.sqrMagnitude < .0001f ? Vector3.forward : flat.normalized;
+            return new Bounds(surface.center + flat * offset, surface.size);
+        }
+
+        /// <summary>
+        /// Cuánto se corre cada fila respecto al centro de la tapa, como fracción del fondo.
+        /// Dos filas a 0.22 del fondo quedan separadas casi la mitad del mueble.
+        /// </summary>
+        public const float RankOffset = .22f;
+
         /// <summary>Cuánto ocupa la fila entera, con sus huecos. Para saber si cabe.</summary>
         public static float Span(IReadOnlyList<Vector3> sizes, StationAxis axis, float gap)
         {
@@ -284,3 +367,5 @@ namespace RideSafe.Module01
         private static float Along(Vector3 v, StationAxis axis) => axis == StationAxis.X ? v.x : v.z;
     }
 }
+
+// v9: dos filas en la estacion de ropa.

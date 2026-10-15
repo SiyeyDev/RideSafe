@@ -256,6 +256,82 @@ namespace RideSafe.Module01.Tests
             Assert.AreEqual(-4.4f + 1.9f, ojo.position.x, .0001f, "Se planta a la distancia pedida.");
             Assert.Less(Vector3.Angle(ojo.rotation * Vector3.forward, Vector3.left), .5f);
         }
+        /// <summary>
+        /// Los 8 elementos de la zona de ropa tal como quedan con el garaje v9: botas, chaleco,
+        /// bufanda, los tres pantalones <b>doblados</b> y los dos pares, estos ya compactados a
+        /// lo ancho de la tapa. Medidos en la escena.
+        /// </summary>
+        private static List<Vector3> RopaDelV9() => new List<Vector3>
+        {
+            new Vector3(.349f, .148f, .295f),   // botas
+            new Vector3(.455f, .604f, .304f),   // chaleco reflectivo
+            new Vector3(.211f, .419f, .357f),   // bufanda
+            new Vector3(.256f, .317f, .048f),   // jean ajustado doblado
+            new Vector3(.271f, .363f, .049f),   // jean ancho doblado
+            new Vector3(.256f, .297f, .055f),   // pantalon deportivo doblado
+            new Vector3(.320f, .171f, .214f),   // coderas, el par a lo ancho
+            new Vector3(.384f, .199f, .226f),   // rodilleras, el par a lo ancho
+        };
+
+        [Test]
+        public void El_hueco_declarado_se_respeta_cuando_la_fila_cabe_de_sobra()
+        {
+            List<Vector3> tam = Tres();
+
+            float hueco = StationLayout.FittingGap(Mostrador(), StationAxis.X, tam, .34f);
+
+            Assert.AreEqual(.34f, hueco, 1e-4f,
+                "Con tres cosas en 3 m de tapa no hay por que apretar nada.");
+        }
+
+        [Test]
+        public void La_ropa_del_v9_cabe_en_la_mesa_apretando_el_hueco()
+        {
+            Bounds mesa = MesaLateral();
+            List<Vector3> tam = RopaDelV9();
+
+            float hueco = StationLayout.FittingGap(mesa, StationAxis.Z, tam, .34f);
+            float fila = StationLayout.Span(tam, StationAxis.Z, hueco);
+
+            Assert.Less(hueco, .34f, "Ocho elementos no caben al hueco de siempre: tiene que apretar.");
+            Assert.GreaterOrEqual(hueco, StationLayout.MinGap, "No puede apretar por debajo del minimo legible.");
+            Assert.LessOrEqual(fila, mesa.size.z - 2f * StationLayout.EdgeInset + 1e-4f,
+                "La fila tiene que entrar en la tapa dejando el margen de los cantos; mide "
+                + fila.ToString("F2") + " m de los " + mesa.size.z.ToString("F2") + " de la mesa.");
+        }
+
+        [Test]
+        public void Ni_apretando_se_baja_del_hueco_minimo()
+        {
+            // Diez cajas de 40 cm no caben en 2.6 m ni pegadas: 4 m de puro objeto.
+            List<Vector3> tam = Enumerable.Range(0, 10)
+                .Select(_ => new Vector3(.4f, .2f, .4f)).ToList();
+
+            float hueco = StationLayout.FittingGap(MesaLateral(), StationAxis.Z, tam, .34f);
+
+            Assert.AreEqual(StationLayout.MinGap, hueco, 1e-4f,
+                "Cuando no cabe de ninguna manera, se queda en el minimo y el montador avisa.");
+        }
+
+        [Test]
+        public void Apretado_el_hueco_la_fila_sigue_centrada_en_la_mesa()
+        {
+            Bounds mesa = MesaLateral();
+            List<Vector3> tam = RopaDelV9();
+            float hueco = StationLayout.FittingGap(mesa, StationAxis.Z, tam, .34f);
+
+            Vector3[] sitios = StationLayout.Arrange(mesa, .92f, StationAxis.Z, tam, hueco);
+
+            float primero = sitios[0].z - tam[0].z * .5f;
+            float ultimo = sitios[sitios.Length - 1].z + tam[tam.Count - 1].z * .5f;
+
+            Assert.Greater(primero, mesa.min.z,
+                "El primer elemento se sale por el borde de atras de la mesa.");
+            Assert.Less(ultimo, mesa.max.z,
+                "El ultimo elemento se sale por el borde de delante de la mesa.");
+            Assert.AreEqual((primero + ultimo) * .5f, mesa.center.z, .02f,
+                "La fila tiene que quedar centrada en la mesa, no pegada a una punta.");
+        }
     }
 
     /// <summary>
@@ -312,5 +388,6 @@ namespace RideSafe.Module01.Tests
                     "La tapa de '" + s.ZoneId + "' (" + s.SurfaceName + ") esta a "
                     + s.WorktopHeight + " m: o es el suelo o es un armario alto.");
         }
+
     }
 }

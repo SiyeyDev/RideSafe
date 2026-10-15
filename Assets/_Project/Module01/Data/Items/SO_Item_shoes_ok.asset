@@ -17,3 +17,5 @@ MonoBehaviour:
   _riskKey: Module1/Item_ShoesOk_Risk
   _category: 0
   _displayPrefab: {fileID: 919132149155446097, guid: a5817bf683e020b45bbf38935cdac1f0, type: 3}
+  _deteriorated: 0
+  _promptClip: {fileID: 0}

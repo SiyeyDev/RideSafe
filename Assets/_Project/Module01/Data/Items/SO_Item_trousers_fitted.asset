@@ -16,6 +16,6 @@ MonoBehaviour:
   _nameKey: Module1/Item_TrousersFitted
   _riskKey: Module1/Item_TrousersFitted_Risk
   _category: 0
-  _displayPrefab: {fileID: 919132149155446097, guid: 6bc4b6f277f00674eab4a23b76d995b4, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: ecea867daba18e84daa3d3505025b1c6, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}

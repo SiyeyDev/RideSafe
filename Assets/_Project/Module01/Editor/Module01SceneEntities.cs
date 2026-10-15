@@ -30,11 +30,57 @@ namespace RideSafe.Module01.Editor
             // ropa desde que se apago clothing_loose por no haber modelo. El v7 lo trajo.
             ("bufanda 01",         "clothing", "clothing_loose"),
             // Los pantalones: ajustado bien, ancho se engancha en la cadena, deportivo da igual.
-            ("jean ajustado",      "clothing", "trousers_fitted"),
-            ("pantalon ancho",     "clothing", "trousers_loose"),
-            ("pant low",           "clothing", "trousers_tech"),
+            // Desde el v9 se usan los DOBLADOS: miden 5 cm de canto en vez de 1,16 m de alto,
+            // asi que se apoyan en la tapa como el resto en vez de plantarse en el suelo.
+            // Ojo: el arte entrega el del ajustado con un espacio al final del nombre.
+            ("jean_ajustado_doblado",      "trousers", "trousers_fitted"),
+            ("jean ancho doblado",         "trousers", "trousers_loose"),
+            ("pantalon deportivo doblado", "trousers", "trousers_tech"),
+            // Los dos pares del v9. La entidad va en el PADRE del par, no en cada pieza.
+            ("coderas",            "clothing", "elbow_pads"),
+            ("rodilleras",         "clothing", "knee_pads"),
             ("guaya candado",      "load",     "cargo_secured"),
             ("MobilePhone_01",     "load",     "cargo_handheld")
+        };
+
+        /// <summary>
+        /// Los EPP que el arte entrega <b>por pares</b>: (nombre del grupo, zona, piezas).
+        /// <para>
+        /// Una rodillera suelta no es un elemento del catalogo; el par si. Se agrupan bajo un
+        /// padre y la entidad va en el padre, de modo que el clic, el contorno y el reporte
+        /// tratan el par como una sola cosa. Si no, la segunda pieza se queda sin entidad y
+        /// aparece como decorado suelto encima de la mesa.
+        /// </para>
+        /// </summary>
+        private static readonly (string Group, string Zone, string[] Parts)[] Pairs =
+        {
+            ("coderas",    "clothing", new[] { "codera",    "codera (1)" }),
+            ("rodilleras", "clothing", new[] { "rodillera", "rodillera (1)" })
+        };
+
+        /// <summary>Hueco entre las dos piezas de un par, a lo ancho de la tapa.</summary>
+        private const float PairGap = .03f;
+
+        /// <summary>
+        /// Arte que una entrega posterior ha <b>sustituido</b>: (objeto viejo, quien lo sustituye).
+        /// <para>
+        /// El v9 trae los tres pantalones doblados, y los de pie se quedan en la escena sin
+        /// entidad, duplicando el ejercicio: el aprendiz ve dos pantalones anchos y solo uno se
+        /// puede pulsar. Encima, al no pertenecer ya a ninguna estacion, nadie los coloca y el
+        /// despeje de pasillo los arrincona donde pueda —el ajustado acabo en (-4.49, 0.57,
+        /// -4.47), contra la pared del fondo—.
+        /// </para>
+        /// <para>
+        /// <b>Se apagan, no se borran.</b> Son modelos del equipo de arte y el cambio de mundo
+        /// los vuelve a traer en cada entrega; apagarlos es reversible con un clic y volver a
+        /// correr este comando los deja apagados otra vez.
+        /// </para>
+        /// </summary>
+        private static readonly (string Viejo, string Sustituto)[] Superseded =
+        {
+            ("jean ajustado",  "jean_ajustado_doblado"),
+            ("pantalon ancho", "jean ancho doblado"),
+            ("pant low",       "pantalon deportivo doblado")
         };
 
 
@@ -48,6 +94,8 @@ namespace RideSafe.Module01.Editor
         /// <summary>Idempotente: reutiliza las entidades que ya estén puestas.</summary>
         public static void Apply()
         {
+            HideSuperseded();
+            GroupPairs();
             TagEntities();
             FillMissingEntities();
             RemoveOrphanSpawned();
@@ -286,11 +334,162 @@ namespace RideSafe.Module01.Editor
             return null;
         }
 
+        /// <summary>
+        /// Apaga el arte que otra entrega ha sustituido, y solo si el sustituto esta en la
+        /// escena: si el nuevo no ha llegado, mas vale ver el viejo que no ver nada.
+        /// </summary>
+        private static void HideSuperseded()
+        {
+            foreach ((string viejo, string sustituto) in Superseded)
+            {
+                GameObject nuevo = Find(sustituto);
+                if (nuevo == null)
+                {
+                    Debug.LogWarning(
+                        $"[Module01] '{viejo}' deberia sustituirlo '{sustituto}', que no esta en " +
+                        "la escena; lo dejo encendido para no quedarnos sin el elemento.");
+                    continue;
+                }
+
+                GameObject old = Find(viejo);
+                if (old == null || !old.activeSelf)
+                    continue;
+
+                Undo.RecordObject(old, "Apagar arte sustituido");
+                old.SetActive(false);
+                Debug.Log($"[Module01] '{viejo}' apagado: lo sustituye '{sustituto}'.");
+            }
+        }
+
+        /// <summary>
+        /// Mete las dos piezas de cada par bajo un padre y las deja <b>a lo ancho</b> de la tapa.
+        /// <para>
+        /// A lo ancho y no a lo largo porque la fila de la estacion se reparte por el eje largo
+        /// del mueble: un par puesto en fila gasta el doble del sitio que hace falta, y la mesa
+        /// de ropa va justa —2.62 m para ocho elementos—. La mesa tiene 0.88 m de fondo y un par
+        /// ocupa 0.32, asi que a lo ancho sobra sitio y a lo largo no.
+        /// </para>
+        /// <para>Idempotente: si el grupo ya esta montado, solo recoloca las piezas.</para>
+        /// </summary>
+        private static void GroupPairs()
+        {
+            foreach ((string group, string zoneId, string[] parts) in Pairs)
+            {
+                List<GameObject> pieces = new List<GameObject>();
+                foreach (string part in parts)
+                {
+                    GameObject piece = Find(part);
+                    if (piece != null && !pieces.Contains(piece))
+                        pieces.Add(piece);
+                }
+
+                if (pieces.Count == 0)
+                {
+                    Debug.LogWarning(
+                        $"[Module01] No encuentro ninguna pieza del par '{group}' " +
+                        $"({string.Join(", ", parts)}); ese EPP se queda sin entidad.");
+                    continue;
+                }
+
+                if (!Module01Stations.TryGet(zoneId, out Station station))
+                {
+                    Debug.LogWarning(
+                        $"[Module01] El par '{group}' dice ser de la zona '{zoneId}', que no " +
+                        "tiene estacion declarada; lo agrupo pero no lo recoloco.");
+                }
+
+                GameObject parent = Find(group);
+                if (parent == null)
+                {
+                    parent = new GameObject(group);
+                    parent.transform.position = pieces[0].transform.position;
+                    Undo.RegisterCreatedObjectUndo(parent, "Agrupar par de EPP");
+                }
+
+                foreach (GameObject piece in pieces)
+                {
+                    if (piece.transform.parent == parent.transform)
+                        continue;
+                    Undo.RecordObject(piece.transform, "Agrupar par de EPP");
+                    piece.transform.SetParent(parent.transform, true);
+                }
+
+                bool rowAlongX = station.Axis == StationAxis.X;
+
+                List<Bounds> boxes = new List<Bounds>();
+                foreach (GameObject piece in pieces)
+                    boxes.Add(VisibleBounds(piece));
+
+                float total = 0f;
+                for (int i = 0; i < boxes.Count; i++)
+                {
+                    total += rowAlongX ? boxes[i].size.z : boxes[i].size.x;
+                    if (i < boxes.Count - 1)
+                        total += PairGap;
+                }
+
+                // Centrado donde ya estaba la primera pieza: el grupo no viaja, que de eso se
+                // encarga despues el reparto de estaciones.
+                float cursor = (rowAlongX ? boxes[0].center.z : boxes[0].center.x) - total * .5f;
+                for (int i = 0; i < pieces.Count; i++)
+                {
+                    float half = (rowAlongX ? boxes[i].size.z : boxes[i].size.x) * .5f;
+                    float at = cursor + half;
+
+                    // A lo ancho cada pieza a su hueco, y a lo largo TODAS a la misma linea:
+                    // si no, el par sigue pisando dos huecos de la fila y no se gana nada.
+                    Vector3 delta = Vector3.zero;
+                    if (rowAlongX)
+                    {
+                        delta.z = at - boxes[i].center.z;
+                        delta.x = boxes[0].center.x - boxes[i].center.x;
+                    }
+                    else
+                    {
+                        delta.x = at - boxes[i].center.x;
+                        delta.z = boxes[0].center.z - boxes[i].center.z;
+                    }
+
+                    Undo.RecordObject(pieces[i].transform, "Colocar par de EPP");
+                    pieces[i].transform.position += delta;
+
+                    cursor = at + half + PairGap;
+                }
+
+                Debug.Log(
+                    $"[Module01] Par '{group}': {pieces.Count} piezas agrupadas, " +
+                    $"{total:F2} m a lo ancho de la tapa.");
+            }
+        }
+
+        /// <summary>Caja de lo que se ve de un objeto, con sus hijos. Vacia si no tiene malla.</summary>
+        private static Bounds VisibleBounds(GameObject go)
+        {
+            Renderer[] renderers = go.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length == 0)
+                return new Bounds(go.transform.position, Vector3.zero);
+
+            Bounds b = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+                b.Encapsulate(renderers[i].bounds);
+            return b;
+        }
+
+        /// <summary>
+        /// Busca por nombre <b>sin los espacios de los bordes</b>.
+        /// <para>
+        /// El v9 entrega el pantalon ajustado doblado como <c>"jean_ajustado_doblado "</c>, con
+        /// un espacio al final. Comparando el nombre tal cual, ese EPP se queda sin entidad y
+        /// lo unico que se ve es un aviso en la consola: un caracter invisible no puede decidir
+        /// si un elemento entra al ejercicio.
+        /// </para>
+        /// </summary>
         private static GameObject Find(string name)
         {
+            string wanted = name.Trim();
             foreach (GameObject go in Object.FindObjectsByType<GameObject>(
                          FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (go.name == name)
+                if (go.name.Trim() == wanted)
                     return go;
             return null;
         }

@@ -36,14 +36,35 @@ namespace RideSafe.Module01.Editor
             ("shoes_ok",        "Module1/Item_ShoesOk",        SafetyItemCategory.Core),
             ("reflective",      "Module1/Item_Reflective",     SafetyItemCategory.ConditionDependent),
             ("cargo_secured",   "Module1/Item_CargoSecured",   SafetyItemCategory.Core),
-            ("cargo_handheld",  "Module1/Item_CargoHandheld",  SafetyItemCategory.Inappropriate)
+            ("cargo_handheld",  "Module1/Item_CargoHandheld",  SafetyItemCategory.Inappropriate),
+            // La bufanda: volvio al catalogo el 2026-10-14, cuando el v7 trajo el modelo.
+            ("clothing_loose",  "Module1/Item_ClothingLoose",  SafetyItemCategory.Inappropriate),
+            // Los pantalones, desde el 2026-10-14. El ancho se engancha en la cadena.
+            ("trousers_fitted", "Module1/Item_TrousersFitted", SafetyItemCategory.Core),
+            ("trousers_loose",  "Module1/Item_TrousersLoose",  SafetyItemCategory.Inappropriate),
+            ("trousers_tech",   "Module1/Item_TrousersTech",   SafetyItemCategory.Optional),
+            // Coderas y rodilleras, del v9. Opcionales: se recomiendan y no se exigen, como las
+            // gafas. Si Charlie las quiere de nucleo, se cambia aqui y se repite el comando.
+            ("elbow_pads",      "Module1/Item_ElbowPads",      SafetyItemCategory.Optional),
+            ("knee_pads",       "Module1/Item_KneePads",       SafetyItemCategory.Optional)
         };
 
         private static readonly (string ZoneId, string TitleKey, string[] ItemIds)[] Zones =
         {
             ("head",     "Module1/Zone_Head",     new[] { "helmet_ok", "helmet_damaged", "glasses" }),
-            // clothing_loose fuera por decision de Charlie (2026-10-07): no hay modelo de ropa suelta.
-            ("clothing", "Module1/Zone_Clothing", new[] { "shoes_ok", "reflective" }),
+            // La zona de ropa, tal como esta de verdad desde el v9. Esta lista llevaba desde el
+            // 2026-10-07 con solo dos elementos, asi que volver a correr este comando BORRABA
+            // la bufanda y los tres pantalones de la zona sin que nada avisara.
+            ("clothing", "Module1/Zone_Clothing", new[]
+             {
+                 "shoes_ok", "reflective", "clothing_loose", "elbow_pads", "knee_pads"
+             }),
+            // Los pantalones, con banco propio desde el v9: en la mesa de ropa iban apretados
+            // -ocho elementos en 2.62 m- y Charlie prefiere repartir el recorrido por el garaje.
+            ("trousers", "Module1/Zone_Trousers", new[]
+             {
+                 "trousers_fitted", "trousers_loose", "trousers_tech"
+             }),
             ("load",     "Module1/Zone_Load",     new[] { "cargo_secured", "cargo_handheld" })
         };
 

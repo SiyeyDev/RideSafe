@@ -32,7 +32,16 @@ namespace RideSafe.Module01.Editor
             ("shoes_ok",       Models + "botas.fbx"),
             ("reflective",     Models + "chaleco refectivo.fbx"),
             ("cargo_secured",  Models + "guaya candado.fbx"),
-            ("cargo_handheld", Models + "MobilePhone_01.fbx")
+            ("cargo_handheld", Models + "MobilePhone_01.fbx"),
+            ("clothing_loose", Models + "bufanda 01.fbx"),
+            // Desde el v9 los pantalones son los DOBLADOS: el de pie media 1,16 m y habia que
+            // plantarlo en el suelo; doblado se apoya en la tapa como el resto.
+            ("trousers_fitted", Models + "jean_ajustado_doblado 1.fbx"),
+            ("trousers_loose",  Models + "jean ancho doblado.fbx"),
+            ("trousers_tech",   Models + "pantalon deportivo doblado.fbx"),
+            // Los dos pares del v9. En el pedestal se ensena una pieza; en la mesa van las dos.
+            ("elbow_pads",     Models + "codera.fbx"),
+            ("knee_pads",      Models + "rodillera.fbx")
         };
 
         [MenuItem("RideSafe/Módulo 1/Usar modelos reales en vez del greybox")]

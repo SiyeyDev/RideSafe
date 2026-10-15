@@ -25,8 +25,10 @@ namespace RideSafe.Module01.Tests
             Assert.IsNotNull(catalog, Missing);
 
             CollectionAssert.IsEmpty(catalog.Validate());
-            Assert.AreEqual(11, new List<SafetyItemSO>(catalog.AllItems).Count);
-            Assert.AreEqual(3, catalog.Zones.Count);
+            // 13 desde el v9: los 11 de siempre mas coderas y rodilleras.
+            Assert.AreEqual(13, new List<SafetyItemSO>(catalog.AllItems).Count);
+            // 4 desde el v9: los pantalones se fueron a su propio banco.
+            Assert.AreEqual(4, catalog.Zones.Count);
         }
 
         /// <summary>
