@@ -1,7 +1,7 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-15 (mañana)
+> Última actualización: 2026-10-16 — tutorial agnóstico en la v5 y repaso de paneles del M0 y el M1
 >
 > **Lo que falta hoy, con nombres y números: `Docs/Pendientes_Reunion_2026-10-12.md`.**
 
@@ -58,6 +58,16 @@ y `docs/superpowers/plans/2026-10-05-modulo-01.md`.
   de ahora hay que traerlo **con cuidado**, porque sus importaciones caen en `Assets/CITY` y
   duplican GUID. Ver §9.
 
+**2026-10-16 — trabajo de Cindy sobre `dev`, todavía sin commit** (ver la bitácora de ese día).
+En el árbol de trabajo de `dev`, sin commitear:
+- el tutorial agnóstico (`Assets/_Project/Systems/TutorialHelp/`);
+- los arreglos de paneles del M0 y el M1;
+- el horneado de la v5 rehecho en **6000.4.9f1**.
+
+Commits propuestos, en este orden: tutorial → módulo 0 → módulo 1 + escena. Quedan fuera
+`ProjectSettings`, `ProjectVersion.txt`, `packages-lock`, `Assets/Settings/*`, las fuentes SDF y
+`Assets/_Recovery/`. El horneado entra solo si el equipo acuerda una versión de Unity (§8).
+
 **Falta avisar a Cindy de que `dev` se movió**, porque ella trabaja sobre
 `RideSafe_Garaje.unity` y ahora `dev` trae el mundo del **v9**, el horneado nuevo y una
 estación más.
@@ -73,6 +83,40 @@ de presentación y los tests, a cambio de nada.
 ### Módulo 0 — verificado corriendo
 Navegación completa, 35 textos localizados, cambio de idioma en vivo, narración con
 subtítulos palabra por palabra, video final, colliders del garaje.
+
+Desde el 2026-10-16, en la pantalla de vehículo:
+- **Tarjetas ajustadas al texto** (`FitCardToContent`): cada tarjeta mide lo que su nombre en el
+  idioma elegido; al seleccionarla crece lo justo para poner el check a su lado. Siempre queda
+  centrada sobre su vehículo.
+- **Barra de confirmación en dos líneas**: la frase del vehículo y «¿confirmar para continuar?»
+  ya no se pisan.
+- **Vitrina propia fuera del garaje** (`Module00 Vehicle Showroom`): copias de exhibición de la
+  e-bike y la patineta, a escala 0,6 y a 2,25 m, sobre copias de la plataforma con partículas,
+  bajo sus etiquetas. El vehículo elegido gira con sus partículas (`VehiclePreviewController`).
+  Los vehículos reales del M1 no se tocan.
+
+### Tutorial — agnóstico, montado en la v5 (2026-10-16)
+Un apoyo que **no conoce ningún módulo** y no modifica su código. Muestra el Touch Plus de la mano
+dominante con el gatillo iluminado, resalta dónde actuar y, solo la primera vez, una frase corta.
+
+- **Cuándo aparece:**
+  - la primera vez de cada tipo de interacción (interfaz u objeto 3D) en la sesión;
+  - cuando el usuario se atasca: 10 s sin un clic, con todas las opciones resaltadas por igual
+    y sin texto.
+- **Cuándo calla:** se pausa con un video o una narración, y está en pausa en la orientación
+  del M1 (`TutorialPause` dentro de `TutorialHelp`).
+- **Dónde se coloca:** abajo al centro; si ahí tapa un panel, se aparta al lado que menos tape.
+- **Cómo lo llama un módulo (solo si hace falta):** `TutorialHelp.Show/Stop/Resume/Pause`, o los
+  componentes `TutorialCue` / `TutorialPause`.
+- **Spec y plan:** `Docs/superpowers/specs/2026-10-15-tutorial-agnostico-design.md` y
+  `Docs/superpowers/plans/2026-10-15-tutorial-agnostico.md`.
+- **Montaje:**
+  - menú `RideSafe → Tutorial Help → Montar en RideSafe_Garaje_v5`, idempotente; quita el
+    objeto `Tutorial` viejo;
+  - los textos se añaden con `RideSafe → Tutorial Help → Añadir textos (I2)`.
+- **Tests:** 66 de EditMode en `TutorialHelp.Tests`.
+- **El tutorial viejo** (`Systems/Tutorial`, basado en TaskSequence) sigue en el repo porque lo
+  usa `Garaje_Test`; su retirada es una limpieza pendiente.
 
 ### Módulo 1 — lógica y presentación, las dos probadas corriendo
 
@@ -114,6 +158,20 @@ tests se marcan *ignorados* diciendo por qué, en vez de fallar sin explicación
   arriba se paraba en el onboarding, y con el patinete en malla única eso bastaba
 
 **Lo que ya no cubre ningún test:** la entrada rápida con `SO_Module00_TestSettings`.
+
+Desde el 2026-10-16:
+- **Los `!` de la e-bike reciben el clic.** Antes la zona clicable era la esfera del punto,
+  8 cm de radio y **26 cm por debajo** del signo, invisible. Ahora cada `!` tiene un hijo
+  `ClickArea`: trigger de 12 cm en capa Default, que se apaga con el signo y entrega el clic
+  al punto.
+- **«Revisa tus elecciones» crece con la lista** (`GrowWithContent`): con 7 elementos ya no
+  pisa el aviso ni los botones.
+- **«Mi Elección» va en una sola columna** (`ColumnComposition`): barra, nota y lista miden
+  lo mismo, el título está centrado en las dos direcciones y la nota va bajo la barra.
+- **Los botones finales siguen a la lista** (`FollowBelow`).
+- **Arreglos sobre el prefab sin regenerarlo:** `RideSafe → Módulo 1 → Arreglar composición de
+  paneles`. En la escena hay otro menú: `Quitar sobrescritura de la nota de Mi Elección`.
+- **Pendiente de comprobar:** los 6 tests de PlayMode del M1 tras estos cambios.
 
 ---
 
@@ -361,8 +419,26 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       `Module01VehicleStaging` monta el vehículo. El destructivo ya no hace falta.
 - [x] ~~Fondo para el título del reporte~~ — hecho el 2026-10-12: el título y el logo van sobre
       una barra oscura. Los subtítulos siguen sin bajar.
-- [ ] Panel Vehicle del módulo 0: título y subtítulo se solapan, y la barra de confirmación
-      se pisa consigo misma.
+- [x] ~~Panel Vehicle del módulo 0: la barra de confirmación se pisa consigo misma~~ —
+      **resuelto el 2026-10-16**: dos líneas a la izquierda de los botones, y las tarjetas se
+      ajustan al texto. El solape de título y subtítulo no apareció en las capturas de la v5.
+- [ ] **Correr los 6 tests de PlayMode del M1** tras los cambios del 2026-10-16. El puente se
+      cuelga con PlayMode, así que se corren desde el Test Runner. Recorren justo las pantallas
+      que cambiaron.
+- [ ] **Una sola versión de Unity para el equipo.** El horneado de la v5 hecho en 6000.5.4f1
+      **no carga** en 6000.4.9f1 y la escena sale negra (§9). Se rehízo en 6000.4.9f1 el
+      2026-10-16 (4 lightmaps, 3 sondas); si alguien vuelve a hornear en la otra versión, se
+      repite el problema. Hasta decidirlo, el horneado no se commitea.
+- [ ] **`df_g_helmet_01` (`module01.head.helmet_damaged`) no tiene collider**: el puntero no
+      puede seleccionarlo y el tutorial no lo cuenta como opción.
+- [ ] **La puerta del garaje no tiene collider.** Por eso el EPP de dentro es alcanzable por el
+      rayo desde fuera. El tutorial lo esquiva contando solo objetos 3D a menos de 4 m, pero
+      el rayo de AutoHand sí llega.
+- [ ] **Medir en Quest el coste del tutorial**: busca objetos en la escena cada segundo y
+      reevalúa la posición del control cada medio segundo. Pendientes menores anotados en la
+      revisión final (bitácora 2026-10-16).
+- [ ] **Retirar el tutorial viejo** (`Systems/Tutorial` + `Garaje_Test`) cuando ya no haga falta
+      como referencia.
 - [x] ~~Integrar `feat/garaje-v6` en `dev`~~ — **hecho el 2026-10-14.** Fue avance directo:
       `dev` no se había movido. **Queda avisar a Cindy.**
 - [x] ~~Rehornear la luz~~ — **horneado de verdad el 2026-10-14, y era el fallo que Charlie
@@ -391,6 +467,39 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 ---
 
 ## 9. Trampas conocidas
+
+**Añadidas el 2026-10-16:**
+
+- **Un horneado de 6000.5.x no carga en 6000.4.9f1 y la escena sale negra.** El log dice
+  `Failed to load '…/LightingData.asset'. File may be corrupted or was serialized with a newer
+  version of Unity`. Las texturas sí cargan, pero sin `LightingData` los renderers no saben qué
+  parte del lightmap usar. La versión va en la cabecera del archivo:
+  `head -c 300 LightingData.asset | tr -c '[:print:]' ' '`. Mirar eso antes de culpar a la luz.
+- **Una sobrescritura de instancia vieja puede aplastar un panel.** La v5 guardaba `m_SizeDelta
+  0×0` en la nota de «Mi Elección», resto de cuando la medía un `ContentSizeFitter`. Al quitar el
+  fitter en el prefab, ese 0 ganó y el texto salió como una columna de letras. El prefab estaba
+  bien y el test del prefab pasaba; el fallo solo se ve en la escena. Buscar
+  `propertyPath: m_SizeDelta` en las modificaciones de la instancia.
+- **Un collider en la capa UI no recibe clics.** El `PhysicsRaycaster` de la cámara principal la
+  excluye. Por eso el `!` (en capa UI para que lo dibuje la cámara de overlay) lleva su zona de
+  clic en un hijo en capa Default.
+- **Un MonoBehaviour de un ensamblado de tests de editor no se puede `AddComponent`**: Unity dice
+  *«is an editor script»* y devuelve null. En tests, usar un componente de runtime real
+  (p. ej. `EventTrigger` como receptor de clic).
+- **`Collider.bounds` no se actualiza al mover el objeto** hasta que la física sincroniza
+  (`autoSyncTransforms` está apagado). Medido: un cubo movido a z=3 seguía con bounds en (0,0,0).
+  Para «dónde está», usar `collider.transform.position`.
+- **Un `RectTransform` nuevo bajo un `Transform` normal guarda `m_AnchoredPosition`, no
+  `localPosition`.** Asignar solo `localPosition` funciona en memoria y se pierde al guardar.
+  Asignar los dos.
+- **Un namespace no puede llamarse como una clase pública que se usa desde `RideSafe.*`.** Con
+  `RideSafe.TutorialHelp.TutorialHelp`, una llamada `TutorialHelp.Stop()` desde un módulo
+  resolvería al namespace. Por eso el tutorial está en `RideSafe.Help`.
+- **El puente del editor a veces ejecuta un comando dos veces.** Pasó con clics de la sonda en
+  el M1, que avanzaron el recorrido solo hasta el final. Si un clic responde «No active object»
+  justo después de funcionar, es la repetición.
+
+**Anteriores:**
 
 - **`UnityEngine.EntityId` choca con el de TaskSequence** en Unity 6. Todo archivo que
   use `EntityId` necesita `using EntityId = RideSafe.TaskSequence.EntityId;`.
@@ -727,6 +836,64 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-15 / 16 — el tutorial agnóstico y un repaso de paneles del M0 y el M1
+
+Trabajo de Cindy (con Claude) sobre `dev`, **sin commit todavía**.
+
+- **La v5 salía negra en 6000.4.9f1.** Su horneado se había hecho en 6000.5.4f1 y no carga en la
+  versión anterior (§9). Se rehízo en 6000.4.9f1 con la misma configuración: 4 lightmaps, 3
+  sondas, mismo GUID de `LightingData`, sin tocar la escena. Queda pendiente acordar una versión
+  (§8).
+- **El tutorial se rehízo desde cero como apoyo agnóstico.** El de la rama `Feature/tutorial` era
+  un flujo propio con su copia de las pantallas del M0 y su secuencia de pasos. El nuevo
+  (`Systems/TutorialHelp`, namespace `RideSafe.Help`) no conoce módulos: observa la escena y
+  muestra el Touch Plus con el gatillo, el resaltado y una frase corta. Las decisiones de
+  producto están en la spec: primera vez por tipo, atasco a 10 s, todas las opciones por igual,
+  mano dominante, lo aprendido dura la sesión. Detalles que salieron al probarlo en la v5:
+  - **El clic se detecta en el propio objetivo** (`ClickWitness`, un componente invisible que no
+    se guarda). En PC la escena usa la entrada de Unity, no la de AutoHand, y escuchar solo a
+    AutoHand no veía ningún clic.
+  - **Solo cuentan los objetos 3D que el rayo alcanza a menos de 4 m.** La puerta del garaje no
+    tiene collider y el EPP de dentro contaba ya en la pantalla Welcome.
+  - **El cono de visión es de 45°.** Con 35° las gafas de la estación quedaban fuera y solo se
+    resaltaba el casco.
+  - **En la orientación del M1 el tutorial está en pausa** (lo decidió Cindy): el casco ya está
+    en la mesa y nada distingue esa pantalla de una estación.
+  - **El control se coloca abajo al centro**, y si ahí tapa un panel se aparta al lado que menos
+    tape.
+  - **Revisión final independiente:** corregidos tres importantes (resaltar todas las opciones
+    aunque una salga de la mirada, restaurar el color de los botones con tinte, avisar una sola
+    vez si falta el botón). Quedan como menores: dos pausas superpuestas (gana la última),
+    objetivos sin imagen o con malla skinned, gesto sin asignar, objetivo explícito destruido,
+    testigo en un Slider, clics fuera del cono, traducción por fotograma. El rendimiento en Quest
+    queda por medir.
+- **Módulo 0, pantalla de vehículo:**
+  - **tarjetas ajustadas al texto** en cada idioma, que crecen para el check al seleccionar;
+  - **barra de confirmación en dos líneas**;
+  - **vitrina propia** fuera del garaje con las copias girando sobre sus plataformas.
+
+  El prefab se editó en sitio (`Module00VehicleLabelLayout`) y el builder hace lo mismo.
+- **Módulo 1:**
+  - **los `!` responden** (`ClickArea`);
+  - **«Revisa tus elecciones» crece con la lista**;
+  - **«Mi Elección» va en una columna** con el título centrado;
+  - **los botones finales siguen a la lista**;
+  - **la nota de «Mi Elección» se quedaba en 0×0** por una sobrescritura vieja de la escena,
+    ya revertida (§9).
+
+  Prefab editado en sitio (`Module01LayoutFixes`), builder y `Module01PresentationBuilder`
+  al día.
+- **Tests:** EditMode **441 de 443**. Los 2 que fallan son los de siempre de `Garaje_Test`
+  (escena de prueba vieja del tutorial). PlayMode del M1 **sin correr** tras los cambios.
+
+**Para retomar, por orden:**
+
+1. Correr los 6 tests de PlayMode del M1 desde el Test Runner.
+2. Hacer los commits: tutorial → módulo 0 → módulo 1 + escena.
+3. Acordar la versión de Unity antes de commitear el horneado.
+4. Grabar el video del recorrido en PC y probar en Quest.
+5. Siguen pendientes de Charlie: los 5 términos de I2 y `Module1/Zone_Trousers`.
 
 ### 2026-10-15 (mañana) — el garaje v9: pantalones doblados y dos EPP nuevos
 
