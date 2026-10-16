@@ -1,0 +1,31 @@
+{
+    "name": "TutorialHelp.Tests",
+    "rootNamespace": "RideSafe.Help.Tests",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "TutorialHelp",
+        "TutorialHelp.Editor",
+        "Tutorial",
+        "Tutorial.Presentation",
+        "Cachacos",
+        "RideSafe.UI",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

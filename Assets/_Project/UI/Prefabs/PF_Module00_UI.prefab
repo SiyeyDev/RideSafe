@@ -3230,7 +3230,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 13.714286, y: -83.71429}
-  m_SizeDelta: {x: 158, y: 16}
+  m_SizeDelta: {x: 324, y: 16}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &3450202996447669979
 CanvasRenderer:
@@ -3441,7 +3441,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 205.71428, y: -19.714287}
+  m_AnchoredPosition: {x: 299.7143, y: -19.714287}
   m_SizeDelta: {x: 32, y: 32}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &4199834637724354018
@@ -3518,7 +3518,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 13.714286, y: -13.714286}
-  m_SizeDelta: {x: 158, y: 32}
+  m_SizeDelta: {x: 324, y: 32}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &7053772750861066179
 CanvasRenderer:
@@ -4007,7 +4007,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 13.714286, y: -13.714286}
-  m_SizeDelta: {x: 230, y: 32}
+  m_SizeDelta: {x: 324, y: 32}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &4279817491997947258
 CanvasRenderer:
@@ -9005,7 +9005,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 13.714286, y: -45.714287}
-  m_SizeDelta: {x: 230, y: 20}
+  m_SizeDelta: {x: 324, y: 20}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &5911150934578099444
 CanvasRenderer:
@@ -10140,8 +10140,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 26.4, y: -28.400002}
-  m_SizeDelta: {x: 160, y: 32}
+  m_AnchoredPosition: {x: 26.4, y: -16.4}
+  m_SizeDelta: {x: 318, y: 28}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &1074325952524542302
 CanvasRenderer:
@@ -10201,9 +10201,9 @@ MonoBehaviour:
   m_fontSize: 16
   m_fontSizeBase: 16
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 12
+  m_fontSizeMax: 16
   m_fontStyle: 0
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 512
@@ -10215,7 +10215,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -10569,7 +10569,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 13.714286, y: -75.71429}
-  m_SizeDelta: {x: 230, y: 16}
+  m_SizeDelta: {x: 324, y: 16}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &2499473283251725570
 CanvasRenderer:
@@ -11196,7 +11196,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 133.71428, y: -19.714287}
+  m_AnchoredPosition: {x: 299.7143, y: -19.714287}
   m_SizeDelta: {x: 32, y: 32}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &666625952329113457
@@ -11475,8 +11475,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 181.4, y: -28.400002}
-  m_SizeDelta: {x: 175, y: 32}
+  m_AnchoredPosition: {x: 26.4, y: -44.4}
+  m_SizeDelta: {x: 318, y: 28}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &5724726788584609430
 CanvasRenderer:
@@ -13190,6 +13190,7 @@ GameObject:
   - component: {fileID: 225995731330432455}
   - component: {fileID: 4067947637940090316}
   - component: {fileID: 8131065591549675659}
+  - component: {fileID: 5209401766515664140}
   m_Layer: 5
   m_Name: Option_ebike
   m_TagString: Untagged
@@ -13217,8 +13218,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 174.28572, y: -177.28572}
-  m_SizeDelta: {x: 185.42857, y: 85.42857}
+  m_AnchoredPosition: {x: 91.28571, y: -177.28572}
+  m_SizeDelta: {x: 351.42856, y: 85.42857}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &1758322512652952788
 CanvasRenderer:
@@ -13345,6 +13346,23 @@ MonoBehaviour:
   _stateText: {fileID: 0}
   _offText: M0/Switch_Off
   _onText: M0/Switch_On
+--- !u!114 &5209401766515664140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8567653545239232269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52905e6080d6bbd47978f45431b3d795, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RideSafe.UI::RideSafe.UI.FitCardToContent
+  _toggle: {fileID: 4067947637940090316}
+  _title: {fileID: 3400993974378467800}
+  _description: {fileID: 6251003341967313472}
+  _check: {fileID: 5109263857501427111}
+  _caption: {fileID: 5312803387645857090}
 --- !u!1 &8581316644440324552
 GameObject:
   m_ObjectHideFlags: 0
@@ -13655,6 +13673,7 @@ GameObject:
   - component: {fileID: 3219803652027667019}
   - component: {fileID: 3731763545198274925}
   - component: {fileID: 7305604898060149023}
+  - component: {fileID: 6107218573010602165}
   m_Layer: 5
   m_Name: Option_escooter
   m_TagString: Untagged
@@ -13682,8 +13701,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 634.2857, y: -179.28572}
-  m_SizeDelta: {x: 257.4286, y: 77.42857}
+  m_AnchoredPosition: {x: 587.2857, y: -179.28572}
+  m_SizeDelta: {x: 351.42856, y: 77.42857}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &6033623008359447652
 CanvasRenderer:
@@ -13810,6 +13829,23 @@ MonoBehaviour:
   _stateText: {fileID: 0}
   _offText: M0/Switch_Off
   _onText: M0/Switch_On
+--- !u!114 &6107218573010602165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8791890447721386227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52905e6080d6bbd47978f45431b3d795, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RideSafe.UI::RideSafe.UI.FitCardToContent
+  _toggle: {fileID: 3731763545198274925}
+  _title: {fileID: 6643335071097320246}
+  _description: {fileID: 2746409404244008609}
+  _check: {fileID: 4698498041552753910}
+  _caption: {fileID: 7762444312007197400}
 --- !u!1 &8947051626917126117
 GameObject:
   m_ObjectHideFlags: 0
@@ -13846,7 +13882,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 13.714286, y: -45.714287}
-  m_SizeDelta: {x: 158, y: 28}
+  m_SizeDelta: {x: 324, y: 28}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &1056292204462064878
 CanvasRenderer:

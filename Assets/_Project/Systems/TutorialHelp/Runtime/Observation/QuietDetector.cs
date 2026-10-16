@@ -1,0 +1,49 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Video;
+
+namespace RideSafe.Help
+{
+    /// <summary>
+    /// A video playing or a voice speaking: the learner is listening, not stuck. Narration is
+    /// any playing, non-looping sound longer than <see cref="NarrationMinSeconds"/>; ambient
+    /// loops and short clicks do not count. Sources are listed once a second.
+    /// </summary>
+    public sealed class QuietDetector
+    {
+        public const float NarrationMinSeconds = 2f;
+        private const float RefreshSeconds = 1f;
+
+        private readonly List<VideoPlayer> _videos = new List<VideoPlayer>();
+        private readonly List<AudioSource> _sounds = new List<AudioSource>();
+        private float _sinceRefresh = float.MaxValue;
+
+        public bool IsQuiet(float deltaTime)
+        {
+            _sinceRefresh += deltaTime;
+            if (_sinceRefresh >= RefreshSeconds)
+            {
+                _sinceRefresh = 0f;
+                _videos.Clear();
+                _videos.AddRange(Object.FindObjectsByType<VideoPlayer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None));
+                _sounds.Clear();
+                _sounds.AddRange(Object.FindObjectsByType<AudioSource>(FindObjectsInactive.Exclude, FindObjectsSortMode.None));
+            }
+            foreach (VideoPlayer video in _videos)
+            {
+                if (video != null && video.isActiveAndEnabled && video.isPlaying)
+                    return true;
+            }
+            foreach (AudioSource sound in _sounds)
+            {
+                if (sound != null && sound.isActiveAndEnabled &&
+                    IsNarration(sound.isPlaying, sound.loop, sound.clip != null ? sound.clip.length : 0f))
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool IsNarration(bool playing, bool loop, float clipSeconds) =>
+            playing && !loop && clipSeconds > NarrationMinSeconds;
+    }
+}

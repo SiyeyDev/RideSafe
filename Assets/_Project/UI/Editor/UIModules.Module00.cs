@@ -85,14 +85,20 @@ namespace RideSafe.UI.EditorTools
 
             List<ChoicePanel.Option> choices = new List<ChoicePanel.Option>
             {
-                VehicleLabel(group, toggleGroup, "ebike", "E-bike", "Pedal assist · seated", 180f, 183f, 354f, 257f),
-                VehicleLabel(group, toggleGroup, "escooter", "Standing e-scooter", "Standing · throttle", 640f, 185f, 886f, 251f)
+                // 340 px wide around the vehicle: room for "Patineta eléctrica de pie" (+35% string reserve).
+                VehicleLabel(group, toggleGroup, "ebike", "E-bike", "Pedal assist · seated", 97f, 183f, 437f, 257f),
+                VehicleLabel(group, toggleGroup, "escooter", "Standing e-scooter", "Standing · throttle", 593f, 185f, 933f, 251f)
             };
 
             Transform bar = K.Pill(panel, "Status_Pill_Default", 196f, 440f, 806f, 514f, Color.white, "ConfirmationBar").transform;
             float pad = UIBuilderKit.PadFor(UIBuilderKit.PillMultiplier("Status_Pill_Default", 74f));
-            TMP_Text sentence = K.TL(bar, "E-bike selected —", K.Body.With(16f, UIBuilderKit.Muted), 19f + pad, 37f + pad, 160f, "SelectedText");
-            K.TL(bar, "confirm to continue?", K.LabelBold.With(16f), 174f + pad, 37f + pad, 175f, "Prompt");
+            // Two lines left of the buttons: side by side the Spanish sentence ran into the prompt.
+            TMP_Text sentence = K.TL(bar, "E-bike selected —", K.Body.With(16f, UIBuilderKit.Muted), 19f + pad, 23f + pad, 318f, "SelectedText");
+            sentence.textWrappingMode = TextWrappingModes.NoWrap;
+            sentence.enableAutoSizing = true;
+            sentence.fontSizeMin = 12f;
+            sentence.fontSizeMax = 16f;
+            K.TL(bar, "confirm to continue?", K.LabelBold.With(16f), 19f + pad, 51f + pad, 318f, "Prompt");
             UnityEngine.UI.Button change = _ui.Button(bar, "ChangeButton", "Change", false, 350f + pad, 15f + pad, 460f + pad, 60f + pad, 15f);
             UnityEngine.UI.Button confirm = _ui.Button(bar, "ConfirmButton", "Confirm", true, 476f + pad, 15f + pad, 590f + pad, 60f + pad, 15f);
             bar.gameObject.SetActive(false);
@@ -126,6 +132,10 @@ namespace RideSafe.UI.EditorTools
             UIBuilderKit.Find<TMP_Text>(card.gameObject, "StateCaption").alignment = TextAlignmentOptions.Center;
             // A small label has no room for the corner check; the coral card state carries selection.
             UIBuilderKit.Find<UnityEngine.UI.Image>(card.gameObject, "Check").rectTransform.localScale = Vector3.one * 0.75f;
+            // At runtime the card hugs its translated text, and grows for the check when selected.
+            card.gameObject.AddComponent<FitCardToContent>().Configure(card, titleText, description,
+                UIBuilderKit.Find<UnityEngine.UI.Image>(card.gameObject, "Check").rectTransform,
+                UIBuilderKit.Find<TMP_Text>(card.gameObject, "StateCaption").rectTransform);
 
             return new ChoicePanel.Option { Toggle = card, Id = id, DisplayName = title };
         }

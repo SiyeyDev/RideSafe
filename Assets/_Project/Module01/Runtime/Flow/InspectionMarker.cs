@@ -44,6 +44,11 @@ namespace RideSafe.Module01
 
         [Tooltip("Latidos por segundo.")]
         [SerializeField, Min(0f)] private float _pulseSpeed = 1.6f;
+        [Tooltip("Radio, en metros, de la zona de clic alrededor del signo.")]
+        [SerializeField, Min(.02f)] private float _clickRadius = .12f;
+
+        /// <summary>Hijo del signo que recibe el clic y se lo pasa al punto.</summary>
+        public const string ClickAreaName = "ClickArea";
 
         private Transform _head;
         private Vector3 _baseScale;
@@ -100,7 +105,37 @@ namespace RideSafe.Module01
         private void Awake()
         {
             _baseScale = _billboard != null ? _billboard.localScale : Vector3.one;
+            EnsureClickArea();
             Repaint();
+        }
+
+        /// <summary>
+        /// El aprendiz apunta al «!», pero el clic lo recibía solo la esfera del punto: 8 cm de
+        /// radio y 26 cm por debajo del signo, invisible. Apuntar al signo no hacía nada.
+        /// <para>
+        /// La zona va en un hijo del signo, así que se apaga con él; y en capa Default, porque el
+        /// signo está en la capa UI —la dibuja la cámara de overlay— y el PhysicsRaycaster de la
+        /// cámara principal no la ve. Es trigger para no empujar ni las manos ni el vehículo. El
+        /// clic sube por la jerarquía hasta el WorldObjectTaskEntity del punto.
+        /// </para>
+        /// </summary>
+        private void EnsureClickArea()
+        {
+            if (_billboard == null)
+                return;
+            Transform area = _billboard.Find(ClickAreaName);
+            if (area == null)
+            {
+                area = new GameObject(ClickAreaName).transform;
+                area.SetParent(_billboard, false);
+            }
+            area.gameObject.layer = 0;
+            SphereCollider sphere = area.GetComponent<SphereCollider>();
+            if (sphere == null)
+                sphere = area.gameObject.AddComponent<SphereCollider>();
+            sphere.isTrigger = true;
+            float scale = Mathf.Max(Mathf.Abs(area.lossyScale.x), 1e-6f);
+            sphere.radius = _clickRadius / scale;
         }
 
         private void LateUpdate()
@@ -177,6 +212,7 @@ namespace RideSafe.Module01
             _glyph = glyph;
             _billboard = billboard;
             _baseScale = billboard != null ? billboard.localScale : Vector3.one;
+            EnsureClickArea();
             Repaint();
         }
     }

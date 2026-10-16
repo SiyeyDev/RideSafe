@@ -213,6 +213,11 @@ namespace RideSafe.Module01.Editor
             Button("ContinueModule2Button",result,new Vector2(-165,0),new Vector2(300,48),"Module1/ContinueModule2",true,16f);
             Button("RepeatModuleButton",result,new Vector2(170,0),new Vector2(280,48),"Module1/RepeatModule",false,16f);
             Set(exp,"_result",result.gameObject);
+            // Con 11 filas la lista de "Mi Eleccion" pasaba por debajo de la barra clavada en
+            // y = -358: la barra sigue a la lista, justo debajo y con aire.
+            var resultFollow = result.GetComponent<FollowBelow>();
+            if (resultFollow == null) resultFollow = result.gameObject.AddComponent<FollowBelow>();
+            resultFollow.Configure((RectTransform)ui.Get<RectTransform>("Comparison").Find("LeftColumn"), 14f);
             result.gameObject.SetActive(false);
             var vp = ui.GetComponent<VideoPlayer>(); if(vp==null) vp=ui.gameObject.AddComponent<VideoPlayer>();
             vp.playOnAwake=false; vp.isLooping=false; vp.renderMode=VideoRenderMode.RenderTexture; vp.waitForFirstFrame=false;

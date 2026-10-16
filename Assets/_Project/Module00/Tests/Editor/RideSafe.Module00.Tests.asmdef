@@ -12,7 +12,8 @@
         "Cachacos",
         "Tutorial.AutoHand",
         "Tutorial.Presentation",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "RideSafe.Module00.Editor"
     ],
     "includePlatforms": [
         "Editor"

@@ -1321,6 +1321,22 @@ MonoBehaviour:
       - En riesgo
       Flags: 0000
       Languages_Touch: []
+    - Term: TutorialHelp/SelectInterface
+      TermType: 0
+      Description: 
+      Languages:
+      - Point and press the trigger
+      - Apunta y presiona el gatillo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: TutorialHelp/SelectObject
+      TermType: 0
+      Description: 
+      Languages:
+      - Point at the object and press the trigger
+      - Apunta al objeto y presiona el gatillo
+      Flags: 0000
+      Languages_Touch: []
     CaseInsensitiveTerms: 0
     OnMissingTranslation: 1
     mTerm_AppName: 

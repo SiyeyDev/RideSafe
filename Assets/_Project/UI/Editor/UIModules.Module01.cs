@@ -141,8 +141,18 @@ namespace RideSafe.UI.EditorTools
             K.Slice(modal, "Checklist_Row_Selected", 191f + o.x, 342f + o.y, 810f + o.x, 390f + o.y, 2.4f, Color.white, "LockNotice");
             K.TL(modal, "Once you continue, your selection is locked for this attempt.", K.Body.With(15f), 214f + o.x, 366f + o.y, 580f, "LockNoticeText");
 
-            _ui.Button(modal, "KeepChoosingButton", "Keep choosing", false, 415f + o.x, 411f + o.y, 591f + o.x, 463f + o.y);
-            _ui.Button(modal, "ConfirmButton", "Confirm selection", true, 607f + o.x, 411f + o.y, 810f + o.x, 463f + o.y);
+            UnityEngine.UI.Button keep = _ui.Button(modal, "KeepChoosingButton", "Keep choosing", false, 415f + o.x, 411f + o.y, 591f + o.x, 463f + o.y);
+            UnityEngine.UI.Button confirmSelection = _ui.Button(modal, "ConfirmButton", "Confirm selection", true, 607f + o.x, 411f + o.y, 810f + o.x, 463f + o.y);
+
+            // Con siete elementos las filas pisaban el aviso y los botones: la lista crece y
+            // todo lo de abajo baja con ella.
+            modal.gameObject.AddComponent<GrowWithContent>().Configure(rows, (RectTransform)box, new[] { (RectTransform)modal },
+                new[]
+                {
+                    (RectTransform)modal.Find("LockNotice"), (RectTransform)modal.Find("LockNoticeText"),
+                    (RectTransform)keep.transform, (RectTransform)confirmSelection.transform
+                },
+                (RectTransform)modal);
 
             ChecklistView view = panel.gameObject.AddComponent<ChecklistView>();
             UIWire.Ref(view, "_rowTemplate", template);
@@ -233,7 +243,14 @@ namespace RideSafe.UI.EditorTools
             // de sitio: con las etiquetas en espanol -"Seleccion incorrecta", "Elemento en
             // riesgo o deteriorado"- las cuatro se montaban unas sobre otras, y ensancharla
             // solo aplazaba el problema hasta el siguiente idioma mas largo.
-            _ui.Button(panel, "ExplainButton", "Explain each one", true, 397f, 473f, 604f, 523f);
+            UnityEngine.UI.Button explain = _ui.Button(panel, "ExplainButton", "Explain each one", true, 397f, 473f, 604f, 523f);
+            // Una sola columna: barra, nota y lista con el mismo ancho, el título centrado de verdad
+            // y el botón siempre debajo de la lista.
+            Transform header = panel.Find("Header");
+            RectTransform bar = (RectTransform)header.Find("TitleBar");
+            ColumnComposition.Arrange((RectTransform)panel, bar, UIBuilderKit.PadFor(2.4f), (RectTransform)bar.Find("Title"),
+                                      (RectTransform)header.Find("Body"), (RectTransform)leftRows.parent, UIBuilderKit.PadFor(2.8f),
+                                      (RectTransform)explain.transform);
 
             ComparisonView view = panel.gameObject.AddComponent<ComparisonView>();
             UIWire.Refs(view, "_glyphs.Sprites", _ui.StatusSprites());
