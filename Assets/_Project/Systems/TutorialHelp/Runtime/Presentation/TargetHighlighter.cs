@@ -9,6 +9,11 @@ namespace RideSafe.Help
     /// Canvas controls pulse softly (white, slightly darker, white) on their CanvasRenderer,
     /// so the module's own colour and sprite states are untouched and restored exactly. Objects
     /// get a mint inverted-hull halo whose opacity pulses in step. All targets pulse together.
+    /// <para>
+    /// The halo hangs under this component and follows each mesh, never under the module's
+    /// object: Module 1 copies the clicked object to its pedestal, and a hull inside it went
+    /// along. Meshes merged by static batching get no halo: their mesh is the scene's.
+    /// </para>
     /// </summary>
     [AddComponentMenu("RideSafe/Tutorial Help/Target Highlighter")]
     public sealed class TargetHighlighter : MonoBehaviour, ITargetHighlighter
@@ -25,13 +30,19 @@ namespace RideSafe.Help
         private readonly Dictionary<Transform, Graphic> _pulsing = new Dictionary<Transform, Graphic>();
         private readonly Dictionary<Graphic, Color> _original = new Dictionary<Graphic, Color>();
         private readonly Dictionary<Graphic, Color> _written = new Dictionary<Graphic, Color>();
-        private readonly Dictionary<Transform, List<MeshRenderer>> _halos = new Dictionary<Transform, List<MeshRenderer>>();
+        private readonly Dictionary<Transform, List<Halo>> _halos = new Dictionary<Transform, List<Halo>>();
         private readonly HashSet<Transform> _wanted = new HashSet<Transform>();
         private readonly List<Transform> _drop = new List<Transform>();
         private MaterialPropertyBlock _block;
         private float _time;
 
         public int HighlightedCount => _pulsing.Count + _halos.Count;
+
+        private struct Halo
+        {
+            public MeshRenderer Renderer;
+            public MeshRenderer Source;
+        }
 
         internal void Configure(Material halo) => _haloMaterial = halo;
 
@@ -110,20 +121,45 @@ namespace RideSafe.Help
                 _block = new MaterialPropertyBlock(); // not allowed in a field initializer
             Color halo = _haloColor;
             halo.a = Mathf.Lerp(0.9f, 0.45f, k);
-            foreach (List<MeshRenderer> renderers in _halos.Values)
+            foreach (List<Halo> halos in _halos.Values)
             {
-                foreach (MeshRenderer renderer in renderers)
+                foreach (Halo h in halos)
                 {
-                    if (renderer == null)
+                    if (h.Renderer == null)
                         continue;
                     _block.Clear();
                     _block.SetColor(ColorId, halo);
-                    renderer.SetPropertyBlock(_block);
+                    h.Renderer.SetPropertyBlock(_block);
                 }
             }
         }
 
+        /// <summary>Puts each hull on its mesh, and shows it only while the mesh shows.</summary>
+        internal void Follow()
+        {
+            foreach (List<Halo> halos in _halos.Values)
+                Follow(halos);
+        }
+
+        private void Follow(List<Halo> halos)
+        {
+            foreach (Halo h in halos)
+            {
+                if (h.Renderer == null)
+                    continue;
+                bool shown = h.Source != null && h.Source.enabled && h.Source.gameObject.activeInHierarchy;
+                h.Renderer.enabled = shown;
+                if (!shown)
+                    continue;
+                Transform source = h.Source.transform, hull = h.Renderer.transform;
+                hull.SetPositionAndRotation(source.position, source.rotation);
+                Vector3 own = source.lossyScale, parent = transform.lossyScale;
+                hull.localScale = new Vector3(own.x / parent.x, own.y / parent.y, own.z / parent.z);
+            }
+        }
+
         private void Update() => Tick(Time.deltaTime);
+        private void LateUpdate() => Follow();
         private void OnDisable() => Clear();
 
         private void Release(Transform target)
@@ -139,32 +175,33 @@ namespace RideSafe.Help
                 }
                 _pulsing.Remove(target);
             }
-            if (_halos.TryGetValue(target, out List<MeshRenderer> renderers))
+            if (_halos.TryGetValue(target, out List<Halo> halos))
             {
-                foreach (MeshRenderer renderer in renderers)
+                foreach (Halo h in halos)
                 {
-                    if (renderer != null)
-                        Discard(renderer.gameObject);
+                    if (h.Renderer != null)
+                        Discard(h.Renderer.gameObject);
                 }
                 _halos.Remove(target);
             }
         }
 
-        private List<MeshRenderer> CreateHalos(Transform target)
+        private List<Halo> CreateHalos(Transform target)
         {
-            List<MeshRenderer> halos = new List<MeshRenderer>();
+            List<Halo> halos = new List<Halo>();
             if (_haloMaterial == null)
                 return halos;
             foreach (MeshFilter filter in target.GetComponentsInChildren<MeshFilter>(false))
             {
                 MeshRenderer source = filter.GetComponent<MeshRenderer>();
-                if (filter.name == HaloName || filter.sharedMesh == null || source == null || !source.enabled)
+                if (filter.name == HaloName || filter.sharedMesh == null || source == null || !source.enabled ||
+                    source.isPartOfStaticBatch)
                     continue;
                 GameObject go = new GameObject(HaloName, typeof(MeshFilter), typeof(MeshRenderer))
                 {
                     hideFlags = HideFlags.DontSave
                 };
-                go.transform.SetParent(filter.transform, false);
+                go.transform.SetParent(transform, false);
                 go.layer = filter.gameObject.layer;
                 go.GetComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
                 MeshRenderer renderer = go.GetComponent<MeshRenderer>();
@@ -173,8 +210,9 @@ namespace RideSafe.Help
                 renderer.receiveShadows = false;
                 renderer.lightProbeUsage = LightProbeUsage.Off;
                 renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
-                halos.Add(renderer);
+                halos.Add(new Halo { Renderer = renderer, Source = source });
             }
+            Follow(halos);
             return halos;
         }
 

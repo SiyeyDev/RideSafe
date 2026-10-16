@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -217,6 +218,46 @@ namespace RideSafe.Help.Editor
                     sb.AppendLine(Path(g.transform) + " a=" + g.color.a.ToString("F2") + " crA=" + g.canvasRenderer.GetInheritedAlpha().ToString("F2") +
                                   " x=" + min.x.ToString("F2") + ".." + max.x.ToString("F2") + " y=" + min.y.ToString("F2") + ".." + max.y.ToString("F2"));
                 }
+            }
+            File.WriteAllText(DumpPath, sb.ToString());
+        }
+
+        /// <summary>Renderers under every object whose path contains ArgPath: type, enabled, active, bounds, mesh.</summary>
+        public static void Renderers()
+        {
+            string part = File.ReadAllText(ArgPath).Trim();
+            StringBuilder sb = new StringBuilder();
+            foreach (Renderer r in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (Path(r.transform).IndexOf(part, System.StringComparison.OrdinalIgnoreCase) < 0)
+                    continue;
+                MeshFilter f = r.GetComponent<MeshFilter>();
+                sb.AppendLine(Path(r.transform) + " " + r.GetType().Name + " enabled=" + r.enabled + " active=" + r.gameObject.activeInHierarchy +
+                              " size=" + r.bounds.size.ToString("F3") + " centre=" + r.bounds.center.ToString("F2") +
+                              " mesh=" + (f != null && f.sharedMesh != null ? f.sharedMesh.name : "none") +
+                              " mats=" + r.sharedMaterials.Length + " layer=" + LayerMask.LayerToName(r.gameObject.layer) +
+                              " scale=" + r.transform.lossyScale.ToString("F3"));
+            }
+            File.WriteAllText(DumpPath, sb.ToString());
+        }
+
+        /// <summary>Module 1 world objects whose renderers were merged by static batching (their mesh is the scene's).</summary>
+        public static void StaticTargets()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (MonoBehaviour b in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (b == null || b.GetType().Name != "WorldObjectTaskEntity")
+                    continue;
+                int total = 0, batched = 0;
+                foreach (MeshRenderer r in b.GetComponentsInChildren<MeshRenderer>(true))
+                {
+                    total++;
+                    if (r.isPartOfStaticBatch)
+                        batched++;
+                }
+                sb.AppendLine(Path(b.transform) + " renderers=" + total + " staticBatched=" + batched +
+                              " flags=" + GameObjectUtility.GetStaticEditorFlags(b.gameObject));
             }
             File.WriteAllText(DumpPath, sb.ToString());
         }

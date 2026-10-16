@@ -76913,7 +76913,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1337623018
 SpriteRenderer:
-  serializedVersion: 3
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -76970,7 +76970,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
-  m_BlendShapeWeights: []
 --- !u!1 &1353896599
 GameObject:
   m_ObjectHideFlags: 0
@@ -77434,7 +77433,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: ecea867daba18e84daa3d3505025b1c6, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 2147483643
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -121804,6 +121803,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 373315383706404388, guid: bc6ffbdf454021b488b6f96ef81ed319, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483643
+      objectReference: {fileID: 0}
     - target: {fileID: 1037403452343458974, guid: bc6ffbdf454021b488b6f96ef81ed319, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.3883843
@@ -121895,6 +121898,10 @@ PrefabInstance:
     - target: {fileID: 5636954931648281176, guid: bc6ffbdf454021b488b6f96ef81ed319, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 5740295523498985193, guid: bc6ffbdf454021b488b6f96ef81ed319, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483643
       objectReference: {fileID: 0}
     - target: {fileID: 5814421593005824363, guid: bc6ffbdf454021b488b6f96ef81ed319, type: 3}
       propertyPath: m_StaticEditorFlags

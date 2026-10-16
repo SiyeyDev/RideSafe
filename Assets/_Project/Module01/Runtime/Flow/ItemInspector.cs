@@ -252,6 +252,21 @@ namespace RideSafe.Module01
                     renderer.gameObject.name == InspectionHighlight.OutlineName)
                     continue;
 
+                // Fundido por el static batching, su MeshFilter apunta a la malla combinada de
+                // toda la escena, con los vertices ya en el mundo: la copia sale vacia o en otra
+                // parte. Paso en Quest 2026-10-16 con las botas, marcadas Static. Va el prefab.
+                if (renderer.isPartOfStaticBatch)
+                {
+                    if (root != null)
+                    {
+                        if (Application.isPlaying)
+                            Destroy(root);
+                        else
+                            DestroyImmediate(root);
+                    }
+                    return null;
+                }
+
                 MeshFilter filter = renderer.GetComponent<MeshFilter>();
                 if (filter == null || filter.sharedMesh == null)
                     continue;

@@ -146,6 +146,107 @@ namespace RideSafe.Module01.Tests
             Assert.AreSame(_mesh, _highlight.Outline.GetComponent<MeshFilter>().sharedMesh);
         }
 
+        // ------------------------------------------------------------------
+        // Toda la pieza clicable. Prueba en Quest 2026-10-16: en «Ruedas y estructura» brillaba
+        // la rueda entera y lo unico que respondia era una esfera invisible de 15 cm en el
+        // borde de la llanta.
+        // ------------------------------------------------------------------
+
+        private BoxCollider Area(InspectionHighlight highlight) =>
+            highlight.transform.Find(InspectionHighlight.PartAreaName)?.GetComponent<BoxCollider>();
+
+        [Test]
+        public void Delinear_la_pieza_le_da_un_area_de_clic_del_tamano_de_la_pieza()
+        {
+            _part.transform.position = new Vector3(1f, 2f, 3f);
+            _part.transform.localScale = Vector3.one * 2f;
+            _highlight.Bind(_part.transform);
+
+            BoxCollider area = Area(_highlight);
+            Assert.IsNotNull(area, "Sin area, lo que brilla no se puede tocar.");
+            Assert.AreSame(_point.transform, area.transform.parent,
+                "Cuelga del punto: es el punto el que recibe el clic.");
+            // Por la transformada y no por area.bounds: fuera de Play la fisica no se entera de
+            // que el collider se movio y devuelve la caja de antes.
+            Bounds world = _part.GetComponent<MeshRenderer>().bounds;
+            Vector3 centre = area.transform.TransformPoint(area.center);
+            Vector3 size = Vector3.Scale(area.size, area.transform.lossyScale);
+            Assert.AreEqual(world.center.x, centre.x, .01f, "centro");
+            Assert.AreEqual(world.size.y, size.y, .01f, "alto");
+        }
+
+        [Test]
+        public void El_area_se_queda_sobre_la_pieza_aunque_el_punto_se_mueva_despues()
+        {
+            // VehicleStage.MoveToPart mueve el punto encima de la pieza DESPUES de Bind. En la
+            // escena el area acabo 0,83 m al lado de la rueda.
+            _highlight.Bind(_part.transform);
+            _point.transform.SetParent(_part.transform, true);
+            _point.transform.position += new Vector3(.83f, 0f, 0f);
+
+            _highlight.SetHighlighted(true);
+
+            BoxCollider area = Area(_highlight);
+            Vector3 centre = area.transform.TransformPoint(area.center);
+            Assert.AreEqual(_part.GetComponent<MeshRenderer>().bounds.center.x, centre.x, .01f);
+        }
+
+        [Test]
+        public void El_area_solo_responde_mientras_el_punto_es_el_unico_por_revisar()
+        {
+            _highlight.Bind(_part.transform);
+            Assert.IsFalse(Area(_highlight).enabled, "Un punto que no toca no ocupa la pieza.");
+
+            _highlight.SetHighlighted(true);
+            Assert.IsTrue(Area(_highlight).enabled);
+
+            _highlight.SetObscured(true);
+            Assert.IsFalse(Area(_highlight).enabled, "Tapado por un panel no se toca.");
+            _highlight.SetObscured(false);
+
+            _highlight.SetResolved(true);
+            Assert.IsFalse(Area(_highlight).enabled, "Resuelto vuelve a su esfera.");
+        }
+
+        [Test]
+        public void Con_varios_puntos_a_la_vez_cada_uno_se_queda_con_su_esfera()
+        {
+            // La cabina: el manubrio es todo el tren delantero y su area enterraria los frenos.
+            GameObject otherPart = new GameObject("rueda", typeof(MeshFilter), typeof(MeshRenderer));
+            otherPart.GetComponent<MeshFilter>().sharedMesh = _mesh;
+            GameObject otherPoint = new GameObject("point_brakes");
+            try
+            {
+                InspectionHighlight other = otherPoint.AddComponent<InspectionHighlight>();
+                other.ConfigureForTests(_material, Active, Resolved);
+                _highlight.Bind(_part.transform);
+                other.Bind(otherPart.transform);
+
+                _highlight.SetHighlighted(true);
+                other.SetHighlighted(true);
+
+                Assert.IsFalse(Area(_highlight).enabled);
+                Assert.IsFalse(Area(other).enabled);
+
+                other.SetResolved(true);
+                Assert.IsTrue(Area(_highlight).enabled, "Solo queda uno por revisar: toda su pieza responde.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(otherPoint);
+                Object.DestroyImmediate(otherPart);
+            }
+        }
+
+        [Test]
+        public void Soltar_la_pieza_se_lleva_el_area()
+        {
+            _highlight.Bind(_part.transform);
+            _highlight.Release();
+
+            Assert.IsNull(Area(_highlight));
+        }
+
         [Test]
         public void El_contorno_nace_apagado_porque_el_punto_todavia_no_toca()
         {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -18,6 +19,14 @@ namespace RideSafe.Module01
     /// El color va por <see cref="MaterialPropertyBlock"/> y no por instancia de material: así
     /// los cinco puntos comparten un solo material y encenderlos no multiplica draw calls.
     /// </para>
+    /// <para>
+    /// <b>Lo que brilla se puede tocar.</b> Además del contorno, el punto gana un área de clic
+    /// del tamaño de la pieza, que solo responde cuando ese punto es el <i>único</i> por
+    /// revisar. Prueba en Quest 2026-10-16: en «Ruedas y estructura» brillaba la rueda entera
+    /// y lo único que respondía era la esfera invisible de 15 cm en el borde de la llanta. Con
+    /// varios puntos a la vez —la cabina— cada uno se queda con su esfera: el manubrio es todo
+    /// el tren delantero y su área enterraría los frenos (ver <c>VehicleStage.MoveToPart</c>).
+    /// </para>
     /// </summary>
     [AddComponentMenu("RideSafe/Module 01/Inspection Highlight")]
     [DisallowMultipleComponent]
@@ -25,6 +34,12 @@ namespace RideSafe.Module01
     {
         /// <summary>Nombre del hijo que lleva el contorno. Se busca por él para no duplicarlo.</summary>
         public const string OutlineName = "Outline";
+
+        /// <summary>Nombre del hijo del punto con el área de clic del tamaño de la pieza.</summary>
+        public const string PartAreaName = "PartClickArea";
+
+        // Los puntos con pieza, para saber si este es el único por revisar.
+        private static readonly List<InspectionHighlight> Bound = new List<InspectionHighlight>();
 
         private static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
 
@@ -38,6 +53,7 @@ namespace RideSafe.Module01
         [SerializeField] private Color _resolvedColor = new Color(.46f, .83f, .54f, .9f);
 
         private MeshRenderer _outline;
+        private BoxCollider _area;
         private bool _highlighted;
         private bool _resolved;
         private bool _obscured;
@@ -108,6 +124,9 @@ namespace RideSafe.Module01
             _outline.reflectionProbeUsage = ReflectionProbeUsage.Off;
             _outline.staticShadowCaster = false;
 
+            CreateArea(part, filter.sharedMesh);
+            Bound.Add(this);
+
             Repaint();
             return true;
         }
@@ -122,6 +141,67 @@ namespace RideSafe.Module01
             if (_outline != null)
                 Discard(_outline.gameObject);
             _outline = null;
+            if (_area != null)
+                Discard(_area.gameObject);
+            _area = null;
+            if (Bound.Remove(this))
+                RefreshAreas();
+        }
+
+        /// <summary>
+        /// Una caja con la malla de la pieza, colgada del punto —es el punto el que recibe el
+        /// clic, y el evento sube por los padres, no baja—. Se pone sobre la pieza en
+        /// <see cref="PlaceArea"/>.
+        /// </summary>
+        private void CreateArea(Transform part, Mesh mesh)
+        {
+            GameObject go = new GameObject(PartAreaName, typeof(BoxCollider));
+            go.transform.SetParent(transform, false);
+            go.layer = gameObject.layer;
+
+            _area = go.GetComponent<BoxCollider>();
+            _area.center = mesh.bounds.center;
+            _area.size = mesh.bounds.size;
+            Collider sphere = GetComponent<Collider>();
+            _area.isTrigger = sphere == null || sphere.isTrigger;
+            _area.enabled = false;
+            PlaceArea();
+        }
+
+        /// <summary>
+        /// Encima de la pieza, cada vez que se enciende: <c>VehicleStage.MoveToPart</c> mueve el
+        /// punto después de <see cref="Bind"/>, y el área, que cuelga de él, se iba con él
+        /// —0,83 m al lado de la rueda en la escena—.
+        /// </summary>
+        private void PlaceArea()
+        {
+            Transform part = Part, area = _area.transform;
+            if (part == null)
+                return;
+            area.SetPositionAndRotation(part.position, part.rotation);
+            Vector3 own = part.lossyScale, parent = transform.lossyScale;
+            area.localScale = new Vector3(own.x / parent.x, own.y / parent.y, own.z / parent.z);
+        }
+
+        private bool Pending => _area != null && _highlighted && !_resolved && !_obscured &&
+                                gameObject.activeInHierarchy;
+
+        private static void RefreshAreas()
+        {
+            Bound.RemoveAll(h => h == null);
+            int pending = 0;
+            foreach (InspectionHighlight h in Bound)
+                if (h.Pending)
+                    pending++;
+            foreach (InspectionHighlight h in Bound)
+            {
+                if (h._area == null)
+                    continue;
+                bool on = h.Pending && pending == 1;
+                if (on && !h._area.enabled)
+                    h.PlaceArea();
+                h._area.enabled = on;
+            }
         }
 
         public void SetHighlighted(bool value)
@@ -154,6 +234,7 @@ namespace RideSafe.Module01
         /// </summary>
         private void Repaint()
         {
+            RefreshAreas();
             if (_outline == null)
                 return;
 

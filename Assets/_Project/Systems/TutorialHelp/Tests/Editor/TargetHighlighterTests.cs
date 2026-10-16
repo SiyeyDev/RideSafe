@@ -80,22 +80,54 @@ namespace RideSafe.Help.Tests
             Assert.AreEqual(1, _highlighter.HighlightedCount);
         }
 
+        private Transform[] Halos() => System.Array.FindAll(
+            _highlighter.GetComponentsInChildren<Transform>(), t => t.name == TargetHighlighter.HaloName);
+
         [Test]
-        public void Halo_AddsAHullUnderEachMesh_AndRemovesIt()
+        public void Halo_AddsAHullPerMesh_AndRemovesIt()
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             _objects.Add(cube);
             _highlighter.Highlight(new[] { new HelpTarget(cube.transform, InteractionKind.Object3D, null) });
-            Transform halo = cube.transform.Find(TargetHighlighter.HaloName);
-            Assert.IsNotNull(halo);
+            Assert.AreEqual(1, Halos().Length);
+            Transform halo = Halos()[0];
             Assert.AreSame(cube.GetComponent<MeshFilter>().sharedMesh, halo.GetComponent<MeshFilter>().sharedMesh);
             Assert.IsTrue((halo.gameObject.hideFlags & HideFlags.DontSave) != 0);
 
             _highlighter.Highlight(new[] { new HelpTarget(cube.transform, InteractionKind.Object3D, null) });
-            Assert.AreEqual(1, cube.GetComponentsInChildren<MeshFilter>().Length - 1, "highlighting twice adds no second hull");
+            Assert.AreEqual(1, Halos().Length, "highlighting twice adds no second hull");
 
             _highlighter.Clear();
-            Assert.IsNull(cube.transform.Find(TargetHighlighter.HaloName));
+            Assert.AreEqual(0, Halos().Length);
+        }
+
+        [Test]
+        public void Halo_IsNeverPartOfTheTarget()
+        {
+            // Module 1 copies the clicked object to its pedestal: a hull hanging under it went too.
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            _objects.Add(cube);
+            _highlighter.Highlight(new[] { new HelpTarget(cube.transform, InteractionKind.Object3D, null) });
+            Assert.AreEqual(0, cube.transform.childCount, "the module's object stays as the module built it");
+        }
+
+        [Test]
+        public void Halo_FollowsTheMesh_AndHidesWithIt()
+        {
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            _objects.Add(cube);
+            _highlighter.Highlight(new[] { new HelpTarget(cube.transform, InteractionKind.Object3D, null) });
+            cube.transform.SetPositionAndRotation(new Vector3(1f, 2f, 3f), Quaternion.Euler(0f, 90f, 0f));
+            cube.transform.localScale = Vector3.one * 2f;
+            _highlighter.Follow();
+            Transform halo = Halos()[0];
+            Assert.Less(Vector3.Distance(halo.position, cube.transform.position), 1e-4f);
+            Assert.AreEqual(0f, Quaternion.Angle(halo.rotation, cube.transform.rotation), .01f);
+            Assert.AreEqual(2f, halo.lossyScale.x, 1e-4f);
+
+            cube.SetActive(false); // the module hides the table object while it is on the pedestal
+            _highlighter.Follow();
+            Assert.IsFalse(halo.GetComponent<MeshRenderer>().enabled);
         }
 
         [Test]

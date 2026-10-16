@@ -1,8 +1,10 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-16 (tarde) — la categoría de I2 pasa a `M1/`, locución de los
-> 18 elementos en dos idiomas, y el EPP elegido se queda en la mesa en verde
+> Última actualización: 2026-10-16 (noche, 2) — arreglos de la prueba: el calzado se ve en el
+> pedestal y toda la rueda delineada es clicable. Antes, esa noche: limpieza de assets sin uso y
+> optimización para Quest (`198bb1e`). Por la tarde: la categoría de I2 pasa a `M1/`, locución de los 18
+> elementos en dos idiomas, y el EPP elegido se queda en la mesa en verde
 >
 > **Lo que falta hoy, con nombres y números: `Docs/Pendientes_Reunion_2026-10-12.md`.**
 
@@ -64,6 +66,10 @@ los paneles del M0 y el M1. Entró **todo en un commit**, incluido lo que su pro
 dejar fuera: `packages-lock.json`, `Assets/Settings/*`, `OpenXRPackageSettings`, las fuentes SDF
 y `Assets/_Recovery/0.unity` (3,4 MB de escena de recuperación que sobra en el repo).
 
+**2026-10-16 (noche) — `198bb1e`, de Cindy: limpieza y optimización para Quest**, ya subidas
+(detalle en la bitácora). Ese commit **quita `Assets/_Recovery/`**, así que lo de arriba ya no
+aplica. Queda sin subir solo el borrado de `Assets/___www.unityassetcollection.com___.txt`.
+
 **El horneado NO se commitea** hasta que el equipo acuerde una versión de Unity. El que está en
 el repo es de 6000.5.4f1 y **no carga en 6000.4.9f1**: a Cindy le sale la escena negra. Ella
 rehízo el suyo en su versión y se quedó sin subir, a propósito.
@@ -106,6 +112,8 @@ dominante con el gatillo iluminado, resalta dónde actuar y, solo la primera vez
 - **Cuándo calla:** se pausa con un video o una narración, y está en pausa en la orientación
   del M1 (`TutorialPause` dentro de `TutorialHelp`).
 - **Dónde se coloca:** abajo al centro; si ahí tapa un panel, se aparta al lado que menos tape.
+  Un roce de menos del 5 % de su tarjeta no cuenta (`HintSpot.Tolerance`): en Welcome el borde
+  rozaba «Comenzar» y el control se iba al lado sin motivo.
 - **Cómo lo llama un módulo (solo si hace falta):** `TutorialHelp.Show/Stop/Resume/Pause`, o los
   componentes `TutorialCue` / `TutorialPause`.
 - **Spec y plan:** `Docs/superpowers/specs/2026-10-15-tutorial-agnostico-design.md` y
@@ -114,7 +122,10 @@ dominante con el gatillo iluminado, resalta dónde actuar y, solo la primera vez
   - menú `RideSafe → Tutorial Help → Montar en RideSafe_Garaje_v5`, idempotente; quita el
     objeto `Tutorial` viejo;
   - los textos se añaden con `RideSafe → Tutorial Help → Añadir textos (I2)`.
-- **Tests:** 66 de EditMode en `TutorialHelp.Tests`.
+- **El halo de los objetos 3D vive en el tutorial**, no colgado del objeto: lo sigue cada frame
+  y se oculta con él. Colgado, el M1 lo copiaba al pedestal junto con el EPP. Un objeto fundido
+  por el static batching no lleva halo.
+- **Tests:** 70 de EditMode en `TutorialHelp.Tests`.
 - **El tutorial viejo** (`Systems/Tutorial`, basado en TaskSequence) sigue en el repo porque lo
   usa `Garaje_Test`; su retirada es una limpieza pendiente.
 
@@ -240,6 +251,8 @@ quedó obsoleto frente a `UIText`; falta unificar.
   crea las que falten y borra las huérfanas. **Es la vía para cambiar un modelo, añadir un EPP
   o recibir un garaje nuevo sin regenerar la escena.**
 - `Montar escena jugable con el garaje nuevo` — **PELIGRO: regenera, no edita.** Ver §9
+- `Quitar Batching Static a los objetos que se inspeccionan (Garaje_v5)` — idempotente; deja los
+  demás flags (GI, oclusión) y guarda la escena. Correrlo si llega un garaje nuevo (§9)
 
 `Assets/_Project/Tools/Editor/HeadlessTestRunner.cs` corre los tests sin abrir la ventana;
 deja el resultado en `Temp/ridesafe-tests.txt`.
@@ -439,14 +452,23 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       **no carga** en 6000.4.9f1 y la escena sale negra (§9). Se rehízo en 6000.4.9f1 el
       2026-10-16 (4 lightmaps, 3 sondas); si alguien vuelve a hornear en la otra versión, se
       repite el problema. Hasta decidirlo, el horneado no se commitea.
-- [ ] **`df_g_helmet_01` (`module01.head.helmet_damaged`) no tiene collider**: el puntero no
-      puede seleccionarlo y el tutorial no lo cuenta como opción.
+- [x] ~~`df_g_helmet_01` no tiene collider~~ — **falso, corregido el 2026-10-16**: el collider
+      de su raíz está desactivado, pero tiene otro activo en un hijo y el rayo lo alcanza. La
+      sonda solo miraba el primero (§9). Con la búsqueda por física el tutorial ya lo cuenta.
 - [ ] **La puerta del garaje no tiene collider.** Por eso el EPP de dentro es alcanzable por el
       rayo desde fuera. El tutorial lo esquiva contando solo objetos 3D a menos de 4 m, pero
       el rayo de AutoHand sí llega.
-- [ ] **Medir en Quest el coste del tutorial**: busca objetos en la escena cada segundo y
-      reevalúa la posición del control cada medio segundo. Pendientes menores anotados en la
-      revisión final (bitácora 2026-10-16).
+- [ ] **Medir en Quest el coste del tutorial.** Ya no recorre la escena: busca objetos con la
+      física a menos de 4 m y botones con la lista de uGUI (`198bb1e`). Falta confirmarlo con el
+      Profiler en el visor. Pendientes menores en la revisión final (bitácora 2026-10-15/16).
+- [ ] **Decidir con el equipo lo que la auditoría del 2026-10-16 dejó abierto:**
+      - **Sacar `RideSafe_Garaje.unity` de la lista de build:** hoy entra en la app con todo el
+        tutorial viejo, y `Module01SceneBuilder` la usa de origen. Es el primer paso para
+        retirar `Systems/Tutorial`, `Demo/Tutorial`, `Garaje_Test` y sus tests.
+      - **Arte sin uso de `CITY`:** unos 176 MB, más el HDRI `furstenstein_4k.exr` de 81 MB.
+        Es de Daniel.
+      - **Sistemas sin uso en producción:** `CommandSystem`, `SoundSystem`, `Brand` y parte de
+        `SharedUtils`. Preguntar si se reutilizan en otros proyectos.
 - [ ] **Retirar el tutorial viejo** (`Systems/Tutorial` + `Garaje_Test`) cuando ya no haga falta
       como referencia.
 - [x] ~~Integrar `feat/garaje-v6` en `dev`~~ — **hecho el 2026-10-14.** Fue avance directo:
@@ -477,6 +499,35 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 ---
 
 ## 9. Trampas conocidas
+
+**Añadidas el 2026-10-16 (noche, 2):**
+
+- **Un objeto que se inspecciona no puede ser *Batching Static*.** En Play, Unity funde su malla
+  con la de la escena: el `MeshFilter` pasa a apuntar a `Combined Mesh (root: scene)`, con los
+  vértices ya en el mundo. Todo lo que copie o reutilice esa malla (el pedestal, un contorno, un
+  halo) dibuja otra cosa o nada. Así salió vacío el calzado cerrado. Lo vigila
+  `En_la_v5_ningun_objeto_que_se_inspecciona_se_funde_con_el_static_batching`. El arte puede
+  traerlo marcado en cada garaje nuevo.
+- **`VehicleStage.MoveToPart` mueve el punto después de `InspectionHighlight.Bind`.** Lo que
+  cuelgue del punto se mueve con él. El área de clic de la pieza acabó 0,83 m al lado de la
+  rueda hasta que se recolocó sobre la pieza cada vez que se enciende.
+- **El puente del editor a veces ejecuta un clic dos veces**, así que recorrer zonas con
+  `NextZoneButton` puede saltarse una o llegar hasta «Mi Elección». Para comprobar un caso
+  concreto rinde más un método temporal que ponga el estado directamente.
+
+**Añadidas el 2026-10-16 (noche):**
+
+- **Antes de borrar un asset «sin uso», buscar su GUID también en los `.meta`.** Un FBX guarda
+  en su `.meta` (`externalObjects`) los materiales que se le reasignaron. Ninguna escena ni
+  prefab los nombra, pero sin ellos el modelo sale magenta. Pasó con `OculusControls/Mats`: el
+  Touch Plus del tutorial salió sin material y se restauraron desde git.
+- **`ServiceLocator` ya no escribe en la consola.** Sus logs pasan por un método
+  `[Conditional("RIDESAFE_SERVICE_LOG")]`. Para volver a verlos, añadir ese símbolo en Player
+  Settings → Scripting Define Symbols, y solo para depurar: en Quest, un log por petición era un
+  tirón visible.
+- **Para saber si un objeto tiene collider, no basta `GetComponentInChildren<Collider>()`.**
+  Devuelve el primero aunque esté desactivado. `df_g_helmet_01` tiene el de la raíz apagado y
+  otro activo en un hijo, y así lo di por no clicable sin serlo.
 
 **Añadidas el 2026-10-16 (tarde):**
 
@@ -880,6 +931,85 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-16 (noche, 2) — lo que salió en la prueba: el calzado y la rueda
+
+Trabajo de Cindy (con Claude), sin subir todavía. Dos cosas vistas al probar el M1.
+
+- **El calzado cerrado no aparecía en el pedestal** (estación «Ropa y calzado»).
+  - Causa: `botas` estaba marcado *Static* y el static batching le cambia la malla por la
+    combinada de la escena (§9).
+  - Escena: se quitó solo *Batching Static* a `botas`, `df_g_helmet_01` y
+    `jean_ajustado_doblado`; los otros dos no se fundían en el editor, pero podían hacerlo en el
+    build. El horneado no cambia.
+  - Código: `ItemInspector.CopyOf` devuelve null si la malla viene fundida, y el pedestal usa el
+    prefab del catálogo.
+  - Tutorial: el halo deja de colgar del objeto (§4), así que tampoco se copia.
+- **En «Ruedas y estructura» no se sabía dónde tocar.** Brillaba toda la rueda y solo respondía
+  una esfera invisible de 15 cm en el borde de la llanta.
+  - `InspectionHighlight` le da al punto un área de clic con la caja de la pieza
+    (`PartClickArea`), que solo responde si ese punto es el único por revisar y se apaga al
+    resolverse.
+  - En la cabina, con tres puntos a la vez, cada uno conserva su esfera: el área del manubrio
+    enterraría los frenos.
+- **Comprobado en Play:** el calzado aparece en el pedestal con su malla (`Ch20`), y cuatro
+  rayos a la rueda (centro, arriba, delante, detrás) llegan a `point_wheels`.
+- **Tests:** EditMode **479 de 481** (los 2 de siempre de `Garaje_Test`) y 1 inconcluso: el
+  editor no funde mallas fuera de Play, así que el test del pedestal con malla fundida no se
+  puede montar ahí. `TutorialHelp.Tests` 70 de 70.
+- Al guardar la escena en 6000.4.9f1, un `SpriteRenderer` pasó de `serializedVersion` 3 a 2. Es
+  inofensivo.
+
+**Para retomar:**
+1. Probar en Quest el calzado y la rueda.
+2. Decidir si «Dirección y manubrio» vuelve a mostrar el `!`. Tiene el mismo problema que tenía
+   la rueda: brilla el manubrio y solo responde una esfera invisible.
+3. Lo que seguía pendiente de la entrada anterior.
+
+### 2026-10-16 (noche) — limpieza de lo que sobraba y optimización para Quest
+
+Trabajo de Cindy (con Claude), subido en `198bb1e`. Antes de tocar nada se auditó el proyecto
+en tres frentes: el tutorial viejo, assets y scripts sin uso, y el coste en Quest.
+
+- **Quitado, porque ningún GUID lo referencia:**
+  - `Assets/_Recovery/` (3,4 MB de escena de recuperación);
+  - `Models/plataform.prefab`: la escena usa otro `plataform`, el de `CITY/FX`;
+  - los restos de la plantilla de Unity (`Scenes/SampleScene`, `Readme`, `TutorialInfo`,
+    `InitTestScene*`);
+  - una carpeta vacía de `CommandSystem` y `TouchPlusPosePreview.cs`.
+
+  El zip de diseño pasó a `Docs/design/`. Queda sin subir el borrado del `.txt` de
+  `unityassetcollection`.
+- **Un borrado que salió mal y se deshizo:** los materiales de `OculusControls` no los nombraba
+  ninguna escena ni prefab, pero los FBX del Touch Plus los usan desde su `.meta`. El control
+  salió magenta y se restauraron desde git; la comprobación se repitió sobre los `.meta` y el
+  resto estaba limpio (§9).
+- **Lo que la auditoría daba por quitable y no lo es:** `ControllerHint3DView`,
+  `SpriteTargetHighlight` y `TextBackplate`. Los usa el código del tutorial viejo; se irán
+  con él.
+- **Optimización:**
+  - `ServiceLocator` sin logs por petición, tras el símbolo `RIDESAFE_SERVICE_LOG` (§9), y
+    `UIText` guarda el proveedor;
+  - el tutorial busca objetos con `Physics.OverlapSphereNonAlloc` a menos de 4 m y botones
+    con `Selectable.AllSelectablesNoAlloc`, en vez de recorrer la escena cada segundo;
+  - el control lee los canvas con `GraphicRegistry` en lugar de buscar todas las imágenes;
+  - `HelpDirector` no redibuja si nada cambió;
+  - audio y video se listan cada 5 s, y el panel de Comfort solo hasta encontrarlo;
+  - `FollowBelow`, la barra de progreso del video y `GrowWithContent` dejan de rehacer canvas
+    sin necesidad;
+  - el `!` no trabaja mientras está oculto.
+- **El control ya no se aparta por un roce.** En Welcome su borde rozaba «Comenzar» un 1 % de
+  la pantalla y saltaba al lado, medio fuera de la vista. Ahora un solape menor del 5 % de la
+  tarjeta no cuenta (`HintSpot.Tolerance`).
+- **Comprobado en Play:** la ayuda de primera vez en Welcome, el clic aprendido y la ayuda 3D en
+  la estación, con el casco negro ya contado como opción.
+- **Tests:** EditMode **471 de 473** tras bajar los últimos commits, con los 2 de siempre de
+  `Garaje_Test`; `TutorialHelp.Tests` 68 de 68.
+
+**Para retomar:**
+1. Subir el borrado del `.txt` de `unityassetcollection`.
+2. Correr los 6 tests de PlayMode del M1 desde el Test Runner.
+3. Decidir con el equipo lo que dejó abierto la auditoría (§8).
 
 ### 2026-10-16 (tarde) — la categoría pasa a `M1/`, el EPP elegido se queda en verde y hay voz
 

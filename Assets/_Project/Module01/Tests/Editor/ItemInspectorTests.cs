@@ -196,6 +196,28 @@ namespace RideSafe.Module01.Tests
         }
 
         [Test]
+        public void Un_objeto_fundido_por_el_static_batching_usa_el_prefab_del_catalogo()
+        {
+            // Las botas de la mesa estaban marcadas Static: en Play su MeshFilter apunta a la
+            // malla combinada de toda la escena, y la copia salia vacia en el pedestal.
+            Stage();
+            SafetyItemSO item = Item("shoes_ok", SafetyItemCategory.Core);
+            GameObject prefab = new GameObject("prefab del catalogo", typeof(MeshFilter), typeof(MeshRenderer));
+            Track(prefab);
+            prefab.GetComponent<MeshFilter>().sharedMesh = Cube;
+            item.ConfigureDisplayForTests(prefab);
+            Transform mesa = Mesa(1, Quaternion.identity);
+            StaticBatchingUtility.Combine(mesa.gameObject);
+            Assume.That(mesa.GetComponentInChildren<MeshRenderer>().isPartOfStaticBatch,
+                "Este editor no funde mallas en modo edicion; el caso no se puede montar aqui.");
+
+            _inspector.Present(item, mesa);
+
+            MeshFilter shown = _inspector.Presented.GetComponentInChildren<MeshFilter>();
+            Assert.AreSame(Cube, shown.sharedMesh, "La malla fundida no es la del objeto: va el prefab.");
+        }
+
+        [Test]
         public void Sin_mallas_visibles_el_pedestal_se_queda_con_el_signo()
         {
             // Los cinco puntos del vehiculo son esferas de clic con el renderer apagado: de ahi

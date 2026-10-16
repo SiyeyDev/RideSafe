@@ -80,6 +80,33 @@ namespace RideSafe.Module01.Tests
         }
 
         [Test]
+        public void En_la_v5_ningun_objeto_que_se_inspecciona_se_funde_con_el_static_batching()
+        {
+            // Prueba en Quest 2026-10-16: las botas, marcadas Static, salian vacias en el pedestal.
+            const string scenePath = "Assets/_Project/Scene/RideSafe_Garaje_v5.unity";
+            UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(scenePath);
+            bool openedHere = !scene.isLoaded;
+            if (openedHere)
+                scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scenePath,
+                    UnityEditor.SceneManagement.OpenSceneMode.Additive);
+            try
+            {
+                var batched = new System.Collections.Generic.List<string>();
+                foreach (GameObject root in scene.GetRootGameObjects())
+                    foreach (WorldObjectTaskEntity entity in root.GetComponentsInChildren<WorldObjectTaskEntity>(true))
+                        foreach (Transform t in entity.GetComponentsInChildren<Transform>(true))
+                            if ((GameObjectUtility.GetStaticEditorFlags(t.gameObject) & StaticEditorFlags.BatchingStatic) != 0)
+                                batched.Add(t.name);
+                CollectionAssert.IsEmpty(batched);
+            }
+            finally
+            {
+                if (openedHere)
+                    UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene, true);
+            }
+        }
+
+        [Test]
         public void En_la_v5_la_nota_de_Mi_Eleccion_no_queda_aplastada()
         {
             const string scenePath = "Assets/_Project/Scene/RideSafe_Garaje_v5.unity";

@@ -75,6 +75,45 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>
+        /// Quita <c>Batching Static</c> a todo objeto que se inspecciona en la v5. Fundido, su
+        /// MeshFilter apunta a la malla combinada de la escena y la copia del pedestal sale vacía
+        /// (las botas, prueba en Quest 2026-10-16). Los demás flags —GI, oclusión— se quedan: el
+        /// horneado no cambia.
+        /// </summary>
+        [MenuItem("RideSafe/Módulo 1/Quitar Batching Static a los objetos que se inspeccionan (Garaje_v5)")]
+        public static void UnbatchInspectables()
+        {
+            UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(ScenePath);
+            bool openedHere = !scene.isLoaded;
+            if (openedHere)
+                scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(ScenePath,
+                    UnityEditor.SceneManagement.OpenSceneMode.Additive);
+            try
+            {
+                var changed = new System.Collections.Generic.List<string>();
+                foreach (GameObject root in scene.GetRootGameObjects())
+                    foreach (WorldObjectTaskEntity entity in root.GetComponentsInChildren<WorldObjectTaskEntity>(true))
+                        foreach (Transform t in entity.GetComponentsInChildren<Transform>(true))
+                        {
+                            StaticEditorFlags flags = GameObjectUtility.GetStaticEditorFlags(t.gameObject);
+                            if ((flags & StaticEditorFlags.BatchingStatic) == 0)
+                                continue;
+                            GameObjectUtility.SetStaticEditorFlags(t.gameObject, flags & ~StaticEditorFlags.BatchingStatic);
+                            changed.Add(t.name);
+                        }
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
+                UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene);
+                Debug.Log("[Module01] Batching Static removed from " + changed.Count + " object(s): " +
+                          string.Join(", ", changed));
+            }
+            finally
+            {
+                if (openedHere)
+                    UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene, true);
+            }
+        }
+
+        /// <summary>
         /// Los botones finales («Continuar al Módulo 2», «Repetir Módulo») estaban clavados a
         /// y = −358 del HUD y la lista larga de «Mi Elección» les pasaba por debajo: los sigue a ella.
         /// </summary>
