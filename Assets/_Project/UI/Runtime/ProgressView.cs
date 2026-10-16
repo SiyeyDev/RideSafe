@@ -44,7 +44,13 @@ namespace RideSafe.UI
         /// <summary>Bar mode: 0..1.</summary>
         public void SetValue(float normalized)
         {
-            _value = Mathf.Clamp01(normalized);
+            float value = Mathf.Clamp01(normalized);
+            // Called every frame during a video: a change under half a percent is not visible but
+            // would rebuild the canvas. The ends (0 and 1) always land exactly.
+            bool end = value <= 0f || value >= 1f;
+            if (!end && Mathf.Abs(value - _value) < 0.005f)
+                return;
+            _value = value;
             Apply();
         }
 

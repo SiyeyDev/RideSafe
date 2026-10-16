@@ -13,11 +13,26 @@ namespace RideSafe.UI
     /// </summary>
     public static class UIText
     {
+        private static ILocalizationProvider _provider;
+
+        /// <summary>The provider, asked for once and kept; asked again only while there is none (or it was destroyed).</summary>
+        private static ILocalizationProvider Provider
+        {
+            get
+            {
+                if (_provider is UnityEngine.Object unityObject && unityObject == null)
+                    _provider = null;
+                if (_provider == null)
+                    _provider = ServiceLocator.Instance.RequestService<ILocalizationProvider>();
+                return _provider;
+            }
+        }
+
         public static string Resolve(string termOrText)
         {
             if (string.IsNullOrEmpty(termOrText))
                 return termOrText;
-            ILocalizationProvider localization = ServiceLocator.Instance.RequestService<ILocalizationProvider>();
+            ILocalizationProvider localization = Provider;
             string text = localization != null ? localization.GetTranslation(termOrText) : null;
             return string.IsNullOrEmpty(text) ? termOrText : text;
         }
@@ -25,7 +40,7 @@ namespace RideSafe.UI
         /// <summary>Subscribes to language changes when a provider exists; returns it so the caller can unsubscribe.</summary>
         public static ILocalizationProvider ListenForLanguage(Action onChanged)
         {
-            ILocalizationProvider localization = ServiceLocator.Instance.RequestService<ILocalizationProvider>();
+            ILocalizationProvider localization = Provider;
             if (localization != null && onChanged != null)
                 localization.LanguageChanged += onChanged;
             return localization;

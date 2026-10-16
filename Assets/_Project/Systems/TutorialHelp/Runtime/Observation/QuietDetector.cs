@@ -12,7 +12,7 @@ namespace RideSafe.Help
     public sealed class QuietDetector
     {
         public const float NarrationMinSeconds = 2f;
-        private const float RefreshSeconds = 1f;
+        private const float RefreshSeconds = 5f; // narration and video players exist from the start; a scene search is not free on Quest
 
         private readonly List<VideoPlayer> _videos = new List<VideoPlayer>();
         private readonly List<AudioSource> _sounds = new List<AudioSource>();

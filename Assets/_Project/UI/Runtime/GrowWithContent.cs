@@ -91,8 +91,8 @@ namespace RideSafe.UI
         private int ActiveRows()
         {
             int count = 0;
-            foreach (Transform child in _content)
-                if (child.gameObject.activeSelf)
+            for (int i = 0; i < _content.childCount; i++)
+                if (_content.GetChild(i).gameObject.activeSelf)
                     count++;
             return count;
         }

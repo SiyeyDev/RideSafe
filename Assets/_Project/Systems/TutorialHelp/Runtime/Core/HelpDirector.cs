@@ -23,6 +23,11 @@ namespace RideSafe.Help
         private readonly List<HelpTarget> _shown = new List<HelpTarget>();
         private readonly List<HelpTarget> _next = new List<HelpTarget>();
         private HelpDecision _shownFor = HelpDecision.None;
+        private Request _presentedRequest;
+        private DominantHand _presentedHand;
+        private bool _autoPresented;
+        private HelpDecision _textFor = HelpDecision.None;
+        private string _text;
 
         public HelpDirector(TutorialGestureSO gesture, IGestureHintView view, ITargetHighlighter highlighter,
                             Func<string, string> translate)
@@ -44,8 +49,9 @@ namespace RideSafe.Help
         {
             _visible.Clear();
             bool ui = false, obj = false;
-            foreach (HelpTarget target in visible)
+            for (int i = 0; i < visible.Count; i++)
             {
+                HelpTarget target = visible[i];
                 _visible.Add(target);
                 if (target.Kind == InteractionKind.Interface)
                     ui = true;
@@ -78,43 +84,78 @@ namespace RideSafe.Help
             if (_requests.Count > 0)
             {
                 Request request = _requests[_requests.Count - 1];
+                if (request == _presentedRequest && Hand == _presentedHand)
+                    return;
                 Present(request.Gesture, request.Targets, null);
+                _presentedRequest = request;
+                _autoPresented = false;
                 return;
             }
+            _presentedRequest = null;
             if (Decision.Mode == HelpMode.None)
             {
                 _shown.Clear();
                 _shownFor = HelpDecision.None;
-                _view?.Hide();
-                _highlighter?.Clear();
+                if (_autoPresented || _view == null || _view.IsVisible)
+                {
+                    _view?.Hide();
+                    _highlighter?.Clear();
+                }
+                _autoPresented = false;
                 return;
             }
 
             _next.Clear();
-            foreach (HelpTarget target in _visible)
+            for (int i = 0; i < _visible.Count; i++)
             {
+                HelpTarget target = _visible[i];
                 if (Decision.Mode == HelpMode.Stuck || target.Kind == Decision.Kind)
                     _next.Add(target);
             }
             // While the same help stays up, an option it showed keeps its highlight even if the
             // learner looks away from it: an evaluated choice never ends with one option singled out.
-            if (Decision.Equals(_shownFor))
+            bool sameHelp = Decision.Equals(_shownFor);
+            if (sameHelp)
             {
-                foreach (HelpTarget kept in _shown)
+                for (int i = 0; i < _shown.Count; i++)
                 {
+                    HelpTarget kept = _shown[i];
                     if (kept.Transform != null && kept.Transform.gameObject.activeInHierarchy && !_next.Contains(kept))
                         _next.Add(kept);
                 }
             }
+            // Same help, same targets, same hand: what is on screen is already right. Redrawing
+            // every frame boxed enumerators, asked I2 for the text and re-ran the highlighter.
+            bool unchanged = _autoPresented && sameHelp && Hand == _presentedHand && SameTargets(_next, _shown);
             _shown.Clear();
             _shown.AddRange(_next);
             _shownFor = Decision;
-            string text = Decision.Mode == HelpMode.FirstTime ? Translate(_gesture.TextKeyFor(Decision.Kind)) : null;
-            Present(_gesture, _shown, text);
+            if (unchanged)
+                return;
+            if (!_textFor.Equals(Decision))
+            {
+                _textFor = Decision;
+                _text = Decision.Mode == HelpMode.FirstTime ? Translate(_gesture.TextKeyFor(Decision.Kind)) : null;
+            }
+            Present(_gesture, _shown, _text);
+            _autoPresented = true;
+        }
+
+        private static bool SameTargets(List<HelpTarget> a, List<HelpTarget> b)
+        {
+            if (a.Count != b.Count)
+                return false;
+            for (int i = 0; i < a.Count; i++)
+            {
+                if (!a[i].Equals(b[i]))
+                    return false;
+            }
+            return true;
         }
 
         private void Present(TutorialGestureSO gesture, IReadOnlyList<HelpTarget> targets, string text)
         {
+            _presentedHand = Hand;
             _view?.Show(gesture, HandFor(gesture), text, Centroid(targets));
             _highlighter?.Highlight(targets);
         }
@@ -142,8 +183,8 @@ namespace RideSafe.Help
             if (targets == null || targets.Count == 0)
                 return null;
             Vector3 sum = Vector3.zero;
-            foreach (HelpTarget target in targets)
-                sum += target.Position;
+            for (int i = 0; i < targets.Count; i++)
+                sum += targets[i].Position;
             return sum / targets.Count;
         }
 

@@ -28,6 +28,14 @@ namespace RideSafe.Help.Tests
         }
 
         [Test]
+        public void A_sliver_of_overlap_does_not_move_it()
+        {
+            // Welcome: the card's top edge grazes the bottom of "Comenzar" by 1% of the screen.
+            var panels = new List<Rect> { new Rect(.45f, .395f, .1f, .07f) };
+            Assert.AreEqual(0, HintSpot.Choose(new[] { Centre, Right, Left }, panels), "a graze is not a reason to move aside");
+        }
+
+        [Test]
         public void With_no_free_spot_it_takes_the_least_covered()
         {
             var panels = new List<Rect> { new Rect(.3f, 0f, .7f, .6f), new Rect(0f, 0f, .2f, .6f) };

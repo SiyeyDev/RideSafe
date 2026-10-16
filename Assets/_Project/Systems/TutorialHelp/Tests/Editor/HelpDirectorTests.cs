@@ -12,8 +12,10 @@ namespace RideSafe.Help.Tests
         public XRNodeRole Hand;
         public string Text;
         public bool Visible;
+        public int Shows;
         public void Show(TutorialGestureSO gesture, XRNodeRole hand, string text, Vector3? focus)
         {
+            Shows++;
             Gesture = gesture;
             Hand = hand;
             Text = text;
@@ -26,8 +28,10 @@ namespace RideSafe.Help.Tests
     internal sealed class FakeHighlighter : ITargetHighlighter
     {
         public readonly List<HelpTarget> Current = new List<HelpTarget>();
+        public int Calls;
         public void Highlight(IReadOnlyList<HelpTarget> targets)
         {
+            Calls++;
             Current.Clear();
             Current.AddRange(targets);
         }
@@ -179,6 +183,20 @@ namespace RideSafe.Help.Tests
             b.Transform.gameObject.SetActive(false);
             Run(0.1f, a);
             Assert.AreEqual(1, _highlighter.Current.Count);
+        }
+
+        [Test]
+        public void SteadyHelp_IsNotRedrawnEveryFrame()
+        {
+            HelpTarget a = Target(InteractionKind.Interface), b = Target(InteractionKind.Interface);
+            Run(1.2f, a, b);
+            int shows = _view.Shows, highlights = _highlighter.Calls;
+            Run(2f, a, b);
+            Assert.AreEqual(shows, _view.Shows, "same help, same targets: nothing to redraw");
+            Assert.AreEqual(highlights, _highlighter.Calls);
+            HelpTarget c = Target(InteractionKind.Interface);
+            Run(0.1f, a, b, c);
+            Assert.AreEqual(highlights + 1, _highlighter.Calls, "a new option is drawn at once");
         }
     }
 }

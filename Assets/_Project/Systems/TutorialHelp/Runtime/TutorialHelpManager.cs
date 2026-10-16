@@ -32,6 +32,7 @@ namespace RideSafe.Help
         private ILocalizationProvider _localization;
         private float _sinceScan = float.MaxValue;
         private float _sinceHands = float.MaxValue;
+        private const float HandSearchSeconds = 5f;
 
         public HelpDirector Director => _director;
         public IReadOnlyList<HelpTarget> Visible => _visible;
@@ -65,11 +66,16 @@ namespace RideSafe.Help
         {
             float deltaTime = Time.deltaTime;
 
-            _sinceHands += deltaTime;
-            if (_sinceHands >= TargetScanner.ObjectRefreshSeconds)
+            // The comfort panel is part of the scene: search (inactive included) until it is
+            // found, then stop. A scene-wide search every second for nothing is a cost on Quest.
+            if (!_hand.IsListening)
             {
-                _sinceHands = 0f;
-                _hand.Listen(FindObjectsByType<ComfortSettingsPanel>(FindObjectsInactive.Include, FindObjectsSortMode.None));
+                _sinceHands += deltaTime;
+                if (_sinceHands >= HandSearchSeconds)
+                {
+                    _sinceHands = 0f;
+                    _hand.Listen(FindObjectsByType<ComfortSettingsPanel>(FindObjectsInactive.Include, FindObjectsSortMode.None));
+                }
             }
             _director.Hand = _hand.Hand;
 

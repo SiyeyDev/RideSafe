@@ -41,8 +41,9 @@ namespace RideSafe.Help
                 _time = 0f; // a new highlight starts from the control's own colour
 
             _wanted.Clear();
-            foreach (HelpTarget target in targets)
+            for (int i = 0; i < targets.Count; i++)
             {
+                HelpTarget target = targets[i];
                 if (target.Transform == null)
                     continue;
                 _wanted.Add(target.Transform);

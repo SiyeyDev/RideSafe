@@ -140,7 +140,8 @@ namespace RideSafe.Module01
 
         private void LateUpdate()
         {
-            if (_billboard == null)
+            // Hidden sign: nothing to turn or pulse (and its click area would be moved for nothing).
+            if (_billboard == null || !_billboard.gameObject.activeSelf)
                 return;
 
             if (_head == null)

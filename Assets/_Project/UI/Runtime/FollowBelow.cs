@@ -38,7 +38,10 @@ namespace RideSafe.UI
 
             self.GetWorldCorners(_corners);
             Vector3 selfTop = (_corners[1] + _corners[2]) / 2f;
-            self.position += wanted - selfTop;
+            Vector3 move = wanted - selfTop;
+            // Writing the position dirties the canvas and rebuilds it; skip when nothing moved.
+            if (move.sqrMagnitude > 1e-10f)
+                self.position += move;
         }
     }
 }

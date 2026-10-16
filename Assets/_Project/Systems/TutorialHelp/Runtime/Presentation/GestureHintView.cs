@@ -56,7 +56,8 @@ namespace RideSafe.Help
         private MaterialPropertyBlock _block;
         private float _lateral;
         private float _sinceRespot;
-        private readonly List<Graphic> _panels = new List<Graphic>();
+        private readonly List<Canvas> _canvases = new List<Canvas>();
+        private readonly Vector3[] _corners = new Vector3[4];
         private readonly List<Rect> _panelRects = new List<Rect>();
         private readonly Rect[] _spots = new Rect[3];
         private readonly float[] _laterals = new float[3];
@@ -177,56 +178,62 @@ namespace RideSafe.Help
             Vector2 half = _cardSize * (_scale * 0.5f);
             Vector3 right = pose.rotation * Vector3.right * half.x;
             Vector3 up = pose.rotation * Vector3.up * half.y;
-            Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
-            Vector2 max = new Vector2(float.MinValue, float.MinValue);
-            foreach (Vector3 corner in new[] { pose.position - right - up, pose.position - right + up,
-                                               pose.position + right + up, pose.position + right - up })
-            {
-                Vector3 v = camera.WorldToViewportPoint(corner);
-                min = Vector2.Min(min, v);
-                max = Vector2.Max(max, v);
-            }
-            return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+            _corners[0] = pose.position - right - up;
+            _corners[1] = pose.position - right + up;
+            _corners[2] = pose.position + right + up;
+            _corners[3] = pose.position + right - up;
+            return Viewport(camera, out _);
         }
 
         /// <summary>Viewport rects of the module's visible panels (images on world-space canvases), not the tutorial's own.</summary>
         private List<Rect> PanelRects(Camera camera)
         {
-            if (Time.realtimeSinceStartup - _panelsListedAt > 1f || _panels.Count == 0)
+            // A handful of canvases, listed every 2 s; their graphics come from uGUI's own
+            // registry, so there is no scene-wide search for images and no array per call.
+            if (Time.realtimeSinceStartup - _panelsListedAt > 2f || _canvases.Count == 0)
             {
-                _panels.Clear();
-                foreach (Image image in FindObjectsByType<Image>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
-                    _panels.Add(image);
-                foreach (RawImage image in FindObjectsByType<RawImage>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
-                    _panels.Add(image);
+                _canvases.Clear();
+                _canvases.AddRange(FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None));
                 _panelsListedAt = Time.realtimeSinceStartup;
             }
             _panelRects.Clear();
             Transform own = transform.root;
-            Vector3[] corners = new Vector3[4];
-            foreach (Graphic graphic in _panels)
+            for (int c = 0; c < _canvases.Count; c++)
             {
-                if (graphic == null || !graphic.isActiveAndEnabled || graphic.color.a < 0.05f || graphic.transform.IsChildOf(own))
+                Canvas canvas = _canvases[c];
+                if (canvas == null || !canvas.isActiveAndEnabled || canvas.rootCanvas.renderMode != RenderMode.WorldSpace ||
+                    canvas.transform.IsChildOf(own))
                     continue;
-                Canvas canvas = graphic.canvas;
-                if (canvas == null || canvas.rootCanvas.renderMode != RenderMode.WorldSpace)
-                    continue;
-                graphic.rectTransform.GetWorldCorners(corners);
-                Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
-                Vector2 max = new Vector2(float.MinValue, float.MinValue);
-                bool behind = false;
-                foreach (Vector3 corner in corners)
+                IList<Graphic> graphics = GraphicRegistry.GetGraphicsForCanvas(canvas);
+                for (int g = 0; g < graphics.Count; g++)
                 {
-                    Vector3 v = camera.WorldToViewportPoint(corner);
-                    behind |= v.z <= 0f;
-                    min = Vector2.Min(min, v);
-                    max = Vector2.Max(max, v);
+                    Graphic graphic = graphics[g];
+                    if (!(graphic is Image || graphic is RawImage) || graphic == null || !graphic.isActiveAndEnabled ||
+                        graphic.color.a < 0.05f)
+                        continue;
+                    graphic.rectTransform.GetWorldCorners(_corners);
+                    Rect rect = Viewport(camera, out bool behind);
+                    if (!behind && rect.width * rect.height > 0.0005f)
+                        _panelRects.Add(rect);
                 }
-                Rect rect = Rect.MinMaxRect(min.x, min.y, max.x, max.y);
-                if (!behind && rect.width * rect.height > 0.0005f)
-                    _panelRects.Add(rect);
             }
             return _panelRects;
+        }
+
+        /// <summary>Viewport rect of the four points in _corners; behind = any of them is behind the camera.</summary>
+        private Rect Viewport(Camera camera, out bool behind)
+        {
+            Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
+            Vector2 max = new Vector2(float.MinValue, float.MinValue);
+            behind = false;
+            for (int i = 0; i < 4; i++)
+            {
+                Vector3 v = camera.WorldToViewportPoint(_corners[i]);
+                behind |= v.z <= 0f;
+                min = Vector2.Min(min, v);
+                max = Vector2.Max(max, v);
+            }
+            return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
         }
 
         private void OnDisable() => EndButton();

@@ -43,12 +43,12 @@ namespace Cachacos
             {
                 Assert.IsTrue(_services[type] != null, $"///// SERVICE LOCATOR ///// \nService {type} already registered");
                 _services[type] = service;
-                UnityEngine.Debug.Log($"///// SERVICE LOCATOR ///// \nOverwriting null service {type} with new service.");
+                Log($"///// SERVICE LOCATOR ///// \nOverwriting null service {type} with new service.");
             }
             else
             {
                 _services.Add(type, service);
-                UnityEngine.Debug.Log($"///// SERVICE LOCATOR ///// \nService {service} registered");
+                Log($"///// SERVICE LOCATOR ///// \nService {service} registered");
             }
             LookPedingRequests(service);
         }
@@ -60,7 +60,7 @@ namespace Cachacos
                 Assert.IsTrue(_services[type] != null, $"///// SERVICE LOCATOR ///// \nService {type} desregistered");
                 _services.Remove(type);
             }
-            UnityEngine.Debug.Log($"///// SERVICE LOCATOR ///// \nService {service} is not register");
+            Log($"///// SERVICE LOCATOR ///// \nService {service} is not register");
         }
         private void LookPedingRequests<T>(T service) where T : class
         {
@@ -88,13 +88,13 @@ namespace Cachacos
             Type type = typeof(T);
             if (_services.TryGetValue(type, out object service) && service != null)
             {
-                UnityEngine.Debug.Log($"///// SERVICE LOCATOR ///// \nService {service} getted");
+                Log($"///// SERVICE LOCATOR ///// \nService {service} getted");
                 onServiceAvailable?.Invoke((T)service);
                 return (T)service;
             }
             if (onServiceAvailable == null)
                 return null;
-            UnityEngine.Debug.Log($"///// SERVICE LOCATOR ///// \nService of type {type} is not registered. Queuing callback for resolution upon registration.");
+            Log($"///// SERVICE LOCATOR ///// \nService of type {type} is not registered. Queuing callback for resolution upon registration.");
             if (_pendingRequests.ContainsKey(type))
             {
                 _pendingRequests[type] += (obj => onServiceAvailable((T)obj));
@@ -103,5 +103,13 @@ namespace Cachacos
             _pendingRequests.Add(type, obj => onServiceAvailable((T)obj));
             return null;
         }
+    
+        /// <summary>
+        /// Diagnostics only. Every request used to log with a stack trace — dozens per frame
+        /// when a panel opens, a visible hitch on Quest — so the calls (and their string
+        /// building) are compiled out unless RIDESAFE_SERVICE_LOG is defined.
+        /// </summary>
+        [System.Diagnostics.Conditional("RIDESAFE_SERVICE_LOG")]
+        private static void Log(string message) => UnityEngine.Debug.Log(message);
     }
 }

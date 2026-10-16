@@ -22,41 +22,54 @@ namespace RideSafe.Help
         public const float MaxObjectDistance = 4f;
         public const float ObjectRefreshSeconds = 1f;
 
-        private readonly List<MonoBehaviour> _clickables = new List<MonoBehaviour>();
         private readonly HashSet<Transform> _seen = new HashSet<Transform>();
-        private float _sinceRefresh = float.MaxValue;
+        private readonly Collider[] _nearby = new Collider[256];
+        private Selectable[] _selectables = new Selectable[64];
 
+        /// <summary>
+        /// Controls come from uGUI's own list of selectables (copied into a reused buffer); objects
+        /// from the colliders physics finds within reach. Nothing searches the whole scene and
+        /// nothing allocates per scan, which on Quest meant a spike and garbage every second.
+        /// </summary>
         public void Scan(Pose viewer, float elapsed, Transform ignore, List<HelpTarget> results)
         {
             results.Clear();
             _seen.Clear();
 
-            foreach (Selectable selectable in Selectable.allSelectablesArray)
+            if (_selectables.Length < Selectable.allSelectableCount)
+                _selectables = new Selectable[Mathf.NextPowerOfTwo(Selectable.allSelectableCount)];
+            int selectables = Selectable.AllSelectablesNoAlloc(_selectables);
+            for (int i = 0; i < selectables; i++)
             {
+                Selectable selectable = _selectables[i];
                 if (!IsUsable(selectable) || IsUnder(selectable.transform, ignore) || !InView(viewer, selectable.transform.position))
                     continue;
                 if (_seen.Add(selectable.transform))
                     results.Add(new HelpTarget(selectable.transform, InteractionKind.Interface, selectable.targetGraphic));
             }
 
-            _sinceRefresh += elapsed;
-            if (_sinceRefresh >= ObjectRefreshSeconds)
+            int hits = Physics.OverlapSphereNonAlloc(viewer.position, MaxObjectDistance + 0.5f, _nearby,
+                                                     Physics.AllLayers, QueryTriggerInteraction.Collide);
+            for (int i = 0; i < hits; i++)
             {
-                _sinceRefresh = 0f;
-                RefreshClickables();
-            }
-            foreach (MonoBehaviour clickable in _clickables)
-            {
-                if (clickable == null || !clickable.isActiveAndEnabled || IsUnder(clickable.transform, ignore))
+                Collider collider = _nearby[i];
+                if (collider == null || !collider.enabled)
                     continue;
-                Collider collider = clickable.GetComponentInChildren<Collider>(false);
+                // Whoever receives this collider's click: the same lookup uGUI does for the pointer.
+                GameObject handler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(collider.gameObject);
+                if (handler == null)
+                    continue;
+                Transform target = handler.transform;
+                if (_seen.Contains(target) || IsUnder(target, ignore) || handler.GetComponent<Selectable>() != null ||
+                    handler.GetComponentInParent<Canvas>() != null)
+                    continue;
                 // The collider's transform, not its bounds: bounds lag until physics syncs transforms.
-                if (collider == null || !collider.enabled || !InView(viewer, collider.transform.position) ||
+                if (!InView(viewer, collider.transform.position) ||
                     Vector3.Distance(viewer.position, collider.transform.position) > MaxObjectDistance ||
-                    !Reachable(viewer, collider, clickable.transform))
+                    !Reachable(viewer, collider, target))
                     continue;
-                if (_seen.Add(clickable.transform))
-                    results.Add(new HelpTarget(clickable.transform, InteractionKind.Object3D, null));
+                _seen.Add(target);
+                results.Add(new HelpTarget(target, InteractionKind.Object3D, null, collider));
             }
         }
 
@@ -112,15 +125,6 @@ namespace RideSafe.Help
 
         private static bool IsUnder(Transform transform, Transform root) => root != null && transform.IsChildOf(root);
 
-        private void RefreshClickables()
-        {
-            _clickables.Clear();
-            foreach (MonoBehaviour behaviour in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
-            {
-                if (behaviour is IPointerClickHandler && !(behaviour is Selectable) && !(behaviour is ClickWitness) &&
-                    behaviour.GetComponentInParent<Canvas>() == null)
-                    _clickables.Add(behaviour);
-            }
-        }
+
     }
 }

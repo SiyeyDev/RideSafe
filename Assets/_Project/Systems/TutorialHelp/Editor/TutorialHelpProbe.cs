@@ -195,6 +195,32 @@ namespace RideSafe.Help.Editor
             }
         }
 
+        /// <summary>The images GestureHintView counts as module panels: path, alpha, viewport rect.</summary>
+        public static void Panels()
+        {
+            Camera camera = Camera.main;
+            StringBuilder sb = new StringBuilder();
+            Vector3[] corners = new Vector3[4];
+            foreach (Canvas canvas in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            {
+                if (!canvas.isActiveAndEnabled || canvas.rootCanvas.renderMode != RenderMode.WorldSpace || canvas.transform.root.name == "TutorialHelp")
+                    continue;
+                var graphics = UnityEngine.UI.GraphicRegistry.GetGraphicsForCanvas(canvas);
+                for (int i = 0; i < graphics.Count; i++)
+                {
+                    var g = graphics[i];
+                    if (!(g is UnityEngine.UI.Image || g is UnityEngine.UI.RawImage) || !g.isActiveAndEnabled || g.color.a < 0.05f)
+                        continue;
+                    g.rectTransform.GetWorldCorners(corners);
+                    Vector2 min = new Vector2(9, 9), max = new Vector2(-9, -9);
+                    foreach (Vector3 c in corners) { Vector3 v = camera.WorldToViewportPoint(c); min = Vector2.Min(min, v); max = Vector2.Max(max, v); }
+                    sb.AppendLine(Path(g.transform) + " a=" + g.color.a.ToString("F2") + " crA=" + g.canvasRenderer.GetInheritedAlpha().ToString("F2") +
+                                  " x=" + min.x.ToString("F2") + ".." + max.x.ToString("F2") + " y=" + min.y.ToString("F2") + ".." + max.y.ToString("F2"));
+                }
+            }
+            File.WriteAllText(DumpPath, sb.ToString());
+        }
+
         public static void Shot() => ScreenCapture.CaptureScreenshot(ShotPath);
 
         private static string Path(Transform t)

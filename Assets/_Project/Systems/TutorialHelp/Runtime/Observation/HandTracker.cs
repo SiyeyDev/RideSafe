@@ -13,6 +13,7 @@ namespace RideSafe.Help
         private readonly List<ComfortSettingsPanel> _panels = new List<ComfortSettingsPanel>();
 
         public DominantHand Hand { get; private set; } = DominantHand.Right;
+        public bool IsListening => _panels.Count > 0;
 
         public void Listen(IEnumerable<ComfortSettingsPanel> panels)
         {

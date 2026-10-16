@@ -7,17 +7,20 @@ namespace RideSafe.Help
     /// <summary>Something the learner can point at and select, as the tutorial sees it.</summary>
     public readonly struct HelpTarget : IEquatable<HelpTarget>
     {
-        public HelpTarget(Transform transform, InteractionKind kind, Graphic graphic)
+        public HelpTarget(Transform transform, InteractionKind kind, Graphic graphic, Collider collider = null)
         {
             Transform = transform;
             Kind = kind;
             Graphic = graphic;
+            Collider = collider;
         }
 
         public Transform Transform { get; }
         public InteractionKind Kind { get; }
         /// <summary>The image that pulses (canvas controls only).</summary>
         public Graphic Graphic { get; }
+        /// <summary>The collider the pointer hits (objects only), found once when the target is made.</summary>
+        public Collider Collider { get; }
 
         public Vector3 Position
         {
@@ -25,12 +28,8 @@ namespace RideSafe.Help
             {
                 if (Transform == null)
                     return Vector3.zero;
-                if (Kind == InteractionKind.Object3D)
-                {
-                    Collider collider = Transform.GetComponentInChildren<Collider>(false);
-                    if (collider != null)
-                        return collider.transform.position; // bounds lag until physics syncs transforms
-                }
+                if (Kind == InteractionKind.Object3D && Collider != null)
+                    return Collider.transform.position; // bounds lag until physics syncs transforms
                 return Transform.position;
             }
         }
@@ -46,7 +45,8 @@ namespace RideSafe.Help
                     : transform.GetComponent<Graphic>();
                 return new HelpTarget(transform, InteractionKind.Interface, graphic);
             }
-            return new HelpTarget(transform, InteractionKind.Object3D, null);
+            return new HelpTarget(transform, InteractionKind.Object3D, null,
+                                  transform != null ? transform.GetComponentInChildren<Collider>(false) : null);
         }
 
         public bool Equals(HelpTarget other) => Transform == other.Transform;

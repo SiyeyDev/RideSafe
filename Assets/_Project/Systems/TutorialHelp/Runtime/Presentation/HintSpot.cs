@@ -10,6 +10,9 @@ namespace RideSafe.Help
     /// </summary>
     public static class HintSpot
     {
+        /// <summary>Overlap under this share of the card is a graze, not a reason to move aside.</summary>
+        public const float Tolerance = 0.05f;
+
         public static int Choose(IReadOnlyList<Rect> candidates, IReadOnlyList<Rect> panels)
         {
             int best = 0;
@@ -17,8 +20,12 @@ namespace RideSafe.Help
             for (int i = 0; i < candidates.Count; i++)
             {
                 float covered = 0f;
-                foreach (Rect panel in panels)
-                    covered += Overlap(candidates[i], panel);
+                for (int p = 0; p < panels.Count; p++)
+                    covered += Overlap(candidates[i], panels[p]);
+                // Welcome: centred, the card's edge grazed «Comenzar» by 1% of the screen and the
+                // hint jumped aside, half off the view. Only a real overlap moves it.
+                if (covered < Tolerance * candidates[i].width * candidates[i].height)
+                    covered = 0f;
                 if (covered < bestCovered - 1e-5f)
                 {
                     best = i;
