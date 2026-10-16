@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: SO_Item_elbow_pads
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.SafetyItemSO
   _itemId: elbow_pads
-  _nameKey: Module1/Item_ElbowPads
-  _riskKey: Module1/Item_ElbowPads_Risk
+  _nameKey: M1/Item_ElbowPads
+  _riskKey: M1/Item_ElbowPads_Risk
   _category: 2
   _displayPrefab: {fileID: 919132149155446097, guid: 0c56078c8f9a6ad4d88b3c6c32655e83, type: 3}
   _deteriorated: 0

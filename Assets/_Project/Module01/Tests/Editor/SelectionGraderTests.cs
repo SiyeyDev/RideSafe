@@ -15,7 +15,7 @@ namespace RideSafe.Module01.Tests
         protected SafetyItemSO Item(string id, SafetyItemCategory category)
         {
             SafetyItemSO item = ScriptableObject.CreateInstance<SafetyItemSO>();
-            item.ConfigureForTests(id, "Module1/" + id, "Module1/" + id + "_Risk", category);
+            item.ConfigureForTests(id, "M1/" + id, "M1/" + id + "_Risk", category);
             _created.Add(item);
             return item;
         }
@@ -23,9 +23,16 @@ namespace RideSafe.Module01.Tests
         protected ZoneSO Zone(string id, params SafetyItemSO[] items)
         {
             ZoneSO zone = ScriptableObject.CreateInstance<ZoneSO>();
-            zone.ConfigureForTests(id, "Module1/Zone_" + id, items);
+            zone.ConfigureForTests(id, "M1/Zone_" + id, items);
             _created.Add(zone);
             return zone;
+        }
+
+        /// <summary>Apunta un objeto de escena para que se destruya al terminar el test.</summary>
+        protected T Track<T>(T target) where T : Object
+        {
+            _created.Add(target);
+            return target;
         }
 
         protected Module01CatalogSO Catalog(params ZoneSO[] zones)
@@ -40,7 +47,8 @@ namespace RideSafe.Module01.Tests
         public void DestroyCreatedAssets()
         {
             foreach (Object o in _created)
-                Object.DestroyImmediate(o);
+                if (o != null)
+                    Object.DestroyImmediate(o);
             _created.Clear();
         }
     }

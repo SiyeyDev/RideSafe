@@ -51,6 +51,19 @@ namespace RideSafe.Module01.Editor
             var root = Find("Module01");
             if(root.GetComponent<RideSafe.TaskSequence.TaskSequenceService>()==null) root.AddComponent<RideSafe.TaskSequence.TaskSequenceService>();
             var inspector = root.GetComponent<ItemInspector>(); var tour = root.GetComponent<GuidedTour>();
+            // Por donde suena el "por que" del elemento al sacarlo al pedestal. Sin AudioSource
+            // el inspector se calla sin quejarse, que es la clase de fallo que no se nota hasta
+            // que alguien pregunta por que no suena nada.
+            if(inspector!=null)
+            {
+                var vozGo = inspector.transform.Find("ItemVoice");
+                if(vozGo==null){ var nuevo=new GameObject("ItemVoice"); nuevo.transform.SetParent(inspector.transform,false); vozGo=nuevo.transform; }
+                var voz = vozGo.GetComponent<AudioSource>(); if(voz==null) voz=vozGo.gameObject.AddComponent<AudioSource>();
+                voz.playOnAwake=false; voz.loop=false;
+                // 2D: es locucion, no un sonido del mundo.
+                voz.spatialBlend=0f;
+                Set(inspector,"_voice",voz);
+            }
             var director = root.GetComponent<Module01Director>();
             var binding = root.GetComponent<Module01Binding>();
             var ui = Find("PF_Module01_UI").GetComponent<ModuleUI>();
@@ -143,8 +156,8 @@ namespace RideSafe.Module01.Editor
             float confirmTop=(rimOnCanvas-inspection.transform.localPosition.y)/inspection.transform.localScale.x;
             var confirm=Panel("Confirmation",inspection.transform,new Vector2(0,confirmTop-confirmH*.5f-margin),new Vector2(620,confirmH),"Panel_Modal_Dark",2.4f/px);
             var question=Text("Question",confirm,new Vector2(0,54),new Vector2(580,95),"",_kit.H1OnDark.With(24f*px));
-            var yes=Button("AcceptButton",confirm,new Vector2(-125,-55),new Vector2(230,50f*px),"Module1/Yes",true,17f*px);
-            var no=Button("DeclineButton",confirm,new Vector2(125,-55),new Vector2(230,50f*px),"Module1/No",false,17f*px);
+            var yes=Button("AcceptButton",confirm,new Vector2(-125,-55),new Vector2(230,50f*px),"M1/Yes",true,17f*px);
+            var no=Button("DeclineButton",confirm,new Vector2(125,-55),new Vector2(230,50f*px),"M1/No",false,17f*px);
             Set(inspector,"_stage",stage); Set(inspector,"_nameLabel",name); Set(inspector,"_confirmRoot",confirm.gameObject); Set(inspector,"_questionLabel",question); Set(inspector,"_acceptButton",yes); Set(inspector,"_declineButton",no); Set(inspector,"_pedestal",pedestal);
 
             // Auxiliary controls live outside the generated prefab and are resolved at runtime.
@@ -169,14 +182,14 @@ namespace RideSafe.Module01.Editor
             // -20 (borde derecho en x=-328 unidades) y arranca en -39.7, dentro de los 45.7 que
             // da el campo horizontal. El checklist vive al otro lado, de +4 a +33.
             var nav=Rect("Navigation",hud.transform,new Vector2(-538,-330),new Vector2(420,55));
-            Button("PreviousZoneButton",nav,new Vector2(-105,0),new Vector2(200,48),"Module1/Previous",false,16f);
-            Button("NextZoneButton",nav,new Vector2(105,0),new Vector2(200,48),"Module1/Next",true,16f);
+            Button("PreviousZoneButton",nav,new Vector2(-105,0),new Vector2(200,48),"M1/Previous",false,16f);
+            Button("NextZoneButton",nav,new Vector2(105,0),new Vector2(200,48),"M1/Next",true,16f);
             Set(exp,"_navigation",nav.gameObject);
             var instructions=Panel("StationInstruction",hud.transform,new Vector2(-110,220),new Vector2(610,85),"Panel_Modal_Dark",2.4f);
             Set(exp,"_instruction",instructions.gameObject);
             Set(exp,"_instructionText",Text("Instruction",instructions,Vector2.zero,new Vector2(585,80),"",_kit.BodyOnDark.With(18f)));
             var decision=Panel("ReadinessDecision",hud.transform,Vector2.zero,new Vector2(760,290),"Panel_Modal_Light",2.4f);
-            Text("Title",decision,new Vector2(0,85),new Vector2(720,70),"Module1/Decision_Question",_kit.H1.With(27f));
+            Text("Title",decision,new Vector2(0,85),new Vector2(720,70),"M1/Decision_Question",_kit.H1.With(27f));
             // Verde / ambar / rojo, como pidio la reunion.
             //
             // OJO, esto REVIERTE una decision anterior que esta escrita en Docs/memory.md: los
@@ -184,11 +197,11 @@ namespace RideSafe.Module01.Editor
             // boton destacado insinua la respuesta antes de que el aprendiz lea la pregunta.
             // La reunion es posterior y manda la reunion, pero el motivo de entonces sigue
             // siendo valido y conviene mirar en el visor si el verde arrastra la eleccion.
-            Tint(Button("RoadReadyButton",decision,new Vector2(-245,-35),new Vector2(230,56),"Module1/RoadReady",false,16f),
+            Tint(Button("RoadReadyButton",decision,new Vector2(-245,-35),new Vector2(230,56),"M1/RoadReady",false,16f),
                  new Color32(0x74,0xC6,0x8A,0xFF));
-            Tint(Button("NeedsServiceButton",decision,new Vector2(0,-35),new Vector2(230,56),"Module1/NeedsService",false,16f),
+            Tint(Button("NeedsServiceButton",decision,new Vector2(0,-35),new Vector2(230,56),"M1/NeedsService",false,16f),
                  new Color32(0xF2,0xC4,0x5A,0xFF));
-            Tint(Button("DoNotRideButton",decision,new Vector2(245,-35),new Vector2(230,56),"Module1/DoNotRide",false,16f),
+            Tint(Button("DoNotRideButton",decision,new Vector2(245,-35),new Vector2(230,56),"M1/DoNotRide",false,16f),
                  new Color32(0xE8,0x7E,0x72,0xFF));
             Set(exp,"_decision",decision.gameObject);
 
@@ -210,8 +223,8 @@ namespace RideSafe.Module01.Editor
             // Comprobado el angulo: el borde inferior de la barra cae a 23.6 grados por debajo
             // del centro, dentro de los 30 que da el campo visual.
             var result=Panel("FinalResult",hud.transform,new Vector2(0,-358),new Vector2(660,72),"Panel_Modal_Light",2.4f);
-            Button("ContinueModule2Button",result,new Vector2(-165,0),new Vector2(300,48),"Module1/ContinueModule2",true,16f);
-            Button("RepeatModuleButton",result,new Vector2(170,0),new Vector2(280,48),"Module1/RepeatModule",false,16f);
+            Button("ContinueModule2Button",result,new Vector2(-165,0),new Vector2(300,48),"M1/ContinueModule2",true,16f);
+            Button("RepeatModuleButton",result,new Vector2(170,0),new Vector2(280,48),"M1/RepeatModule",false,16f);
             Set(exp,"_result",result.gameObject);
             // Con 11 filas la lista de "Mi Eleccion" pasaba por debajo de la barra clavada en
             // y = -358: la barra sigue a la lista, justo debajo y con aire.
@@ -247,14 +260,21 @@ namespace RideSafe.Module01.Editor
             var catalog=AssetDatabase.LoadAssetAtPath<Module01CatalogSO>("Assets/_Project/Module01/Data/SO_Module01Catalog.asset");
             var vehicle=AssetDatabase.LoadAssetAtPath<VehicleProfileSO>("Assets/_Project/Module01/Data/SO_VehicleProfile_Ebike.asset");
             all.ConfigureForTests(catalog.Zones.Concat(vehicle.InspectionZones)); EditorUtility.SetDirty(all); Set(exp,"_allItems",all);
-            // Quien esconde el EPP de la mesa mientras gira en el pedestal, y lo deja escondido
-            // cuando el aprendiz se lo lleva puesto. Solo los del catalogo personal: los puntos
-            // del vehiculo no se "llevan", se validan.
+            // Quien esconde el EPP de la mesa mientras gira en el pedestal, y lo deja marcado
+            // en verde cuando el aprendiz se lo lleva puesto. Solo los del catalogo personal:
+            // los puntos del vehiculo no se "llevan", se validan.
             var worn=root.GetComponent<WornItemVisibility>();
             if(worn==null) worn=root.AddComponent<WornItemVisibility>();
             Set(worn,"_runner",root.GetComponent<ZoneRunner>());
             Set(worn,"_inspector",inspector);
             Set(worn,"_wearable",catalog);
+            // El material del holograma se cablea aqui y no a mano: regenerar la presentacion
+            // sin el deja los EPP elegidos pintados de magenta, que es lo que hace Unity con un
+            // renderer sin material y se lee como "se rompio el arte".
+            var holo=AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Module01/Art/M_SelectedHolo.mat");
+            if(holo==null) throw new System.InvalidOperationException(
+                "Falta Assets/_Project/Module01/Art/M_SelectedHolo.mat, el material del verde de 'ya seleccionado'.");
+            Set(worn,"_holoMaterial",holo);
 
             ArrangeStations(catalog,vehicle);
             AssignUiLayer();

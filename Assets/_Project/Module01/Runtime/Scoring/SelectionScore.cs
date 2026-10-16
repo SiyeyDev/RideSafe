@@ -33,10 +33,10 @@ namespace RideSafe.Module01
         {
             switch (rank)
             {
-                case PerformanceRank.Knowledgeable: return "Module1/Rank_Knowledgeable";
-                case PerformanceRank.NeedsImprovement: return "Module1/Rank_NeedsImprovement";
-                case PerformanceRank.Reconsider: return "Module1/Rank_Reconsider";
-                default: return "Module1/Rank_Inexperienced";
+                case PerformanceRank.Knowledgeable: return "M1/Rank_Knowledgeable";
+                case PerformanceRank.NeedsImprovement: return "M1/Rank_NeedsImprovement";
+                case PerformanceRank.Reconsider: return "M1/Rank_Reconsider";
+                default: return "M1/Rank_Inexperienced";
             }
         }
 

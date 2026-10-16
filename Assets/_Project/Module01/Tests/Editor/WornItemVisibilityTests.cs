@@ -145,20 +145,36 @@ namespace RideSafe.Module01.Tests
         }
 
         [Test]
-        public void Aceptar_lo_deja_escondido_aunque_se_cierre_la_presentacion()
+        public void Aceptar_lo_devuelve_a_la_mesa_marcado_en_verde()
         {
+            // Lo pidió el cliente el 2026-10-16: antes desaparecía, y desaparecido no se puede
+            // volver a pulsar para cambiar de opinión.
             Configure("helmet_ok");
 
             _visibility.BeginInspecting("helmet_ok");
             _ledger.Add("helmet_ok");
             _visibility.EndInspecting();
 
-            Assert.IsFalse(_visibility.WorldObject("helmet_ok").activeSelf,
-                "Ya lo lleva puesto: no puede seguir sobre la mesa.");
+            Assert.IsTrue(_visibility.WorldObject("helmet_ok").activeSelf,
+                "Ya no desaparece: se queda a la vista marcado.");
+            Assert.IsTrue(_visibility.HoloOf("helmet_ok").IsOn,
+                "Lo lleva puesto: tiene que leerse como ya seleccionado.");
         }
 
         [Test]
-        public void Quitarlo_del_checklist_lo_devuelve_a_la_mesa()
+        public void Un_elemento_seleccionado_sigue_activo_para_poder_quitarlo()
+        {
+            // Es la razón de ser del cambio: un objeto apagado tiene el collider apagado, así
+            // que no recibe el clic y deseleccionar era imposible.
+            Configure("helmet_ok");
+
+            _ledger.Add("helmet_ok");
+
+            Assert.IsTrue(_visibility.WorldObject("helmet_ok").activeSelf);
+        }
+
+        [Test]
+        public void Quitarlo_del_checklist_le_quita_el_verde()
         {
             Configure("helmet_ok");
 
@@ -166,6 +182,21 @@ namespace RideSafe.Module01.Tests
             _ledger.Remove("helmet_ok");
 
             Assert.IsTrue(_visibility.WorldObject("helmet_ok").activeSelf);
+            Assert.IsFalse(_visibility.HoloOf("helmet_ok").IsOn);
+        }
+
+        [Test]
+        public void Mientras_gira_en_el_pedestal_el_de_la_mesa_no_esta_ni_marcado()
+        {
+            // Aunque ya esté elegido: lo que gira en el pedestal es una copia, y ver el verde
+            // de la mesa al mismo tiempo son otra vez dos cascos.
+            Configure("helmet_ok");
+
+            _ledger.Add("helmet_ok");
+            _visibility.BeginInspecting("helmet_ok");
+
+            Assert.IsFalse(_visibility.WorldObject("helmet_ok").activeSelf);
+            Assert.IsFalse(_visibility.HoloOf("helmet_ok").IsOn);
         }
 
         [Test]
@@ -178,11 +209,12 @@ namespace RideSafe.Module01.Tests
             _visibility.EndInspecting();
             _ledger.Add("helmet_ok");
 
-            Assert.IsFalse(_visibility.WorldObject("helmet_ok").activeSelf);
+            Assert.IsTrue(_visibility.WorldObject("helmet_ok").activeSelf);
+            Assert.IsTrue(_visibility.HoloOf("helmet_ok").IsOn);
         }
 
         [Test]
-        public void Limpiar_el_libro_devuelve_todo_a_la_mesa()
+        public void Limpiar_el_libro_quita_el_verde_de_todos()
         {
             Configure("helmet_ok", "shoes_ok");
 
@@ -192,6 +224,8 @@ namespace RideSafe.Module01.Tests
 
             Assert.IsTrue(_visibility.WorldObject("helmet_ok").activeSelf);
             Assert.IsTrue(_visibility.WorldObject("shoes_ok").activeSelf);
+            Assert.IsFalse(_visibility.HoloOf("helmet_ok").IsOn);
+            Assert.IsFalse(_visibility.HoloOf("shoes_ok").IsOn);
         }
 
         [Test]
@@ -212,6 +246,7 @@ namespace RideSafe.Module01.Tests
             Assert.DoesNotThrow(() => _visibility.BeginInspecting("no_existe"));
             Assert.DoesNotThrow(() => _ledger.Add("no_existe"));
             Assert.IsNull(_visibility.WorldObject("no_existe"));
+            Assert.IsNull(_visibility.HoloOf("no_existe"));
         }
     }
 }

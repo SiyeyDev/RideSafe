@@ -117,7 +117,7 @@ namespace RideSafe.Module01
             // La leyenda estaba escrita a mano en ingles y nunca pasaba por I2, asi que salia
             // en ingles incluso con el resto del modulo en espanol.
             // Ya no se localiza ninguna leyenda al pie: no la hay. La palabra del estado la
-            // resuelve ComparisonView fila por fila, con las mismas claves Module1/Legend_*.
+            // resuelve ComparisonView fila por fila, con las mismas claves M1/Legend_*.
             LocalizeButton(ExplanationPanel, "PauseButton", "Pause");
             LocalizeButton(ExplanationPanel, "ReplayButton", "Replay");
             LocalizeButton(ExplanationPanel, "ContinueButton", "Continue");
@@ -157,7 +157,7 @@ namespace RideSafe.Module01
             {
                 Debug.LogWarning(
                     $"[Module01] En el panel '{panel}' no hay ningun texto llamado '{name}': " +
-                    $"la clave Module1/{key} no se aplica y ese texto saldra como lo dejo el prefab.", this);
+                    $"la clave M1/{key} no se aplica y ese texto saldra como lo dejo el prefab.", this);
                 return;
             }
             Attach(text, key);
@@ -165,7 +165,7 @@ namespace RideSafe.Module01
         private void LocalizeButton(string panel, string name, string key)
         { var button = Module01Experience.Find<UnityEngine.UI.Button>(_module.Get<RectTransform>(panel), name); if(button != null) Attach(button.GetComponentInChildren<TMPro.TMP_Text>(true), key); }
         private static void Attach(TMPro.TMP_Text text, string key)
-        { if(text == null) return; var label=text.GetComponent<Module01Text>(); if(label==null)label=text.gameObject.AddComponent<Module01Text>(); label.Configure("Module1/"+key); }
+        { if(text == null) return; var label=text.GetComponent<Module01Text>(); if(label==null)label=text.gameObject.AddComponent<Module01Text>(); label.Configure("M1/"+key); }
 
         /// <summary>Qué espera el binding y no está. Vacío significa que el contrato se cumple.</summary>
         public static List<string> FindMissing(ModuleUI module)

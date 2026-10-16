@@ -688,10 +688,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.ReportPresenter
   _catalog: {fileID: 11400000, guid: b6a58422fe5c15d49990fbbd3c83405a, type: 2}
   _binding: {fileID: 79577060}
-  _titleKey: Module1/Report_Title
-  _subtitleKey: Module1/Report_Subtitle
-  _yoursKey: Module1/Report_Yours
-  _referenceKey: Module1/Report_Reference
+  _titleKey: M1/Report_Title
+  _subtitleKey: M1/Report_Subtitle
+  _yoursKey: M1/Report_Yours
+  _referenceKey: M1/Report_Reference
 --- !u!114 &79577057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -740,7 +740,7 @@ MonoBehaviour:
   _questionLabel: {fileID: 0}
   _acceptButton: {fileID: 0}
   _declineButton: {fileID: 0}
-  _questionKey: Module1/Confirm_Question
+  _questionKey: M1/Confirm_Question
 --- !u!114 &79577060
 MonoBehaviour:
   m_ObjectHideFlags: 0

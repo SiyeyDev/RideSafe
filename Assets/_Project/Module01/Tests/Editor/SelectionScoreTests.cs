@@ -190,7 +190,7 @@ namespace RideSafe.Module01.Tests
             CollectionAssert.AllItemsAreNotNull(keys);
             CollectionAssert.AllItemsAreUnique(keys);
             foreach (string k in keys)
-                StringAssert.StartsWith("Module1/", k);
+                StringAssert.StartsWith("M1/", k);
         }
     }
 

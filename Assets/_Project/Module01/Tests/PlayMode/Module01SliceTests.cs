@@ -292,7 +292,7 @@ namespace RideSafe.Module01.Tests
                     var label = Field<TMP_Text>(_inspector, "_nameLabel");
                     AssertVisible(label.rectTransform);
                     Assert.IsFalse(string.IsNullOrWhiteSpace(label.text));
-                    Assert.IsFalse(label.text.StartsWith("Module1/") && !PendienteDeTraducir(item.ItemId),
+                    Assert.IsFalse(label.text.StartsWith("M1/") && !PendienteDeTraducir(item.ItemId),
                         "Nombre sin traducir: " + label.text);
                     var stage = Field<Transform>(_inspector, "_stage");
                     Assert.Greater(stage.childCount, 0, "No aparece el modelo");
@@ -320,9 +320,9 @@ namespace RideSafe.Module01.Tests
                     DumpTexts("inspeccionando " + item.ItemId);
                     var asked = Field<TMP_Text>(_inspector, "_questionLabel");
                     Assert.IsNotEmpty(asked.text, "El popup pregunta en blanco en " + item.ItemId);
-                    Assert.IsFalse(asked.text.StartsWith("Module1/"), "Pregunta sin traducir: " + asked.text);
+                    Assert.IsFalse(asked.text.StartsWith("M1/"), "Pregunta sin traducir: " + asked.text);
                     if (PendienteDeTraducir(item.ItemId))
-                        Assert.IsTrue(label.text.StartsWith("Module1/"),
+                        Assert.IsTrue(label.text.StartsWith("M1/"),
                             item.ItemId + " ya esta traducido: quitalo de PendienteDeTraducir.");
                     if (!omitHelmet && item.ItemId == "helmet_ok") yield return Capture("inspector");
                     // La prueba de que el pedestal ya no fabrica esferas blancas: un punto con
@@ -1028,18 +1028,13 @@ namespace RideSafe.Module01.Tests
         /// proposito y no se desactiva la comprobacion: lo que no esta traducido sale en pantalla
         /// como la clave cruda, y eso no puede llegar a una demo sin que nadie se entere.
         /// <para>
-        /// Charlie, 2026-10-14: «sobre la localizacion, yo me encargo despues». Los tres
-        /// pantalones entraron al catalogo ese dia; sus textos van en la hoja del Drive.
-        /// <b>Vaciar esta lista al ponerlos.</b> El test avisa si alguno ya esta traducido.
+        /// <b>Vacia desde el 2026-10-16</b>, cuando los 101 terminos del modulo entraron a I2
+        /// bajo la categoria <c>M1/</c>. El test avisa en los dos sentidos: si falta una
+        /// traduccion revienta por la clave cruda, y si se traduce algo que sigue en esta lista
+        /// revienta pidiendo que se quite de aqui. Asi la deuda no se queda declarada de mas.
         /// </para>
         /// </summary>
-        private static readonly string[] SinTraducirTodavia =
-        {
-            "trousers_fitted", "trousers_loose", "trousers_tech",
-            // Del v9. Las claves son Module1/Item_ElbowPads y Module1/Item_KneePads, con su
-            // _Risk, en ingles y espanol. Las pone Charlie en el Drive.
-            "elbow_pads", "knee_pads",
-        };
+        private static readonly string[] SinTraducirTodavia = { };
 
         private static bool PendienteDeTraducir(string itemId) =>
             System.Array.IndexOf(SinTraducirTodavia, itemId) >= 0;

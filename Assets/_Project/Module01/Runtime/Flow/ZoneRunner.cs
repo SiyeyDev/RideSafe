@@ -82,6 +82,9 @@ namespace RideSafe.Module01
             }
         }
 
+        /// <summary>Pregunta del popup cuando el elemento ya está elegido.</summary>
+        public const string RemoveQuestionKey = "M1/Remove_Question";
+
         private void RemoveSelection(string id) => Ledger.Remove(id);
         private void OnDestroy()
         {
@@ -173,16 +176,38 @@ namespace RideSafe.Module01
             {
                 if (item.ItemId == world.ItemId)
                 {
-                    // Con la pieza real cuando la hay: es lo que el pedestal ensena en vez de
-                    // la esfera blanca que se fabricaba para los puntos sin modelo.
-                    _inspector.Present(item, world.GetComponent<InspectionHighlight>()?.Part);
+                    // De donde copia el pedestal: la pieza del vehiculo cuando la hay, y si
+                    // no el propio objeto de la escena —el EPP de la mesa—. Antes se pasaba
+                    // solo la pieza, asi que los EPP caian al prefab del catalogo y salian con
+                    // otra pose que la de la mesa.
+                    InspectionHighlight highlight = world.GetComponent<InspectionHighlight>();
+                    Transform source = highlight != null && highlight.Part != null
+                        ? highlight.Part
+                        : world.transform;
+                    // Ya elegido: la pregunta es si quitarlo, no si anadirlo.
+                    bool chosen = Ledger.Contains(item.ItemId);
+                    _inspector.Present(item, source, chosen ? RemoveQuestionKey : null);
                     return;
                 }
             }
         }
 
+        /// <summary>
+        /// El «sí» del popup. Sobre un elemento que ya está elegido significa <b>quitarlo</b>:
+        /// el cliente pidió el 2026-10-16 que el EPP elegido se quede en la mesa marcado en
+        /// verde y que volver a pulsarlo permita deshacer la elección.
+        /// </summary>
         private void HandleAccepted(SafetyItemSO item)
         {
+            if (Ledger.Contains(item.ItemId))
+            {
+                Ledger.Remove(item.ItemId);
+                if (_binding != null && _binding.PreparationList != null)
+                    _binding.PreparationList.RemoveItem(item.ItemId);
+                MarkResolved(item);
+                return;
+            }
+
             Ledger.Add(item.ItemId);
 
             if (_binding != null && _binding.PreparationList != null)

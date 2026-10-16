@@ -23,6 +23,17 @@ namespace Cachacos
         /// regional variant ("es" -> "es-CO"). Returns false when no language matches.
         /// </summary>
         bool SetLanguage(string languageCode);
+        /// <summary>
+        /// Name of the active language as the localization asset spells it ("Español",
+        /// "English"), not its code.
+        /// <para>
+        /// It is the name, and not the code, because that is what names the folders of the
+        /// localized assets: the audio tool writes to
+        /// <c>Resources/Sounds/&lt;category&gt;/&lt;language name&gt;/</c>.
+        /// </para>
+        /// </summary>
+        string CurrentLanguage { get; }
+
         /// <summary>Raised after the active language changed and texts were re-localized.</summary>
         event Action LanguageChanged;
     }

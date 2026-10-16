@@ -1,0 +1,17 @@
+{
+  "characters": [
+    "Steering",
+    "and",
+    "handlebar"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.615,
+    0.882
+  ],
+  "character_end_times_seconds": [
+    0.534,
+    0.801,
+    1.625
+  ]
+}

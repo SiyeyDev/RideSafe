@@ -30,59 +30,59 @@ namespace RideSafe.Module01.Editor
         /// <summary>(id, clave de nombre, categoría) de los ocho elementos personales.</summary>
         private static readonly (string Id, string NameKey, SafetyItemCategory Category)[] Items =
         {
-            ("helmet_ok",       "Module1/Item_HelmetOk",       SafetyItemCategory.Core),
-            ("helmet_damaged",  "Module1/Item_HelmetDamaged",  SafetyItemCategory.Inappropriate),
-            ("glasses",         "Module1/Item_Glasses",        SafetyItemCategory.Optional),
-            ("shoes_ok",        "Module1/Item_ShoesOk",        SafetyItemCategory.Core),
-            ("reflective",      "Module1/Item_Reflective",     SafetyItemCategory.ConditionDependent),
-            ("cargo_secured",   "Module1/Item_CargoSecured",   SafetyItemCategory.Core),
-            ("cargo_handheld",  "Module1/Item_CargoHandheld",  SafetyItemCategory.Inappropriate),
+            ("helmet_ok",       "M1/Item_HelmetOk",       SafetyItemCategory.Core),
+            ("helmet_damaged",  "M1/Item_HelmetDamaged",  SafetyItemCategory.Inappropriate),
+            ("glasses",         "M1/Item_Glasses",        SafetyItemCategory.Optional),
+            ("shoes_ok",        "M1/Item_ShoesOk",        SafetyItemCategory.Core),
+            ("reflective",      "M1/Item_Reflective",     SafetyItemCategory.ConditionDependent),
+            ("cargo_secured",   "M1/Item_CargoSecured",   SafetyItemCategory.Core),
+            ("cargo_handheld",  "M1/Item_CargoHandheld",  SafetyItemCategory.Inappropriate),
             // La bufanda: volvio al catalogo el 2026-10-14, cuando el v7 trajo el modelo.
-            ("clothing_loose",  "Module1/Item_ClothingLoose",  SafetyItemCategory.Inappropriate),
+            ("clothing_loose",  "M1/Item_ClothingLoose",  SafetyItemCategory.Inappropriate),
             // Los pantalones, desde el 2026-10-14. El ancho se engancha en la cadena.
-            ("trousers_fitted", "Module1/Item_TrousersFitted", SafetyItemCategory.Core),
-            ("trousers_loose",  "Module1/Item_TrousersLoose",  SafetyItemCategory.Inappropriate),
-            ("trousers_tech",   "Module1/Item_TrousersTech",   SafetyItemCategory.Optional),
+            ("trousers_fitted", "M1/Item_TrousersFitted", SafetyItemCategory.Core),
+            ("trousers_loose",  "M1/Item_TrousersLoose",  SafetyItemCategory.Inappropriate),
+            ("trousers_tech",   "M1/Item_TrousersTech",   SafetyItemCategory.Optional),
             // Coderas y rodilleras, del v9. Opcionales: se recomiendan y no se exigen, como las
             // gafas. Si Charlie las quiere de nucleo, se cambia aqui y se repite el comando.
-            ("elbow_pads",      "Module1/Item_ElbowPads",      SafetyItemCategory.Optional),
-            ("knee_pads",       "Module1/Item_KneePads",       SafetyItemCategory.Optional)
+            ("elbow_pads",      "M1/Item_ElbowPads",      SafetyItemCategory.Optional),
+            ("knee_pads",       "M1/Item_KneePads",       SafetyItemCategory.Optional)
         };
 
         private static readonly (string ZoneId, string TitleKey, string[] ItemIds)[] Zones =
         {
-            ("head",     "Module1/Zone_Head",     new[] { "helmet_ok", "helmet_damaged", "glasses" }),
+            ("head",     "M1/Zone_Head",     new[] { "helmet_ok", "helmet_damaged", "glasses" }),
             // La zona de ropa, tal como esta de verdad desde el v9. Esta lista llevaba desde el
             // 2026-10-07 con solo dos elementos, asi que volver a correr este comando BORRABA
             // la bufanda y los tres pantalones de la zona sin que nada avisara.
-            ("clothing", "Module1/Zone_Clothing", new[]
+            ("clothing", "M1/Zone_Clothing", new[]
              {
                  "shoes_ok", "reflective", "clothing_loose", "elbow_pads", "knee_pads"
              }),
             // Los pantalones, con banco propio desde el v9: en la mesa de ropa iban apretados
             // -ocho elementos en 2.62 m- y Charlie prefiere repartir el recorrido por el garaje.
-            ("trousers", "Module1/Zone_Trousers", new[]
+            ("trousers", "M1/Zone_Trousers", new[]
              {
                  "trousers_fitted", "trousers_loose", "trousers_tech"
              }),
-            ("load",     "Module1/Zone_Load",     new[] { "cargo_secured", "cargo_handheld" })
+            ("load",     "M1/Zone_Load",     new[] { "cargo_secured", "cargo_handheld" })
         };
 
         /// <summary>Puntos de inspección del e-bike: (id, clave, posición en el cubo).</summary>
         private static readonly (string Id, string NameKey, Vector3 Offset)[] VehiclePoints =
         {
-            ("point_steering",  "Module1/Point_Steering",  new Vector3(0f, 0.55f, 0.35f)),
-            ("point_brakes",    "Module1/Point_Brakes",    new Vector3(0.25f, 0.5f, 0.3f)),
-            ("point_electrics", "Module1/Point_Electrics", new Vector3(0f, 0.1f, 0f)),
-            ("point_wheels",    "Module1/Point_Wheels",    new Vector3(0f, -0.3f, 0.5f)),
-            ("point_lights",    "Module1/Point_Lights",    new Vector3(0f, 0.3f, 0.6f))
+            ("point_steering",  "M1/Point_Steering",  new Vector3(0f, 0.55f, 0.35f)),
+            ("point_brakes",    "M1/Point_Brakes",    new Vector3(0.25f, 0.5f, 0.3f)),
+            ("point_electrics", "M1/Point_Electrics", new Vector3(0f, 0.1f, 0f)),
+            ("point_wheels",    "M1/Point_Wheels",    new Vector3(0f, -0.3f, 0.5f)),
+            ("point_lights",    "M1/Point_Lights",    new Vector3(0f, 0.3f, 0.6f))
         };
 
         private static readonly (string ZoneId, string TitleKey, string[] PointIds)[] VehicleZones =
         {
-            ("cockpit",    "Module1/Zone_Cockpit",    new[] { "point_steering", "point_brakes", "point_electrics" }),
-            ("wheels",     "Module1/Zone_Wheels",     new[] { "point_wheels" }),
-            ("visibility", "Module1/Zone_Visibility", new[] { "point_lights" })
+            ("cockpit",    "M1/Zone_Cockpit",    new[] { "point_steering", "point_brakes", "point_electrics" }),
+            ("wheels",     "M1/Zone_Wheels",     new[] { "point_wheels" }),
+            ("visibility", "M1/Zone_Visibility", new[] { "point_lights" })
         };
 
         [MenuItem("RideSafe/Módulo 1/Crear datos de la primera pasada")]

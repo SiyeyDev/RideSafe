@@ -1,7 +1,8 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-16 — tutorial agnóstico en la v5 y repaso de paneles del M0 y el M1
+> Última actualización: 2026-10-16 (tarde) — la categoría de I2 pasa a `M1/`, locución de los
+> 18 elementos en dos idiomas, y el EPP elegido se queda en la mesa en verde
 >
 > **Lo que falta hoy, con nombres y números: `Docs/Pendientes_Reunion_2026-10-12.md`.**
 
@@ -58,15 +59,14 @@ y `docs/superpowers/plans/2026-10-05-modulo-01.md`.
   de ahora hay que traerlo **con cuidado**, porque sus importaciones caen en `Assets/CITY` y
   duplican GUID. Ver §9.
 
-**2026-10-16 — trabajo de Cindy sobre `dev`, todavía sin commit** (ver la bitácora de ese día).
-En el árbol de trabajo de `dev`, sin commitear:
-- el tutorial agnóstico (`Assets/_Project/Systems/TutorialHelp/`);
-- los arreglos de paneles del M0 y el M1;
-- el horneado de la v5 rehecho en **6000.4.9f1**.
+**2026-10-16 — lo de Cindy ya está commiteado** (`7e98a68` y `e750492`): el tutorial agnóstico,
+los paneles del M0 y el M1. Entró **todo en un commit**, incluido lo que su propio plan decía
+dejar fuera: `packages-lock.json`, `Assets/Settings/*`, `OpenXRPackageSettings`, las fuentes SDF
+y `Assets/_Recovery/0.unity` (3,4 MB de escena de recuperación que sobra en el repo).
 
-Commits propuestos, en este orden: tutorial → módulo 0 → módulo 1 + escena. Quedan fuera
-`ProjectSettings`, `ProjectVersion.txt`, `packages-lock`, `Assets/Settings/*`, las fuentes SDF y
-`Assets/_Recovery/`. El horneado entra solo si el equipo acuerda una versión de Unity (§8).
+**El horneado NO se commitea** hasta que el equipo acuerde una versión de Unity. El que está en
+el repo es de 6000.5.4f1 y **no carga en 6000.4.9f1**: a Cindy le sale la escena negra. Ella
+rehízo el suyo en su versión y se quedó sin subir, a propósito.
 
 **Falta avisar a Cindy de que `dev` se movió**, porque ella trabaja sobre
 `RideSafe_Garaje.unity` y ahora `dev` trae el mundo del **v9**, el horneado nuevo y una
@@ -336,6 +336,16 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 
 ### Contenido
 
+- [ ] **Dónde se enseña el `_Risk` en el reporte.** Los 18 textos del «por qué» están en I2 y
+      **no los lee ningún código**: `SafetyItemSO.RiskKey` solo existe como propiedad. Charlie
+      aprobó que salgan **solo en los elementos que estuvieron mal** —en los aciertos no enseñan
+      nada y alargan una pantalla que ya iba justa—, pero falta montarlo. Ojo: **no** van por
+      voz; locutarlos sesga la elección (bitácora 2026-10-16).
+- [ ] **Decidir si los tramos de nota son 4 o 3.** El código parte en `>=75` Conocedor, `>=50`
+      Por mejorar, `>=25` Recapacitar y el resto Inexperto, y solo el primero desbloquea
+      «Continuar al Módulo 2». Charlie lo describió como tres casos (aprobó / 75-50 / <50). Si
+      son tres, es una línea en `SelectionScore.RankOf` y un término que sobra.
+
 - [ ] **Los 5 términos de I2 que faltan: los 3 pantalones y los 2 pares.** Hoy el panel enseña
       la clave cruda (`Module1/Item_TrousersFitted`). Son `Module1/Item_TrousersFitted`,
       `_TrousersLoose`, `_TrousersTech`, **`_ElbowPads`** y **`_KneePads`**, cada una con su
@@ -468,7 +478,41 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 
 ## 9. Trampas conocidas
 
-**Añadidas el 2026-10-16:**
+**Añadidas el 2026-10-16 (tarde):**
+
+- **El puente de MCP rechaza arrancar el Test Framework.** Contesta *«User interactions are not
+  supported for MCP tool calls»*, y también si la llamada se aplaza con
+  `EditorApplication.delayCall`. Comprobado: `SaveOpenScenes` y `SaveAssets` pasan sin problema,
+  así que lo que molesta es `TestRunnerApi.Execute`. La salida es `TestLaunchWatcher`: se deja
+  una señal en `Temp/ridesafe-run-tests.txt` (modo en la primera línea, una assembly por línea
+  debajo) y el Editor arranca los tests en su propio ciclo, ya fuera de la vigilancia del
+  puente. El resultado sigue yendo a `Temp/ridesafe-tests.txt`.
+- **Tras una corrida de PlayMode el Editor se queda en la escena del Test Runner**
+  (`Assets/InitTestScene<guid>.unity`, una sola raíz). Cualquier medición contra «la escena
+  abierta» devuelve cero de todo y parece que el cableado se ha perdido. **Reabrir la v5 antes
+  de medir.**
+- **Editar un `.cs` mientras corre PlayMode aborta la corrida en silencio.** El recompilado se
+  lleva el callback, el fichero de resultado se queda en `RUNNING` para siempre y el Editor
+  acaba sin estar en Play. No es un cuelgue: hay que relanzar.
+- **Un `ContentSizeFitter` en un panel que no se ve guarda 0 en la escena.** En el editor el
+  grupo de layout no mide un panel oculto, el ajuste calcula 0 y eso se serializa como
+  sobrescritura de instancia: el texto sale como una columna de letras, el prefab parece
+  correcto y **el fallo vuelve cada vez que alguien guarda la escena**. Para una caja de texto
+  fija, un número y un test que lo guarde salen más baratos.
+- **`LayoutElement` no «sube el mínimo» del ajuste: lo sustituye.** `LayoutUtility` no se queda
+  con el mayor de los valores sino con el de **mayor prioridad**, y `LayoutElement` tiene
+  `layoutPriority` 1 frente al 0 del grupo de layout. Poner `preferredHeight` para dar un suelo
+  clava la caja en ese número y el texto largo vuelve a salirse.
+- **La herramienta de audio nombra el fichero con el término SIN categoría.** Hace
+  `term.Replace("<categoria>/", "")` y escribe en
+  `Resources/Sounds/<categoria>/<idioma>/<nombre>.mp3`, que es justo donde lee `NarrationPlayer`.
+  Por eso la categoría de I2 decide la carpeta: un término sin `/` cae en `Default` y el audio
+  acabaría en `Sounds/Default/`, mezclado con el del menú.
+- **La clave de API de ElevenLabs está escrita en el código** (`ElevenLabsAPIWindow.cs` y
+  `GenerateAudio.cs`). Charlie lo da por bueno el 2026-10-16: el repo es solo de él y Cindy, y al
+  cliente se le entrega el build, no el proyecto. Si eso cambia, rotarla.
+
+**Añadidas el 2026-10-16 (mañana):**
 
 - **Un horneado de 6000.5.x no carga en 6000.4.9f1 y la escena sale negra.** El log dice
   `Failed to load '…/LightingData.asset'. File may be corrupted or was serialized with a newer
@@ -836,6 +880,65 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-16 (tarde) — la categoría pasa a `M1/`, el EPP elegido se queda en verde y hay voz
+
+- **El pedestal enseñaba otra cosa que la mesa, y el cliente tenía razón.** Medido: instanciar
+  el FBX del catálogo da una pose distinta a la que el arte dejó en la mesa en **12 de los 13**
+  EPP —el casco bueno y las gafas a 270° en Y, el jean ajustado a 270° en X con escala 0.1, el
+  teléfono a (270,270,0)—, así que un pantalón doblado que en la mesa se ve plano salía de
+  canto. Y en los pares (coderas, rodilleras) el FBX es **una** pieza y la mesa tiene **dos**.
+  Ahora `ItemInspector` **copia el objeto de la escena** y el prefab del catálogo queda de
+  respaldo. Es el mismo camino que ya usaban las piezas del vehículo.
+- **El EPP elegido ya no desaparece: se queda marcado en verde.** Lo pidió Charlie. Tres
+  estados derivados —apagado en el pedestal, verde si está elegido, normal si no—, con shader y
+  material nuevos (`SelectedHolo`), montados como hijos con la misma malla y apagando el
+  renderer original, sin tocar un solo material del arte. **De regalo arregla el
+  deseleccionar:** un objeto apagado tiene el collider apagado, así que antes no se podía volver
+  a pulsar. Ahora el popup pregunta «¿Quitar este elemento de tu preparación?»
+  (`M1/Remove_Question`) y el sí lo saca del libro y del checklist.
+- **Toda la categoría de I2 pasa de `Module1/` a `M1/`**, por decisión de Charlie. Son 101
+  términos, 70 literales en 15 `.cs`, 43 claves en 25 assets, `PresentationTexts.txt`, el prefab,
+  las dos escenas y la carpeta de audio (`Sounds/Module1` → `Sounds/M1`, **movida** con
+  `MoveAsset` para conservar los GUID). **Las otras categorías no se tocaron:** 86 términos antes
+  y 86 después, sin un cambio de texto; se comprobó contra un volcado previo.
+- **El asset de I2 se puso al día desde `Docs/Module1_I2.csv`**, que es ahora el único CSV del
+  módulo. De 164 términos a **187**: 101 en `M1/` y 86 de los demás módulos. Entraron las 24 que
+  faltaban —los 18 `_Risk`, los 3 pantalones, coderas, rodilleras y `Zone_Trousers`—, así que
+  **se acabaron las claves crudas en pantalla**: el volcado de textos de PlayMode las enseñaba.
+- **El inglés del CSV sale del asset, no de la hoja del Drive.** La hoja volvió del traductor
+  automático con el inglés retraducido desde el español: `Yes`→«Yeah», `Secured load`→«Cargo
+  insurance», «prepárate antes de **rodar**»→«before **filming**», y «una dirección con
+  **juego**»→«a steering system with a **game**». El inglés es el origen.
+- **Locución de los 18 elementos en los dos idiomas**, generada con la tool (voz **Alice —
+  Clear, Engaging Educator**, la misma de `M01_Welcome`; estabilidad 0,75 · similitud 0,85 ·
+  estilo 0,1 · speaker boost). 36 clips con su `.json` de tiempos por palabra.
+  `M1ItemAudioBatch` lo deja repetible desde el menú.
+- **Y una lección de diseño que costó generar dos veces:** la primera tanda locutaba el **por
+  qué** de cada elemento («es la única protección de la cabeza»). Charlie lo paró: eso **sesga
+  la elección**, porque le da la respuesta al aprendiz mientras decide. Ahora se locuta **solo el
+  nombre**; el motivo se explica al final, con el video. Los 18 textos `_Risk` se quedan como
+  **texto de feedback**, no como voz.
+- **`Speak` resuelve el clip por idioma** (`Cachacos.LocalizedResource`, genérico: los videos
+  van a necesitar lo mismo). El seam `ILocalizationProvider` aprende `CurrentLanguage`. Y el
+  `ItemInspector` tiene por fin su `AudioSource` (`ItemVoice`, 2D): sin él se callaba sin
+  quejarse.
+- **Arreglado el subtítulo del reporte**, que tumbaba 3 de los 6 tests de PlayMode desde el
+  commit de Cindy: `ColumnComposition` le activa el ajuste de línea al texto y la caja seguía
+  clavada en 60, y en español pedía 36,3 sobre los 34 disponibles. Ahora 64. Lo intenté antes
+  con `ContentSizeFitter` y fue peor: ver §9, vuelve en cada guardado.
+- **466 de 468 en EditMode** —los 2 de siempre del módulo 0, de la rama del tutorial— y **6 de 6
+  en PlayMode**.
+- **El horneado no se sube**, para no romperle la escena a Cindy (§3 y §8).
+
+**Para retomar, por orden:**
+
+1. **Decidir dónde se enseña el `_Risk` en el reporte.** Está aprobado que salga **solo en los
+   elementos que estuvieron mal**, pero falta montarlo. Hoy la fila dice `Dirección y manubrio ·
+   CORRECTA` y nada más.
+2. Pegar `Docs/Module1_I2.csv` en la hoja del Drive, como copia de referencia. **No reimportar
+   desde la hoja:** el asset ya es la fuente buena.
+3. Acordar la versión de Unity y commitear el horneado una sola vez.
 
 ### 2026-10-15 / 16 — el tutorial agnóstico y un repaso de paneles del M0 y el M1
 

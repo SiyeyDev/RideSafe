@@ -1,0 +1,20 @@
+{
+  "characters": [
+    "Objeto",
+    "en",
+    "la",
+    "mano"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.534,
+    0.65,
+    0.801
+  ],
+  "character_end_times_seconds": [
+    0.488,
+    0.58,
+    0.731,
+    1.347
+  ]
+}

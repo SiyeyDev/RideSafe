@@ -127,8 +127,8 @@ namespace RideSafe.UI
         [SerializeField]
         private string[] _stateKeys =
         {
-            "Module1/Legend_Correct", "Module1/Legend_Omission", "Module1/Conditional",
-            "Module1/Legend_Incorrect", "Module1/Legend_AtRisk"
+            "M1/Legend_Correct", "M1/Legend_Omission", "M1/Conditional",
+            "M1/Legend_Incorrect", "M1/Legend_AtRisk"
         };
 
         private readonly List<ComparisonEntry> _current = new List<ComparisonEntry>();

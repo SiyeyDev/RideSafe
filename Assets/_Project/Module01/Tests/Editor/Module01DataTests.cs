@@ -131,7 +131,7 @@ namespace RideSafe.Module01.Tests
 
             foreach (SafetyItemSO item in catalog.AllItems)
             {
-                StringAssert.StartsWith("Module1/", item.NameKey,
+                StringAssert.StartsWith("M1/", item.NameKey,
                     $"El elemento '{item.ItemId}' no usa la categoria Module1.");
             }
         }

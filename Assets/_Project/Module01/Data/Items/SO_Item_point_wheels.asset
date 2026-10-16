@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_Item_point_wheels
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.SafetyItemSO
   _itemId: point_wheels
-  _nameKey: Module1/Point_Wheels
-  _riskKey: Module1/Point_Wheels_Risk
+  _nameKey: M1/Point_Wheels
+  _riskKey: M1/Point_Wheels_Risk
   _category: 0
   _displayPrefab: {fileID: 0}

@@ -644,10 +644,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.ReportPresenter
   _catalog: {fileID: 11400000, guid: b6a58422fe5c15d49990fbbd3c83405a, type: 2}
   _binding: {fileID: 79577060}
-  _titleKey: Module1/Report_Title
-  _subtitleKey: Module1/Report_Subtitle
-  _yoursKey: Module1/Report_Yours
-  _referenceKey: Module1/Report_Reference
+  _titleKey: M1/Report_Title
+  _subtitleKey: M1/Report_Subtitle
+  _yoursKey: M1/Report_Yours
+  _referenceKey: M1/Report_Reference
 --- !u!114 &79577057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -697,9 +697,10 @@ MonoBehaviour:
   _questionLabel: {fileID: 596624273}
   _acceptButton: {fileID: 746294883}
   _declineButton: {fileID: 1324174541}
-  _questionKey: Module1/Confirm_Question
+  _questionKey: M1/Confirm_Question
   _pedestal: {fileID: 1109397815}
-  _voice: {fileID: 0}
+  _voice: {fileID: 398704835}
+  _voiceFolder: Sounds/M1
 --- !u!114 &79577060
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -725,7 +726,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 398704836}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &79577062
@@ -847,6 +849,8 @@ MonoBehaviour:
   _runner: {fileID: 79577058}
   _inspector: {fileID: 79577059}
   _wearable: {fileID: 11400000, guid: b6a58422fe5c15d49990fbbd3c83405a, type: 2}
+  _holoMaterial: {fileID: 2100000, guid: 736b280083e82a342bf9dbb8839508ce, type: 2}
+  _holoColor: {r: 0.46, g: 0.83, b: 0.54, a: 0.9}
 --- !u!114 &79577066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1097,7 +1101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152b53442cd35a14583e5ce3291736d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01Text
-  _key: Module1/ContinueModule2
+  _key: M1/ContinueModule2
 --- !u!114 &100502261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1118,7 +1122,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Module1/ContinueModule2
+  m_text: M1/ContinueModule2
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
   m_sharedMaterial: {fileID: 4616275272715671072, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
@@ -6560,7 +6564,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152b53442cd35a14583e5ce3291736d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01Text
-  _key: Module1/Yes
+  _key: M1/Yes
 --- !u!114 &201737612
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6581,7 +6585,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Module1/Yes
+  m_text: M1/Yes
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
   m_sharedMaterial: {fileID: 4616275272715671072, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
@@ -11833,7 +11837,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152b53442cd35a14583e5ce3291736d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01Text
-  _key: Module1/Previous
+  _key: M1/Previous
 --- !u!114 &253144383
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11854,7 +11858,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Module1/Previous
+  m_text: M1/Previous
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
   m_sharedMaterial: {fileID: 4616275272715671072, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
@@ -12242,7 +12246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152b53442cd35a14583e5ce3291736d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01Text
-  _key: Module1/RoadReady
+  _key: M1/RoadReady
 --- !u!114 &273557008
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12263,7 +12267,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Module1/RoadReady
+  m_text: M1/RoadReady
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
   m_sharedMaterial: {fileID: 4616275272715671072, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
@@ -27342,7 +27346,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152b53442cd35a14583e5ce3291736d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01Text
-  _key: Module1/Decision_Question
+  _key: M1/Decision_Question
 --- !u!114 &359580397
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27363,7 +27367,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Module1/Decision_Question
+  m_text: M1/Decision_Question
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 52877748dec723d4886c83e0b94a7862, type: 2}
   m_sharedMaterial: {fileID: 3281952922167775398, guid: 52877748dec723d4886c83e0b94a7862, type: 2}
@@ -28226,6 +28230,135 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!1 &398704834
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 398704836}
+  - component: {fileID: 398704835}
+  m_Layer: 0
+  m_Name: ItemVoice
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!82 &398704835
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 398704834}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!4 &398704836
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 398704834}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 79577061}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &398797765
 GameObject:
   m_ObjectHideFlags: 0
@@ -28403,7 +28536,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152b53442cd35a14583e5ce3291736d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01Text
-  _key: Module1/Next
+  _key: M1/Next
 --- !u!114 &399474737
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28424,7 +28557,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Module1/Next
+  m_text: M1/Next
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
   m_sharedMaterial: {fileID: 4616275272715671072, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
@@ -51668,7 +51801,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152b53442cd35a14583e5ce3291736d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01Text
-  _key: Module1/RepeatModule
+  _key: M1/RepeatModule
 --- !u!114 &627327105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51689,7 +51822,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Module1/RepeatModule
+  m_text: M1/RepeatModule
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
   m_sharedMaterial: {fileID: 4616275272715671072, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
@@ -51929,7 +52062,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152b53442cd35a14583e5ce3291736d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01Text
-  _key: Module1/No
+  _key: M1/No
 --- !u!114 &648358870
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51950,7 +52083,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Module1/No
+  m_text: M1/No
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
   m_sharedMaterial: {fileID: 4616275272715671072, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
@@ -63357,7 +63490,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17fb102902e7a6e4ebee1f493ec4600a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RideSafe.Narration.NarrationPlayer
-  _resourceFolder: Sounds/Module1
+  _resourceFolder: Sounds/M1
   _lines:
   - M01_Welcome
   _fallbackLanguage: "Espa\xF1ol"
@@ -70297,7 +70430,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152b53442cd35a14583e5ce3291736d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01Text
-  _key: Module1/NeedsService
+  _key: M1/NeedsService
 --- !u!114 &1141268830
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -70318,7 +70451,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Module1/NeedsService
+  m_text: M1/NeedsService
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
   m_sharedMaterial: {fileID: 4616275272715671072, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
@@ -76780,7 +76913,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1337623018
 SpriteRenderer:
-  serializedVersion: 2
+  serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -76837,6 +76970,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+  m_BlendShapeWeights: []
 --- !u!1 &1353896599
 GameObject:
   m_ObjectHideFlags: 0
@@ -114080,6 +114214,9 @@ MonoBehaviour:
   _refollowAngle: 25
   _refollowDistance: 0.3
   _followSeconds: 0.5
+  _sideOffset: 0.32
+  _respotSeconds: 0.5
+  _cardSize: {x: 0.2, y: 0.19}
   _glowColor: {r: 0.6627451, g: 0.8862745, b: 0.83137256, a: 1}
   _leadSeconds: 0.4
   _pauseSeconds: 0.6
@@ -121230,7 +121367,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152b53442cd35a14583e5ce3291736d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01Text
-  _key: Module1/DoNotRide
+  _key: M1/DoNotRide
 --- !u!114 &2120161678
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -121251,7 +121388,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Module1/DoNotRide
+  m_text: M1/DoNotRide
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}
   m_sharedMaterial: {fileID: 4616275272715671072, guid: a02cb74a0661fad4fa5f14336a070bb3, type: 2}

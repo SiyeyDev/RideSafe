@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: SO_Item_trousers_fitted
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.SafetyItemSO
   _itemId: trousers_fitted
-  _nameKey: Module1/Item_TrousersFitted
-  _riskKey: Module1/Item_TrousersFitted_Risk
+  _nameKey: M1/Item_TrousersFitted
+  _riskKey: M1/Item_TrousersFitted_Risk
   _category: 0
   _displayPrefab: {fileID: 919132149155446097, guid: ecea867daba18e84daa3d3505025b1c6, type: 3}
   _deteriorated: 0

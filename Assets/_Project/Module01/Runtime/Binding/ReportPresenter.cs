@@ -21,10 +21,10 @@ namespace RideSafe.Module01
         [SerializeField] private Module01Binding _binding;
 
         [Tooltip("Claves de localización del encabezado del tablero.")]
-        [SerializeField] private string _titleKey = "Module1/Report_Title";
-        [SerializeField] private string _subtitleKey = "Module1/Report_Subtitle";
-        [SerializeField] private string _yoursKey = "Module1/Report_Yours";
-        [SerializeField] private string _referenceKey = "Module1/Report_Reference";
+        [SerializeField] private string _titleKey = "M1/Report_Title";
+        [SerializeField] private string _subtitleKey = "M1/Report_Subtitle";
+        [SerializeField] private string _yoursKey = "M1/Report_Yours";
+        [SerializeField] private string _referenceKey = "M1/Report_Reference";
 
         private ILocalizationProvider _localization;
         private SelectionReport _last;

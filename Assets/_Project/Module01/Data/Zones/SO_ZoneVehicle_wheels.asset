@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: SO_ZoneVehicle_wheels
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.ZoneSO
   _zoneId: wheels
-  _titleKey: Module1/Zone_Wheels
+  _titleKey: M1/Zone_Wheels
   _items:
   - {fileID: 11400000, guid: e466617f156f872449e70d5feecdaf60, type: 2}

@@ -43,7 +43,7 @@ namespace RideSafe.Module01
         [SerializeField] private UnityEngine.UI.Button _declineButton;
 
         [Tooltip("Clave de la pregunta. Nunca texto literal.")]
-        [SerializeField] private string _questionKey = "Module1/Confirm_Question";
+        [SerializeField] private string _questionKey = "M1/Confirm_Question";
 
         private GameObject _instance;
         [SerializeField] private GameObject _pedestal;
@@ -52,6 +52,35 @@ namespace RideSafe.Module01
         [SerializeField] private AudioSource _voice;
         private string _activeQuestion;
         public void SetQuestion(string key) => _activeQuestion = key;
+
+        /// <summary>
+        /// Pregunta de ESTA presentación, cuando es distinta de la de la zona. Un EPP ya
+        /// elegido pregunta si quitarlo.
+        /// <para>
+        /// Va por presentación y no por <see cref="SetQuestion"/> porque esa es la de la zona
+        /// entera y se queda puesta: pisarla dejaría «¿quitarlo?» en el siguiente elemento, que
+        /// no está elegido.
+        /// </para>
+        /// </summary>
+        private string _presentQuestion;
+
+        /// <summary>
+        /// La clave que se va a pintar, por orden: la de esta presentación, la de la zona, la
+        /// del prefab. Expuesta para que un test afirme sin leer la pantalla.
+        /// <para>
+        /// Con <c>IsNullOrEmpty</c> y no <c>??</c>: la cadena vacía no la atrapa <c>??</c>, y un
+        /// <c>SetQuestion("")</c> dejaba la pregunta muda. Ya pasó.
+        /// </para>
+        /// </summary>
+        public string QuestionKey
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_presentQuestion))
+                    return _presentQuestion;
+                return string.IsNullOrEmpty(_activeQuestion) ? _questionKey : _activeQuestion;
+            }
+        }
         private ILocalizationProvider _localization;
 
         public event Action<SafetyItemSO> Accepted;
@@ -101,17 +130,25 @@ namespace RideSafe.Module01
         /// <summary>Lo que se ve en el pedestal, para que un test afirme sin mirar la pantalla.</summary>
         public bool PresentsSolid => _spins;
 
+        /// <summary>
+        /// Lo que hay montado sobre el pedestal ahora mismo, o null. Expuesto para que un test
+        /// afirme lo que se va a dibujar en vez de mirar una captura.
+        /// </summary>
+        public Transform Presented => _instance == null ? null : _instance.transform;
+
         private void Update()
         {
             if (_instance != null && _spins)
                 _instance.transform.Rotate(Vector3.up, _rotationSpeed * Time.deltaTime, Space.World);
         }
 
-        public void Present(SafetyItemSO item) => Present(item, null);
+        public void Present(SafetyItemSO item) => Present(item, null, null);
+
+        public void Present(SafetyItemSO item, Transform source) => Present(item, source, null);
 
         /// <summary>
-        /// Presenta el elemento en el pedestal. <paramref name="realPart"/> es la pieza del
-        /// vehículo que le corresponde, cuando la hay.
+        /// Presenta el elemento en el pedestal. <paramref name="source"/> es el objeto de la
+        /// escena del que copiar: el EPP de la mesa, o la pieza del vehículo cuando la hay.
         /// <para>
         /// <b>Nunca una esfera blanca.</b> Los cinco puntos del vehículo no tienen modelo propio
         /// —no existe «el freno» como asset—, y antes se les fabricaba una primitiva: al pulsar
@@ -120,12 +157,13 @@ namespace RideSafe.Module01
         /// hay pieza se enseña el <c>!</c>, que es el mismo idioma que el marcador del mundo.
         /// </para>
         /// </summary>
-        public void Present(SafetyItemSO item, Transform realPart)
+        public void Present(SafetyItemSO item, Transform source, string questionKey)
         {
             if (item == null)
                 return;
             Dismiss();
             Current = item;
+            _presentQuestion = questionKey;
             // Antes de instanciar la copia: así el de la mesa ya está escondido cuando el del
             // pedestal aparece, y no hay un fotograma con los dos a la vista.
             Presenting?.Invoke(item);
@@ -133,7 +171,7 @@ namespace RideSafe.Module01
             {
                 _instance = new GameObject("PresentedItem");
                 _instance.transform.SetParent(_stage, false);
-                GameObject model = BuildDisplay(item, realPart);
+                GameObject model = BuildDisplay(item, source);
                 model.transform.SetParent(_instance.transform, false);
                 _spins = model.GetComponentsInChildren<Renderer>().Length > 0;
                 foreach (Collider collider in model.GetComponentsInChildren<Collider>()) collider.enabled = false;
@@ -155,32 +193,88 @@ namespace RideSafe.Module01
         }
 
         /// <summary>
-        /// Qué se pone sobre el pedestal, por orden: su propio modelo, la pieza real del
-        /// vehículo, o el signo de exclamación. Lo que no se pone nunca es una esfera.
+        /// Qué se pone sobre el pedestal, por orden: una copia del objeto que está en la
+        /// escena, su modelo del catálogo, o el signo de exclamación. Lo que no se pone nunca
+        /// es una esfera.
+        /// <para>
+        /// <b>Primero la copia del objeto de la escena, y no el prefab del catálogo.</b> Medido
+        /// el 2026-10-16: instanciar el FBX da una pose distinta a la que el arte dejó en la
+        /// mesa en <b>12 de los 13</b> EPP —el casco bueno y las gafas a 270° en Y, el jean
+        /// ajustado a 270° en X y con escala 0.1, el teléfono a (270, 270, 0)—, así que un
+        /// pantalón doblado que en la mesa se ve plano salía de canto en el pedestal. Y en los
+        /// pares que entrega el arte (coderas, rodilleras) el FBX es <i>una</i> pieza y la mesa
+        /// tiene <i>dos</i>, así que el pedestal enseñaba media codera. El cliente lo vio como
+        /// «el del pedestal no es el de la mesa», y tenía razón.
+        /// </para>
+        /// <para>
+        /// El prefab del catálogo se queda como respaldo: sirve al greybox y a cualquier
+        /// elemento que algún día no tenga objeto en la escena.
+        /// </para>
         /// </summary>
-        private GameObject BuildDisplay(SafetyItemSO item, Transform realPart)
+        private GameObject BuildDisplay(SafetyItemSO item, Transform source)
         {
+            GameObject copy = CopyOf(source);
+            if (copy != null)
+                return copy;
+
             if (item.DisplayPrefab != null)
                 return Instantiate(item.DisplayPrefab, _instance.transform);
 
-            if (realPart != null)
+            return BuildGlyph();
+        }
+
+        /// <summary>
+        /// Una COPIA de las mallas visibles de <paramref name="source"/>, conservando la pose
+        /// que tienen en el mundo. Devuelve null si no hay nada que copiar.
+        /// <para>
+        /// Copia y no el original: mover la pieza la haría desaparecer de la bici —o el EPP de
+        /// la mesa— justo mientras el aprendiz la inspecciona.
+        /// </para>
+        /// <para>
+        /// Solo lo <b>visible</b>: las esferas de clic de los cinco puntos del vehículo llevan
+        /// el renderer apagado, y de ahí no se puede copiar nada. Esos caen al signo, que es lo
+        /// correcto y lo que ya hacían.
+        /// </para>
+        /// </summary>
+        private GameObject CopyOf(Transform source)
+        {
+            if (source == null)
+                return null;
+
+            GameObject root = null;
+            foreach (MeshRenderer renderer in source.GetComponentsInChildren<MeshRenderer>(true))
             {
-                MeshFilter source = realPart.GetComponent<MeshFilter>();
-                MeshRenderer paint = realPart.GetComponent<MeshRenderer>();
-                if (source != null && source.sharedMesh != null)
+                if (renderer == null || !renderer.enabled)
+                    continue;
+                // El verde de «ya seleccionado» y el contorno del vehículo son avisos del
+                // mundo, no el objeto: copiarlos pondría el aviso girando en el pedestal.
+                if (renderer.gameObject.name == SelectedHolo.MarkName ||
+                    renderer.gameObject.name == InspectionHighlight.OutlineName)
+                    continue;
+
+                MeshFilter filter = renderer.GetComponent<MeshFilter>();
+                if (filter == null || filter.sharedMesh == null)
+                    continue;
+
+                if (root == null)
                 {
-                    // Una COPIA. Mover la pieza original la haría desaparecer de la bici justo
-                    // mientras el aprendiz la inspecciona.
-                    GameObject copy = new GameObject(realPart.name, typeof(MeshFilter), typeof(MeshRenderer));
-                    copy.transform.SetParent(_instance.transform, false);
-                    copy.GetComponent<MeshFilter>().sharedMesh = source.sharedMesh;
-                    if (paint != null)
-                        copy.GetComponent<MeshRenderer>().sharedMaterials = paint.sharedMaterials;
-                    return copy;
+                    root = new GameObject(source.name);
+                    root.transform.SetParent(_instance.transform, false);
                 }
+
+                GameObject piece = new GameObject(
+                    renderer.gameObject.name, typeof(MeshFilter), typeof(MeshRenderer));
+                piece.transform.SetParent(root.transform, false);
+                // La pose del MUNDO, que es la que el arte le dio. Present recoloca y escala el
+                // conjunto despues, asi que da igual donde caiga ahora.
+                piece.transform.SetPositionAndRotation(
+                    renderer.transform.position, renderer.transform.rotation);
+                piece.transform.localScale = renderer.transform.lossyScale;
+                piece.GetComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
+                piece.GetComponent<MeshRenderer>().sharedMaterials = renderer.sharedMaterials;
             }
 
-            return BuildGlyph();
+            return root;
         }
 
         /// <summary>
@@ -228,12 +322,47 @@ namespace RideSafe.Module01
         /// La falta de locuciones está donde tiene que estar, en el documento de pendientes.
         /// </para>
         /// </summary>
+        [Tooltip("Carpeta de Resources donde viven las locuciones, por idioma.")]
+        [SerializeField] private string _voiceFolder = "Sounds/M1";
+
+        /// <summary>
+        /// Lo que se oye al sacar el elemento al pedestal: <b>su nombre</b>, en el idioma
+        /// elegido.
+        /// <para>
+        /// El nombre y no el «por qué». Decir «es la única protección de la cabeza» mientras el
+        /// aprendiz decide si se lo lleva es darle la respuesta: sesga la elección y el
+        /// ejercicio deja de medir nada. El motivo de cada cosa se explica <b>al final</b>, con
+        /// el video. Lo pidió Charlie el 2026-10-16, después de oírlo al revés.
+        /// </para>
+        /// <para>
+        /// Se resuelve por idioma y no desde <see cref="SafetyItemSO.PromptClip"/> porque ese
+        /// campo es <b>un solo clip</b>: con él, quien juegue en inglés oiría español. La
+        /// locución vive en <c>Resources/Sounds/M1/&lt;idioma&gt;/&lt;clave&gt;</c>, que es justo donde
+        /// la escribe la herramienta que las genera, así que no hay que arrastrar ni un asset.
+        /// </para>
+        /// <para>
+        /// <see cref="SafetyItemSO.PromptClip"/> sigue mandando si alguien cablea uno a mano:
+        /// sirve para una locución suelta que no venga de la herramienta.
+        /// </para>
+        /// <para>
+        /// Sin clip no pasa nada y no se avisa: que falte una locución es el estado normal
+        /// mientras se graban.
+        /// </para>
+        /// </summary>
         private void Speak(SafetyItemSO item)
         {
-            if (_voice == null || item.PromptClip == null)
+            if (_voice == null)
                 return;
+
+            AudioClip clip = item.PromptClip;
+            if (clip == null && _localization != null)
+                clip = Cachacos.LocalizedResource.Load<AudioClip>(
+                    _voiceFolder, _localization.CurrentLanguage, item.NameKey);
+            if (clip == null)
+                return;
+
             _voice.Stop();
-            _voice.clip = item.PromptClip;
+            _voice.clip = clip;
             _voice.Play();
         }
 
@@ -243,7 +372,7 @@ namespace RideSafe.Module01
             if (_nameLabel != null) _nameLabel.text = Translate(Current.NameKey);
             // ?? no atrapa la cadena vacia, y un SetQuestion("") dejaba la pregunta en blanco.
             if (_questionLabel != null)
-                _questionLabel.text = Translate(string.IsNullOrEmpty(_activeQuestion) ? _questionKey : _activeQuestion);
+                _questionLabel.text = Translate(QuestionKey);
         }
 
         public void Accept()
@@ -268,6 +397,7 @@ namespace RideSafe.Module01
         {
             bool was = Current != null;
             Current = null;
+            _presentQuestion = null;
             if (was)
                 Dismissed?.Invoke();
             if (_instance != null)

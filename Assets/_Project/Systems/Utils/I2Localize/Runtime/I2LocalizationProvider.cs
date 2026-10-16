@@ -11,6 +11,7 @@ using UnityEngine;
 public class I2LocalizationProvider : ILocalizationProvider
 {
     public string GetTranslation(string key) => LocalizationManager.GetTranslation(key);
+    public string CurrentLanguage => LocalizationManager.CurrentLanguage;
     public IEnumerable<string> GetTerms() => LocalizationManager.GetTermsList();
 
     /// <summary>Sets I2's language (I2 remembers it in PlayerPrefs). Exact code first, then a regional match.</summary>

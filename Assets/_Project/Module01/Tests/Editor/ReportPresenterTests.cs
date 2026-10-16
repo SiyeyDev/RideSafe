@@ -61,7 +61,7 @@ namespace RideSafe.Module01.Tests
             SelectionReport report = SelectionGrader.Grade(catalog, ledger);
             List<ComparisonEntry> entries = ReportPresenter.BuildEntries(catalog, report, Fake);
 
-            Assert.AreEqual("[Module1/helmet_ok]", entries[0].Title);
+            Assert.AreEqual("[M1/helmet_ok]", entries[0].Title);
         }
 
         [Test]
@@ -75,8 +75,8 @@ namespace RideSafe.Module01.Tests
             List<ComparisonEntry> english = ReportPresenter.BuildEntries(catalog, report, k => "EN:" + k);
             List<ComparisonEntry> spanish = ReportPresenter.BuildEntries(catalog, report, k => "ES:" + k);
 
-            Assert.AreEqual("EN:Module1/helmet_ok", english[0].Title);
-            Assert.AreEqual("ES:Module1/helmet_ok", spanish[0].Title);
+            Assert.AreEqual("EN:M1/helmet_ok", english[0].Title);
+            Assert.AreEqual("ES:M1/helmet_ok", spanish[0].Title);
         }
 
         private static ComparisonEntry Find(List<ComparisonEntry> entries, string itemId)

@@ -75,6 +75,40 @@ namespace RideSafe.Module01.Tests
         }
 
         [Test]
+        public void Volver_a_aceptar_un_elemento_ya_elegido_lo_quita_del_libro()
+        {
+            // Lo pidió el cliente el 2026-10-16: el EPP elegido se queda en la mesa en verde y
+            // volver a pulsarlo tiene que poder deshacer la elección. Antes `Ledger.Add` era
+            // idempotente, así que el segundo sí no hacía nada.
+            SafetyItemSO item = Item("helmet_ok", SafetyItemCategory.Core);
+            _runner.Begin(Zone("head", item));
+
+            _inspector.Present(item);
+            _inspector.Accept();
+            Assert.IsTrue(_runner.Ledger.Contains("helmet_ok"), "El primer si lo mete.");
+
+            _inspector.Present(item);
+            _inspector.Accept();
+
+            Assert.IsFalse(_runner.Ledger.Contains("helmet_ok"), "El segundo si lo saca.");
+        }
+
+        [Test]
+        public void Rechazar_un_elemento_ya_elegido_lo_deja_elegido()
+        {
+            // «No» a «¿quitarlo?» es quedárselo. Lo contrario perdería la elección por decir no.
+            SafetyItemSO item = Item("helmet_ok", SafetyItemCategory.Core);
+            _runner.Begin(Zone("head", item));
+
+            _inspector.Present(item);
+            _inspector.Accept();
+            _inspector.Present(item);
+            _inspector.Decline();
+
+            Assert.IsTrue(_runner.Ledger.Contains("helmet_ok"));
+        }
+
+        [Test]
         public void Rechazar_un_elemento_no_lo_registra()
         {
             SafetyItemSO item = Item("helmet_damaged", SafetyItemCategory.Inappropriate);

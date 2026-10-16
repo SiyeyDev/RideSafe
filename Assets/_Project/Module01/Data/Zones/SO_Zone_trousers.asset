@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_Zone_trousers
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.ZoneSO
   _zoneId: trousers
-  _titleKey: Module1/Zone_Trousers
+  _titleKey: M1/Zone_Trousers
   _items:
   - {fileID: 11400000, guid: 22bb9602e45309f438ef7938b57505d7, type: 2}
   - {fileID: 11400000, guid: e46ca436dcae02c488166ead3c22d13b, type: 2}

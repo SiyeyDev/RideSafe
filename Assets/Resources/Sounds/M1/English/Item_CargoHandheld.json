@@ -1,0 +1,14 @@
+{
+  "characters": [
+    "Handheld",
+    "object"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.65
+  ],
+  "character_end_times_seconds": [
+    0.592,
+    1.254
+  ]
+}

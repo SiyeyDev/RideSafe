@@ -13,7 +13,28 @@ namespace RideSafe.UI
     public static class ColumnComposition
     {
         public const float Gap = 8f;
-        public const float NoteHeight = 60f;
+
+        /// <summary>
+        /// Alto de la nota bajo la barra del título.
+        /// <para>
+        /// <b>64 y no 60.</b> Este método le activa el ajuste de línea al texto, y el español
+        /// es más largo que el inglés con el que se diseñó el kit: medido el 2026-10-16, el
+        /// subtítulo del reporte pedía 36,3 de alto en los 34,0 que deja una caja de 60, y eso
+        /// tumbaba tres de los seis tests de PlayMode.
+        /// </para>
+        /// <para>
+        /// Es un número y no un <c>ContentSizeFitter</c> a propósito. Con el ajuste puesto, en
+        /// el editor el grupo de layout mide 0 —el panel no está visible— y esa altura se
+        /// guarda en la escena como una sobrescritura de 0×0: el texto sale como una columna de
+        /// letras, el prefab parece correcto y el fallo vuelve <b>cada vez que alguien guarda la
+        /// escena</b>. Probado; no merece la pena.
+        /// </para>
+        /// <para>
+        /// Si alguien alarga el subtítulo y deja de caber, lo caza el test de PlayMode que mide
+        /// cada texto contra su caja. Entonces se sube este número.
+        /// </para>
+        /// </summary>
+        public const float NoteHeight = 64f;
 
         /// <param name="barPad">9-slice padding of the bar sprite (UIBuilderKit.PadFor of its multiplier).</param>
         /// <param name="listPad">9-slice padding of the list card.</param>
@@ -40,7 +61,7 @@ namespace RideSafe.UI
             if (titleText != null)
                 titleText.verticalAlignment = TMPro.VerticalAlignmentOptions.Middle;
 
-            // The note keeps the list's width and wraps, instead of stretching with its text.
+            // Ancho fijo —el de la lista— y alto fijo: ver NoteHeight.
             ContentSizeFitter fitter = note.GetComponent<ContentSizeFitter>();
             if (fitter != null)
             {

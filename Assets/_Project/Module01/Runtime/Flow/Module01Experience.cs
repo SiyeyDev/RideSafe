@@ -218,7 +218,7 @@ namespace RideSafe.Module01
             // llantas se quedaba un 5 % por debajo del borde inferior de la pantalla.
             while (_director.Stage != null && _director.Stage.IsTurning) yield return null;
             _runner.Begin(zone);
-            _inspector.SetQuestion(_director.InVehicleSection ? "Module1/Inspect_Question" : "Module1/Confirm_Question");
+            _inspector.SetQuestion(_director.InVehicleSection ? "M1/Inspect_Question" : "M1/Confirm_Question");
             _sidebar.SetActive(true); _navigation.SetActive(true);
             _instructionKey = zone.TitleKey;
             RefreshInstruction();
@@ -227,7 +227,7 @@ namespace RideSafe.Module01
         private void RefreshInstruction()
         {
             if (string.IsNullOrEmpty(_instructionKey)) return;
-            _instructionText.text = UIText.Resolve(_instructionKey) + "\n" + UIText.Resolve(_director.InVehicleSection ? "Module1/Inspect_Instruction" : "Module1/Choose_Instruction");
+            _instructionText.text = UIText.Resolve(_instructionKey) + "\n" + UIText.Resolve(_director.InVehicleSection ? "M1/Inspect_Instruction" : "M1/Choose_Instruction");
             _instruction.SetActive(SubtitlesEnabled && (Phase == "Choosing" || Phase == "Moving"));
         }
         private void Update()
@@ -286,7 +286,7 @@ namespace RideSafe.Module01
             _readinessCorrect = ReadinessDecision.IsCorrect(_choice, report);
             _vehicleEntries = Entries(report);
             ShowReport(_vehicleEntries,
-                UIText.Resolve(_readinessCorrect ? "Module1/Decision_Correct" : "Module1/Decision_Review"));
+                UIText.Resolve(_readinessCorrect ? "M1/Decision_Correct" : "M1/Decision_Review"));
         }
         private List<ComparisonEntry> Entries(SelectionReport report)
         {
@@ -308,13 +308,13 @@ namespace RideSafe.Module01
             _binding.Module.Show("Comparison");
             // El veredicto de la decision va aqui, en la nota del panel, y no en un rotulo
             // flotante sobre el HUD: medido en PlayMode, aquel se cruzaba con "Ver explicacion".
-            string note = UIText.Resolve("Module1/MyChoice_Note");
+            string note = UIText.Resolve("M1/MyChoice_Note");
             // Separador de punto medio, el mismo que usa el titulo dos lineas mas abajo. Antes
             // eran tres espacios y en la captura se leia como un hueco raro, no como dos frases.
             if (!string.IsNullOrEmpty(verdict))
                 note += "  ·  " + verdict;
             _binding.Comparison.SetSingleList(
-                UIText.Resolve("Module1/MyChoice_Title"),
+                UIText.Resolve("M1/MyChoice_Title"),
                 note,
                 entries);
         }
@@ -329,10 +329,10 @@ namespace RideSafe.Module01
             Phase = "Report";
             _binding.Module.Show("Comparison");
             _binding.Comparison.SetSingleList(
-                UIText.Resolve("Module1/MyChoice_Title") + "  ·  "
+                UIText.Resolve("M1/MyChoice_Title") + "  ·  "
                     + UIText.Resolve(score.Rank.TitleKey()) + "  ·  " + score.Percent + "%",
                 UIText.Resolve(score.Rank.FeedbackKey()) + "  ·  "
-                    + UIText.Resolve(_readinessCorrect ? "Module1/Final_Complete" : "Module1/Decision_Review"),
+                    + UIText.Resolve(_readinessCorrect ? "M1/Final_Complete" : "M1/Decision_Review"),
                 entries);
         }
         private void PlayVideo()

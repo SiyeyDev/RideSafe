@@ -11,8 +11,10 @@ namespace RideSafe.Module01
     /// <list type="bullet">
     /// <item>Mientras un elemento está girando en el inspector, su gemelo de la mesa se
     /// esconde: se presenta una copia sobre el pedestal, así que sin esto se ven dos.</item>
-    /// <item>Un elemento que entra en el libro desaparece de la mesa —el aprendiz ya lo
-    /// lleva puesto— y vuelve en cuanto lo quita del checklist.</item>
+    /// <item>Un elemento que entra en el libro se queda en la mesa <b>marcado en verde</b>
+    /// —«este ya lo llevas»— y pierde la marca en cuanto lo quita del checklist. Hasta el
+    /// 2026-10-16 desaparecía; lo cambió el cliente, y de paso lo arregla: un objeto apagado
+    /// tiene el collider apagado, así que no se podía volver a pulsar para deseleccionarlo.</item>
     /// </list>
     /// <para>
     /// La visibilidad se <b>deriva</b> del estado (¿lo lleva puesto? ¿lo está mirando?) en vez
@@ -31,8 +33,14 @@ namespace RideSafe.Module01
         [Tooltip("Quién presenta los elementos sobre el pedestal.")]
         [SerializeField] private ItemInspector _inspector;
 
-        [Tooltip("Opcional: solo estos elementos desaparecen al llevarse puestos. Vacío = todos.")]
+        [Tooltip("Opcional: solo estos elementos se marcan al llevarse puestos. Vacío = todos.")]
         [SerializeField] private Module01CatalogSO _wearable;
+
+        [Tooltip("Material del holograma verde que marca lo ya seleccionado. M_SelectedHolo.")]
+        [SerializeField] private Material _holoMaterial;
+
+        [Tooltip("Verde de «ya seleccionado». El mismo que el de un punto resuelto.")]
+        [SerializeField] private Color _holoColor = new Color(.46f, .83f, .54f, .9f);
 
         private readonly Dictionary<string, GameObject> _world = new Dictionary<string, GameObject>();
         private readonly HashSet<string> _worn = new HashSet<string>();
@@ -75,6 +83,7 @@ namespace RideSafe.Module01
                 if (string.IsNullOrEmpty(entity.ItemId))
                     continue;
                 _world[entity.ItemId] = entity.gameObject;
+                EnsureHolo(entity.gameObject);
             }
 
             _wearableIds = null;
@@ -90,6 +99,37 @@ namespace RideSafe.Module01
         /// <summary>El objeto de mundo de un elemento, o null si la escena no lo tiene.</summary>
         public GameObject WorldObject(string itemId) =>
             itemId != null && _world.TryGetValue(itemId, out GameObject go) ? go : null;
+
+        /// <summary>
+        /// El holograma de «ya seleccionado» de un elemento, o null si la escena no tiene su
+        /// objeto.
+        /// </summary>
+        public SelectedHolo HoloOf(string itemId)
+        {
+            GameObject go = WorldObject(itemId);
+            return go == null ? null : EnsureHolo(go);
+        }
+
+        /// <summary>
+        /// El objeto trae el componente, o se le pone. Así no hay que cablear trece objetos a
+        /// mano, y un garaje nuevo no llega sin marca.
+        /// <para>
+        /// <b>Sin <c>??</c>:</b> en el Editor, <c>GetComponent</c> de un componente ausente
+        /// devuelve un objeto de diagnóstico que solo es null para el <c>==</c> sobrecargado de
+        /// Unity. Para C#, y por tanto para <c>??</c>, es un objeto válido, así que
+        /// <c>AddComponent</c> no se llamaría nunca.
+        /// </para>
+        /// </summary>
+        private SelectedHolo EnsureHolo(GameObject go)
+        {
+            SelectedHolo holo = go.GetComponent<SelectedHolo>();
+            if (holo == null)
+            {
+                holo = go.AddComponent<SelectedHolo>();
+                holo.ConfigureForTests(_holoMaterial, _holoColor);
+            }
+            return holo;
+        }
 
         /// <summary>El elemento pasa a estar sobre el pedestal: su gemelo de la mesa se esconde.</summary>
         public void BeginInspecting(SafetyItemSO item) => BeginInspecting(item == null ? null : item.ItemId);
@@ -155,16 +195,28 @@ namespace RideSafe.Module01
                 Apply(id);
         }
 
-        /// <summary>La única regla: se ve si no lo lleva puesto y no lo está mirando de cerca.</summary>
+        /// <summary>
+        /// La única regla, en tres estados: apagado mientras gira en el pedestal, verde si ya
+        /// lo lleva puesto, y normal en cualquier otro caso.
+        /// <para>
+        /// El verde se apaga también mientras está en el pedestal, aunque ya esté elegido: lo
+        /// que gira ahí es una copia, y ver las dos cosas a la vez son otra vez dos cascos.
+        /// </para>
+        /// </summary>
         private void Apply(string itemId)
         {
             if (string.IsNullOrEmpty(itemId))
                 return;
             if (!_world.TryGetValue(itemId, out GameObject go) || go == null)
                 return;
-            bool visible = !_worn.Contains(itemId) && _inspecting != itemId;
-            if (go.activeSelf != visible)
-                go.SetActive(visible);
+
+            bool inspecting = _inspecting == itemId;
+            if (go.activeSelf != !inspecting)
+                go.SetActive(!inspecting);
+
+            SelectedHolo holo = EnsureHolo(go);
+            if (holo != null)
+                holo.SetOn(!inspecting && _worn.Contains(itemId));
         }
 
         /// <summary>Solo para tests: libro y mapa de objetos sin pasar por la escena.</summary>
@@ -172,7 +224,11 @@ namespace RideSafe.Module01
         {
             _world.Clear();
             foreach (KeyValuePair<string, GameObject> pair in world)
+            {
                 _world[pair.Key] = pair.Value;
+                if (pair.Value != null)
+                    EnsureHolo(pair.Value);
+            }
             _worn.Clear();
             _wearableIds = null;
             _inspecting = null;
