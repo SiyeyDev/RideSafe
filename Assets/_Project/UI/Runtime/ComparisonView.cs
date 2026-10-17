@@ -28,7 +28,13 @@ namespace RideSafe.UI
         /// mensaje es otro: el casco dañado enseña a mirar el estado del equipo, no a elegir
         /// otra cosa.
         /// </summary>
-        AtRisk = 4
+        AtRisk = 4,
+
+        /// <summary>
+        /// Elegido y no cambia la nota: lo opcional y lo que depende de la condicion. El
+        /// cliente pidio tres estados en el resumen —correcto, incorrecto y este— y nada mas.
+        /// </summary>
+        NoEffect = 5
     }
 
     [Serializable]
@@ -128,7 +134,7 @@ namespace RideSafe.UI
         private string[] _stateKeys =
         {
             "M1/Legend_Correct", "M1/Legend_Omission", "M1/Conditional",
-            "M1/Legend_Incorrect", "M1/Legend_AtRisk"
+            "M1/Legend_Incorrect", "M1/Legend_AtRisk", "M1/Legend_NoEffect"
         };
 
         private readonly List<ComparisonEntry> _current = new List<ComparisonEntry>();

@@ -1061,9 +1061,29 @@ en tres frentes: el tutorial viejo, assets y scripts sin uso, y el coste en Ques
   en PlayMode**.
 - **El horneado no se sube**, para no romperle la escena a Cindy (§3 y §8).
 
+- **«Mi Elección» deja de listar lo omitido.** Charlie lo vio en la demo: salía «Calzado
+  cerrado · OMISIÓN» y eso convierte el resumen en un boletín de fallos. Ahora la lista recorre
+  **lo que el aprendiz se llevó**, no el catálogo, y en **tres estados y ya**: núcleo →
+  *Correcta*, inapropiado → *Incorrecta* (deteriorado o no, se dicen igual), opcional y según
+  condición → *No afecta* (`M1/Legend_NoEffect`, término nuevo). Los estados `CoreOmitted` y
+  `AtRisk` siguen en el enum pero el reporte ya no los emite.
+- **Queda una incoherencia declarada:** la **nota sí cuenta las omisiones**
+  (`SelectionScore.Of` juzga cada elemento de núcleo), así que quien se deje el calzado verá
+  todas las filas correctas y un «Por mejorar» que la pantalla no explica. Se propuso poner el
+  recuento en la nota de arriba y Charlie prefirió los tres estados a secas.
+- **La vitrina del módulo 0 sube de 0 a 0,40.** No estaban «bajos»: estaban fuera de cuadro.
+  Desde los ojos (y = 1,45), a 2,25 m y con 60° de campo, la vista cubre de **y = 0,15 a 2,75**,
+  y los vehículos se apoyaban en 0. Con 0,40 la bici ocupa 0,40–1,07 y el patinete 0,40–1,21:
+  25 cm de margen abajo y sin llegar a las tarjetas (1,48). Sube el conjunto, porque las nueve
+  partículas de la plataforma simulan en **espacio local** y cuelgan del mismo ancla. El número
+  vive en `Module00ShowroomSetup.GroundHeight` y en el componente de la escena.
+
 **Para retomar, por orden:**
 
-1. **Decidir dónde se enseña el `_Risk` en el reporte.** Está aprobado que salga **solo en los
+1. **Correr PlayMode del M1.** El último cambio —el de «Mi Elección»— se subió con **EditMode
+   verde (336/2) y PlayMode sin correr**, porque el Editor estaba cerrado. Toca justo esa
+   pantalla.
+2. **Decidir dónde se enseña el `_Risk` en el reporte.** Está aprobado que salga **solo en los
    elementos que estuvieron mal**, pero falta montarlo. Hoy la fila dice `Dirección y manubrio ·
    CORRECTA` y nada más.
 2. Pegar `Docs/Module1_I2.csv` en la hoja del Drive, como copia de referencia. **No reimportar

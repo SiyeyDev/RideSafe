@@ -75,35 +75,34 @@ namespace RideSafe.Module01
             if (catalog == null || report == null)
                 return entries;
 
+            // Solo lo que el aprendiz SE LLEVO, y en tres estados. Lo pidio Charlie el
+            // 2026-10-16: listar lo omitido convierte el resumen en un boletin de fallos, y
+            // el porque de cada cosa se explica al final, con el video.
             foreach (SafetyItemSO item in catalog.AllItems)
             {
+                if (item == null)
+                    continue;
+
                 bool chosen = Contains(report.CoreSelected, item.ItemId)
                               || Contains(report.OptionalSelected, item.ItemId)
                               || Contains(report.ConditionDependentSelected, item.ItemId)
                               || Contains(report.InappropriateSelected, item.ItemId);
-
-                // El núcleo aparece siempre, elegido u omitido, porque su ausencia es
-                // la información. Las demás categorías solo aparecen si el aprendiz las
-                // eligió: listar un opcional que no tomó lo haría parecer un olvido.
-                if (item.Category != SafetyItemCategory.Core && !chosen)
+                if (!chosen)
                     continue;
 
                 ItemStatus status;
                 switch (item.Category)
                 {
                     case SafetyItemCategory.Core:
-                        status = chosen ? ItemStatus.Selected : ItemStatus.CoreOmitted;
-                        break;
-                    case SafetyItemCategory.ConditionDependent:
-                        status = ItemStatus.ConditionDependent;
+                        status = ItemStatus.Selected;
                         break;
                     case SafetyItemCategory.Inappropriate:
-                        // Deteriorado y «no es lo que toca» restan igual, pero enseñan cosas
-                        // distintas: uno es revisar el estado del equipo y el otro elegir bien.
-                        status = item.IsDeteriorated ? ItemStatus.AtRisk : ItemStatus.NotSuited;
+                        // Deteriorado y "no es lo que toca" se dicen igual: son tres estados.
+                        status = ItemStatus.NotSuited;
                         break;
                     default:
-                        status = ItemStatus.Selected;
+                        // Opcional y segun condicion: no cambian la nota.
+                        status = ItemStatus.NoEffect;
                         break;
                 }
 

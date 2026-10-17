@@ -201,7 +201,7 @@ namespace RideSafe.Module01.Tests
     public class DeterioratedStatusTests : CatalogFixture
     {
         [Test]
-        public void Un_inapropiado_deteriorado_se_pinta_como_en_riesgo()
+        public void Un_inapropiado_deteriorado_se_pinta_igual_que_cualquier_inapropiado()
         {
             SafetyItemSO damaged = Item("helmet_damaged", SafetyItemCategory.Inappropriate);
             damaged.MarkDeterioratedForTests();
@@ -214,7 +214,9 @@ namespace RideSafe.Module01.Tests
             var entries = ReportPresenter.BuildEntries(catalog, report, k => k);
 
             Assert.AreEqual(1, entries.Count);
-            Assert.AreEqual(ItemStatus.AtRisk, entries[0].Status);
+            // Tres estados y ya, por decision de Charlie el 2026-10-16: deteriorado y
+            // "no es lo que toca" se dicen igual en el resumen.
+            Assert.AreEqual(ItemStatus.NotSuited, entries[0].Status);
         }
 
         [Test]

@@ -24,7 +24,23 @@ namespace RideSafe.Module00.Editor
         // without crossing the door.
         private const float Distance = 2.25f;
         private const float DisplayScale = 0.6f;
-        private const float GroundHeight = 0f;
+
+        /// <summary>
+        /// Altura a la que se apoyan los vehículos de exhibición. <b>No es el suelo del garaje.</b>
+        /// <para>
+        /// Con 0 se cortaban por abajo, y no era cosa de la escena sino del encuadre: desde los
+        /// ojos del aprendiz (y = 1,45) y a 2,25 m con 60° de campo, la vista cubre de
+        /// <b>y = 0,15 a y = 2,75</b>, así que los 15 cm de abajo quedan fuera de cámara. Medido
+        /// el 2026-10-16, con la bici ocupando 0,67 m de alto y el patinete 0,81.
+        /// </para>
+        /// <para>
+        /// A 0,40 los dos caben enteros con 25 cm de margen por abajo, y por arriba se quedan
+        /// lejos de las tarjetas, que empiezan en y = 1,48. Sube el conjunto: el vehículo y los
+        /// nueve sistemas de partículas de la plataforma, que simulan en espacio local y
+        /// cuelgan del mismo ancla.
+        /// </para>
+        /// </summary>
+        private const float GroundHeight = 0.40f;
 
         private static readonly (string Id, string Model, string Label)[] Vehicles =
         {
