@@ -277,6 +277,7 @@ namespace RideSafe.Module01.Editor
             Set(worn,"_holoMaterial",holo);
 
             ArrangeStations(catalog,vehicle);
+            Module01SceneComposition.Compose(_kit);
             AssignUiLayer();
             // Un sprite mal escrito dibuja nada y se ve como "quedo feo". Que reviente, no que calle.
             if(_kit.MissingSprites.Count>0) throw new System.InvalidOperationException("Sprites que no estan en el atlas: "+string.Join(" | ",_kit.MissingSprites));

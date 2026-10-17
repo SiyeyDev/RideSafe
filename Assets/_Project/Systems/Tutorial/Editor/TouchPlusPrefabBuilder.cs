@@ -61,6 +61,34 @@ namespace RideSafe.Tutorial.Editor
             Debug.Log(report.ToString());
         }
 
+        /// <summary>Rewrites only the view poses of the existing prefabs, keeping everything else (and every reference into them).</summary>
+        [MenuItem("RideSafe/Tutorial/Recalcular posturas Touch Plus (en sitio)")]
+        public static void RewritePoses()
+        {
+            StringBuilder report = new StringBuilder("[Tutorial] Touch Plus poses:\n");
+            foreach (var (path, prefix) in new[] { (LeftPrefabPath, "L_"), (RightPrefabPath, "R_") })
+            {
+                GameObject root = PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    ControllerModelVisual visual = root.GetComponent<ControllerModelVisual>();
+                    visual.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                    Transform body = FindDeep(root.transform, prefix + "Controller_Mesh");
+                    Vector3 bodyCenter = body.GetComponent<Renderer>().bounds.center;
+                    List<ControllerButtonVisual> buttons = new List<ControllerButtonVisual>(root.GetComponentsInChildren<ControllerButtonVisual>(true));
+                    SerializedObject serialized = new SerializedObject(visual);
+                    WritePoses(serialized, root.transform, bodyCenter, buttons, report);
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                    PrefabUtility.SaveAsPrefabAsset(root, path);
+                }
+                finally
+                {
+                    PrefabUtility.UnloadPrefabContents(root);
+                }
+            }
+            Debug.Log(report.ToString());
+        }
+
         private static void BuildOne(string modelPath, string prefabPath, XRNodeRole hand, string prefix,
             (string Suffix, ControllerControl Control, float Distance)[] sideParts,
             StringBuilder report)
@@ -162,7 +190,10 @@ namespace RideSafe.Tutorial.Editor
 
             var poses = new List<(ControllerControl Control, Vector3 View, Vector3 Up)>
             {
-                (ControllerControl.Trigger, side + trigger * 0.9f + top * 0.25f, top + front * 0.5f),
+                // As the learner holds it: leaning forward, seen from the grip side and a little from
+                // behind and above, so the trigger shows in profile under the finger (PO, 2026-10-16).
+                // The old pose stood it upright facing the viewer, like a product shot.
+                (ControllerControl.Trigger, side * 0.8f + top * 0.35f - front * 0.25f, top * 0.6f + front * 0.6f),
                 (ControllerControl.Grip, side + top * 0.35f, front),
                 (ControllerControl.PrimaryButton, top + side * 0.25f, front),
                 (ControllerControl.SecondaryButton, top + side * 0.25f, front),

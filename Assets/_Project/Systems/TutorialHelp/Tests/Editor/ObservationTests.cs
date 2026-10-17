@@ -178,6 +178,16 @@ namespace RideSafe.Help.Tests
         }
 
         [Test]
+        public void Video_IsOnWhilePlayingOrPausedMidClip()
+        {
+            Assert.IsTrue(QuietDetector.IsVideoOn(true, false, 40, 300));
+            Assert.IsTrue(QuietDetector.IsVideoOn(false, true, 40, 300), "paused by the learner, or by lost focus");
+            Assert.IsTrue(QuietDetector.IsVideoOn(false, true, 0, 0), "paused before the length is known");
+            Assert.IsFalse(QuietDetector.IsVideoOn(false, true, 299, 300), "paused on the last frame: it ended");
+            Assert.IsFalse(QuietDetector.IsVideoOn(false, false, 120, 300), "stopped");
+        }
+
+        [Test]
         public void HandTracker_IsRightUntilComfortSaysOtherwise()
         {
             GameObject panelGo = Track(new GameObject("Comfort"));

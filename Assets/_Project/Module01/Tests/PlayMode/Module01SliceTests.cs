@@ -808,7 +808,8 @@ namespace RideSafe.Module01.Tests
         /// </summary>
         private void AssertHudDoesNotOverlap()
         {
-            string[] names = { "Confirmation", "ItemName", "Navigation", "StationInstruction",
+            // ItemName is the popup's header since 2026-10-16: it lives inside Confirmation.
+            string[] names = { "Confirmation", "Navigation", "StationInstruction",
                                "ReadinessDecision", "ChecklistPanel" };
             var live = Object.FindObjectsByType<RectTransform>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
                              .Where(x => names.Contains(x.name)).ToArray();
@@ -854,11 +855,15 @@ namespace RideSafe.Module01.Tests
                 model = new Bounds(esquinas[0], Vector3.zero);
                 foreach (var c in esquinas) model.Encapsulate(c);
             }
+            // El nombre es la cabecera del popup desde 2026-10-16: tiene que ir dentro de la caja,
+            // y la caja entera por debajo del modelo.
             var label = Field<TMP_Text>(_inspector, "_nameLabel").rectTransform;
-            var corners = new Vector3[4];
-            label.GetWorldCorners(corners);
-            Assert.Greater(corners.Min(c => _camera.WorldToScreenPoint(c).y), Highest(model), string.Format(
-                "El modelo tapa el nombre (el modelo sube a y={0:0})", Highest(model)));
+            var box = (RectTransform)Field<GameObject>(_inspector, "_confirmRoot").transform;
+            Rect name = ScreenRect(label), popup = ScreenRect(box);
+            Assert.IsTrue(popup.Contains(name.min) && popup.Contains(name.max),
+                "El nombre se sale del popup: " + name + " fuera de " + popup);
+            Assert.Less(popup.yMax, Lowest(model), string.Format(
+                "El modelo tapa el popup (el modelo baja a y={0:0})", Lowest(model)));
         }
 
         /// <summary>Las 8 esquinas, no el centro: una caja con fondo proyecta más alto y más bajo que su centro.</summary>

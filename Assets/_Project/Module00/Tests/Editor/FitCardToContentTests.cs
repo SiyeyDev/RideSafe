@@ -92,6 +92,27 @@ namespace RideSafe.Module00.Tests
         }
 
         [Test]
+        public void Selected_HoldsItsCaptionInside_GrowingDownward()
+        {
+            _caption.anchoredPosition = new Vector2(0f, -(77f + 4f)); // under the card, as the builder used to put it
+            _fit.HoldCaptionInside(true);
+            _fit.Refresh();
+            float top = _card.anchoredPosition.y;
+            float closed = _card.sizeDelta.y;
+            _toggle.isOn = true;
+            _fit.Refresh();
+            Assert.AreEqual(top, _card.anchoredPosition.y, 0.01f, "the top edge stays put");
+            Assert.AreEqual(closed + FitCardToContent.CaptionRow, _card.sizeDelta.y, 0.01f);
+            float captionBottom = -_caption.anchoredPosition.y + _caption.sizeDelta.y;
+            Assert.LessOrEqual(captionBottom, _card.sizeDelta.y - Pad, "SELECCIONADO inside the visible card");
+            Assert.GreaterOrEqual(-_caption.anchoredPosition.y, -_description.anchoredPosition.y + _description.sizeDelta.y - 0.01f,
+                                  "below the description");
+            _toggle.isOn = false;
+            _fit.Refresh();
+            Assert.AreEqual(closed, _card.sizeDelta.y, 0.01f, "back to its size when unselected");
+        }
+
+        [Test]
         public void AShorterName_GivesANarrowerCard()
         {
             _fit.Refresh();

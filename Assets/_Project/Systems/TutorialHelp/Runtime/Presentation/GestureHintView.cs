@@ -32,7 +32,9 @@ namespace RideSafe.Help
         [Tooltip("Seconds between checks for a freer spot.")]
         [SerializeField, Min(0.1f)] private float _respotSeconds = 0.5f;
         [Tooltip("Size of the hint card (its backdrop) before the view's scale, in metres.")]
-        [SerializeField] private Vector2 _cardSize = new Vector2(0.2f, 0.19f);
+        [SerializeField] private Vector2 _cardSize = new Vector2(0.2f, 0.21f);
+        [Tooltip("How far the controller moves down in the card when there is a caption above it, before the view's scale.")]
+        [SerializeField, Min(0f)] private float _captionRoom = 0.03f;
 
         [Header("Animation")]
         [SerializeField] private Color _glowColor = new Color32(0xA9, 0xE2, 0xD4, 0xFF);
@@ -98,7 +100,9 @@ namespace RideSafe.Help
             if (_left != null) _left.gameObject.SetActive(model == _left);
             if (_right != null) _right.gameObject.SetActive(model == _right);
             Pose pose = model.PoseFor(gesture.Control);
-            model.transform.SetLocalPositionAndRotation(pose.position, pose.rotation);
+            // The caption sits at the top of the card; the controller makes room under it.
+            Vector3 room = string.IsNullOrEmpty(text) ? Vector3.zero : Vector3.down * _captionRoom;
+            model.transform.SetLocalPositionAndRotation(pose.position + room, pose.rotation);
 
             _button = button;
             _button.Begin();

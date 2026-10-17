@@ -21,6 +21,7 @@ namespace RideSafe.UI.EditorTools
             Vehicle(Panel("Vehicle"));
             Comfort(Panel("Comfort"));
             LocalizeModule00(_module);
+            UIComposition.ComposeModule00(_module, K);
             EndModule("PF_Module00_UI");
         }
 

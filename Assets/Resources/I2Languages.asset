@@ -1539,6 +1539,22 @@ MonoBehaviour:
       - No afecta
       Flags: 0000
       Languages_Touch: []
+    - Term: M1/Orientation_Tag
+      TermType: 0
+      Description: 
+      Languages:
+      - "Module 1 \xB7 Readiness"
+      - "M\xF3dulo 1 \xB7 Preparaci\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Decision_Hint
+      TermType: 0
+      Description: 
+      Languages:
+      - Choose the option that best describes the vehicle.
+      - "Elige la opci\xF3n que mejor describe el veh\xEDculo."
+      Flags: 0000
+      Languages_Touch: []
     CaseInsensitiveTerms: 0
     OnMissingTranslation: 1
     mTerm_AppName: 

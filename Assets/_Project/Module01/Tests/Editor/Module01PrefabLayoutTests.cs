@@ -70,9 +70,13 @@ namespace RideSafe.Module01.Tests
                             "título centrado en vertical, no pegado arriba");
             TMPro.TMP_Text titleText = title.GetComponent<TMPro.TMP_Text>();
             Assert.AreEqual(TMPro.VerticalAlignmentOptions.Middle, titleText.verticalAlignment);
-            Assert.GreaterOrEqual(Top(note), Bottom(bar), "la nota no se mete en la barra");
-            Assert.GreaterOrEqual(Top(list), Bottom(note), "la lista va debajo de la nota");
-            Assert.GreaterOrEqual(Top(button), Bottom(list), "el botón va debajo de la lista");
+            // Orden desde 2026-10-16 (Cindy), como «Revisa tus elecciones»: barra, lista, nota; y el
+            // botón libre, debajo de la caja del panel.
+            Assert.GreaterOrEqual(Top(list), Bottom(bar), "la lista no se mete en la barra");
+            Assert.GreaterOrEqual(Top(note), Bottom(list), "la nota va debajo de la lista");
+            RectTransform box = (RectTransform)Find(panel, "Frame");
+            Assert.GreaterOrEqual(Top(button), Bottom(box), "el botón va fuera de la caja, debajo");
+            Assert.GreaterOrEqual(Bottom(box), Bottom(note), "la caja abarca la nota");
             Assert.IsFalse(Find(list, "Divider").gameObject.activeSelf, "sin encabezado no hay raya que lo separe");
 
             Assert.IsNull(panel.GetComponent<GrowWithContent>(),
@@ -131,9 +135,9 @@ namespace RideSafe.Module01.Tests
                     foreach (FollowBelow f in root.GetComponentsInChildren<FollowBelow>(true))
                         if (f.name == "FinalResult")
                             follow = f;
-                Assert.IsNotNull(follow, "los botones finales siguen a la lista de Mi Elección");
+                Assert.IsNotNull(follow, "los botones finales siguen a la caja de Mi Elección");
                 Object target = new SerializedObject(follow).FindProperty("_target").objectReferenceValue;
-                Assert.AreEqual("LeftColumn", target.name);
+                Assert.AreEqual("Frame", target.name, "la caja entera, no la lista: la nota va debajo de la lista");
                 Assert.AreEqual("Comparison", ((Component)target).transform.parent.name);
             }
             finally

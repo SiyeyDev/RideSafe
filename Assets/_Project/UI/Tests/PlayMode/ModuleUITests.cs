@@ -112,7 +112,9 @@ namespace RideSafe.UI.Tests
                         Assert.AreEqual(0f, image.color.a, name + "/" + image.name + " has no sprite.");
                         continue;
                     }
-                    Assert.IsTrue(s_AllowedTextures.Contains(AssetDatabase.GetAssetPath(image.sprite.texture)),
+                    // The sprite's own asset, not sprite.texture: packed by the SpriteAtlas, the texture
+                    // is the atlas page, which has no path of its own.
+                    Assert.IsTrue(s_AllowedTextures.Contains(AssetDatabase.GetAssetPath(image.sprite)),
                                   name + "/" + image.name + " uses a sprite outside the RideSafe atlases.");
                 }
 

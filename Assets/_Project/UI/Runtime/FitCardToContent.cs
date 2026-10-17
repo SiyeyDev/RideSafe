@@ -6,7 +6,8 @@ namespace RideSafe.UI
 {
     /// <summary>
     /// A choice card sized to what it holds, in whatever language: unselected it hugs its name
-    /// and description; selected it grows just enough for the check beside the name. It stays
+    /// and description; selected it grows just enough for the check beside the name (and, with
+    /// <see cref="HoldCaptionInside"/>, downward for its SELECTED caption). It stays
     /// centred where it was built (over its vehicle). Recomputed when the text or the selection
     /// changes. Assumes the card and its children are anchored top-left (UIBuilderKit cards).
     /// </summary>
@@ -15,17 +16,23 @@ namespace RideSafe.UI
     {
         public const float SideMargin = 16f;
         public const float CheckGap = 8f;
+        /// <summary>What the card grows downward to hold its caption inside when selected.</summary>
+        public const float CaptionRow = 16f;
         private const float Pad = 16f / 2.8f; // UIBuilderKit.PadFor(2.8): slice padding around the visible card
 
         [SerializeField] private Toggle _toggle;
         [SerializeField] private TMP_Text _title;
         [SerializeField] private TMP_Text _description;
         [SerializeField] private RectTransform _check;
-        [Tooltip("Optional caption under the card (e.g. SELECTED), kept as wide as the card.")]
+        [Tooltip("Optional caption (e.g. SELECTED), kept as wide as the card.")]
         [SerializeField] private RectTransform _caption;
+        [Tooltip("Selected, the card grows downward and holds the caption inside instead of under it.")]
+        [SerializeField] private bool _captionInside;
 
         private bool _hasCentre;
         private float _centre;
+        private bool _hasHeight;
+        private float _height;
         private string _lastTitle, _lastDescription;
         private bool _lastOn;
 
@@ -39,6 +46,12 @@ namespace RideSafe.UI
             _check = check;
             _caption = caption;
             _hasCentre = false;
+        }
+
+        public void HoldCaptionInside(bool inside)
+        {
+            _captionInside = inside;
+            _hasHeight = false;
         }
 
         private void OnEnable() => Refresh();
@@ -76,6 +89,17 @@ namespace RideSafe.UI
                 _check.anchoredPosition = new Vector2(Pad + SideMargin + ContentWidth + CheckGap, _check.anchoredPosition.y);
             if (_caption != null)
                 Place(_caption, Pad + 8f, visible - 16f);
+            if (_captionInside && _caption != null)
+            {
+                if (!_hasHeight)
+                {
+                    _height = card.sizeDelta.y;
+                    _hasHeight = true;
+                }
+                card.sizeDelta = new Vector2(card.sizeDelta.x, _height + (on ? CaptionRow : 0f));
+                // Where the closed card's bottom edge was, a little up: the description is one short line.
+                _caption.anchoredPosition = new Vector2(_caption.anchoredPosition.x, -(_height - Pad - 8f));
+            }
 
             _lastTitle = _title.text;
             _lastDescription = _description != null ? _description.text : null;

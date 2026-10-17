@@ -80,6 +80,17 @@ namespace RideSafe.Help.Tests
         }
 
         [Test]
+        public void AfterQuiet_FirstTimeHelp_WaitsForTheScreenToSettleAgain()
+        {
+            HelpRules rules = new HelpRules();
+            rules.Clicked(InteractionKind.Interface);
+            Run(rules, 1.5f, true, false);
+            Run(rules, 1.5f, true, true, quiet: true);
+            Assert.AreEqual(HelpMode.None, rules.Tick(0.02f, true, true, false).Mode, "the video just ended");
+            Assert.AreEqual(HelpMode.FirstTime, Run(rules, 1.1f, true, true).Mode);
+        }
+
+        [Test]
         public void Quiet_DelaysTheFirstTimeHelp()
         {
             HelpRules rules = new HelpRules();

@@ -315,8 +315,10 @@ namespace RideSafe.Module01
             rect.offsetMin = rect.offsetMax = Vector2.zero;
 
             TMPro.TextMeshProUGUI text = label.AddComponent<TMPro.TextMeshProUGUI>();
+            // The brand font of the popup's header, not TMP's default (AutoHand's AmmoText here).
+            if (_nameLabel != null) text.font = _nameLabel.font;
             text.text = "!";
-            text.fontSize = 86f;
+            text.fontSize = 82f; // Manrope's '!' at 86 asks 117.5 of height in a 112 box
             text.fontStyle = TMPro.FontStyles.Bold;
             text.alignment = TMPro.TextAlignmentOptions.Center;
             text.raycastTarget = false;

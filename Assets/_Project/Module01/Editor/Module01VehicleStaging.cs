@@ -38,6 +38,7 @@ namespace RideSafe.Module01.Editor
     public static class Module01VehicleStaging
     {
         private const string AnchorsRoot = "Module01_Anchors";
+        public const string MarkerFontPath = "Assets/_Project/UI/Fonts/Manrope-Bold SDF.asset";
         private const string VehicleAnchor = "anchor_" + Module01Director.VehicleAnchorId;
         private const string DataFolder = "Assets/_Project/Module01/Data";
 
@@ -485,8 +486,11 @@ namespace RideSafe.Module01.Editor
             labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
 
             TextMeshProUGUI glyph = label.AddComponent<TextMeshProUGUI>();
+            // Brand font, not TMP's default (AutoHand's AmmoText in this project).
+            TMP_FontAsset brand = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(MarkerFontPath);
+            if (brand != null) glyph.font = brand;
             glyph.text = "!";
-            glyph.fontSize = 86f;
+            glyph.fontSize = 82f; // Manrope's '!' at 86 asks 117.5 of height in a 112 box
             glyph.fontStyle = FontStyles.Bold;
             glyph.alignment = TextAlignmentOptions.Center;
             glyph.raycastTarget = false;

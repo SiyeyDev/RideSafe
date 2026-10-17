@@ -262,7 +262,24 @@ namespace RideSafe.Help.Editor
             File.WriteAllText(DumpPath, sb.ToString());
         }
 
+        /// <summary>Every active text that still shows a localization key (M0/, M1/, Module1/...) instead of its translation.</summary>
+        public static void RawKeys()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (TMPro.TMP_Text text in Object.FindObjectsByType<TMPro.TMP_Text>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            {
+                if (!text.isActiveAndEnabled || string.IsNullOrEmpty(text.text))
+                    continue;
+                if (System.Text.RegularExpressions.Regex.IsMatch(text.text, @"\b(M0|M1|Module1|Module0|Tutorial)/"))
+                    sb.AppendLine(Path(text.transform) + " : '" + text.text.Replace("\n", " | ") + "'");
+            }
+            File.WriteAllText(DumpPath, sb.Length > 0 ? sb.ToString() : "none\n");
+        }
+
         public static void Shot() => ScreenCapture.CaptureScreenshot(ShotPath);
+
+        /// <summary>The same shot at twice the resolution: small text that vanishes at 1x may only be aliasing.</summary>
+        public static void Shot2x() => ScreenCapture.CaptureScreenshot(ShotPath, 2);
 
         private static string Path(Transform t)
         {

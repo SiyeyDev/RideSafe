@@ -313,7 +313,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.UI::RideSafe.UI.SubtitleView
   _label: {fileID: 8718383450043778858}
-  _panel: {fileID: 5410828309155921031}
+  _visuals: {fileID: 0}
   _maxCharactersPerCue: 90
   _maxSilenceSeconds: 0.7
   _holdSeconds: 1.2
@@ -331,7 +331,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: RideSafe.UI::RideSafe.UI.GazeFollower
   _head: {fileID: 0}
   _distance: 2
-  _pitchOffsetDegrees: 14
+  _pitchOffsetDegrees: 17
+  _yawOffsetDegrees: 0
   _deadZoneDegrees: 16
   _settleDegrees: 2
   _followSeconds: 0.45

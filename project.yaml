@@ -1,0 +1,20 @@
+# CCGS (Claude-Code-Game-Studios) config — only read by the imported /ux-design,
+# /ux-review skills and Unity/UX agents in .claude/. Not used by Unity.
+# Minimal on purpose: no `modes:` block, so defaults apply.
+
+schema_version: 1
+
+platform:
+  multiplayer: false
+  online: false
+  targets: [VR]                          # Meta Quest standalone
+  primary_input: "VR controllers (Meta Touch Plus) via AutoHand hands + UIPointer"
+  gamepad_support: "None"
+  touch_support: "None"
+  cert_tier: none
+
+engine:
+  name: "Unity"
+  version: "6000.4.9f1"
+  language: "C#"
+  rendering: "URP"

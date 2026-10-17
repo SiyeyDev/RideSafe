@@ -15,6 +15,7 @@ MonoBehaviour:
   _zones:
   - {fileID: 11400000, guid: 4df50470b3263bf42ad740ada2de4cfe, type: 2}
   - {fileID: 11400000, guid: 80ed2efc738a9a441a6efd278602232e, type: 2}
+  - {fileID: 11400000, guid: 6763e27c4cb2969428f6f012235670c1, type: 2}
   - {fileID: 11400000, guid: e94125ba2028d7c4c937768fe7d5e30c, type: 2}
   - {fileID: 11400000, guid: 2e812fb54e2d7364fa3302d91d7e907d, type: 2}
   - {fileID: 11400000, guid: 65b474ed86641f9468aec537c0de391d, type: 2}

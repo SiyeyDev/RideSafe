@@ -227,7 +227,9 @@ namespace RideSafe.Module01
         private void RefreshInstruction()
         {
             if (string.IsNullOrEmpty(_instructionKey)) return;
-            _instructionText.text = UIText.Resolve(_instructionKey) + "\n" + UIText.Resolve(_director.InVehicleSection ? "M1/Inspect_Instruction" : "M1/Choose_Instruction");
+            // The station's name as a heading over the instruction, not one more line of the same weight.
+            _instructionText.text = "<b><size=112%>" + UIText.Resolve(_instructionKey) + "</size></b>\n" +
+                UIText.Resolve(_director.InVehicleSection ? "M1/Inspect_Instruction" : "M1/Choose_Instruction");
             _instruction.SetActive(SubtitlesEnabled && (Phase == "Choosing" || Phase == "Moving"));
         }
         private void Update()

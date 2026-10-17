@@ -6,7 +6,7 @@ namespace RideSafe.Help
     /// When the automatic help appears. The first time a kind of interaction is on screen it
     /// teaches (after the screen settles); a click on that kind learns it for the session.
     /// Ten seconds without any click is "stuck", learned or not. Narration or video ("quiet")
-    /// freezes the count and shows nothing. Stopped: nothing, and clicks teach nothing.
+    /// freezes the stuck count, restarts the settle and shows nothing. Stopped: nothing, and clicks teach nothing.
     /// </summary>
     public sealed class HelpRules
     {
@@ -52,7 +52,10 @@ namespace RideSafe.Help
                 return HelpDecision.None;
             }
             if (quiet)
+            {
+                _settled = 0f; // after the video the screen settles again before teaching
                 return HelpDecision.None;
+            }
 
             _settled += deltaTime;
             _idle += deltaTime;

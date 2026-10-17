@@ -24,6 +24,7 @@ namespace RideSafe.UI.EditorTools
                       "Nothing checked yet", "Finish diagnostic selection", 678f, false, 597f, 150f, 360f);
             Comparison(Panel("Comparison", true));
             Explanation(Panel("Explanation", true));
+            UIComposition.ComposeModule01(_module, K);
             EndModule("PF_Module01_UI");
         }
 

@@ -1,7 +1,9 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-16 (noche, 2) — arreglos de la prueba: el calzado se ve en el
+> Última actualización: 2026-10-16 (noche, 3) — revisión de las UIs: cada pantalla en una caja,
+> tutorial más pequeño y que ya no sale sobre el video, SpriteAtlas de la UI (§11). Antes, (noche,
+> 2): arreglos de la prueba: el calzado se ve en el
 > pedestal y toda la rueda delineada es clicable. Antes, esa noche: limpieza de assets sin uso y
 > optimización para Quest (`198bb1e`). Por la tarde: la categoría de I2 pasa a `M1/`, locución de los 18
 > elementos en dos idiomas, y el EPP elegido se queda en la mesa en verde
@@ -931,6 +933,76 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-16 (noche, 4) — correcciones de Cindy sobre la revisión de UI
+
+Lo que no le gustó de la tanda anterior, ya cambiado (mismos menús, idempotentes):
+- **Regla: los botones de Atrás / Continuar van FUERA de la caja**, sin fondo, alineados a sus
+  bordes y con 16 de aire debajo. Idioma, Normas y Comodidad. Las tarjetas de Idioma y Normas
+  se acercan al subtítulo y llevan el contenido centrado.
+- **Vehículo vuelve a como estaba** (sin caja, barra abajo, etiquetas arriba, «SELECCIONADO»
+  debajo de la tarjeta).
+- **«Mi Elección»** como «Revisa tus elecciones»: título, lista en su caja, la nota debajo de la
+  lista, y «Ver explicación» libre bajo el panel (`FollowBelow` a la caja). Los botones finales
+  siguen a la caja.
+- **Decisión go/no-go en vertical**: pregunta, pista (`M1/Decision_Hint`, nueva en I2) y las tres
+  respuestas apiladas con su icono de estado.
+- **«Continuar al Módulo 2» bloqueado**: píldora blanca sólida con texto atenuado. Los sprites
+  `*_Disabled` del atlas son translúcidos y se perdían sobre el suelo.
+- Sin la etiqueta «Reproduciendo» del video. Subtítulos 17° bajo la mirada (a 14 tocaban el panel
+  de bienvenida del M1). Popup del EPP con 35 de aire bajo los botones. Frase del tutorial en dos
+  líneas, con margen a los lados.
+- Tests: EditMode 343/345 (los 2 de `Garaje_Test`), PlayMode M1 6/6.
+- **Los «M1/...» que se veían en el editor:** 11 textos de la escena guardaban la clave de I2 como
+  texto («M1/Yes», «M1/Decision_Question»...) y solo se traducían en Play. La composición de escena
+  les escribe ahora su texto en español; la clave sigue en su `Module01Text`. En Play no había
+  ninguno (comprobado con `TutorialHelpProbe.RawKeys` en cada pantalla del recorrido).
+- **`trousers_fitted` en «Revisa tus elecciones»:** `SO_Module01PresentationCatalog` se generó antes
+  de la estación de pantalones y no la tenía. La composición de escena lo resincroniza con el
+  catálogo.
+
+### 2026-10-16 (noche, 3) — revisión de las UIs: títulos dentro de la caja, tutorial y atlas
+
+Trabajo de Cindy (con Claude), sin subir todavía. Recorrido completo en Play con capturas.
+
+- **El tutorial salía encima del video.** `QuietDetector` solo contaba el video mientras
+  `isPlaying`; al pausarlo (botón, foco perdido, menú del Quest) el contador de atasco seguía y a
+  los 10 s aparecía la ayuda. Ahora un video pausado a mitad cuenta como video, y tras el video
+  la ayuda espera a que la pantalla se asiente. Comprobado: pausado 25 s, sin ayuda.
+- **Cada pantalla en una sola caja** (`Enclose`, `UI/Runtime`): un marco `Panel_Modal_Light`
+  detrás de título, opciones y botones, con el mismo margen y que sigue a las listas que crecen.
+  - M0: Idioma, Normas y Comodidad en su caja (el logo de la puerta queda detrás); en Vehículo la
+    caja es solo la cabecera y la barra de confirmación se une a ella al elegir. Ya no tapa la
+    bici: las etiquetas bajan junto a su vehículo. «SELECCIONADO» va dentro de la tarjeta.
+  - «Mi Elección» en una caja con título azul sobre claro (la barra oscura era translúcida y se
+    veía gris). Los botones finales, libres, sin recuadro (lo pidió Cindy).
+  - Popup del EPP: el nombre es la cabecera del popup, que conserva su borde superior.
+  - Cartel de estación con la zona en negrita y aire; go/no-go sin hueco abajo; botones finales
+    centrados.
+  - Pausa/repetir del video con los iconos del atlas; ninguna etiqueta de botón salta a dos
+    líneas (se encoge antes); «Repetir instrucciones» e «Izquierda» caben.
+- **Tutorial:** tarjeta a escala 1,3 y 65 cm (antes ocupaba un tercio de la vista y se cortaba
+  abajo en PC), frase dentro de la tarjeta en Inter SemiBold, y el mando inclinado como se
+  sostiene, con el gatillo de perfil. Las posturas se recalculan en sitio
+  (`RideSafe → Tutorial → Recalcular posturas Touch Plus`).
+- **Atlas:** `UI/RideSafe_UI.spriteatlasv2` empaqueta las dos hojas de 4096 (casi vacías) y el
+  logo en 3 páginas de 2048 con mipmaps, ASTC 6x6 en Android y sin crunch. Las hojas quedan como
+  fuente sin comprimir. `EditorSettings` pasa a *Sprite Atlas V2*.
+- **Textos:** `M1/Orientation_Tag` y `M1/Video_Playing` en I2 (salían en inglés). Faltan en la
+  hoja de Google. Los `!` usan Manrope a 82 en vez de AmmoText.
+- **Cómo se aplica (todo idempotente, sin regenerar):** `RideSafe → UI → Componer paneles en
+  sitio`, `RideSafe → Módulo 1 → Componer paneles de la escena`, `RideSafe → UI → Crear o
+  actualizar el SpriteAtlas`, `RideSafe → Tutorial Help → Montar en RideSafe_Garaje_v5`. Los
+  builders llaman a lo mismo, así que una regeneración no lo pierde.
+- **Tests:** EditMode M0+M1+tutorial 343 de 345 (los 2 de `Garaje_Test`); PlayMode M1 6 de 6.
+  UI PlayMode 10 de 13: los 3 que fallan ya fallaban con los prefabs de antes (comprobado
+  restaurándolos): esperan dos columnas en «Mi Elección» y textos en inglés.
+
+**Para retomar:**
+1. Probar en Quest el tamaño y la postura del mando del tutorial.
+2. El texto de detalle (13 px) se lee justo en VR: en captura a 1x se pierden letras finas. Subirlo
+   a 14–15 es una decisión de la escala tipográfica.
+3. Actualizar los 3 tests de UI PlayMode que se quedaron atrás.
 
 ### 2026-10-16 (noche, 2) — lo que salió en la prueba: el calzado y la rueda
 

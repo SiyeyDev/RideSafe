@@ -9,6 +9,7 @@ namespace RideSafe.UI
     /// nothing while the target is hidden.
     /// </summary>
     [AddComponentMenu("RideSafe/UI/Follow Below")]
+    [DefaultExecutionOrder(1100)] // after Enclose (1000): it may follow a panel's box
     public class FollowBelow : MonoBehaviour
     {
         [SerializeField] private RectTransform _target;

@@ -25,8 +25,12 @@ namespace RideSafe.Help.Editor
         public const string HaloMaterialPath = "Assets/_Project/Systems/TutorialHelp/Art/M_TutorialHalo.mat";
         private const string HaloShader = "RideSafe/Tutorial Halo";
         private const string AtlasA = "Assets/_Project/UI/RideSafe_UI_Atlas_A_4096.png";
-        private const string CaptionFont = "Assets/_Project/UI/Fonts/Inter-Regular SDF.asset";
+        // Captions are Inter SemiBold in the approved type scale (storyboard «Mini design system»).
+        private const string CaptionFont = "Assets/_Project/UI/Fonts/Inter-SemiBold SDF.asset";
         private const string HintName = "Gesture Hint";
+        /// <summary>The hint card before the view's scale: the caption on top, the controller under it.</summary>
+        private static readonly Vector2 CardSize = new Vector2(0.2f, 0.21f);
+        private const float CaptionY = 0.062f;
 
         [MenuItem("RideSafe/Tutorial Help/Montar en RideSafe_Garaje_v5")]
         public static void Build()
@@ -147,11 +151,16 @@ namespace RideSafe.Help.Editor
             TMP_Text caption = EnsureCaption(hint);
             view.Configure(left, right, caption);
             SerializedObject placement = new SerializedObject(view);
-            // Smaller and lower than the Garaje_Test values (2.2, -0.27): at 2.2 the 42 cm card covered
-            // the module's buttons in the PC walk.
-            placement.FindProperty("_scale").floatValue = 1.8f;
+            // 2026-10-16 review: at 1.8 the card was 36 x 38 cm at 60 cm, a third of the view, and its
+            // bottom at -38° fell off the PC screen. At 1.3 and 65 cm it spans about -7° to -26°: in
+            // the comfortable band below the horizon, smaller than the panels it supports.
+            placement.FindProperty("_scale").floatValue = 1.3f;
+            placement.FindProperty("_distance").floatValue = 0.65f;
             // Centred below the gaze: module 1 keeps its navigation bottom-left and "Mi preparación" on the right.
-            placement.FindProperty("_offset").vector2Value = new Vector2(0f, -0.3f);
+            placement.FindProperty("_offset").vector2Value = new Vector2(0f, -0.2f);
+            placement.FindProperty("_cardSize").vector2Value = CardSize;
+            // The controller makes room for the caption without reaching the card's bottom edge.
+            placement.FindProperty("_captionRoom").floatValue = 0.026f;
             placement.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(view);
             hint.gameObject.SetActive(false);
@@ -235,13 +244,13 @@ namespace RideSafe.Help.Editor
             renderer.sprite = panel;
             renderer.color = new Color(1f, 1f, 1f, 0.9f);
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            backdrop.localPosition = new Vector3(0f, 0.01f, -0.07f);
+            backdrop.localPosition = new Vector3(0f, 0f, -0.07f);
             backdrop.localRotation = Quaternion.Euler(0f, 180f, 0f);
             float borderUnits = Mathf.Max(panel.border.x, panel.border.y) / panel.pixelsPerUnit;
             float scale = borderUnits > 0f ? 0.02f / borderUnits : 1f;
             renderer.drawMode = SpriteDrawMode.Sliced;
             backdrop.localScale = Vector3.one * scale;
-            renderer.size = new Vector2(0.2f, 0.19f) / scale;
+            renderer.size = CardSize / scale;
         }
 
         internal static TMP_Text EnsureCaption(Transform hint)
@@ -259,14 +268,19 @@ namespace RideSafe.Help.Editor
                 text.font = font;
                 text.fontSharedMaterial = font.material;
             }
-            text.fontSize = 0.12f;
             text.color = Color.white;
             text.alignment = TextAlignmentOptions.Center;
             text.textWrappingMode = TextWrappingModes.Normal;
-            text.rectTransform.sizeDelta = new Vector2(0.18f, 0.04f);
+            // Two lines inside the top of the card, with room at both sides (PO, 2026-10-16): a fixed
+            // size in a narrow box, so the sentence wraps instead of shrinking to one thin line (what
+            // auto-size did) or rising above the card (what the old 4 cm box did).
+            text.enableAutoSizing = false;
+            text.fontSize = 0.11f;
+            text.overflowMode = TextOverflowModes.Truncate;
+            text.rectTransform.sizeDelta = new Vector2(0.13f, 0.06f);
             // A new RectTransform under a plain Transform saves m_AnchoredPosition, not localPosition: set both.
-            text.rectTransform.anchoredPosition = new Vector2(0f, 0.075f);
-            caption.localPosition = new Vector3(0f, 0.075f, 0f);
+            text.rectTransform.anchoredPosition = new Vector2(0f, CaptionY);
+            caption.localPosition = new Vector3(0f, CaptionY, 0f);
             caption.localRotation = Quaternion.Euler(0f, 180f, 0f); // read from the learner's side, like the backdrop
             caption.gameObject.SetActive(false);
             return text;
