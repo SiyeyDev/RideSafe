@@ -18,6 +18,7 @@ public static class Module01UiTerms
         if (es < 0 || en < 0)
             throw new System.InvalidOperationException("I2Languages has no es-CO or en.");
         Set(data, es, en, "M1/Orientation_Tag", "Módulo 1 · Preparación", "Module 1 · Readiness");
+        Set(data, es, en, "M1/MyChoice_Empty", "No elegiste ningún elemento en esta sección.", "You didn't choose any item in this section.");
         Set(data, es, en, "M1/Decision_Hint", "Elige la opción que mejor describe el vehículo.", "Choose the option that best describes the vehicle.");
         // The video's «Reproduciendo» tag was dropped (PO, 2026-10-16): its term goes too.
         data.RemoveTerm("M1/Video_Playing");

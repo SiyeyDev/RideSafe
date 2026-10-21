@@ -57,6 +57,8 @@ namespace RideSafe.Module01
         private ReadinessChoice _choice;
         private List<ComparisonEntry> _personalEntries;
         private List<ComparisonEntry> _vehicleEntries;
+        /// <summary>The vehicle section's result, kept for the go/no-go that now comes after its review.</summary>
+        private SelectionReport _vehicleReport;
         private string _instructionKey;
         private readonly List<(Button button, UnityAction action)> _listeners = new List<(Button, UnityAction)>();
 
@@ -192,6 +194,7 @@ namespace RideSafe.Module01
             _binding.Module.HideAll();
             _personalEntries = null;
             _vehicleEntries = null;
+            _vehicleReport = null;
             _readinessCorrect = false;
             StartZones();
         }
@@ -256,7 +259,9 @@ namespace RideSafe.Module01
             if (Phase != "Choosing" || _inspector.IsPresenting || _tour.IsMoving) return;
             if (!_director.IsLastZone) { _director.AdvanceZone(); return; }
             _runner.Begin(null); _navigation.SetActive(false); _instruction.SetActive(false); _sidebar.SetActive(false);
-            if (_director.InVehicleSection) { Phase = "Decision"; _decision.SetActive(true); }
+            // The vehicle section goes straight to its review («Mi Elección»); the go/no-go comes
+            // after it and its video, right before the final report (Cindy, 2026-10-20).
+            if (_director.InVehicleSection) _director.AdvanceZone();
             else
             {
                 Phase = "Review";
@@ -270,25 +275,26 @@ namespace RideSafe.Module01
         private void KeepChoosing() => EnterZone(_director.CurrentZone);
         private void Submit() { if (Phase == "Review") _director.AdvanceZone(); }
         /// <summary>
-        /// El apto / no apto del vehiculo. Solo registra la eleccion y avanza: el veredicto se
-        /// lee en la nota del reporte que viene a continuacion, no en un rotulo suelto.
+        /// El apto / no apto del vehiculo, después de su «Mi Elección» y su video. Registra la
+        /// elección contra el informe del vehículo y cierra el módulo: el veredicto se lee en
+        /// el reporte final, no en un rotulo suelto.
         /// </summary>
         private void Decide(ReadinessChoice choice)
         {
             if (Phase != "Decision") return;
             _decision.SetActive(false);
             _choice = choice;
-            _director.AdvanceZone();
+            _readinessCorrect = _vehicleReport != null && ReadinessDecision.IsCorrect(_choice, _vehicleReport);
+            _director.ContinueAfterReview();
         }
         private void ShowPersonalReport(SelectionReport report) { _personalEntries = Entries(report); ShowReport(_personalEntries); }
         private void ShowVehicleReport(SelectionReport report)
         {
             // El informe llega por el evento porque todavia no esta publicado en el director:
-            // se asigna justo antes de avisar.
-            _readinessCorrect = ReadinessDecision.IsCorrect(_choice, report);
+            // se asigna justo antes de avisar. Se guarda para la decisión, que ahora viene después.
+            _vehicleReport = report;
             _vehicleEntries = Entries(report);
-            ShowReport(_vehicleEntries,
-                UIText.Resolve(_readinessCorrect ? "M1/Decision_Correct" : "M1/Decision_Review"));
+            ShowReport(_vehicleEntries);
         }
         private List<ComparisonEntry> Entries(SelectionReport report)
         {
@@ -457,6 +463,8 @@ namespace RideSafe.Module01
             _video.Stop();
             _binding.Module.HideAll();
             _binding.PreparationList.Clear();
+            // After the vehicle's video comes its go/no-go; Decide closes the module.
+            if (_director.InVehicleSection) { Phase = "Decision"; _decision.SetActive(true); return; }
             _director.ContinueAfterReview();
         }
         /// <summary>

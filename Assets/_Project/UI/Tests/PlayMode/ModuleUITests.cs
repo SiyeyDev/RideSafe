@@ -23,7 +23,16 @@ namespace RideSafe.UI.Tests
         {
             "Assets/_Project/UI/RideSafe_UI_Atlas_A_4096.png",
             "Assets/_Project/UI/RideSafe_UI_Atlas_B_4096.png",
-            "Assets/_Project/UI/ridesafe-logo.png"
+            "Assets/_Project/UI/ridesafe-logo.png",
+            // White status glyphs for the traffic-light tints, generated from atlas B (UIStatusIcons).
+            "Assets/_Project/UI/StatusIcons/StatusMono_Independent.png",
+            "Assets/_Project/UI/StatusIcons/StatusMono_Supported.png",
+            "Assets/_Project/UI/StatusIcons/StatusMono_Ready.png",
+            "Assets/_Project/UI/StatusIcons/StatusMono_Retry.png",
+            "Assets/_Project/UI/StatusIcons/StatusMono_Attention.png",
+            // The company mark beside the panel titles (UIBrand).
+            "Assets/_Project/UI/Brand/RideSafe_Mark_Navy.png",
+            "Assets/_Project/UI/Brand/RideSafe_Mark_White.png"
         };
 
         private readonly List<GameObject> _spawned = new List<GameObject>();

@@ -1555,6 +1555,14 @@ MonoBehaviour:
       - "Elige la opci\xF3n que mejor describe el veh\xEDculo."
       Flags: 0000
       Languages_Touch: []
+    - Term: M1/MyChoice_Empty
+      TermType: 0
+      Description: 
+      Languages:
+      - You didn't choose any item in this section.
+      - "No elegiste ning\xFAn elemento en esta secci\xF3n."
+      Flags: 0000
+      Languages_Touch: []
     CaseInsensitiveTerms: 0
     OnMissingTranslation: 1
     mTerm_AppName: 

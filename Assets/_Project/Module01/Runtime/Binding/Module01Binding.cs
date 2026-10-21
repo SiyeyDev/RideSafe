@@ -109,6 +109,7 @@ namespace RideSafe.Module01
             LocalizeButton(ReviewPanel, "KeepChoosingButton", "KeepChoosing");
             LocalizeButton(ReviewPanel, "ConfirmButton", "Confirm");
             LocalizeButton(ComparisonPanel, "ExplainButton", "WatchVideo");
+            Localize(ComparisonPanel, "EmptyState", "MyChoice_Empty");
             // La nota va DEBAJO de la lista, no en un sitio fijo: la columna crece con las filas.
             // El boton ya no la sigue a ella: va libre bajo la caja del panel (FollowBelow).
             var note = Module01Experience.Find<RectTransform>(_module.Get<RectTransform>(ComparisonPanel), "Body");

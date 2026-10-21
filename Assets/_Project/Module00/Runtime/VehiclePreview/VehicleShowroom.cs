@@ -88,7 +88,10 @@ namespace RideSafe.Module00
                 Transform label = FindLabel(slot.Label);
                 if (slot.Anchor == null || label == null)
                     continue;
-                Vector3 toLabel = label.position - viewer.position;
+                // The card's visible centre: the kit pivots cards top-left, and aiming at their
+                // position put each vehicle under its card's corner instead of under its name.
+                Vector3 centre = label is RectTransform card ? card.TransformPoint(card.rect.center) : label.position;
+                Vector3 toLabel = centre - viewer.position;
                 toLabel.y = 0f;
                 if (toLabel.sqrMagnitude < 1e-6f)
                     continue;

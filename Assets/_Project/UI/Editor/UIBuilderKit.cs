@@ -55,6 +55,13 @@ namespace RideSafe.UI.EditorTools
         public static readonly Color DisabledPrimaryText = Hex("#6E8196");
         public static readonly Color DisabledSecondaryText = Hex("#E8ECF1");
 
+        // Traffic light for status icons (PO, 2026-10-20), as in the scoring sheet: essential and
+        // correct green, optional or conditional yellow, omission or hazard red. Dark enough to read
+        // as icons on the light panels (the sheet's pastel cell colours would not).
+        public static readonly Color SemaphoreGreen = Hex("#2E9B57");
+        public static readonly Color SemaphoreYellow = Hex("#D69E00");
+        public static readonly Color SemaphoreRed = Hex("#D64541");
+
         private readonly Dictionary<string, Sprite> _sprites;
         public readonly Sprite Logo;
         public readonly List<string> MissingSprites = new List<string>();

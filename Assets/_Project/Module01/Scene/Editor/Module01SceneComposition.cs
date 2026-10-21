@@ -52,6 +52,8 @@ namespace RideSafe.Module01.Editor
             text.anchoredPosition = Vector2.zero;
             text.sizeDelta = new Vector2(592f, 80f);
             EditorUtility.SetDirty(text);
+            // The company mark on its first line, the station's name (white: the sign is dark).
+            UIBrand.Place(kit, text.GetComponent<TMP_Text>(), text, 0f, true);
 
             ComposeDecision(kit, Find("Module01Controls/ReadinessDecision"));
 
@@ -141,12 +143,16 @@ namespace RideSafe.Module01.Editor
         private static void ComposeDecision(UIBuilderKit kit, RectTransform decision)
         {
             SetVisibleSize(decision, new Vector2(480f, 376f));
+            // The question reads like «Revisa tus elecciones»: left-aligned beside the company mark,
+            // with the hint under it on the same left edge as the answers. Centred, its two lines sat
+            // off-balance next to the mark, and in 56 of height the second ran into the hint (PO, 2026-10-21).
             RectTransform title = (RectTransform)decision.Find("Title");
             title.anchoredPosition = new Vector2(0f, 134f);
-            title.sizeDelta = new Vector2(430f, 56f);
+            title.sizeDelta = new Vector2(420f, 68f);
             TMP_Text titleText = title.GetComponent<TMP_Text>();
             titleText.fontSize = 26f;
             titleText.textWrappingMode = TextWrappingModes.Normal;
+            titleText.alignment = TextAlignmentOptions.Left;
             EditorUtility.SetDirty(titleText);
 
             Transform existing = decision.Find("Hint");
@@ -154,32 +160,40 @@ namespace RideSafe.Module01.Editor
             hint.SetParent(decision, false);
             hint.gameObject.layer = decision.gameObject.layer;
             hint.anchorMin = hint.anchorMax = hint.pivot = new Vector2(0.5f, 0.5f);
-            hint.anchoredPosition = new Vector2(0f, 89f);
-            hint.sizeDelta = new Vector2(430f, 22f);
-            kit.AddText(hint.gameObject, "M1/Decision_Hint", kit.Sub.With(16f), TextAlignmentOptions.Center);
+            hint.anchoredPosition = new Vector2(0f, 82f);
+            hint.sizeDelta = new Vector2(420f, 22f);
+            kit.AddText(hint.gameObject, "M1/Decision_Hint", kit.Sub.With(16f), TextAlignmentOptions.Left);
             Module01Text localized = hint.GetComponent<Module01Text>();
             if (localized == null)
                 localized = hint.gameObject.AddComponent<Module01Text>();
             localized.Configure("M1/Decision_Hint");
             EditorUtility.SetDirty(localized);
 
-            var answers = new[] { ("RoadReadyButton", "Status_Independent", 26f),
-                                  ("NeedsServiceButton", "Status_Attention", -52f),
-                                  ("DoNotRideButton", "Status_Retry", -130f) };
-            foreach (var (name, glyph, y) in answers)
+            // The answers keep their own green, amber and red pills (the meeting's colours) with the
+            // atlas's status glyphs. The icon-only traffic light is for the report rows; here Cindy
+            // asked to keep the coloured pills (2026-10-20).
+            var answers = new[] { ("RoadReadyButton", "Status_Independent", (Color)new Color32(0x74, 0xC6, 0x8A, 0xFF), 26f),
+                                  ("NeedsServiceButton", "Status_Attention", (Color)new Color32(0xF2, 0xC4, 0x5A, 0xFF), -52f),
+                                  ("DoNotRideButton", "Status_Retry", (Color)new Color32(0xE8, 0x7E, 0x72, 0xFF), -130f) };
+            foreach (var (name, glyph, tint, y) in answers)
             {
                 RectTransform button = Child(decision, name);
                 PlaceButton(button, new Vector2(0f, y), new Vector2(420f, 64f), 18f);
+                Image pill = button.GetComponent<Image>();
+                pill.color = tint;
+                EditorUtility.SetDirty(pill);
                 TMP_Text label = button.Find("Label").GetComponent<TMP_Text>();
                 label.alignment = TextAlignmentOptions.MidlineLeft;
                 label.margin = new Vector4(72f, 0f, 16f, 0f);
                 EditorUtility.SetDirty(label);
-                Icon(kit, button, glyph);
+                Icon(kit, button, glyph, Color.white);
             }
+            // The company mark where the answers start, on the question's first line.
+            UIBrand.Place(kit, titleText, Child(decision, "RoadReadyButton"), 0f, false);
         }
 
-        /// <summary>The status glyph at the start of an answer pill.</summary>
-        private static void Icon(UIBuilderKit kit, RectTransform button, string sprite)
+        /// <summary>The status glyph at the start of an answer pill, tinted with its traffic-light colour.</summary>
+        private static void Icon(UIBuilderKit kit, RectTransform button, string sprite, Color tint)
         {
             Transform existing = button.Find("Icon");
             RectTransform icon = existing != null ? (RectTransform)existing : (RectTransform)new GameObject("Icon", typeof(RectTransform)).transform;
@@ -193,6 +207,7 @@ namespace RideSafe.Module01.Editor
             if (image == null)
                 image = icon.gameObject.AddComponent<Image>();
             image.sprite = kit.S(sprite);
+            image.color = tint;
             image.preserveAspect = true;
             image.raycastTarget = false;
             EditorUtility.SetDirty(image);
@@ -230,6 +245,8 @@ namespace RideSafe.Module01.Editor
 
             PlaceButton(Child(confirm, "AcceptButton"), new Vector2(-125f, -51.35f), new Vector2(230f, 44f * px), 16f * px);
             PlaceButton(Child(confirm, "DeclineButton"), new Vector2(125f, -51.35f), new Vector2(230f, 44f * px), 16f * px);
+            // No mark here: the popup opens over the station, whose sign carries it (one logo in view).
+            UIBrand.Remove(title);
         }
 
         #region Rect helpers (centre-pivoted panels, kit pills placed from their parent's top-left)

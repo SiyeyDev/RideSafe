@@ -181,15 +181,8 @@ namespace RideSafe.UI.EditorTools
                                     new Color(1f, 1f, 1f, .96f), "TitleBar").transform;
             Vector2 o = Origin(232f, 22f, 2.4f);
 
-            // El logo a la izquierda del titulo, centrado en la barra.
-            if (K.Logo != null)
-            {
-                RectTransform logo = UIBuilderKit.Rect(bar, "Logo", 252f + o.x, 30f + o.y, 252f + 54f + o.x, 30f + 54f + o.y);
-                UnityEngine.UI.Image image = logo.gameObject.AddComponent<UnityEngine.UI.Image>();
-                image.sprite = K.Logo;
-                image.preserveAspect = true;
-                image.raycastTarget = false;
-            }
+            // El isotipo a la izquierda del titulo lo pone UIComposition (UIBrand): el logo entero a
+            // 54 px dejaba «RideSafe» ilegible.
 
             titleText = K.TC(bar, title, K.H1OnDark.With(28f), 525f + o.x, 36f + o.y, 480f, "Title");
 

@@ -64,6 +64,24 @@ namespace RideSafe.Module00.Tests
         }
 
         [Test]
+        public void AUiCard_PlacesItsVehicleUnderItsCentre_NotUnderItsCorner()
+        {
+            // The kit's cards are pivoted top-left: aiming at their position put the scooter under
+            // its card's left edge, half a card from where the learner reads its name (2026-10-20).
+            RectTransform card = (RectTransform)Track(new GameObject("Option_escooter", typeof(RectTransform))).transform;
+            card.SetParent(_panel.transform, false);
+            card.pivot = new Vector2(0f, 1f);
+            card.sizeDelta = new Vector2(300f, 80f);
+            card.localScale = Vector3.one * 0.002f;
+            card.position = new Vector3(0.2f, 1.6f, 1.8f);
+            _showroom.Configure(_panel, _stage, 3.5f, 0f, (_anchor, "Option_escooter"));
+            _showroom.Tick(Viewer);
+            Vector3 centre = card.TransformPoint(card.rect.center);
+            Assert.Less(Vector3.Angle(Flat(_anchor.position - Viewer.position), Flat(centre - Viewer.position)), 0.1f,
+                        "on the line of sight through the card's centre");
+        }
+
+        [Test]
         public void Placement_HappensWhenTheScreenOpens_NotOnEveryHeadMove()
         {
             _showroom.Tick(Viewer);

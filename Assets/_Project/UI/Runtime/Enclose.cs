@@ -76,8 +76,15 @@ namespace RideSafe.UI
                 frame.anchoredPosition = position;
             if ((frame.sizeDelta - size).sqrMagnitude > 1e-4f)
                 frame.sizeDelta = size;
-            if (frame.GetSiblingIndex() != 0)
+            // Behind everything but other frames: two boxes in one panel each moving to the front of
+            // the line would swap places every frame.
+            for (int i = frame.GetSiblingIndex() - 1; i >= 0; i--)
+            {
+                if (space.GetChild(i).GetComponent<Enclose>() != null)
+                    continue;
                 frame.SetAsFirstSibling();
+                break;
+            }
         }
     }
 }

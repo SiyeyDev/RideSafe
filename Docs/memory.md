@@ -934,6 +934,79 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 
 ## 11. Bitácora
 
+### 2026-10-21 — isotipo junto a los títulos y módulo 0 reordenado como la pantalla de vehículo
+
+- **«Elige tu vehículo» tiene caja** (pedido de Cindy: el texto se perdía con la pared del garaje).
+  - La caja solo envuelve el título y el subtítulo (480 de ancho).
+  - Los vehículos y las tarjetas siguen sin caja.
+- **Módulo 0 con el título aparte** (Cindy eligió «título en su propia caja» para Idioma, Normas y
+  Comodidad).
+  - **Cajas de título:** las cuatro pantallas tienen `HeaderFrame` con el azul del cartel de estación
+    del M1 (`Panel_Modal_Dark`), título blanco, subtítulo `#D5DEE8` e isotipo blanco. Un tinte azul
+    claro sobre la caja clara no se leía como caja de título (Cindy).
+  - **Idioma y Normas, como la pantalla de vehículo** (Cindy: «esa sí tiene una distribución acorde»).
+    - Las tarjetas van sin caja detrás («los idiomas no tienen fondo»), a los lados del isotipo pintado
+      en la puerta (centros 185 / 845, desde y 183). Apretadas bajo el título caían sobre sus barras.
+    - La caja del título está a la altura de la de vehículo y mide lo que pide su texto: 480 en Idioma,
+      700 en Normas.
+    - Atrás va bajo la tarjeta izquierda y Continuar bajo la derecha, en la franja libre entre el
+      isotipo y la palabra «RideSafe».
+  - **Comodidad:** los ajustes conservan su caja propia (`Frame`), 16 debajo del título y del mismo ancho.
+  - **Dos cajas en un panel:** `Enclose` ya no pasa al frente de la fila si delante solo tiene otras
+    cajas. Antes las dos se habrían intercambiado en cada frame.
+- **Decisión:** la pregunta va alineada a la izquierda junto al isotipo, como «Revisa tus elecciones».
+  Tiene 68 de alto para sus dos líneas, y la pista va debajo, en el borde de las respuestas. Centrada,
+  la segunda línea pisaba la pista.
+- **Bienvenida del M1:** el isotipo se alinea con la línea «MÓDULO 1 · PREPARACIÓN», no con el título
+  (`UIBrand.Place(..., alsoClear)` deja el título libre de él).
+- **Tamaño del isotipo:** el mismo en todos los paneles, 4,5 cm de alto (22,5 unidades del kit).
+- **Isotipo de RideSafe** (barras y punto, sin la palabra) arriba a la izquierda de cada panel, centrado
+  en la primera línea del título.
+  - **Versiones:** azul en las cajas claras, blanco en las azules (cartel de estación y títulos del M0).
+    Están en `UI/Brand/` y entran al SpriteAtlas (55 sprites).
+  - **Paneles con isotipo:** Idioma, Normas, Vehículo, Comodidad, bienvenida del M1, «Revisa tus
+    elecciones», «Mi Elección», decisión y cartel de estación.
+  - **Un solo logo a la vista:** la barra «Mi preparación» y el popup del elemento se abren junto al
+    cartel, así que no lo llevan.
+  - El logo entero de «Mi Elección» (54 px, la palabra ilegible) se quitó.
+- **Cómo se coloca:**
+  - `TitleMark` (runtime) busca la primera línea del título en cada frame, porque la traducción la mueve.
+  - `UIBrand.Place` (editor) deja al título un margen para no pisarlo; un título centrado pierde lo
+    mismo a la derecha y sigue centrado.
+  - «¿Qué normas…?» y «Prepárate antes de rodar» se encogen a una línea (28–34 pt) en vez de partirse.
+- Capturas del cliente rehechas con la versión final (28; JPG 9,9 MB). Tests: EditMode 504/506 (los 2 de
+  `Garaje_Test`); PlayMode UI con los 3 fallos de siempre (esperan inglés y dos columnas), corrido antes
+  de las cajas del M0.
+
+### 2026-10-20 — semáforo en los iconos y módulo 0 separado de la puerta
+
+- **Semáforo en los iconos, no en el fondo ni en el texto** (pedido de Cindy, colores de la hoja de
+  puntuación del zip `RideSafe_VR_equipment_image_reference_library_2026-10-19`):
+  - «Mi Elección» y la explicación: verde correcto, amarillo condicional/opcional, rojo omisión,
+    peligro o deteriorado (`StatusGlyphs.Colors`, `UIComposition.StatusSemaphore`).
+  - Decisión go/no-go: píldoras neutras y el icono de cada respuesta en verde, amarillo o rojo.
+  - Los iconos del atlas son azul marino y un tinte multiplica (azul × verde = casi negro):
+    `RideSafe → UI → Crear iconos de estado para el semáforo` genera copias blancas en
+    `UI/StatusIcons`, con el detalle interior recortado. Entran al SpriteAtlas (53 sprites).
+- **El inicio del aprendiz se aleja 1 m de la puerta** (z 9,3 → 10,3; `Module00ShowroomSetup.
+  MoveLearnerStart`). La interfaz del M0 y la vitrina se colocan desde el aprendiz, así que van con
+  él: entre los vehículos y la puerta quedan ~1,4 m. Las etiquetas de vehículo se separan
+  (centros 200/830) y con ellas los vehículos. «Comenzar» se reajusta al hueco del logo de la puerta.
+- El `XRPlayer` (modo VR) sigue colocado dentro del garaje (z 2,64): no es el inicio del M0.
+- Capturas para el cliente rehechas en `Docs/capturas/2026-10-20_aprobacion-diseno(_jpg)`.
+- Tests: EditMode 345/347 (los 2 de `Garaje_Test`).
+
+**Correcciones de Cindy, misma noche:**
+- **La patineta no se separaba:** `VehicleShowroom` apuntaba al `position` de la tarjeta, que el kit
+  pivota arriba a la izquierda, así que cada vehículo caía bajo la esquina de su tarjeta. Ahora
+  apunta a su centro visible (test `AUiCard_PlacesItsVehicleUnderItsCentre...`).
+- **Botones Atrás / Continuar** de Idioma, Normas y Comodidad: 150×56 y 190×56 (Iniciar 220), a
+  19 pt. Medían lo mismo que antes, pero junto a la caja compacta se veían perdidos.
+- **La decisión vuelve a sus píldoras verde, ámbar y roja** con los iconos del atlas. El semáforo en
+  el icono queda solo para las filas de «Mi Elección» y la explicación.
+- **Orden del final del módulo 1:** «Mi Elección» del vehículo → su video → decisión → reporte
+  final. La decisión se compara con el informe del vehículo guardado (`_vehicleReport`).
+
 ### 2026-10-16 (noche, 4) — correcciones de Cindy sobre la revisión de UI
 
 Lo que no le gustó de la tanda anterior, ya cambiado (mismos menús, idempotentes):

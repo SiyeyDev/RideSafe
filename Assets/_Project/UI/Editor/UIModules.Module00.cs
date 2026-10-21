@@ -87,8 +87,8 @@ namespace RideSafe.UI.EditorTools
             List<ChoicePanel.Option> choices = new List<ChoicePanel.Option>
             {
                 // 340 px wide around the vehicle: room for "Patineta eléctrica de pie" (+35% string reserve).
-                VehicleLabel(group, toggleGroup, "ebike", "E-bike", "Pedal assist · seated", 97f, 183f, 437f, 257f),
-                VehicleLabel(group, toggleGroup, "escooter", "Standing e-scooter", "Standing · throttle", 593f, 185f, 933f, 251f)
+                VehicleLabel(group, toggleGroup, "ebike", "E-bike", "Pedal assist · seated", 30f, 183f, 370f, 257f),
+                VehicleLabel(group, toggleGroup, "escooter", "Standing e-scooter", "Standing · throttle", 660f, 185f, 1000f, 251f)
             };
 
             Transform bar = K.Pill(panel, "Status_Pill_Default", 196f, 440f, 806f, 514f, Color.white, "ConfirmationBar").transform;

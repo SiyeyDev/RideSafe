@@ -19,10 +19,30 @@ namespace RideSafe.Module00.Editor
     {
         public const string ScenePath = "Assets/_Project/Scene/RideSafe_Garaje_v5.unity";
         public const string RootName = "Module00 Vehicle Showroom";
-        // The learner starts at (0, 1.45, 9.3) and the closed garage door is at z = 6.62: 2.7 m.
+        // The learner starts at (0, 1.45, 10.3) and the closed garage door is at z = 6.62: 3.7 m.
         // Display pieces at 0.6 scale, 2.25 m away, fit side by side under their cards and turn
-        // without crossing the door.
+        // with 1.4 m of air before the door (0.4 m when the start was z = 9.3; PO, 2026-10-20).
         private const float Distance = 2.25f;
+        public static readonly Vector3 LearnerStart = new Vector3(0f, 1.45f, 10.3f);
+
+        /// <summary>
+        /// Puts the PC learner (DesktopMode/Desktop Camera) at <see cref="LearnerStart"/>. Module 0's
+        /// screens and showroom are placed from the learner, so they move with it.
+        /// </summary>
+        [MenuItem("RideSafe/Módulo 0/Separar de la puerta el inicio del aprendiz (Garaje_v5)")]
+        public static void MoveLearnerStart()
+        {
+            Scene scene = SceneManager.GetSceneByPath(ScenePath);
+            GameObject desktop = FindRoot(scene, "DesktopMode");
+            Transform camera = desktop != null ? desktop.transform.Find("Desktop Camera") : null;
+            if (camera == null)
+                throw new System.InvalidOperationException("DesktopMode/Desktop Camera missing in " + ScenePath);
+            camera.position = LearnerStart;
+            EditorUtility.SetDirty(camera);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log("[Module00] Learner start moved to " + LearnerStart);
+        }
         private const float DisplayScale = 0.6f;
 
         /// <summary>

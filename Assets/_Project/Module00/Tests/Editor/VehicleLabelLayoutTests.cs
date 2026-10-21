@@ -14,8 +14,8 @@ namespace RideSafe.Module00.Tests
         private const string PrefabPath = "Assets/_Project/UI/Prefabs/PF_Module00_UI.prefab";
         private const float Pad = 16f / 2.8f; // UIBuilderKit.PadFor(2.8): slice padding around the visible card
 
-        [TestCase("Option_ebike", 267f)]
-        [TestCase("Option_escooter", 763f)]
+        [TestCase("Option_ebike", 200f)]
+        [TestCase("Option_escooter", 830f)]
         public void VehicleCard_FitsItsContent_AroundItsVehicle(string name, float centre)
         {
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);

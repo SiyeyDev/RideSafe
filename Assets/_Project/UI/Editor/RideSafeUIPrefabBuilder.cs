@@ -192,7 +192,14 @@ namespace RideSafe.UI.EditorTools
         private static Dictionary<string, Sprite> LoadAtlasSprites()
         {
             Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
-            foreach (string path in new[] { k_AtlasA, k_AtlasB })
+            List<string> paths = new List<string> { k_AtlasA, k_AtlasB };
+            // The white status glyphs for the traffic-light tints (UIStatusIcons).
+            foreach (string source in UIStatusIcons.Sources)
+                paths.Add(UIStatusIcons.Folder + "/" + UIStatusIcons.MonoName(source) + ".png");
+            // The company mark, navy and white, beside the panel titles (UIBrand).
+            UIBrand.EnsureImported();
+            paths.AddRange(UIBrand.Paths);
+            foreach (string path in paths)
             {
                 foreach (UnityEngine.Object asset in AssetDatabase.LoadAllAssetRepresentationsAtPath(path))
                 {

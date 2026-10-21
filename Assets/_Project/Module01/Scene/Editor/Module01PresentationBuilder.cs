@@ -43,7 +43,7 @@ namespace RideSafe.Module01.Editor
             _kit=RideSafeUIPrefabBuilder.CreateKit(); _ui=new UIElements(_kit);
             foreach (var g in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects()) if (g.name == "XRPlayer" || g.name == "Tutorial") g.SetActive(false);
             _camera = Find("Desktop Camera").transform;
-            _camera.position = new Vector3(0,1.45f,9.3f);
+            _camera.position = new Vector3(0,1.45f,10.3f); // 3.9 m from the door, not 2.9: module 0 and its showroom need air in front of it (PO, 2026-10-20)
             _camera.rotation = Quaternion.Euler(0,180,0);
             var cam = _camera.GetComponent<Camera>(); cam.fieldOfView = 60; cam.nearClipPlane = .05f;
             cam.tag = "MainCamera";

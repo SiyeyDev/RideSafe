@@ -26,7 +26,9 @@ namespace RideSafe.UI.EditorTools
         {
             "Assets/_Project/UI/RideSafe_UI_Atlas_A_4096.png",
             "Assets/_Project/UI/RideSafe_UI_Atlas_B_4096.png",
-            "Assets/_Project/UI/ridesafe-logo.png"
+            "Assets/_Project/UI/ridesafe-logo.png",
+            "Assets/_Project/UI/StatusIcons",
+            UIBrand.Folder
         };
 
         [MenuItem("RideSafe/UI/Crear o actualizar el SpriteAtlas de la UI")]
@@ -36,7 +38,9 @@ namespace RideSafe.UI.EditorTools
             // not crunch first and ASTC on top. The build ships the atlas pages, not the sheets.
             foreach (string source in Sources)
             {
-                TextureImporter sheet = (TextureImporter)AssetImporter.GetAtPath(source);
+                TextureImporter sheet = AssetImporter.GetAtPath(source) as TextureImporter;
+                if (sheet == null) // a folder of sprites (StatusIcons, Brand), already uncompressed by its tool
+                    continue;
                 if (sheet.textureCompression == TextureImporterCompression.Uncompressed && !sheet.crunchedCompression)
                     continue;
                 sheet.textureCompression = TextureImporterCompression.Uncompressed;
@@ -44,7 +48,8 @@ namespace RideSafe.UI.EditorTools
                 sheet.SaveAndReimport();
             }
 
-            if (AssetDatabase.LoadMainAssetAtPath(AtlasPath) == null)
+            // The packable list is written every time, so a new source joins an existing atlas; the
+            // atlas's GUID and its settings live in the .meta and survive the rewrite.
             {
                 SpriteAtlasAsset asset = new SpriteAtlasAsset();
                 Object[] packables = new Object[Sources.Length];

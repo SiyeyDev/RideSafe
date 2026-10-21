@@ -59,10 +59,19 @@ namespace RideSafe.UI
         [Tooltip("En orden de ItemStatus: Selected, CoreOmitted, ConditionDependent, NotSuited, AtRisk.")]
         public Sprite[] Sprites = new Sprite[5];
 
+        [Tooltip("Tinte del icono por estado, en el mismo orden: el semáforo va en el icono, nunca en el fondo ni en el texto. Sin color, el icono queda con su arte.")]
+        public Color[] Colors = new Color[0];
+
         public Sprite For(ItemStatus status)
         {
             int index = (int)status;
             return Sprites != null && index < Sprites.Length ? Sprites[index] : null;
+        }
+
+        public Color ColorFor(ItemStatus status)
+        {
+            int index = (int)status;
+            return Colors != null && index < Colors.Length ? Colors[index] : Color.white;
         }
 
         /// <summary>Rellena una fila de estado (hijos 'Icon', 'Text/Title', 'Text/Detail', 'State').</summary>
@@ -80,6 +89,8 @@ namespace RideSafe.UI
             UnityEngine.UI.Image icon = FindComponent<UnityEngine.UI.Image>(row, "Icon");
             if (icon != null && For(entry.Status) != null)
                 icon.sprite = For(entry.Status);
+            if (icon != null)
+                icon.color = ColorFor(entry.Status);
 
             TMP_Text title = FindComponent<TMP_Text>(row, "Text/Title");
             if (title != null)
@@ -124,6 +135,8 @@ namespace RideSafe.UI
         [SerializeField] private RectTransform _leftRows;
         [SerializeField] private TMP_Text _rightHeading;
         [SerializeField] private RectTransform _rightRows;
+        [Tooltip("Shown in the list when the section has no rows: «Mi Elección» lists only what was taken.")]
+        [SerializeField] private GameObject _emptyState;
 
         [Header("Initial content")]
         [SerializeField] private List<ComparisonEntry> _left = new List<ComparisonEntry>();
@@ -251,6 +264,9 @@ namespace RideSafe.UI
                 _rightRows.parent.gameObject.SetActive(false);
 
             Fill(_leftRows, entries);
+            // Nothing taken in this section: say so, instead of an empty box that reads as a bug.
+            if (_emptyState != null)
+                _emptyState.SetActive(entries == null || entries.Count == 0);
         }
 
         private void Fill(RectTransform container, IList<ComparisonEntry> entries)

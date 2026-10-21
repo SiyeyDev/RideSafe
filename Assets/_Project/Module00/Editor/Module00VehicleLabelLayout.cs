@@ -18,8 +18,8 @@ namespace RideSafe.Module00.Editor
 
         private static readonly (string Name, float Centre)[] Cards =
         {
-            ("Option_ebike", 267f),
-            ("Option_escooter", 763f)
+            ("Option_ebike", 200f),
+            ("Option_escooter", 830f)
         };
 
         [MenuItem("RideSafe/Módulo 0/Ensanchar etiquetas de vehículo")]

@@ -82,5 +82,22 @@ namespace RideSafe.Module01.Tests
             _enclose.Refresh();
             Assert.AreEqual(0, _frame.GetSiblingIndex());
         }
+
+        [Test]
+        public void TwoFrames_InOnePanel_StayBehind_WithoutSwappingEveryFrame()
+        {
+            // The module 0 screens have two boxes (2026-10-21): the title's and the options'.
+            RectTransform second = Rect(_panel, "HeaderFrame", 0f, 0f, 10f, 10f);
+            Enclose other = second.gameObject.AddComponent<Enclose>();
+            other.Configure(new[] { _title }, new Vector4(24f, 4f, 24f, 12f), 6f);
+            _enclose.Refresh();
+            other.Refresh();
+            int first = _frame.GetSiblingIndex(), then = second.GetSiblingIndex();
+            _enclose.Refresh();
+            other.Refresh();
+            Assert.AreEqual(first, _frame.GetSiblingIndex(), "a frame that moves every LateUpdate dirties its canvas");
+            Assert.AreEqual(then, second.GetSiblingIndex());
+            Assert.Less(Mathf.Max(first, then), _title.GetSiblingIndex(), "both behind the pieces");
+        }
     }
 }

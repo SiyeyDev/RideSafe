@@ -354,10 +354,14 @@ namespace RideSafe.Module01.Tests
                 }
                 if (zoneId == "visibility")
                 {
+                    // Orden desde 2026-10-20 (Cindy): «Mi Elección» del vehículo y su video, luego
+                    // la decisión, y por último el reporte final.
+                    Assert.IsNotNull(vehicle);
+                    Assert.IsFalse(_director.IsFinished, "La decisión todavía no se ha tomado");
+                    yield return ReviewAndVideo();
+                    Assert.AreEqual("Decision", Object.FindAnyObjectByType<Module01Experience>().Phase);
                     AssertHudDoesNotOverlap();   // con el panel de decision en pantalla
                     yield return Press(_binding.Module.transform, "RoadReadyButton");
-                    Assert.IsNotNull(vehicle);
-                    yield return ReviewAndVideo();
                 }
             }
             yield return WaitFor(() => _director.IsFinished, "Reporte final");
