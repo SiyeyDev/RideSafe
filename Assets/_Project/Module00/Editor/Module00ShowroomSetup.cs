@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using RideSafe.UI;
 using UnityEditor;
@@ -140,6 +141,76 @@ namespace RideSafe.Module00.Editor
                 if (openedHere)
                     EditorSceneManager.CloseScene(scene, true);
             }
+        }
+
+        /// <summary>
+        /// Remakes only the vehicle copies whose meshes no longer match their vehicle, where they
+        /// stand. The copies are not prefab instances, so a new FBX does not reach them: with the
+        /// e-bike of 2026-10-21 the copy kept <c>manubrio</c> and <c>rueda_trasera</c>, which no
+        /// longer exist. <see cref="Build"/> would also remake the platforms, labels and the rest.
+        /// </summary>
+        [MenuItem("RideSafe/Módulo 0/Rehacer las copias de la vitrina desde los vehículos (Garaje_v5)")]
+        public static void RefreshDisplayCopies()
+        {
+            Scene scene = SceneManager.GetSceneByPath(ScenePath);
+            if (!scene.isLoaded)
+                throw new System.InvalidOperationException("Open " + ScenePath + " first.");
+            GameObject root = FindRoot(scene, RootName);
+            if (root == null)
+                throw new System.InvalidOperationException(ScenePath + " has no showroom; run Build.");
+
+            VehiclePreviewController preview = root.GetComponent<VehiclePreviewController>();
+            SerializedObject serializedPreview = new SerializedObject(preview);
+            SerializedProperty entries = serializedPreview.FindProperty("_vehicles");
+            StringBuilder report = new StringBuilder("[Module00] Showroom copies:\n");
+            foreach ((string id, string modelName, string _) in Vehicles)
+            {
+                Transform slot = root.transform.Find("Stage/Slot_" + id);
+                Transform old = slot != null ? slot.Find(modelName + " (display)") : null;
+                GameObject source = FindByName(scene, modelName, root.transform);
+                if (old != null && SameMeshes(source.transform, old))
+                {
+                    report.AppendLine("  " + id + ": up to date");
+                    continue;
+                }
+
+                GameObject copy = DisplayCopy(source, slot);
+                if (old != null)
+                {
+                    // Where the old one stood: VehicleShowroom places the slot, not the copy.
+                    copy.transform.SetLocalPositionAndRotation(old.localPosition, old.localRotation);
+                    copy.transform.localScale = old.localScale;
+                    copy.transform.SetSiblingIndex(old.GetSiblingIndex());
+                    copy.SetActive(old.gameObject.activeSelf);
+                    Object.DestroyImmediate(old.gameObject);
+                }
+                for (int i = 0; i < entries.arraySize; i++)
+                {
+                    SerializedProperty entry = entries.GetArrayElementAtIndex(i);
+                    if (entry.FindPropertyRelative("_id").stringValue == id)
+                        entry.FindPropertyRelative("_model").objectReferenceValue = copy.transform;
+                }
+                report.AppendLine("  " + id + ": remade from " + modelName);
+            }
+            serializedPreview.ApplyModifiedPropertiesWithoutUndo();
+            EditorSceneManager.MarkSceneDirty(scene);
+            if (!EditorSceneManager.SaveScene(scene))
+                throw new System.InvalidOperationException("Could not save " + ScenePath);
+            Debug.Log(report.ToString());
+        }
+
+        private static bool SameMeshes(Transform a, Transform b)
+        {
+            List<string> Names(Transform t)
+            {
+                List<string> names = new List<string>();
+                foreach (MeshFilter filter in t.GetComponentsInChildren<MeshFilter>(true))
+                    names.Add(filter.sharedMesh != null ? filter.sharedMesh.name : "<missing>");
+                names.Sort();
+                return names;
+            }
+            List<string> left = Names(a), right = Names(b);
+            return !right.Contains("<missing>") && left.Count == right.Count && !left.Where((n, i) => n != right[i]).Any();
         }
 
         /// <summary>

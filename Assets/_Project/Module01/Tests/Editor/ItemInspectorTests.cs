@@ -217,6 +217,68 @@ namespace RideSafe.Module01.Tests
             Assert.AreSame(Cube, shown.sharedMesh, "La malla fundida no es la del objeto: va el prefab.");
         }
 
+        /// <summary>Una pieza del vehículo con algo colgando de ella, como el tenedor de la e-bike nueva.</summary>
+        private Transform Pieza(string name, params string[] hijos)
+        {
+            GameObject part = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer));
+            Track(part);
+            part.GetComponent<MeshFilter>().sharedMesh = Cube;
+            foreach (string hijo in hijos)
+            {
+                GameObject child = new GameObject(hijo, typeof(MeshFilter), typeof(MeshRenderer));
+                child.transform.SetParent(part.transform, false);
+                child.GetComponent<MeshFilter>().sharedMesh = Cube;
+            }
+            return part.transform;
+        }
+
+        [Test]
+        public void Una_pieza_del_vehiculo_se_ensena_sin_lo_que_cuelga_de_ella()
+        {
+            // Cindy, 2026-10-21: el pedestal enseña lo delineado. En la e-bike nueva el tenedor
+            // (dirección) es el padre de la rueda delantera, la luz, los frenos y la pantalla.
+            Stage();
+            SafetyItemSO item = Item("point_steering", SafetyItemCategory.Core);
+
+            _inspector.PresentParts(item, new[] { Pieza("tenedor", "llanta_delantera", "luz_delantera", "pantalla") }, null);
+
+            MeshRenderer[] shown = _inspector.Presented.GetComponentsInChildren<MeshRenderer>(true);
+            Assert.AreEqual(1, shown.Length, "solo el tenedor: lo que cuelga de él son otros puntos");
+            Assert.AreEqual("tenedor", shown[0].name);
+        }
+
+        [Test]
+        public void Un_punto_de_dos_piezas_las_ensena_las_dos()
+        {
+            Stage();
+            SafetyItemSO item = Item("point_brakes", SafetyItemCategory.Core);
+
+            _inspector.PresentParts(item, new[] { Pieza("freno_de"), Pieza("freno_iz") }, null);
+
+            Assert.AreEqual(2, _inspector.Presented.GetComponentsInChildren<MeshRenderer>(true).Length);
+        }
+
+        [Test]
+        public void Las_piezas_de_un_punto_van_juntas_en_el_pedestal_no_a_la_distancia_de_la_bici()
+        {
+            // Captura 2026-10-21: las dos luces de la e-bike están a 1 m y miden 9 cm. Copiadas a
+            // su distancia real y escalado el conjunto al pedestal, cada luz quedaba en nada y el
+            // pedestal se veía vacío. Lo mismo los frenos (36 cm entre manetas de 11).
+            Stage();
+            SafetyItemSO item = Item("point_lights", SafetyItemCategory.Core);
+            Transform front = Pieza("luz_delantera"), rear = Pieza("luz_tracera");
+            front.localScale = rear.localScale = Vector3.one * .1f;
+            rear.position = new Vector3(1f, 0f, 0f);
+
+            _inspector.PresentParts(item, new[] { front, rear }, null);
+
+            MeshRenderer[] shown = _inspector.Presented.GetComponentsInChildren<MeshRenderer>(true);
+            Assert.AreEqual(2, shown.Length);
+            float size = shown[0].bounds.size.x;
+            float apart = Vector3.Distance(shown[0].bounds.center, shown[1].bounds.center);
+            Assert.Less(apart, 2f * size, "una al lado de la otra, cada una de un tamaño que se vea");
+        }
+
         [Test]
         public void Sin_mallas_visibles_el_pedestal_se_queda_con_el_signo()
         {

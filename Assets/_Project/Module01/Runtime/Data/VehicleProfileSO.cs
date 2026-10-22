@@ -46,8 +46,8 @@ namespace RideSafe.Module01
         /// Qué pieza de la malla delinea cada punto de inspección, por nombre.
         /// <para>
         /// Es dato y por vehículo porque cada uno despieza su FBX a su manera, y no coinciden
-        /// ni en los nombres ni en el corte: la e-bike trae <c>manubrio</c>, <c>marco</c>,
-        /// <c>pedales</c> y <c>rueda_trasera</c>; el patinete, <c>control_de_direccion</c> con
+        /// ni en los nombres ni en el corte: la e-bike (2026-10-21) trae <c>marco</c> con
+        /// <c>tenedor</c>, frenos, ruedas, luces y <c>pantalla</c>; el patinete, <c>control_de_direccion</c> con
         /// <c>freno</c>, <c>guardabarros</c> y <c>rueda_frontal</c> dentro, y <c>cuerpo</c> con
         /// <c>rueda_tracera</c> y <c>soporte</c>. Y es un <b>nombre</b>, no una referencia a la
         /// escena, porque hay una sola entidad por punto para los dos vehículos y la pieza se
@@ -92,7 +92,7 @@ namespace RideSafe.Module01
         }
 
         /// <summary>
-        /// Nombre de la pieza que delinea ese punto, o cadena vacía si no tiene ninguna.
+        /// Nombre de la (primera) pieza que delinea ese punto, o cadena vacía si no tiene ninguna.
         /// Vacío es la respuesta normal, no un error: ver <see cref="PartBinding"/>.
         /// </summary>
         public string PartNameFor(string itemId)
@@ -110,6 +110,24 @@ namespace RideSafe.Module01
                     : binding.PartName.Trim();
             }
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Todas las piezas que delinea ese punto, en el orden declarado: un punto se declara una
+        /// vez por pieza. La e-bike de 2026-10-21 trae frenos, ruedas y luces en dos piezas, y se
+        /// delinean las dos (Cindy). La primera es la que lleva la esfera del punto.
+        /// </summary>
+        public IReadOnlyList<string> PartNamesFor(string itemId)
+        {
+            List<string> names = new List<string>();
+            string wanted = Normalize(itemId);
+            if (wanted.Length == 0)
+                return names;
+
+            foreach (PartBinding binding in _partBindings)
+                if (binding != null && Normalize(binding.ItemId) == wanted && !string.IsNullOrWhiteSpace(binding.PartName))
+                    names.Add(binding.PartName.Trim());
+            return names;
         }
 
         /// <summary>Usado por el montador de escena y por los tests.</summary>

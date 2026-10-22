@@ -26,6 +26,7 @@ namespace RideSafe.Module01
         [SerializeField] private VideoPlayer _video;
         [SerializeField] private GameObject _sidebar;
         [SerializeField] private GameObject _navigation;
+        private Button _previousZoneButton;
         [SerializeField] private GameObject _decision;
         [SerializeField] private GameObject _instruction;
         [SerializeField] private TMP_Text _instructionText;
@@ -84,6 +85,7 @@ namespace RideSafe.Module01
             Bind(_binding.Module.Get<RectTransform>("Orientation"), "RepeatAudioButton", () => onOrientation.Invoke());
             Bind(_navigation.transform, "NextZoneButton", NextZone);
             Bind(_navigation.transform, "PreviousZoneButton", PreviousZone);
+            _previousZoneButton = Find<Button>(_navigation.transform, "PreviousZoneButton");
             Bind(_binding.Module.Get<RectTransform>("ReviewChoices"), "KeepChoosingButton", KeepChoosing);
             Bind(_binding.Module.Get<RectTransform>("ReviewChoices"), "ConfirmButton", Submit);
             Bind(_binding.Comparison.transform, "ExplainButton", PlayVideo);
@@ -112,6 +114,11 @@ namespace RideSafe.Module01
                 _onboarding.Get<ChoicePanel>("Jurisdiction").onContinue.AddListener(id => { Context.Set(Module01Context.JurisdictionKey, id); _onboarding.Show("Vehicle"); });
                 _onboarding.Get<ChoicePanel>("Vehicle").onContinue.AddListener(id => { Context.Set(Module01Context.VehicleKey, id); _onboarding.Show("Comfort"); });
                 _onboarding.Get<ComfortSettingsPanel>("Comfort").onStart.AddListener(StartFromOnboarding);
+                // Atrás, a la pantalla anterior. Cindy, 2026-10-21: lo pulsaba y no pasaba nada,
+                // porque se cableó cada Continuar y ningún Atrás. Vehículo no lleva: tiene «Cambiar».
+                language.onBack.AddListener(() => _onboarding.Show("Welcome"));
+                _onboarding.Get<ChoicePanel>("Jurisdiction").onBack.AddListener(() => _onboarding.Show("Language"));
+                Bind(_onboarding.Get<RectTransform>("Comfort"), "BackButton", () => _onboarding.Show("Vehicle"));
             }
         }
         /// <summary>Begin: con parámetros de prueba asignados entra al módulo 1; si no, al onboarding.</summary>
@@ -223,6 +230,9 @@ namespace RideSafe.Module01
             _runner.Begin(zone);
             _inspector.SetQuestion(_director.InVehicleSection ? "M1/Inspect_Question" : "M1/Confirm_Question");
             _sidebar.SetActive(true); _navigation.SetActive(true);
+            // Sin estación anterior en la primera de cada sección, el botón no se enseña: ahí no
+            // hacía nada (Cindy, 2026-10-21).
+            if (_previousZoneButton != null) _previousZoneButton.gameObject.SetActive(!_director.IsFirstZone);
             _instructionKey = zone.TitleKey;
             RefreshInstruction();
             Phase = "Choosing";

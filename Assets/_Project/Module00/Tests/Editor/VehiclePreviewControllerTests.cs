@@ -180,6 +180,35 @@ namespace RideSafe.Module00.Tests
             Assert.IsFalse(_preview.IsPlatformShown("ebike"));
         }
 
+        /// <summary>
+        /// A platform that faded out is switched off, not just silent. Back to the vehicle screen
+        /// (2026-10-21) the showroom comes back on, and every platform still on started its
+        /// particles again: the e-bike chosen and the scooter left behind, both glowing.
+        /// </summary>
+        [Test]
+        public void APlatformLeftBehind_IsSwitchedOffOnceItFades()
+        {
+            _preview.Select("escooter");
+            Run(1f);
+            _preview.Select("ebike");
+            Run(BlendSeconds + 0.1f);
+
+            Assert.IsFalse(_scooterPlatform.activeSelf, "left behind: off, so it cannot replay");
+            Assert.IsTrue(_ebikePlatform.activeSelf, "the chosen one keeps its platform");
+        }
+
+        [Test]
+        public void ClearSelection_SwitchesThePlatformsOffOnceTheyFade()
+        {
+            _preview.Select("ebike");
+            Run(1f);
+
+            _preview.ClearSelection();
+            Run(BlendSeconds + 0.1f);
+
+            Assert.IsFalse(_ebikePlatform.activeSelf);
+        }
+
         [Test]
         public void UnknownVehicle_IsIgnored()
         {

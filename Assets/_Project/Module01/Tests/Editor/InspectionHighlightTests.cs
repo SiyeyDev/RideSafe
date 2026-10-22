@@ -77,6 +77,23 @@ namespace RideSafe.Module01.Tests
 
             Assert.AreEqual("manubrio", _profile.PartNameFor("  Point_Steering "));
         }
+
+        [Test]
+        public void Un_punto_puede_delinear_varias_piezas_en_el_orden_declarado()
+        {
+            // E-bike de 2026-10-21: los frenos, las ruedas y las luces vienen en dos piezas.
+            _profile.ConfigurePartBindings(new[]
+            {
+                ("point_wheels", "rueda_tracera"),
+                ("point_wheels", "llanta_delantera"),
+                ("point_steering", "tenedor"),
+            });
+
+            CollectionAssert.AreEqual(new[] { "rueda_tracera", "llanta_delantera" }, _profile.PartNamesFor("point_wheels"));
+            CollectionAssert.AreEqual(new[] { "tenedor" }, _profile.PartNamesFor(" Point_Steering "));
+            CollectionAssert.IsEmpty(_profile.PartNamesFor("point_lights"));
+            Assert.AreEqual("rueda_tracera", _profile.PartNameFor("point_wheels"), "la primera es la que lleva la esfera");
+        }
     }
 
     /// <summary>

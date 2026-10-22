@@ -66,12 +66,22 @@ namespace RideSafe.Module01.Editor
             // ensenar el manubrio, la profundidad deja de separar en pantalla y los tres signos
             // de exclamacion se montan unos sobre otros. Repartirlos a lo ancho los separa, y
             // ademas es donde estan de verdad: la maneta de freno a un lado, la bateria al otro.
-            { "point_steering",  new Vector3(.86f, .94f, .50f) }, // manubrio, al centro
-            { "point_brakes",    new Vector3(.79f, .78f, .18f) }, // maneta de freno, a un lado
+            //
+            // Desde 2026-10-21 el signo va otra vez con la esfera sobre la pieza (Cindy lo pidió
+            // de vuelta junto al contorno), y en la e-bike el tenedor, la maneta freno_de y la
+            // pantalla están las tres hacia el centro del manubrio: con la dirección al centro y
+            // el freno en .18 —que cae en el borde interior de freno_de— los tres signos se
+            // amontonaban. La dirección va a un puño y el freno al lado de su maneta: quedan
+            // puño, pantalla y maneta, de izquierda a derecha.
+            { "point_steering",  new Vector3(.86f, .94f, .15f) }, // manubrio, en un puño
+            { "point_brakes",    new Vector3(.79f, .78f, .82f) }, // maneta de freno, al otro lado
             { "point_lights",    new Vector3(.95f, .62f, .50f) }, // faro delantero
-            // La rueda sube de .13 a .18: a .13 la esfera del punto bajaba 1.41 m por debajo de
-            // la linea de ojos y se salia del encuadre por abajo. Sigue sobre la rueda.
-            { "point_wheels",    new Vector3(.10f, .18f, .50f) }, // rueda
+            // La rueda subió de .13 a .18 para no salirse del encuadre por abajo, y el 2026-10-21
+            // a .80: con el signo otra vez junto al contorno, a .18 caía dentro de la rueda, naranja
+            // sobre los radios naranjas del contorno, y no se veía (medido: activo, a 0,50 m). Por
+            // encima de la rueda la esfera se arrima a su borde de arriba y el signo queda sobre el
+            // cuadro, que es gris.
+            { "point_wheels",    new Vector3(.10f, .80f, .50f) }, // sobre la rueda
             { "point_electrics", new Vector3(.45f, .36f, .82f) }, // bateria, al otro lado
         };
 
@@ -187,13 +197,14 @@ namespace RideSafe.Module01.Editor
         /// <summary>
         /// Qué pieza de la malla delinea cada punto, por vehículo.
         /// <para>
-        /// La e-bike del garaje v8 llega despiezada en cuatro: <c>manubrio</c>, <c>marco</c>,
-        /// <c>pedales</c> y <c>rueda_trasera</c>. Solo dos de los cinco puntos tienen pieza
-        /// propia. <c>point_brakes</c> vive dentro del manubrio, <c>point_electrics</c> dentro
-        /// del marco y <c>point_lights</c> no existe como pieza, así que esos tres se quedan
-        /// con el signo de exclamación: delinear el marco entero para decir «revisa el sistema
-        /// eléctrico» enseñaría algo falso. Cuando Daniel entregue la maneta, la batería y el
-        /// faro, esto es una línea más por pieza.
+        /// La e-bike llegó el 2026-10-21 con las piezas que faltaban para revisar, anidadas:
+        /// <c>marco</c> con <c>pedales</c>, <c>rueda_tracera</c>, <c>luz_tracera</c> y el
+        /// <c>tenedor</c>, y del tenedor <c>freno_de</c>, <c>freno_iz</c>, <c>llanta_delantera</c>,
+        /// <c>luz_delantera</c> y <c>pantalla</c>. Los cinco puntos tienen pieza, y frenos, ruedas
+        /// y luces tienen dos: se delinean las dos (Cindy). Ya no hay <c>manubrio</c>: la dirección
+        /// es el tenedor, horquilla y manubrio. El orden importa: la primera pieza lleva la esfera,
+        /// y en las ruedas va primero la trasera, la que el giro de la zona deja fuera del checklist.
+        /// 'tracera', con la falta, es como viene en el FBX: se busca por nombre.
         /// </para>
         /// <para>
         /// El patinete llegó despiezado el 2026-10-14 y viene en <b>siete</b> piezas, anidadas
@@ -212,21 +223,27 @@ namespace RideSafe.Module01.Editor
         /// guardabarros y <c>soporte</c> es la pata de cabra.
         /// </para>
         /// </summary>
-        private static readonly Dictionary<string, Dictionary<string, string>> Parts =
-            new Dictionary<string, Dictionary<string, string>>
+        private static readonly Dictionary<string, (string Item, string Part)[]> Parts =
+            new Dictionary<string, (string Item, string Part)[]>
             {
-                ["ebike"] = new Dictionary<string, string>
+                ["ebike"] = new[]
                 {
-                    { "point_steering", "manubrio" },
-                    { "point_wheels", "rueda_trasera" },
+                    ("point_steering", "tenedor"),
+                    ("point_brakes", "freno_de"),
+                    ("point_brakes", "freno_iz"),
+                    ("point_wheels", "rueda_tracera"),
+                    ("point_wheels", "llanta_delantera"),
+                    ("point_lights", "luz_delantera"),
+                    ("point_lights", "luz_tracera"),
+                    ("point_electrics", "pantalla"),
                 },
-                ["escooter"] = new Dictionary<string, string>
+                ["escooter"] = new[]
                 {
-                    { "point_steering", "control_de_direccion" },
-                    { "point_brakes", "freno" },
+                    ("point_steering", "control_de_direccion"),
+                    ("point_brakes", "freno"),
                     // 'tracera', con la falta, es como viene en el FBX. Se copia tal cual: la
                     // pieza se busca por nombre y corregirla aqui la dejaria sin encontrar.
-                    { "point_wheels", "rueda_tracera" },
+                    ("point_wheels", "rueda_tracera"),
                 },
             };
 
@@ -252,15 +269,15 @@ namespace RideSafe.Module01.Editor
             {
                 if (profile == null)
                     continue;
-                Dictionary<string, string> table = Parts.TryGetValue(profile.VehicleContextValue, out var t)
+                (string Item, string Part)[] table = Parts.TryGetValue(profile.VehicleContextValue, out var t)
                     ? t
-                    : new Dictionary<string, string>();
+                    : new (string Item, string Part)[0];
                 Undo.RecordObject(profile, "Piezas del vehiculo");
-                profile.ConfigurePartBindings(table.Select(p => (p.Key, p.Value)));
+                profile.ConfigurePartBindings(table);
                 EditorUtility.SetDirty(profile);
-                Debug.Log($"[Module01] {profile.name}: {table.Count} pieza(s) a delinear"
-                          + (table.Count == 0 ? " (sin piezas declaradas: todo al signo)." : ": "
-                              + string.Join(", ", table.Select(p => $"{p.Key}->{p.Value}")) + "."));
+                Debug.Log($"[Module01] {profile.name}: {table.Length} pieza(s) a delinear"
+                          + (table.Length == 0 ? " (sin piezas declaradas: todo al signo)." : ": "
+                              + string.Join(", ", table.Select(p => $"{p.Item}->{p.Part}")) + "."));
             }
 
             int wired = 0;

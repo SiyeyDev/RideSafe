@@ -11,13 +11,12 @@ namespace RideSafe.Module01
     /// y cambiar de estado cuando el punto de su zona está en revisión o ya se ha resuelto.
     /// </para>
     /// <para>
-    /// <b>Es el aviso de respaldo, no el principal.</b> Donde el vehículo viene despiezado y la
-    /// pieza existe de verdad, quien señala es <see cref="InspectionHighlight"/> con un contorno
-    /// sobre la malla, y este signo se silencia: los dos a la vez marcan lo mismo dos veces. El
-    /// signo sigue siendo lo único que hay para los puntos sin pieza propia, y ningún vehículo
-    /// las trae todas: en la bici el freno vive dentro del <c>manubrio</c> y la batería dentro
-    /// del <c>marco</c>; en el patinete el freno sí es pieza, pero la batería va dentro del
-    /// <c>cuerpo</c>. Y el faro no existe en ninguno de los dos.
+    /// <b>Va en todos los puntos, también en los que delinean su pieza</b> con
+    /// <see cref="InspectionHighlight"/>. Durante un tiempo se silenciaba donde había contorno,
+    /// para no marcar lo mismo dos veces, pero recorriendo la experiencia (Cindy, 2026-10-21)
+    /// encontrar todas las piezas solo con el contorno costaba: el signo se ve de lejos, se puede
+    /// pulsar, y en verde dice de un vistazo cuáles van. Donde no hay pieza propia —la batería
+    /// del patinete va dentro del <c>cuerpo</c>, y el patinete no trae faro— es el único aviso.
     /// </para>
     /// </summary>
     [AddComponentMenu("RideSafe/Module 01/Inspection Marker")]
@@ -101,6 +100,9 @@ namespace RideSafe.Module01
 
         /// <summary>Color actual del signo. Para que un test pueda afirmar sin mirar la pantalla.</summary>
         public Color CurrentColor => _glyph == null ? Color.clear : _glyph.color;
+
+        /// <summary>Dónde está el signo en el mundo. Para que un test afirme sin mirar la pantalla.</summary>
+        public Vector3 SignPosition => _billboard != null ? _billboard.position : transform.position;
 
         private void Awake()
         {

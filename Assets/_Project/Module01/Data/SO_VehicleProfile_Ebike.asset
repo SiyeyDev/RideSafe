@@ -27,6 +27,18 @@ MonoBehaviour:
     Yaw: -90
   _partBindings:
   - ItemId: point_steering
-    PartName: manubrio
+    PartName: tenedor
+  - ItemId: point_brakes
+    PartName: freno_de
+  - ItemId: point_brakes
+    PartName: freno_iz
   - ItemId: point_wheels
-    PartName: rueda_trasera
+    PartName: rueda_tracera
+  - ItemId: point_wheels
+    PartName: llanta_delantera
+  - ItemId: point_lights
+    PartName: luz_delantera
+  - ItemId: point_lights
+    PartName: luz_tracera
+  - ItemId: point_electrics
+    PartName: pantalla

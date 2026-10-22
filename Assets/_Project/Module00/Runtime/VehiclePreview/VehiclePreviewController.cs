@@ -174,7 +174,27 @@ namespace RideSafe.Module00
                         TickLeaving(state, deltaTime);
                         break;
                 }
+                SwitchOffWhenFaded(state);
             }
+        }
+
+        /// <summary>
+        /// A hidden platform is switched off once its particles are gone, not just left silent.
+        /// Leaving the vehicle screen turns the showroom off; coming back turns it on, and a
+        /// particle system that wakes up starts playing again: the e-bike chosen and the scooter
+        /// left behind came back glowing together (2026-10-21). With the showroom off there is no
+        /// fade to wait for.
+        /// </summary>
+        private static void SwitchOffWhenFaded(State state)
+        {
+            GameObject platform = state.Config.Platform;
+            if (state.PlatformShown || platform == null || !platform.activeSelf)
+                return;
+            if (platform.activeInHierarchy)
+                for (int i = 0; i < state.Particles.Length; i++)
+                    if (state.Particles[i] != null && state.Particles[i].IsAlive(false))
+                        return;
+            platform.SetActive(false);
         }
 
         protected virtual void Awake() => Initialize();

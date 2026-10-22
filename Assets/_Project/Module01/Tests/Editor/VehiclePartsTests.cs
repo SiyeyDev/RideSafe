@@ -110,11 +110,8 @@ namespace RideSafe.Module01.Tests
             {
                 VehicleProfileSO profile = Profile(path);
                 foreach (string itemId in PointIds)
+                foreach (string partName in profile.PartNamesFor(itemId))
                 {
-                    string partName = profile.PartNameFor(itemId);
-                    if (partName.Length == 0)
-                        continue;
-
                     Transform part = Part(profile.Model, partName);
                     MeshFilter filter = part.GetComponent<MeshFilter>();
                     Assert.IsNotNull(filter?.sharedMesh,
@@ -161,15 +158,23 @@ namespace RideSafe.Module01.Tests
                 "El patinete no trae faro como pieza.");
         }
 
-        /// <summary>Que el patinete entre no puede dejar a la bici sin sus dos contornos.</summary>
+        /// <summary>
+        /// La e-bike nueva (2026-10-21) llega con las piezas que faltaban para revisar: los cinco
+        /// puntos tienen pieza, y frenos, ruedas y luces tienen dos (Cindy: delinear las dos).
+        /// Ya no hay <c>manubrio</c>: la dirección es el <c>tenedor</c>, horquilla y manubrio.
+        /// La rueda de atrás va primera porque es la que lleva la esfera y la que el giro de la
+        /// zona de llantas deja fuera del checklist.
+        /// </summary>
         [Test]
-        public void La_bici_sigue_delineando_manubrio_y_rueda_trasera()
+        public void La_bici_delinea_los_cinco_puntos_con_sus_piezas()
         {
             VehicleProfileSO ebike = Profile(EbikePath);
 
-            Assert.AreEqual("manubrio", ebike.PartNameFor("point_steering"));
-            Assert.AreEqual("rueda_trasera", ebike.PartNameFor("point_wheels"));
-            Assert.AreEqual(string.Empty, ebike.PartNameFor("point_electrics"));
+            CollectionAssert.AreEqual(new[] { "tenedor" }, ebike.PartNamesFor("point_steering"));
+            CollectionAssert.AreEqual(new[] { "freno_de", "freno_iz" }, ebike.PartNamesFor("point_brakes"));
+            CollectionAssert.AreEqual(new[] { "rueda_tracera", "llanta_delantera" }, ebike.PartNamesFor("point_wheels"));
+            CollectionAssert.AreEqual(new[] { "luz_delantera", "luz_tracera" }, ebike.PartNamesFor("point_lights"));
+            CollectionAssert.AreEqual(new[] { "pantalla" }, ebike.PartNamesFor("point_electrics"));
         }
 
         /// <summary>

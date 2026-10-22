@@ -934,6 +934,99 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 
 ## 11. Bitácora
 
+### 2026-10-21 (noche, 3) — partículas de la vitrina y «Estación anterior»
+
+- **Partículas al volver a Vehículo.** Al soltar un vehículo, su plataforma dejaba de emitir pero
+  seguía encendida. Salir de la pantalla apaga la vitrina y volver la enciende, así que toda
+  plataforma usada alguna vez arrancaba de nuevo sus partículas: con patineta → e-bike, brillaban
+  las dos.
+  - `VehiclePreviewController` apaga la plataforma cuando sus partículas terminan, o en seguida si
+    la vitrina está apagada.
+  - `VehiclePanelPreviewBinding` vuelve a presentar el vehículo elegido al regresar a la pantalla.
+- **«Estación anterior»** no hacía nada en la primera estación de cada sección: no se vuelve al M0
+  desde la primera de los EPP, ni a los EPP ya enviados desde la primera del vehículo. Ahí ya no se
+  muestra (`Module01Director.IsFirstZone`); en las demás vuelve.
+- **Tests:**
+  - Nuevos: controlador, binding y director.
+  - El recorrido de PlayMode afirma dónde aparece «Estación anterior» y la pulsa con clic real en la
+    segunda estación.
+  - EditMode 525/527, PlayMode M1 6/6. Capturas del cliente rehechas.
+
+### 2026-10-21 (noche, 2) — «Atrás» del módulo 0 no hacía nada
+
+- **Causa:** `Module01Experience` cableaba el «Continuar» de cada pantalla del M0 en la v5 y ningún
+  «Atrás». `ChoicePanel` lanzaba `onBack` y nadie lo escuchaba (solo `Module00TutorialBinding`, en
+  `Garaje_Test`). Comodidad ni siquiera tenía el evento.
+- **Ahora:**
+  - Idioma → bienvenida.
+  - Normas → Idioma.
+  - Comodidad → Vehículo, con su botón `BackButton`.
+  - Vehículo no lleva «Atrás»: tiene «Cambiar».
+  - Al volver se conserva lo elegido.
+- **Test:** el recorrido del M0 de PlayMode (`Module01SliceTests.Onboarding`) pulsa «Atrás» en las
+  tres pantallas con clic real y vuelve a avanzar. Estaba en rojo antes del arreglo.
+  - PlayMode M1 6/6; EditMode 520/522.
+
+### 2026-10-21 (noche) — el «!» vuelve junto al contorno
+
+- **Qué pidió Cindy:** probando la experiencia, encontrar con la vista todas las piezas delineadas
+  costaba. El «!» vuelve en todos los puntos, también en los que tienen pieza.
+  - Se pulsa el «!» o la pieza.
+  - Revisado, el «!» se pone en verde y se queda visible, igual que el contorno.
+- **Código:**
+  - `VehicleStage.BindParts` ya no silencia el signo.
+  - El signo va con su esfera sobre la pieza delineada; así cae sobre la pieza correcta en los dos
+    vehículos, aunque estén en espejo.
+  - Se probó dejarlo sobre su mount y no sirvió: en la bici el de ruedas caía bajo el checklist.
+- **Mounts reajustados en la v5** (tabla de `Module01VehicleStaging`; recalculados con un script
+  temporal, porque `CreateMounts` no mueve los existentes):
+  - **Dirección y frenos:** dirección `w .50 → .15`, a un puño; freno `w .18 → .82`, junto a su
+    maneta. En la cabina los tres signos se amontonaban en el centro del manubrio. Ahora quedan
+    puño, pantalla y maneta.
+  - **Ruedas:** `v .18 → .80`. El signo caía dentro de la rueda, naranja sobre los radios naranjas
+    del contorno, y no se veía. Ahora queda encima del neumático.
+- **Verificado en juego con la bici y la patineta:**
+  - Se seleccionaron los 5 puntos de cada una.
+  - El rayo de cámara llega sin bloqueos.
+  - Los signos están separados y pasan de naranja a verde.
+- **Tests:** EditMode 520/522 (los 2 de `Garaje_Test`) y PlayMode M1 6/6. Capturas del cliente rehechas.
+
+### 2026-10-21 (tarde) — e-bike nueva con las piezas para revisar
+
+- **Reemplazo en el mismo archivo:** `Models/CITY/MODELADOS 3d/ebike.fbx` se sobrescribió con el de
+  `Docs/capturas/ebike.fbx`. Se conservó el `.meta`, así que se mantienen el GUID, los materiales
+  (incluida la Pantalla) y las referencias.
+  - Mismo tamaño y posición que el anterior.
+  - Piezas: `marco` con `pedales`, `rueda_tracera`, `luz_tracera` y `tenedor`. Del tenedor cuelgan
+    `freno_de`, `freno_iz`, `llanta_delantera`, `luz_delantera` y `pantalla`.
+  - Ya no existen `manubrio` ni `rueda_trasera`.
+- **Puntos de revisión → piezas** (Cindy confirmó la tabla):
+  - Dirección → `tenedor`.
+  - Frenos → `freno_de` + `freno_iz`.
+  - Ruedas → `rueda_tracera` + `llanta_delantera`.
+  - Luces → `luz_delantera` + `luz_tracera`.
+  - Eléctrico → `pantalla`.
+- **Varias piezas por punto** (Cindy: delinear las dos):
+  - El perfil declara el punto una vez por pieza (`PartNamesFor`).
+  - `InspectionHighlight.BindParts` pone un contorno y un área de clic por pieza.
+  - La esfera del punto va a la primera pieza.
+- **Pedestal:** muestra solo lo delineado, sin lo que cuelga de cada pieza (`ItemInspector.PresentParts`).
+  Con varias piezas las pone una al lado de otra; a su distancia real, las luces y los frenos no se veían.
+- **Vitrina del M0:** su copia de la e-bike no es instancia del modelo y apuntaba a mallas borradas. Se
+  rehízo en su sitio con el menú nuevo `Rehacer las copias de la vitrina` (`RefreshDisplayCopies`).
+- **Bug corregido:** `Module01VehicleWiring.RemoveStrayCopies` borraba la copia de la vitrina del M0
+  («ebike (display)») al montar el vehículo del M1, y además fallaba recorriendo objetos ya borrados.
+- **Otras escenas:**
+  - `Garaje_Test` y `CITY/scenas/Garage.unity` se actualizan solas: no hay mallas perdidas ni hizo
+    falta tocar sus archivos.
+  - Se borró `_Recovery/0.unity`.
+- **Verificado:**
+  - EditMode 515/517 (los 2 de `Garaje_Test`) y PlayMode M1 6/6.
+  - PlayMode UI 12/13 tras reiniciar el PC. Falla `Comparison_ServesSafetyAndDiagnosticReviews`,
+    que es previo: espera «Mi Elección» en dos columnas.
+  - Se seleccionaron los 5 puntos en juego: rayo de cámara sin bloqueos, popup, pedestal, verde y
+    «Mi preparación». Capturas del cliente rehechas (JPG 9,6 MB).
+
 ### 2026-10-21 — isotipo junto a los títulos y módulo 0 reordenado como la pantalla de vehículo
 
 - **«Elige tu vehículo» tiene caja** (pedido de Cindy: el texto se perdía con la pared del garaje).

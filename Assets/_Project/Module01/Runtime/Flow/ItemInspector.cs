@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cachacos;
 using TMPro;
 using UnityEngine;
@@ -157,7 +158,19 @@ namespace RideSafe.Module01
         /// hay pieza se enseña el <c>!</c>, que es el mismo idioma que el marcador del mundo.
         /// </para>
         /// </summary>
-        public void Present(SafetyItemSO item, Transform source, string questionKey)
+        public void Present(SafetyItemSO item, Transform source, string questionKey) =>
+            PresentWith(item, questionKey, () => CopyOf(source));
+
+        /// <summary>
+        /// Presenta un punto del vehículo con <b>exactamente</b> las piezas que se delinean, cada una
+        /// sin lo que cuelga de ella (Cindy, 2026-10-21). En la e-bike nueva el tenedor de la
+        /// dirección es el padre de la rueda, la luz, los frenos y la pantalla: copiarlo con sus
+        /// hijos ponía en el pedestal todo el tren delantero para «Dirección y manubrio».
+        /// </summary>
+        public void PresentParts(SafetyItemSO item, IReadOnlyList<Transform> parts, string questionKey) =>
+            PresentWith(item, questionKey, () => CopyOfParts(parts));
+
+        private void PresentWith(SafetyItemSO item, string questionKey, Func<GameObject> copy)
         {
             if (item == null)
                 return;
@@ -171,7 +184,7 @@ namespace RideSafe.Module01
             {
                 _instance = new GameObject("PresentedItem");
                 _instance.transform.SetParent(_stage, false);
-                GameObject model = BuildDisplay(item, source);
+                GameObject model = BuildDisplay(item, copy);
                 model.transform.SetParent(_instance.transform, false);
                 _spins = model.GetComponentsInChildren<Renderer>().Length > 0;
                 foreach (Collider collider in model.GetComponentsInChildren<Collider>()) collider.enabled = false;
@@ -211,9 +224,9 @@ namespace RideSafe.Module01
         /// elemento que algún día no tenga objeto en la escena.
         /// </para>
         /// </summary>
-        private GameObject BuildDisplay(SafetyItemSO item, Transform source)
+        private GameObject BuildDisplay(SafetyItemSO item, Func<GameObject> copyOfScene)
         {
-            GameObject copy = CopyOf(source);
+            GameObject copy = copyOfScene();
             if (copy != null)
                 return copy;
 
@@ -236,13 +249,52 @@ namespace RideSafe.Module01
         /// correcto y lo que ya hacían.
         /// </para>
         /// </summary>
-        private GameObject CopyOf(Transform source)
-        {
-            if (source == null)
-                return null;
+        private GameObject CopyOf(Transform source) =>
+            source == null ? null : Copy(source.GetComponentsInChildren<MeshRenderer>(true), source.name);
 
+        /// <summary>La malla propia de cada pieza, sin sus hijos: ver <see cref="PresentParts"/>.</summary>
+        private GameObject CopyOfParts(IReadOnlyList<Transform> parts)
+        {
+            if (parts == null || parts.Count == 0)
+                return null;
+            List<MeshRenderer> own = new List<MeshRenderer>();
+            foreach (Transform part in parts)
+            {
+                MeshRenderer renderer = part != null ? part.GetComponent<MeshRenderer>() : null;
+                if (renderer != null)
+                    own.Add(renderer);
+            }
+            GameObject root = Copy(own, parts[0] != null ? parts[0].name : "Parts");
+            if (root != null && root.transform.childCount > 1)
+                SideBySide(root.transform);
+            return root;
+        }
+
+        /// <summary>
+        /// Las piezas de un mismo punto, una al lado de la otra y no a la distancia que tienen en
+        /// el vehículo. Captura 2026-10-21: las dos luces de la e-bike están a 1 m y miden 9 cm, y
+        /// al escalar el conjunto al pedestal cada una quedaba en nada; el pedestal se veía vacío.
+        /// Cada pieza conserva su pose; solo se mueve.
+        /// </summary>
+        private static void SideBySide(Transform root)
+        {
+            float largest = 0f;
+            foreach (Transform piece in root)
+                largest = Mathf.Max(largest, piece.GetComponent<Renderer>().bounds.size.magnitude);
+            float gap = largest * .15f, cursor = 0f;
+            foreach (Transform piece in root)
+            {
+                Bounds bounds = piece.GetComponent<Renderer>().bounds;
+                Vector3 target = new Vector3(cursor + bounds.extents.x, 0f, 0f);
+                piece.position += target - bounds.center;
+                cursor += bounds.size.x + gap;
+            }
+        }
+
+        private GameObject Copy(IEnumerable<MeshRenderer> renderers, string rootName)
+        {
             GameObject root = null;
-            foreach (MeshRenderer renderer in source.GetComponentsInChildren<MeshRenderer>(true))
+            foreach (MeshRenderer renderer in renderers)
             {
                 if (renderer == null || !renderer.enabled)
                     continue;
@@ -273,7 +325,7 @@ namespace RideSafe.Module01
 
                 if (root == null)
                 {
-                    root = new GameObject(source.name);
+                    root = new GameObject(rootName);
                     root.transform.SetParent(_instance.transform, false);
                 }
 

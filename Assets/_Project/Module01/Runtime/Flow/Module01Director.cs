@@ -43,6 +43,12 @@ namespace RideSafe.Module01
         private bool _awaitingReview;
         public bool InVehicleSection => _inVehicleSection;
         public bool IsLastZone => _index == ActiveList.Count - 1;
+
+        /// <summary>
+        /// La primera estación de la sección en curso: no tiene anterior. No se vuelve al módulo 0
+        /// desde la primera de los EPP, ni a los EPP —ya enviados— desde la primera del vehículo.
+        /// </summary>
+        public bool IsFirstZone => _index <= 0;
         public event Action<ZoneSO> ZoneEntered;
         public SelectionReport PersonalReport { get; private set; }
         public SelectionReport VehicleReport { get; private set; }

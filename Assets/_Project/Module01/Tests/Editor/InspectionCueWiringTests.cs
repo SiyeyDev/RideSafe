@@ -221,13 +221,66 @@ namespace RideSafe.Module01.Tests
             Assert.AreSame(_manubrio.transform, _steeringHighlight.Outline.transform.parent);
         }
 
+        /// <summary>
+        /// Cindy, 2026-10-21, recorriendo la experiencia: encontrar con la vista todas las piezas
+        /// delineadas costaba. El signo vuelve junto al contorno, y se puede pulsar cualquiera
+        /// de los dos.
+        /// </summary>
         [Test]
-        public void Un_punto_con_pieza_se_queda_sin_signo_de_exclamacion()
+        public void Un_punto_con_pieza_tambien_lleva_su_signo_para_pulsarlo()
         {
             _stage.Show(_ebike);
             _steeringMarker.SetHighlighted(true);
 
-            Assert.IsFalse(_steeringMarker.IsVisible);
+            Assert.IsNotNull(_steeringHighlight.Outline, "la pieza sigue delineada");
+            Assert.IsTrue(_steeringMarker.IsVisible, "y el signo la acompaña");
+        }
+
+        /// <summary>
+        /// El signo va con la esfera, sobre la pieza delineada. Se probó a dejarlo sobre su mount
+        /// (2026-10-21) y en la bici el de ruedas caía junto a la rueda delantera, debajo del
+        /// checklist: la tabla de mounts se escribió con el morro al otro lado, y solo la esfera
+        /// —que va a la pieza— lo corregía.
+        /// </summary>
+        [Test]
+        public void El_signo_va_con_su_esfera_sobre_la_pieza()
+        {
+            Vector3 mount = new Vector3(5f, 0f, 0f);
+            _bike.transform.Find("mount_point_steering").position = mount;
+
+            _stage.Show(_ebike);
+
+            Assert.Greater(Vector3.Distance(mount, _steering.transform.position), .5f, "la esfera fue a la pieza");
+            Assert.Less(Vector3.Distance(_steering.transform.position, _steeringMarker.SignPosition), .001f,
+                        "y el signo con ella");
+        }
+
+        [Test]
+        public void Cambiar_de_vehiculo_devuelve_el_signo_sobre_su_punto()
+        {
+            _bike.transform.Find("mount_point_steering").position = new Vector3(5f, 0f, 0f);
+            _scooter.transform.Find("mount_point_steering").position = new Vector3(0f, 0f, 2f);
+            _stage.Show(_ebike);
+
+            _stage.Show(_escooter);
+
+            Assert.Less(Vector3.Distance(new Vector3(0f, 0f, 2f), _steeringMarker.SignPosition), .001f,
+                "sin pieza, el signo vuelve a ir con su punto: si no, se quedaba donde lo dejó la bici");
+        }
+
+        /// <summary>Lo revisado se queda en verde también en el signo: ayuda a ver cuáles van ya.</summary>
+        [Test]
+        public void Revisado_el_signo_de_un_punto_con_pieza_queda_en_verde()
+        {
+            _stage.Show(_ebike);
+            _steeringMarker.SetHighlighted(true);
+            _steeringMarker.SetResolved(true);
+            _steeringHighlight.SetResolved(true);
+
+            // El verde del signo lo fijan los tests de InspectionMarker (aquí no lleva glifo).
+            Assert.IsTrue(_steeringMarker.IsVisible, "revisado, el signo se queda a la vista");
+            Assert.IsTrue(_steeringMarker.IsResolved);
+            Assert.AreEqual(Color.green, _steeringHighlight.CurrentColor, "y el contorno, en el verde de resuelto");
         }
 
         [Test]

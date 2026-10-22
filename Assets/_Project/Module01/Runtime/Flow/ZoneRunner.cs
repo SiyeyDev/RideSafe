@@ -180,13 +180,16 @@ namespace RideSafe.Module01
                     // no el propio objeto de la escena —el EPP de la mesa—. Antes se pasaba
                     // solo la pieza, asi que los EPP caian al prefab del catalogo y salian con
                     // otra pose que la de la mesa.
-                    InspectionHighlight highlight = world.GetComponent<InspectionHighlight>();
-                    Transform source = highlight != null && highlight.Part != null
-                        ? highlight.Part
-                        : world.transform;
                     // Ya elegido: la pregunta es si quitarlo, no si anadirlo.
                     bool chosen = Ledger.Contains(item.ItemId);
-                    _inspector.Present(item, source, chosen ? RemoveQuestionKey : null);
+                    string question = chosen ? RemoveQuestionKey : null;
+                    // Un punto del vehiculo ensena exactamente las piezas que se delinean, sin lo
+                    // que cuelga de ellas (Cindy, 2026-10-21).
+                    InspectionHighlight highlight = world.GetComponent<InspectionHighlight>();
+                    if (highlight != null && highlight.Parts.Count > 0)
+                        _inspector.PresentParts(item, highlight.Parts, question);
+                    else
+                        _inspector.Present(item, world.transform, question);
                     return;
                 }
             }

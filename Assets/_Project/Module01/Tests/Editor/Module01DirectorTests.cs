@@ -79,6 +79,59 @@ namespace RideSafe.Module01.Tests
             Object.DestroyImmediate(v);
         }
 
+        private void ManualProgress()
+        {
+            var serialized = new UnityEditor.SerializedObject(_director);
+            serialized.FindProperty("_manualProgress").boolValue = true;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>
+        /// «Estación anterior» (Cindy, 2026-10-21): en la primera estación de los EPP no hay a
+        /// dónde volver —no se regresa al módulo 0— y el botón no hacía nada. Desde las demás sí
+        /// vuelve.
+        /// </summary>
+        [Test]
+        public void La_primera_estacion_no_tiene_anterior_y_las_demas_vuelven()
+        {
+            Wire(out _, out VehicleProfileSO v);
+            ManualProgress();
+            _director.Begin();
+            Assert.IsTrue(_director.IsFirstZone, "head es la primera: sin estacion anterior");
+
+            _director.AdvanceZone();
+            Assert.AreEqual("clothing", _director.CurrentZone.ZoneId);
+            Assert.IsFalse(_director.IsFirstZone);
+
+            _director.PreviousZone();
+            Assert.AreEqual("head", _director.CurrentZone.ZoneId, "desde la segunda se vuelve a la primera");
+            Assert.IsTrue(_director.IsFirstZone);
+
+            Object.DestroyImmediate(v);
+        }
+
+        /// <summary>
+        /// Y la primera del vehículo, después del video: los EPP ya se enviaron y su sección está
+        /// cerrada, así que tampoco tiene estación anterior.
+        /// </summary>
+        [Test]
+        public void La_primera_estacion_del_vehiculo_tampoco_tiene_anterior()
+        {
+            Wire(out _, out VehicleProfileSO v);
+            ManualProgress();
+            _director.Begin();
+            _director.AdvanceZone();
+            _director.AdvanceZone();
+            _director.ContinueAfterReview();
+
+            Assert.AreEqual("cockpit", _director.CurrentZone.ZoneId);
+            Assert.IsTrue(_director.IsFirstZone);
+            _director.PreviousZone();
+            Assert.AreEqual("cockpit", _director.CurrentZone.ZoneId, "no vuelve a la seccion ya enviada");
+
+            Object.DestroyImmediate(v);
+        }
+
         [Test]
         public void Al_cerrar_las_zonas_personales_emite_el_reporte_de_la_seccion()
         {

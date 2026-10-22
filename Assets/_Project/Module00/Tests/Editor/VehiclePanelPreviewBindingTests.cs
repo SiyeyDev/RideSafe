@@ -62,6 +62,22 @@ namespace RideSafe.Module00.Tests
             Assert.IsNull(_preview.SelectedId);
         }
 
+        /// <summary>
+        /// Back from Comfort (2026-10-21): the panel still shows the e-bike chosen, so the showroom
+        /// presents it again. Before, nothing did, and the platforms were left as they came back.
+        /// </summary>
+        [Test]
+        public void ComingBackToTheVehicleScreen_PresentsTheVehicleStillChosen()
+        {
+            _vehiclePanel.onSelectionChanged.Invoke("ebike");
+            _module.onPanelShown.Invoke("Comfort");
+            typeof(ChoicePanel).GetProperty("SelectedId").GetSetMethod(true).Invoke(_vehiclePanel, new object[] { "ebike" });
+
+            _module.onPanelShown.Invoke("Vehicle");
+
+            Assert.AreEqual("ebike", _preview.SelectedId);
+        }
+
         [Test]
         public void ShowingTheVehicleScreenAgain_KeepsTheSelection()
         {

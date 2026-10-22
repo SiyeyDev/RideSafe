@@ -260,6 +260,20 @@ namespace RideSafe.Module01.Tests
                     "La camara no alcanzo " + expected + " en la zona " + zoneId);
                 Assert.Less(Quaternion.Angle(_camera.transform.rotation, anchor.rotation), 1);
                 AssertVisible(_binding.Sidebar.GetComponentsInChildren<TMP_Text>().First(t => t.name == "Title").rectTransform);
+                // «Estación anterior» solo donde hay a dónde volver (Cindy, 2026-10-21): no en la
+                // primera estación de los EPP —no se vuelve al módulo 0— ni en la primera del
+                // vehículo —los EPP ya se enviaron—. Ahí no hacía nada.
+                bool firstOfSection = zoneId == zones[0] || zoneId == _director.SelectedVehicle.InspectionZones[0].ZoneId;
+                var previous = _binding.Module.GetComponentsInChildren<Button>(true).First(b => b.name == "PreviousZoneButton");
+                Assert.AreEqual(!firstOfSection, previous.gameObject.activeInHierarchy, "Estacion anterior visible en " + zoneId);
+                if (zoneId == zones[1])
+                {
+                    string here = zoneId;
+                    yield return Press(_binding.Module.transform, "PreviousZoneButton");
+                    yield return WaitFor(() => _director.CurrentZone.ZoneId == zones[0] && Object.FindAnyObjectByType<Module01Experience>().Phase == "Choosing", "Estacion anterior vuelve a " + zones[0]);
+                    yield return Press(_binding.Module.transform, "NextZoneButton");
+                    yield return WaitFor(() => _director.CurrentZone.ZoneId == here && Object.FindAnyObjectByType<Module01Experience>().Phase == "Choosing" && Field<CanvasGroup>(Object.FindAnyObjectByType<GuidedTour>(), "_fade").alpha == 0, "De vuelta en " + here);
+                }
                 // El checklist con filas ya dentro: es donde el texto largo en espanol se
                 // apretaba contra la nota al pie, y eso hay que mirarlo, no solo medirlo.
                 if (zoneId == "clothing") yield return Capture("checklist");
@@ -493,7 +507,14 @@ namespace RideSafe.Module01.Tests
             Assert.IsFalse(welcome.gameObject.activeInHierarchy, "El panel Welcome sigue encendido despues de Begin.");
 
             Assert.AreEqual("Language", onboarding.Current, "Begin sin parametros deberia abrir Language.");
-            yield return Choose(onboarding.Get<ChoicePanel>("Language"), "Option_es");
+            // Atrás vuelve a la pantalla anterior. Cindy, 2026-10-21: lo pulsaba y no pasaba nada,
+            // porque ninguna pantalla escuchaba su evento.
+            var language = onboarding.Get<ChoicePanel>("Language");
+            yield return GoBack(onboarding, language.transform, "Welcome");
+            yield return Press(welcome, "BeginButton");
+            yield return Choose(language, "Option_es");
+            yield return GoBack(onboarding, onboarding.Get<ChoicePanel>("Jurisdiction").transform, "Language");
+            yield return ContinueAgain(language);
             yield return Choose(onboarding.Get<ChoicePanel>("Jurisdiction"), "Option_bogota");
             yield return Choose(onboarding.Get<ChoicePanel>("Vehicle"), "Option_" + vehicle);
             // Lo que el aprendiz eligió tiene que llegar al contexto, no solo pasar de pantalla.
@@ -502,12 +523,31 @@ namespace RideSafe.Module01.Tests
 
             var comfort = onboarding.Get<ComfortSettingsPanel>("Comfort");
             yield return WaitFor(() => comfort.gameObject.activeInHierarchy, "Comfort visible");
+            yield return GoBack(onboarding, comfort.transform, "Vehicle");
+            yield return ContinueAgain(onboarding.Get<ChoicePanel>("Vehicle"));
+            yield return WaitFor(() => comfort.gameObject.activeInHierarchy, "Comfort visible otra vez");
             if (comfort.Current.Subtitles != subtitles)
                 yield return PressControl<Toggle>(comfort.transform, "SubtitlesSwitch");
             Assert.AreEqual(subtitles, comfort.Current.Subtitles, "El interruptor de subtitulos no cambio.");
             yield return Press(comfort.transform, "StartButton");
             Assert.AreEqual(subtitles, experience.SubtitlesEnabled, "El modulo 1 no recibio la preferencia de subtitulos.");
         }
+        /// <summary>Pulsa el Atrás de la pantalla, con un clic de verdad, y espera la anterior.</summary>
+        private IEnumerator GoBack(ModuleUI onboarding, Transform screen, string previous)
+        {
+            yield return Press(screen, "BackButton");
+            yield return WaitFor(() => onboarding.Current == previous, "Atras en " + screen.name + " vuelve a " + previous);
+        }
+
+        /// <summary>De vuelta en una pantalla ya elegida: la elección sigue, se continúa sin tocarla.</summary>
+        private IEnumerator ContinueAgain(ChoicePanel panel)
+        {
+            var confirm = Field<Button>(panel, "_continueButton");
+            yield return WaitFor(() => confirm.gameObject.activeInHierarchy && confirm.IsInteractable(),
+                "Al volver, " + panel.name + " conserva la eleccion y deja continuar");
+            yield return ClickGraphic(confirm.GetComponent<RectTransform>());
+        }
+
         private IEnumerator Choose(ChoicePanel panel, string optionName)
         {
             yield return WaitFor(() => panel.gameObject.activeInHierarchy, "Panel visible " + panel.name);
@@ -937,9 +977,9 @@ namespace RideSafe.Module01.Tests
             yield return null; yield return null;
         }
         /// <summary>
-        /// Cada punto de la zona del vehículo señala <b>de una sola manera</b>: con el contorno
-        /// sobre la pieza real si su perfil declara una, y si no con el signo de exclamación de
-        /// siempre. Nunca con las dos, y nunca con ninguna.
+        /// Cada punto de la zona del vehículo lleva su signo de exclamación, y además el contorno
+        /// sobre la pieza real si su perfil declara una (Cindy, 2026-10-21: solo con el contorno,
+        /// encontrar todas las piezas con la vista costaba). Nunca sin ningún aviso.
         /// <para>
         /// Qué puntos tienen pieza no se escribe aquí: se le pregunta al perfil del vehículo que
         /// se está recorriendo. Así el test sigue valiendo cuando Daniel entregue la maneta de
@@ -978,8 +1018,9 @@ namespace RideSafe.Module01.Tests
                     "El contorno de " + item.ItemId + " cuelga de la pieza equivocada.");
                 Assert.IsTrue(highlight.Outline.enabled,
                     item.ItemId + " es de la zona en curso y su contorno esta apagado.");
-                Assert.IsFalse(marker.IsVisible,
-                    item.ItemId + " muestra el signo encima del contorno: se marca dos veces.");
+                // Cindy, 2026-10-21: el signo acompaña al contorno; se pulsa cualquiera de los dos.
+                Assert.IsTrue(marker.IsVisible,
+                    item.ItemId + " tiene contorno pero perdió su signo: cuesta encontrarlo con la vista.");
                 Assert.AreSame(highlight.Outline.transform.parent, entity.transform.parent,
                     "La esfera clicable de " + item.ItemId + " no se mudo a su pieza: el aprendiz "
                     + "apunta a lo que brilla y pulsa el aire.");

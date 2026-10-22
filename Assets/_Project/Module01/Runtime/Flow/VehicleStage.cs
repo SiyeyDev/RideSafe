@@ -99,9 +99,10 @@ namespace RideSafe.Module01
         }
 
         /// <summary>
-        /// Cuelga el contorno de la pieza real de cada punto que tenga una, y silencia su signo
-        /// de exclamación. Los que no la tengan —y todos, si el vehículo no declara piezas— se
-        /// quedan exactamente como estaban: con el signo y con su esfera clicable.
+        /// Cuelga el contorno de la pieza real de cada punto que tenga una. El signo de
+        /// exclamación se queda en todos, también en los delineados (Cindy, 2026-10-21: solo con
+        /// el contorno, encontrar todas las piezas con la vista costaba): se pulsa el signo o la
+        /// pieza, y al revisarlo los dos se ponen en verde.
         /// <para>
         /// Se llama en <b>cada</b> <c>Show</c>, también cuando no hay perfil, porque lo primero
         /// que tiene que pasar al cambiar de vehículo es soltar el contorno del anterior: cuelga
@@ -118,25 +119,31 @@ namespace RideSafe.Module01
                     continue;
 
                 InspectionHighlight highlight = point.GetComponent<InspectionHighlight>();
-                bool bound = false;
+                InspectionMarker marker = point.GetComponent<InspectionMarker>();
 
                 if (highlight != null)
                 {
-                    string partName = profile == null ? string.Empty : profile.PartNameFor(point.ItemId);
-                    Transform part = string.IsNullOrEmpty(partName) || model == null
-                        ? null
-                        : FindPart(model, partName);
+                    // Todas las piezas del punto: la e-bike de 2026-10-21 trae frenos, ruedas y
+                    // luces en dos (Cindy: delinear las dos). La esfera va a la primera.
+                    List<Transform> parts = new List<Transform>();
+                    if (profile != null && model != null)
+                        foreach (string partName in profile.PartNamesFor(point.ItemId))
+                        {
+                            Transform part = FindPart(model, partName);
+                            if (part != null)
+                                parts.Add(part);
+                        }
 
-                    if (part == null)
+                    if (parts.Count == 0)
                         highlight.Release();
-                    else if (highlight.Bind(part))
-                    {
-                        MoveToPart(point, part);
-                        bound = true;
-                    }
+                    else if (highlight.BindParts(parts))
+                        // La esfera va a la pieza y el signo con ella: así el signo queda sobre la
+                        // pieza correcta en los dos vehículos, aunque estén en espejo. Que en la
+                        // cabina no se amontonen lo deciden los mounts (Module01VehicleStaging).
+                        MoveToPart(point, highlight.Part);
                 }
 
-                point.GetComponent<InspectionMarker>()?.SetSuppressed(bound);
+                marker?.SetSuppressed(false);
             }
         }
 

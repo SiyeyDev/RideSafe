@@ -127,7 +127,13 @@ namespace RideSafe.Module01.Editor
             foreach (GameObject go in Object.FindObjectsByType<GameObject>(
                          FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
-                if (go == keep || !go.name.StartsWith(modelName + " ("))
+                // Destroyed earlier in this loop with its parent: the list was taken before.
+                if (go == null || go == keep || !go.name.StartsWith(modelName + " ("))
+                    continue;
+                // The module 0 showroom's copy, «ebike (display)», is no twin: it sits in the
+                // vehicle showroom and only looks like the vehicle. Staging the module 1 vehicle
+                // deleted it on 2026-10-21.
+                if (go.name == modelName + " (display)")
                     continue;
 
                 float distance = keep == null

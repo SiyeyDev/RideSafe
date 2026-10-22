@@ -55,6 +55,10 @@ namespace RideSafe.Module00
         {
             if (panelId != _vehiclePanelId)
                 _preview.ClearSelection();
+            // Back on the vehicle screen (from Comfort) the panel keeps what was chosen: present it
+            // again. The panel does not announce a choice it only restores.
+            else if (!string.IsNullOrEmpty(_panel.SelectedId))
+                _preview.Select(_panel.SelectedId);
         }
     }
 }
