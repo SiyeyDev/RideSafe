@@ -19,3 +19,7 @@ MonoBehaviour:
   _displayPrefab: {fileID: 919132149155446097, guid: da10d63a71a85854c98ef1b4adbe53e4, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
+  _weight: 30
+  _hazardGroup: helmet_integrity
+  _exclusiveBonusWith: 
+  _bonusCondition: 

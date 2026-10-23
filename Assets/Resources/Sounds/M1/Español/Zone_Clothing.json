@@ -1,0 +1,17 @@
+{
+  "characters": [
+    "Ropa",
+    "y",
+    "calzado"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.383,
+    0.453
+  ],
+  "character_end_times_seconds": [
+    0.36,
+    0.406,
+    1.347
+  ]
+}

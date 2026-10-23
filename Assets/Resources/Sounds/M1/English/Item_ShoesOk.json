@@ -1,14 +1,32 @@
 {
   "characters": [
-    "Closed-toe",
-    "shoes"
+    "Closed,",
+    "safe",
+    "footwear",
+    "with",
+    "a",
+    "good",
+    "grip",
+    "sole"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.708
+    0.708,
+    1.022,
+    1.474,
+    1.649,
+    1.753,
+    2.009,
+    2.334
   ],
   "character_end_times_seconds": [
-    0.673,
-    1.207
+    0.592,
+    0.998,
+    1.416,
+    1.614,
+    1.672,
+    1.939,
+    2.264,
+    2.972
   ]
 }

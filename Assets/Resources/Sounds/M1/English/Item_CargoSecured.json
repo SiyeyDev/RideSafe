@@ -1,14 +1,29 @@
 {
   "characters": [
-    "Secured",
-    "load"
+    "Padlock",
+    "with",
+    "bracket",
+    "or",
+    "secure",
+    "transport",
+    "location"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.488
+    0.639,
+    0.871,
+    1.405,
+    1.579,
+    1.997,
+    2.554
   ],
   "character_end_times_seconds": [
-    0.43,
-    0.929
+    0.569,
+    0.813,
+    1.335,
+    1.509,
+    1.95,
+    2.519,
+    3.437
   ]
 }

@@ -24,10 +24,16 @@ using UnityEngine;
 /// poco deja los subtítulos desfasados sin que nada falle.
 /// </para>
 /// <para>
-/// La voz es <b>Alice — Clear, Engaging Educator</b>, la misma con la que se grabó
-/// <c>M01_Welcome</c>: con otra, el módulo sonaría con dos narradores. Los ajustes son los que
-/// trae <see cref="VoiceSettings"/> por defecto, que ya coinciden con los de la ventana
-/// (estabilidad 0,75 · similitud 0,85 · estilo 0,1 · speaker boost).
+/// <b>Una voz por idioma, y esto importa.</b> Hasta el 2026-10-22 las dos tandas se generaban
+/// con <b>Alice — Clear, Engaging Educator</b>, que es una locutora <b>inglesa</b>: en inglés
+/// sonaba bien y en español sonaba robótica, porque era una voz inglesa leyendo español. Ahora
+/// el inglés sigue con Alice y el español usa <b>Daniela — Friendly Host</b>, latinoamericana.
+/// Dentro de un mismo idioma la voz no cambia, que es lo que evita que el módulo suene con dos
+/// narradores.
+/// </para>
+/// <para>
+/// Los ajustes son los que trae <see cref="VoiceSettings"/> por defecto, que ya coinciden con
+/// los de la ventana (estabilidad 0,75 · similitud 0,85 · estilo 0,1 · speaker boost).
 /// </para>
 /// <para>
 /// Deja el avance en <c>Temp/ridesafe-audio.txt</c> para poder seguirlo desde fuera, igual que
@@ -38,18 +44,41 @@ public static class M1ItemAudioBatch
 {
     public const string ResultPath = "Temp/ridesafe-audio.txt";
 
-    private const string VoiceId = "Xb7hH8MSUJpSbSDYk0k2";
     private const string UrlStart = "https://api.elevenlabs.io/v1/text-to-speech/";
     private const string UrlEnd = "/with-timestamps";
     private const string Category = "M1";
     private const string Suffix = "_Risk";
 
-    /// <summary>Lo que se locuta: los nombres de elementos y puntos, sin su «por qué».</summary>
+    /// <summary>Alice — Clear, Engaging Educator. Locutora inglesa.</summary>
+    public const string VoiceAlice = "Xb7hH8MSUJpSbSDYk0k2";
+
+    /// <summary>Daniela — Friendly Host. Español latinoamericano.</summary>
+    public const string VoiceDaniela = "ajOR9IDAaubDK5qtLUqQ";
+
+    /// <summary>
+    /// Lo que se locuta: los nombres de los elementos y de los puntos del vehículo, sin su
+    /// «por qué».
+    /// <para>
+    /// Los <c>_Risk</c> se quedan fuera a propósito: el porqué de cada elemento se enseña al
+    /// final como texto, pero decirlo en voz alta mientras el aprendiz decide si se lleva el
+    /// casco es darle la respuesta.
+    /// </para>
+    /// <para>
+    /// Los títulos de estación (<c>Zone_</c>) también se quedan fuera: Charlie los descartó el
+    /// 2026-10-22. Solo existe el audio de <c>Zone_Clothing</c> en español, de una tanda suelta
+    /// anterior, y sobra.
+    /// </para>
+    /// </summary>
     private static bool EsLocutable(string term) =>
         !term.EndsWith(Suffix) &&
         (term.StartsWith(Category + "/Item_") || term.StartsWith(Category + "/Point_"));
 
-    private static readonly string[] Languages = { "Español", "English" };
+    /// <summary>(idioma tal como se llama en I2, voz con la que se locuta).</summary>
+    private static readonly (string Language, string VoiceId)[] Languages =
+    {
+        ("Español", VoiceDaniela),
+        ("English", VoiceAlice),
+    };
 
     [MenuItem("RideSafe/Módulo 1/Generar locución de los elementos (ES + EN)")]
     public static void Run()
@@ -74,7 +103,7 @@ public static class M1ItemAudioBatch
         Log($"{terms.Count} terminos x {Languages.Length} idiomas");
 
         int hechos = 0, fallos = 0;
-        foreach (string language in Languages)
+        foreach ((string language, string voiceId) in Languages)
         {
             int idx = data.GetLanguageIndex(language);
             if (idx < 0)
@@ -84,6 +113,7 @@ public static class M1ItemAudioBatch
                 continue;
             }
 
+            Log($"--- {language} con la voz {voiceId}");
             string folder = $"Assets/Resources/Sounds/{Category}/{language}";
             // overrideAudio y overrideTimeStamp en true: si se relanza, rehace. Si no, un
             // intento a medias dejaria mp3 viejos mezclados con nuevos y nadie lo notaria.
@@ -101,7 +131,7 @@ public static class M1ItemAudioBatch
                 }
 
                 yield return EditorCoroutineUtility.StartCoroutineOwnerless(
-                    generator.Generate(UrlStart + VoiceId + UrlEnd, text, name));
+                    generator.Generate(UrlStart + voiceId + UrlEnd, text, name));
 
                 bool ok = File.Exists($"{folder}/{name}.mp3");
                 if (ok) hechos++; else fallos++;

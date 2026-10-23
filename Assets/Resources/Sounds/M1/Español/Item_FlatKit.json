@@ -1,0 +1,32 @@
+{
+  "characters": [
+    "Kit",
+    "compacto",
+    "para",
+    "reparar",
+    "pinchazos",
+    "con",
+    "contenido",
+    "identificable"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.337,
+    1.022,
+    1.335,
+    1.741,
+    2.438,
+    2.635,
+    3.297
+  ],
+  "character_end_times_seconds": [
+    0.279,
+    0.94,
+    1.254,
+    1.683,
+    2.368,
+    2.566,
+    3.228,
+    4.551
+  ]
+}

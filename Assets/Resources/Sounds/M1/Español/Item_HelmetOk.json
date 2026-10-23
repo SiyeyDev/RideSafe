@@ -1,20 +1,29 @@
 {
   "characters": [
     "Casco",
-    "íntegro",
+    "certificado,",
+    "íntegro,",
+    "talla",
+    "correcta",
     "y",
-    "ajustado"
+    "abrochado"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.464,
-    0.929,
-    0.987
+    0.43,
+    1.44,
+    1.985,
+    2.299,
+    2.81,
+    2.879
   ],
   "character_end_times_seconds": [
-    0.406,
-    0.859,
-    0.952,
-    1.858
+    0.395,
+    1.324,
+    1.939,
+    2.241,
+    2.74,
+    2.833,
+    3.808
   ]
 }

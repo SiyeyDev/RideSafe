@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4349871b8731f4409f85b61274ad9f9, type: 3}
+  m_Name: SO_Zone_readiness
+  m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.ZoneSO
+  _zoneId: readiness
+  _titleKey: M1/Zone_Readiness
+  _items:
+  - {fileID: 11400000, guid: 22bb9602e45309f438ef7938b57505d7, type: 2}
+  - {fileID: 11400000, guid: 9329f89939506ea4c8c38555e63590c7, type: 2}
+  - {fileID: 11400000, guid: 6f7e1c42a69da0548ad4914fcf16316a, type: 2}
+  - {fileID: 11400000, guid: 3eaea37636506ab40816dc89ade4fdcb, type: 2}
+  - {fileID: 11400000, guid: 9097cdec382ceac4a88778e18239e47d, type: 2}
+  - {fileID: 11400000, guid: 42ab169f9c1e11342a972271eac6b9eb, type: 2}
+  - {fileID: 11400000, guid: b5cdf7e2ac208344ea25698a842e940d, type: 2}
+  - {fileID: 11400000, guid: 3a39b01bb0e7c2a45a5158e87dd5fef7, type: 2}
+  - {fileID: 11400000, guid: e5f082f52be56c049b1cf6cd238abe79, type: 2}
+  - {fileID: 11400000, guid: 945a67a3701bbad498a99073147db4fa, type: 2}
+  - {fileID: 11400000, guid: f90605e8de6028a48a8219e6b26c9993, type: 2}

@@ -27,46 +27,30 @@ namespace RideSafe.Module01.Editor
         private const string ZonesFolder = DataFolder + "/Zones";
         private const string GreyboxFolder = DataFolder + "/Greybox";
 
-        /// <summary>(id, clave de nombre, categoría) de los ocho elementos personales.</summary>
-        private static readonly (string Id, string NameKey, SafetyItemCategory Category)[] Items =
+        /// <summary>
+        /// Los elementos y las zonas <b>ya no se escriben aquí</b>: salen de
+        /// <see cref="Module01Library"/>, que es la transcripción del Excel del cliente.
+        /// <para>
+        /// Antes esta clase llevaba su propia lista, y por eso la escena acabó con cinco
+        /// elementos que Daniel modeló para adelantar trabajo y la hoja nunca pidió. Con la
+        /// tabla fuera, añadir o quitar un EPP es editar el documento transcrito y repetir el
+        /// comando, y no hay dos sitios que puedan discrepar.
+        /// </para>
+        /// </summary>
+        private static (string ZoneId, string TitleKey, string[] ItemIds)[] Zones()
         {
-            ("helmet_ok",       "M1/Item_HelmetOk",       SafetyItemCategory.Core),
-            ("helmet_damaged",  "M1/Item_HelmetDamaged",  SafetyItemCategory.Inappropriate),
-            ("glasses",         "M1/Item_Glasses",        SafetyItemCategory.Optional),
-            ("shoes_ok",        "M1/Item_ShoesOk",        SafetyItemCategory.Core),
-            ("reflective",      "M1/Item_Reflective",     SafetyItemCategory.ConditionDependent),
-            ("cargo_secured",   "M1/Item_CargoSecured",   SafetyItemCategory.Core),
-            ("cargo_handheld",  "M1/Item_CargoHandheld",  SafetyItemCategory.Inappropriate),
-            // La bufanda: volvio al catalogo el 2026-10-14, cuando el v7 trajo el modelo.
-            ("clothing_loose",  "M1/Item_ClothingLoose",  SafetyItemCategory.Inappropriate),
-            // Los pantalones, desde el 2026-10-14. El ancho se engancha en la cadena.
-            ("trousers_fitted", "M1/Item_TrousersFitted", SafetyItemCategory.Core),
-            ("trousers_loose",  "M1/Item_TrousersLoose",  SafetyItemCategory.Inappropriate),
-            ("trousers_tech",   "M1/Item_TrousersTech",   SafetyItemCategory.Optional),
-            // Coderas y rodilleras, del v9. Opcionales: se recomiendan y no se exigen, como las
-            // gafas. Si Charlie las quiere de nucleo, se cambia aqui y se repite el comando.
-            ("elbow_pads",      "M1/Item_ElbowPads",      SafetyItemCategory.Optional),
-            ("knee_pads",       "M1/Item_KneePads",       SafetyItemCategory.Optional)
-        };
-
-        private static readonly (string ZoneId, string TitleKey, string[] ItemIds)[] Zones =
-        {
-            ("head",     "M1/Zone_Head",     new[] { "helmet_ok", "helmet_damaged", "glasses" }),
-            // La zona de ropa, tal como esta de verdad desde el v9. Esta lista llevaba desde el
-            // 2026-10-07 con solo dos elementos, asi que volver a correr este comando BORRABA
-            // la bufanda y los tres pantalones de la zona sin que nada avisara.
-            ("clothing", "M1/Zone_Clothing", new[]
-             {
-                 "shoes_ok", "reflective", "clothing_loose", "elbow_pads", "knee_pads"
-             }),
-            // Los pantalones, con banco propio desde el v9: en la mesa de ropa iban apretados
-            // -ocho elementos en 2.62 m- y Charlie prefiere repartir el recorrido por el garaje.
-            ("trousers", "M1/Zone_Trousers", new[]
-             {
-                 "trousers_fitted", "trousers_loose", "trousers_tech"
-             }),
-            ("load",     "M1/Zone_Load",     new[] { "cargo_secured", "cargo_handheld" })
-        };
+            var zones = new (string, string, string[])[Module01Library.Tables.Length];
+            for (int i = 0; i < Module01Library.Tables.Length; i++)
+            {
+                var table = Module01Library.Tables[i];
+                List<Module01Library.Entry> entries = Module01Library.Of(table.Id);
+                var ids = new string[entries.Count];
+                for (int j = 0; j < entries.Count; j++)
+                    ids[j] = entries[j].ItemId;
+                zones[i] = (table.Id, table.TitleKey, ids);
+            }
+            return zones;
+        }
 
         /// <summary>Puntos de inspección del e-bike: (id, clave, posición en el cubo).</summary>
         private static readonly (string Id, string NameKey, Vector3 Offset)[] VehiclePoints =
@@ -85,13 +69,47 @@ namespace RideSafe.Module01.Editor
             ("visibility", "M1/Zone_Visibility", new[] { "point_lights" })
         };
 
+        /// <summary>
+        /// Rehace <b>solo</b> los EPP: sus <c>SafetyItemSO</c>, las tres mesas y el catálogo,
+        /// desde <see cref="Module01Library"/>. Es el comando que se repite cada vez que cambia
+        /// el Excel del cliente.
+        /// <para>
+        /// No toca el vehículo. <c>Crear datos de la primera pasada</c> sí lo rehace, y aunque
+        /// <c>VehicleProfileSO.Configure</c> no borre los <c>_partBindings</c> —comprobado—, no
+        /// hay motivo para pasar cerca del cableado de las piezas solo para añadir un EPP.
+        /// </para>
+        /// </summary>
+        [MenuItem("RideSafe/Módulo 1/Rehacer el catálogo de EPP desde la biblioteca")]
+        public static void RebuildEppCatalog()
+        {
+            EnsureFolders();
+            RetireItemsTheSheetDoesNotAskFor();
+
+            Dictionary<string, SafetyItemSO> items = CreateItems();
+            List<ZoneSO> zones = CreateZones(Zones(), items, "SO_Zone_");
+            CreateCatalog(zones);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            int conModelo = 0, conMarcador = 0;
+            foreach (Module01Library.Entry e in Module01Library.All)
+                if (e.NeedsMarker) conMarcador++; else conModelo++;
+
+            Debug.Log($"[Module01] Catálogo rehecho desde la biblioteca: {Module01Library.All.Length} "
+                      + $"elementos en {zones.Count} mesas. {conModelo} con modelo, "
+                      + $"{conMarcador} con el signo «!» a la espera de 3D.");
+        }
+
         [MenuItem("RideSafe/Módulo 1/Crear datos de la primera pasada")]
         public static void CreateFirstPassData()
         {
             EnsureFolders();
 
+            RetireItemsTheSheetDoesNotAskFor();
+
             Dictionary<string, SafetyItemSO> items = CreateItems();
-            List<ZoneSO> personalZones = CreateZones(Zones, items, "SO_Zone_");
+            List<ZoneSO> personalZones = CreateZones(Zones(), items, "SO_Zone_");
             CreateCatalog(personalZones);
 
             GameObject greybox = CreateEbikeGreybox(items);
@@ -115,15 +133,51 @@ namespace RideSafe.Module01.Editor
             }
         }
 
+        /// <summary>
+        /// Borra los <c>SafetyItemSO</c> de lo que Daniel modeló para adelantar trabajo y la
+        /// hoja no pide. Sin esto, volver a correr el comando dejaría los viejos en disco y el
+        /// montador de escena los seguiría colocando.
+        /// <para>
+        /// Solo se borra el dato del catálogo: <b>el arte se queda</b>. La bufanda y las
+        /// rodilleras siguen en la carpeta de modelos por si algún día el cliente los pide.
+        /// </para>
+        /// </summary>
+        private static void RetireItemsTheSheetDoesNotAskFor()
+        {
+            foreach (string id in Module01Library.RetiredItemIds)
+            {
+                string path = $"{ItemsFolder}/SO_Item_{id}.asset";
+                if (AssetDatabase.LoadAssetAtPath<SafetyItemSO>(path) == null)
+                    continue;
+                AssetDatabase.DeleteAsset(path);
+                Debug.Log($"[Module01] retirado {id}: no está en la biblioteca del cliente.");
+            }
+        }
+
         private static Dictionary<string, SafetyItemSO> CreateItems()
         {
             Dictionary<string, SafetyItemSO> map = new Dictionary<string, SafetyItemSO>();
-            foreach ((string id, string nameKey, SafetyItemCategory category) in Items)
+            foreach (Module01Library.Entry entry in Module01Library.All)
             {
+                string id = entry.ItemId;
                 SafetyItemSO asset = LoadOrCreate<SafetyItemSO>($"{ItemsFolder}/SO_Item_{id}.asset");
-                GameObject prop = CreateProp(id);
-                asset.ConfigureForTests(id, nameKey, nameKey + "_Risk", category);
-                SetDisplayPrefab(asset, prop);
+
+                asset.ConfigureForTests(id, entry.NameKey, entry.NameKey + "_Risk", entry.Category);
+                asset.ConfigureWeightForTests(entry.Weight, entry.HazardGroup);
+                asset.ConfigureBonusForTests(entry.ExclusiveBonusWith);
+
+                // Sin modelo, el prefab de exhibición se queda VACÍO a propósito: así
+                // ItemInspector.BuildDisplay cae al glifo y el pedestal enseña el «!», igual
+                // que los puntos del vehículo que no tienen pieza propia. Un cubo de greybox
+                // aquí taparía ese camino y el aprendiz vería una caja gris sin explicación.
+                GameObject display = entry.NeedsMarker
+                    ? null
+                    : AssetDatabase.LoadAssetAtPath<GameObject>(entry.Model);
+
+                if (!entry.NeedsMarker && display == null)
+                    Debug.LogError($"[Module01] {entry.LibraryId}: no carga {entry.Model}");
+
+                SetDisplayPrefab(asset, display);
                 EditorUtility.SetDirty(asset);
                 map[id] = asset;
             }

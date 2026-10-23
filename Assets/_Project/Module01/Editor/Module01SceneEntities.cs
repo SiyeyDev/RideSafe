@@ -18,30 +18,28 @@ namespace RideSafe.Module01.Editor
     /// </summary>
     public static class Module01SceneEntities
     {
-        /// <summary>(nombre del objeto en la escena, zona, id del elemento del catálogo).</summary>
-        private static readonly (string Obj, string Zone, string Item)[] Entities =
+        /// <summary>
+        /// (nombre del objeto en la escena, zona, id del elemento del catálogo), para los pocos
+        /// elementos cuyo modelo <b>ya está colocado</b> por el paquete de arte.
+        /// <para>
+        /// Sale de <see cref="Module01Library"/>: solo las filas que declaran
+        /// <see cref="Module01Library.Entry.SceneObject"/>. Todo lo demás lo instancia
+        /// <see cref="FillMissingEntities"/> desde el <c>DisplayPrefab</c> del catálogo —o con
+        /// el signo «!» si todavía no hay modelo—, que es lo que permite que la escena salga
+        /// entera del documento del cliente y no de lo que el garaje traiga encima.
+        /// </para>
+        /// <para>
+        /// Esta lista estaba escrita a mano y ataba el ejercicio a los nombres que Daniel puso
+        /// a sus modelos. De ahí venían la bufanda, el jean ancho, el pantalón deportivo y los
+        /// dos pares, que el cliente nunca pidió.
+        /// </para>
+        /// </summary>
+        private static IEnumerable<(string Obj, string Zone, string Item)> Entities()
         {
-            ("df_g_helmet_01",     "head",     "helmet_ok"),
-            ("casco 1",            "head",     "helmet_damaged"),
-            ("gafas",              "head",     "glasses"),
-            ("botas",              "clothing", "shoes_ok"),
-            ("chaleco refectivo",  "clothing", "reflective"),
-            // La bufanda es "ropa o cordones sueltos": el riesgo que le faltaba a la zona de
-            // ropa desde que se apago clothing_loose por no haber modelo. El v7 lo trajo.
-            ("bufanda 01",         "clothing", "clothing_loose"),
-            // Los pantalones: ajustado bien, ancho se engancha en la cadena, deportivo da igual.
-            // Desde el v9 se usan los DOBLADOS: miden 5 cm de canto en vez de 1,16 m de alto,
-            // asi que se apoyan en la tapa como el resto en vez de plantarse en el suelo.
-            // Ojo: el arte entrega el del ajustado con un espacio al final del nombre.
-            ("jean_ajustado_doblado",      "trousers", "trousers_fitted"),
-            ("jean ancho doblado",         "trousers", "trousers_loose"),
-            ("pantalon deportivo doblado", "trousers", "trousers_tech"),
-            // Los dos pares del v9. La entidad va en el PADRE del par, no en cada pieza.
-            ("coderas",            "clothing", "elbow_pads"),
-            ("rodilleras",         "clothing", "knee_pads"),
-            ("guaya candado",      "load",     "cargo_secured"),
-            ("MobilePhone_01",     "load",     "cargo_handheld")
-        };
+            foreach (Module01Library.Entry e in Module01Library.All)
+                if (!string.IsNullOrEmpty(e.SceneObject))
+                    yield return (e.SceneObject, e.Table, e.ItemId);
+        }
 
         /// <summary>
         /// Los EPP que el arte entrega <b>por pares</b>: (nombre del grupo, zona, piezas).
@@ -52,11 +50,14 @@ namespace RideSafe.Module01.Editor
         /// aparece como decorado suelto encima de la mesa.
         /// </para>
         /// </summary>
+        /// <remarks>
+        /// Vacía desde el 2026-10-22: los dos pares que había —coderas y rodilleras— no están
+        /// en la biblioteca del cliente y salieron del catálogo. El mecanismo se queda montado
+        /// porque la hoja sí trae elementos que el arte podría entregar por pares (los guantes,
+        /// los mitones), y volver a escribirlo costaría más que dejar la tabla vacía.
+        /// </remarks>
         private static readonly (string Group, string Zone, string[] Parts)[] Pairs =
-        {
-            ("coderas",    "clothing", new[] { "codera",    "codera (1)" }),
-            ("rodilleras", "clothing", new[] { "rodillera", "rodillera (1)" })
-        };
+            System.Array.Empty<(string, string, string[])>();
 
         /// <summary>Hueco entre las dos piezas de un par, a lo ancho de la tapa.</summary>
         private const float PairGap = .03f;
@@ -104,7 +105,7 @@ namespace RideSafe.Module01.Editor
         /// <summary>Pone la entidad de tarea sobre cada objeto de EPP ya colocado por arte.</summary>
         private static void TagEntities()
         {
-            foreach ((string objName, string zone, string item) in Entities)
+            foreach ((string objName, string zone, string item) in Entities())
             {
                 GameObject go = Find(objName);
                 if (go == null)
@@ -213,6 +214,12 @@ namespace RideSafe.Module01.Editor
                         Module01EditorComponents.Ensure<WorldObjectTaskEntity>(go);
                     entity.Configure(new EntityId(id), item.ItemId);
                     go.SetActive(wasActive);
+
+                    // Sin modelo, el elemento se señala con el signo «!», igual que los puntos
+                    // del vehículo que no tienen pieza propia. Sin esto quedaba una esfera
+                    // invisible: clicable pero imposible de encontrar.
+                    if (item.DisplayPrefab == null)
+                        Module01VehicleStaging.BuildMarker(entity);
 
                     present.Add(id);
                     created++;
@@ -328,7 +335,7 @@ namespace RideSafe.Module01.Editor
         /// <summary>Nombre del primer objeto de arte de la zona, para colocar su ancla.</summary>
         public static string FirstObjectNameOfZone(string zone)
         {
-            foreach ((string objName, string z, string _) in Entities)
+            foreach ((string objName, string z, string _) in Entities())
                 if (z == zone)
                     return objName;
             return null;

@@ -16,6 +16,10 @@ MonoBehaviour:
   _nameKey: M1/Item_ShoesOk
   _riskKey: M1/Item_ShoesOk_Risk
   _category: 0
-  _displayPrefab: {fileID: 919132149155446097, guid: a5817bf683e020b45bbf38935cdac1f0, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: 7c3c35b1481a0c046b9bf132378041d2, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
+  _weight: 20
+  _hazardGroup: 
+  _exclusiveBonusWith: 
+  _bonusCondition: 

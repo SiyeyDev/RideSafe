@@ -1,0 +1,35 @@
+{
+  "characters": [
+    "Poncho-tarp",
+    "extragrande",
+    "con",
+    "laterales",
+    "abiertos",
+    "y",
+    "exceso",
+    "de",
+    "material"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.917,
+    1.707,
+    1.869,
+    2.426,
+    3.019,
+    3.181,
+    3.715,
+    3.831
+  ],
+  "character_end_times_seconds": [
+    0.766,
+    1.66,
+    1.846,
+    2.345,
+    2.902,
+    3.111,
+    3.68,
+    3.773,
+    4.69
+  ]
+}

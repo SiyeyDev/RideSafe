@@ -1,0 +1,38 @@
+{
+  "characters": [
+    "Gafas",
+    "solares",
+    "con",
+    "protección",
+    "UV",
+    "adecuadas",
+    "para",
+    "sol",
+    "y",
+    "deslumbramiento"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.464,
+    1.045,
+    1.219,
+    2.02,
+    2.775,
+    3.587,
+    3.866,
+    4.203,
+    4.377
+  ],
+  "character_end_times_seconds": [
+    0.441,
+    0.987,
+    1.173,
+    1.904,
+    2.264,
+    3.529,
+    3.796,
+    4.122,
+    4.284,
+    5.666
+  ]
+}

@@ -184,12 +184,38 @@ namespace RideSafe.Module01
             Vector3 closed = _door.position;
             float elapsed = 0;
             while (elapsed < .8f) { elapsed += Time.unscaledDeltaTime; _door.position = Vector3.Lerp(closed, closed + Vector3.up * 3.2f, elapsed / .8f); yield return null; }
-            _tour.TryGoTo("head");
+            // La primera estación sale del catálogo, no de un nombre escrito aquí. Con las
+            // mesas de la biblioteca del cliente «head» dejó de existir, y un TryGoTo a una
+            // zona que no está no falla: deja al aprendiz plantado en la puerta mirando el
+            // garaje, sin un solo error en consola.
+            _tour.TryGoTo(FirstZoneId());
             while (_tour.IsMoving) yield return null;
             _binding.Module.Show("Orientation");
             Phase = "Orientation";
             onOrientation.Invoke();
         }
+        /// <summary>
+        /// La primera estación del recorrido, tomada del catálogo.
+        /// <para>
+        /// Antes esto era el literal <c>"head"</c>. Al pasar a las mesas de la biblioteca del
+        /// cliente esa zona dejó de existir, y <see cref="GuidedTour.TryGoTo"/> con un id
+        /// desconocido <b>no revienta</b>: devuelve false y el aprendiz se queda en la puerta
+        /// sin que nada lo avise. Derivarlo del dato es lo que impide que vuelva a pasar al
+        /// próximo cambio de catálogo.
+        /// </para>
+        /// </summary>
+        private string FirstZoneId()
+        {
+            if (_allItems != null)
+                foreach (ZoneSO zone in _allItems.Zones)
+                    if (zone != null && !string.IsNullOrWhiteSpace(zone.ZoneId))
+                        return zone.ZoneId;
+
+            Debug.LogError("[Module01] El catálogo no tiene ninguna zona: el recorrido no "
+                           + "puede empezar. Revisa SO_Module01Catalog.", this);
+            return string.Empty;
+        }
+
         /// <summary>
         /// Vuelve a empezar el módulo desde la primera zona. Es lo único que desbloquean los
         /// rangos por debajo del 75 %.

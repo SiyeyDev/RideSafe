@@ -25,7 +25,8 @@ namespace RideSafe.Module01.Editor
     /// </summary>
     public static class Module01PresentationBuilder
     {
-        private static readonly string[] Zones = { "head", "clothing", "load", "cockpit", "wheels", "visibility" };
+        private static readonly string[] Zones =
+            { "protection", "control", "readiness", "cockpit", "wheels", "visibility" };
         private static Transform _camera;
 
         /// <summary>Escala de canvas con la que esta dibujado el storyboard del kit.</summary>

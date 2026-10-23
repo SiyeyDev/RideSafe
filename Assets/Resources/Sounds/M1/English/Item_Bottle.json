@@ -1,0 +1,26 @@
+{
+  "characters": [
+    "Sealed",
+    "bottle",
+    "in",
+    "compatible",
+    "bottle",
+    "holder"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.453,
+    0.848,
+    1.045,
+    1.776,
+    2.125
+  ],
+  "character_end_times_seconds": [
+    0.395,
+    0.789,
+    0.964,
+    1.73,
+    2.09,
+    2.74
+  ]
+}

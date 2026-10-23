@@ -1,0 +1,35 @@
+{
+  "characters": [
+    "Mochila",
+    "cerrada",
+    "de",
+    "dos",
+    "tirantes,",
+    "ligera",
+    "y",
+    "bien",
+    "ajustada"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.557,
+    1.115,
+    1.242,
+    1.486,
+    2.159,
+    2.798,
+    2.914,
+    3.193
+  ],
+  "character_end_times_seconds": [
+    0.522,
+    1.057,
+    1.184,
+    1.428,
+    2.09,
+    2.705,
+    2.856,
+    3.123,
+    4.133
+  ]
+}

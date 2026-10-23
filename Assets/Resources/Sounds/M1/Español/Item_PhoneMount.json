@@ -1,0 +1,35 @@
+{
+  "characters": [
+    "Soporte",
+    "universal",
+    "de",
+    "aluminio",
+    "para",
+    "teléfono",
+    "y",
+    "navegación",
+    "pasiva"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.627,
+    1.173,
+    1.254,
+    1.788,
+    2.02,
+    2.647,
+    2.786,
+    3.483
+  ],
+  "character_end_times_seconds": [
+    0.569,
+    1.115,
+    1.231,
+    1.741,
+    1.962,
+    2.577,
+    2.705,
+    3.425,
+    4.319
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "characters": [
+    "Prenda",
+    "superior",
+    "fluorescente",
+    "para",
+    "el",
+    "día"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.43,
+    0.894,
+    1.567,
+    1.765,
+    1.869
+  ],
+  "character_end_times_seconds": [
+    0.383,
+    0.848,
+    1.509,
+    1.741,
+    1.823,
+    2.415
+  ]
+}

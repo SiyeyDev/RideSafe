@@ -20,6 +20,18 @@ namespace RideSafe.Module01.Tests
             return item;
         }
 
+        /// <summary>
+        /// El mismo elemento con el peso de la biblioteca del cliente y, si lo tiene, su grupo
+        /// de peligro —la columna «Grupo / regla», donde dos elementos descuentan una sola vez—.
+        /// </summary>
+        protected SafetyItemSO Item(string id, SafetyItemCategory category,
+                                    float weight, string hazardGroup = null)
+        {
+            SafetyItemSO item = Item(id, category);
+            item.ConfigureWeightForTests(weight, hazardGroup);
+            return item;
+        }
+
         protected ZoneSO Zone(string id, params SafetyItemSO[] items)
         {
             ZoneSO zone = ScriptableObject.CreateInstance<ZoneSO>();

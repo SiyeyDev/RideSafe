@@ -1,14 +1,32 @@
 {
   "characters": [
-    "Carga",
-    "asegurada"
+    "Candado",
+    "con",
+    "soporte",
+    "o",
+    "ubicación",
+    "de",
+    "transporte",
+    "segura"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.488
+    0.743,
+    0.94,
+    1.672,
+    1.811,
+    2.438,
+    2.543,
+    3.158
   ],
   "character_end_times_seconds": [
-    0.464,
-    1.486
+    0.673,
+    0.882,
+    1.556,
+    1.788,
+    2.403,
+    2.496,
+    3.111,
+    3.994
   ]
 }

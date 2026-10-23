@@ -1,0 +1,26 @@
+{
+  "characters": [
+    "Visor",
+    "cap",
+    "selected",
+    "instead",
+    "of",
+    "helmet"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.441,
+    0.72,
+    1.335,
+    1.695,
+    1.834
+  ],
+  "character_end_times_seconds": [
+    0.406,
+    0.65,
+    1.277,
+    1.66,
+    1.753,
+    2.415
+  ]
+}

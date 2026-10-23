@@ -49,7 +49,7 @@ namespace RideSafe.Module01.Editor
 
         private static readonly string[] ZoneIds =
         {
-            "head", "clothing", "load", "cockpit", "wheels", "visibility"
+            "protection", "control", "readiness", "cockpit", "wheels", "visibility"
         };
 
         [MenuItem("RideSafe/Módulo 1/Montar escena jugable con el garaje nuevo")]

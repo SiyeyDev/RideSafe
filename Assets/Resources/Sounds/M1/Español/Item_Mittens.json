@@ -1,0 +1,26 @@
+{
+  "characters": [
+    "Mitones",
+    "voluminosos",
+    "que",
+    "impiden",
+    "operar",
+    "controles"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.569,
+    1.37,
+    1.474,
+    1.985,
+    2.38
+  ],
+  "character_end_times_seconds": [
+    0.522,
+    1.312,
+    1.44,
+    1.904,
+    2.322,
+    3.251
+  ]
+}

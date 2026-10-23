@@ -1,14 +1,23 @@
 {
   "characters": [
     "Chaleco",
-    "reflectivo"
+    "o",
+    "chaqueta",
+    "retroreflectiva",
+    "ajustada"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.522
+    0.685,
+    0.778,
+    1.347,
+    2.287
   ],
   "character_end_times_seconds": [
-    0.464,
-    1.533
+    0.615,
+    0.743,
+    1.277,
+    2.264,
+    3.204
   ]
 }

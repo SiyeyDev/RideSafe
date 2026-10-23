@@ -16,6 +16,10 @@ MonoBehaviour:
   _nameKey: M1/Item_TrousersFitted
   _riskKey: M1/Item_TrousersFitted_Risk
   _category: 0
-  _displayPrefab: {fileID: 919132149155446097, guid: ecea867daba18e84daa3d3505025b1c6, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: 3ae7496ce456b0b47a5add042165b4fc, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
+  _weight: 5
+  _hazardGroup: 
+  _exclusiveBonusWith: 
+  _bonusCondition: 

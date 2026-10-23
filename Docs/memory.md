@@ -1,7 +1,10 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-16 (noche, 3) — revisión de las UIs: cada pantalla en una caja,
+> Última actualización: 2026-10-22 — `dev` traída a `feat/garaje-v6` (`432ee27`): §3 al día.
+> La tanda de Cindy del 2026-10-20/21 ya está aquí: isotipo junto a los títulos, semáforo en los
+> iconos, cajas de título del M0, e-bike nueva despiezada, «Atrás» del M0 y «Estación anterior»
+> (§11). Antes, el 2026-10-16 (noche, 3): revisión de las UIs: cada pantalla en una caja,
 > tutorial más pequeño y que ya no sale sobre el video, SpriteAtlas de la UI (§11). Antes, (noche,
 > 2): arreglos de la prueba: el calzado se ve en el
 > pedestal y toda la rueda delineada es clicable. Antes, esa noche: limpieza de assets sin uso y
@@ -53,15 +56,31 @@ y `docs/superpowers/plans/2026-10-05-modulo-01.md`.
 
 - **`main`** — rama compartida. Cindy trabaja aquí. Va por detrás: su punta (`ffcc058`) es
   ancestro de `dev`.
-- **`dev`** — **al día desde el 2026-10-15 y pusheada** (`545dd19`). Tiene todo: el garaje
-  **v9**, el módulo 1 entero con sus 4 estaciones, el patinete despiezado y los materiales e
-  iluminación de Cindy.
-- **`feat/garaje-v6`** — la rama de trabajo. **Apunta al mismo commit que `dev`** (`545dd19`),
+- **`dev`** — **al día desde el 2026-10-21 y pusheada** (`432ee27`). Tiene todo: el garaje
+  **v9**, el módulo 1 entero con sus 4 estaciones, el patinete despiezado, los materiales e
+  iluminación de Cindy, y la tanda de UI del 2026-10-20/21 (isotipo, semáforo, cajas de título,
+  e-bike nueva despiezada, «Atrás» del M0 y «Estación anterior»).
+- **`feat/garaje-v6`** — la rama de trabajo. **Apunta al mismo commit que `dev`** (`432ee27`),
   así que ya no hay nada «sin mezclar».
 - **`feat/garaje-v5`** — congelada, muy por detrás. No usarla.
 - **`Feature/tutorial`** — la de Cindy. Su último commit ya está integrado; lo que suba a partir
   de ahora hay que traerlo **con cuidado**, porque sus importaciones caen en `Assets/CITY` y
   duplican GUID. Ver §9.
+
+**2026-10-22 — `dev` traída a `feat/garaje-v6`** (`83a8fb4 → 432ee27`, avance directo, 195
+ficheros). Los 3 commits de Cindy son del 2026-10-16/21: `90dd1e5` correcciones de UI, `6ba024e`
+las UIs del M0 y el M1, y `432ee27` el «Atrás» y la e-bike nueva. Verificado aquí: los objetos de
+LFS bajaron con contenido real (no punteros), la escena reabre con 28 raíces, no hay errores de
+compilación —solo los 4 de Odin, que son ruido— y **EditMode da 525/527**, los mismos números que
+anotó ella, fallando solo los 2 de `Garaje_Test`.
+
+**Para traer cambios hay que apartar antes el churn del Editor.** Abrir con 6000.5.4f1 deja
+siempre modificados `packages-lock.json` (URP 17.5, ugui 2.5, test-framework 1.7),
+`UniversalRenderPipelineGlobalSettings.asset` y `OpenXRPackageSettings.asset` (fileIDs
+reordenados), y a veces los atlas SDF. Eso **bloquea el avance directo** si el otro lado toca los
+mismos ficheros. La receta: `git stash push -u` solo de esos ficheros, avanzar, y dejarlos volver
+a ensuciarse —no se commitean, igual que el horneado—. Los atlas SDF sí conviene soltarlos y
+quedarse con los del otro lado.
 
 **2026-10-16 — lo de Cindy ya está commiteado** (`7e98a68` y `e750492`): el tutorial agnóstico,
 los paneles del M0 y el M1. Entró **todo en un commit**, incluido lo que su propio plan decía
@@ -356,6 +375,99 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       aprobó que salgan **solo en los elementos que estuvieron mal** —en los aciertos no enseñan
       nada y alargan una pantalla que ya iba justa—, pero falta montarlo. Ojo: **no** van por
       voz; locutarlos sesga la elección (bitácora 2026-10-16).
+- [x] ~~**Cómo puntúa la selección de EPP**~~ — **decidido el 2026-10-22 e implementado.**
+      Manda el Excel del cliente, `RideSafe_VR_equipment_image_reference_library_2026-10-19.xlsx`,
+      **tal cual**: la pestaña «Sistema de puntuación». La columna **B («Categoría»)** decide a qué
+      bloque va cada elemento —Esencial → `Core`, Recomendada condicional → `Optional`, Peligrosa →
+      `Inappropriate`— y la **O («Peso / puntos»)** cuánto vale dentro de su bloque.
+      - `essential_score` = REDONDEAR(70 × peso seleccionado / peso aplicable; 1), de 0 a 70.
+      - `hazard_score` = MAX(0; 30 − deducción por grupos), de 0 a 30.
+      - `safety_score` = los dos sumados. Todo lo esencial y ningún peligro = **100**.
+      - **La deducción es por GRUPO, no por elemento** (columna «Grupo / regla»): los dos cascos
+        rotos son `helmet_integrity` y descuentan 30 una vez, no 60; los audífonos y los AirPods
+        son los dos `auditory_occlusion`. Con los 11 peligros visibles la deducción llega a 185,
+        topada en 30. **Un solo peligro de 30 se lleva el bloque de riesgo entero.**
+      - **Lo opcional no entra en la nota: va al bono de preparación**, `preparedness_bonus` =
+        MIN(15; suma de bonos aplicables seleccionados). Implementado el 2026-10-22. Es la salida
+        de la hoja a un problema real: si lo recomendado restara al no llevarlo sería la
+        penalización falsa que la narrativa prohíbe, y si sumara a la nota, «llévatelo todo» sería
+        la estrategia ganadora. El aprendiz ve dos cifras: cuán seguro va y cuán preparado vino.
+        - El bono de cada elemento sale de la **misma** columna «Peso / puntos»: chaleco
+          reflectivo 3, guantes 2, multiherramienta 1. Los 14 suman 25 y el tope es 15.
+        - **El par excluyente** (`exclusive_bonus_with`): la prenda fluorescente de día (+2) y el
+          chaleco retroreflectivo de noche (+3) son la misma precaución para dos escenarios, así
+          que llevarse las dos cobra solo la mejor. Es campo aparte de `HazardGroup` **a
+          propósito**: las gafas transparentes y las de sol comparten grupo `eye_protection` en la
+          hoja y aun así NO están declaradas excluyentes, así que sus bonos sí suman.
+        - Al combinar secciones el tope se aplica **una sola vez**; se suma `BonusEarned`, no el
+          ya topado.
+      - El pool esencial es el **aplicable al escenario**. En día claro son 65 (casco 40, calzado
+        20, ropa ceñida 5) y las dos luces quedan fuera por ser «esencial condicional»; de noche
+        el pool sería 95 y los pesos se reparten solos.
+      - `SafetyItemSO.Weight` guarda el peso y `HazardGroup` el grupo. Peso por defecto 1; peso 0
+        deja el elemento en la mesa y fuera de la nota, que es el caso del teléfono (N01, neutral).
+      - **La nota y la decisión de avanzar son dos cosas distintas, y la hoja las separa a
+        propósito.** `can_advance_to_preop` = faltas esenciales < 2 **Y** peligros < 2. Divergen de
+        verdad: un casco roto deja la nota en 70 —suspende el corte de 75— pero es un solo peligro,
+        así que la hoja manda avanzar con feedback. En `SelectionScore` son `CanAdvance` y
+        `UnlocksNextModule`; este último es el ≥75 % de la reunión y **no sale del Excel**.
+      - **Ojo con lo que NO dice el Excel:** Charlie describió primero la regla de viva voz como
+        «los esenciales suman 100 y las peligrosas restan 100», y se llegó a implementar así. No es
+        lo que dice la hoja —son 70 + 30— y el 2026-10-22 zanjó que manda la hoja. La diferencia
+        importa: con 70/30 el que no toca nada saca **30**, no 0, y lo que lo para es el contador
+        de esenciales, no la nota.
+- [ ] **El catálogo se rehace contra la biblioteca del cliente (en curso, 2026-10-22).**
+      `Module01Library` (en `Module01/Editor/`) es la transcripción del Excel y **la fuente
+      única**: cada fila lleva su ID de la hoja (E01, O04, H13…), su peso, su grupo de peligro,
+      su mesa y su FBX. `Module01LibraryTests` la ata al documento: pool esencial 65, peligros
+      255, los dos grupos compartidos, el par de bono recíproco y que **todo modelo declarado
+      exista en disco**.
+      - **Lo que hay en la escena hoy está mal**: son los EPP que Daniel modeló para adelantar
+        trabajo, no los que pide el cliente. De los 13, **8 hacen match** y **5 se retiran**:
+        bufanda (`clothing_loose`), jean ancho (`trousers_loose`), pantalón deportivo
+        (`trousers_tech`), coderas y rodilleras. Quedan apuntados en
+        `Module01Library.RetiredItemIds` para que su ausencia se lea como decisión.
+      - **16 de los 32 ya tienen modelo** (8 de la carpeta `EPPS ESCENCIALES` del v11 y 4
+        sueltos, más los 4 que ya estaban). Los otros 16 van con el signo **«!»**, igual que los
+        puntos del vehículo sin pieza: `InspectionMarker` es genérico y `ItemInspector.BuildDisplay`
+        ya cae al glifo cuando no hay malla ni `DisplayPrefab`. Decisión de Charlie, 2026-10-22.
+      - **Las mesas son las tres del Excel**, no las 4 estaciones de hoy. La Mesa 2 se llama
+        `control` y **no** `visibility` porque ese id ya lo usa una zona del vehículo y los ids de
+        entidad son `module01.{zona}.{elemento}`: colisionarían en silencio. Hay un test.
+      - **O16 «chaqueta impermeable» = el rompevientos** (`rompe vientos_capucha.fbx`). Lo
+        confirmó Charlie el 2026-10-22 aunque un cortaviento no sea impermeable.
+      - Pendiente: que `Module01Greybox` / `Module01SceneEntities` / `Module01RealModels` consuman
+        la tabla, el montaje del «!», la reubicación en las tres mesas, I2 y audio.
+      - **Los 6 tests de PlayMode del M1 van a romperse** al hacerlo: recorren la escena actual y
+        esperan los elementos viejos.
+- [ ] **Los audios: una voz por idioma, y faltan los de los EPP nuevos.** Hasta el 2026-10-22 el
+      batch generaba los dos idiomas con **Alice**, que es una locutora **inglesa**: por eso el
+      español sonaba robótico. Ahora `M1ItemAudioBatch` lleva una voz por idioma — inglés Alice
+      (`Xb7hH8MSUJpSbSDYk0k2`), español **Daniela — Friendly Host** (`ajOR9IDAaubDK5qtLUqQ`)—.
+      **Falta relanzarlo**, y antes hay que meter en I2 los ids nuevos del catálogo. Los títulos
+      de zona (`Zone_`) quedan **fuera** por decisión de Charlie; sobra el `Zone_Clothing.mp3`
+      suelto que hay en español.
+- [ ] **No hay modelo de escenario, y el bono lo necesita.** La hoja dice «suma de bonos
+      **aplicables**» y cada recomendado trae su condición: la chaqueta impermeable solo con
+      lluvia, las gafas de sol solo en día soleado, la alforja solo con portaequipajes. El
+      mecanismo está puesto —`SafetyItemSO.BonusCondition` más el parámetro `conditions` de
+      `SelectionScore.Of`— pero **hoy está vacío en todo el catálogo**, así que todos los bonos
+      aplican. Falta decidir las cadenas de condición y quién las publica; el sitio natural es
+      `Module01Context`, que ya publica `vehicle` y `language`.
+- [ ] **El bono no se enseña en ninguna pantalla.** `SelectionScore.PreparednessBonus` ya lo
+      calcula, pero el encabezado de «Mi Elección» va justo —«Mi Elección · Conocedor · 100%»— y
+      meter un cuarto segmento puede desbordar en español. Hace falta decidir dónde va y un
+      término de I2 en los dos idiomas.
+- [ ] **Tres recomendados puntúan solo si están BIEN USADOS, no solo elegidos:** el candado
+      «solo con transporte seguro», el soporte de móvil «solo con uso pasivo» y la botella «solo
+      si está sellada y fijada». Hoy el módulo no distingue «elegido» de «bien colocado», así que
+      cobran con elegirlos.
+- [ ] **La repetición de la selección no existe.** La hoja pide que al segundo fallo de una
+      categoría el aprendiz **repita la selección después del video**. `SelectionScore` ya detecta
+      la condición (`EssentialsMissing`, `HazardsTaken`), pero no hay flujo que lo devuelva a la
+      mesa: hoy solo se cierra «Continuar al Módulo 2». Es trabajo de `Module01Director`.
+- [ ] **La gorra (H12) no resta.** Charlie dijo «la sumatoria de las *Peligrosa visible*», y H12 es
+      «Peligrosa condicional», así que quedó fuera del −100. Si tiene que contar, es ponerle peso.
 - [ ] **Decidir si los tramos de nota son 4 o 3.** El código parte en `>=75` Conocedor, `>=50`
       Por mejorar, `>=25` Recapacitar y el resto Inexperto, y solo el primero desbloquea
       «Continuar al Módulo 2». Charlie lo describió como tres casos (aprobó / 75-50 / <50). Si
@@ -501,6 +613,39 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 ---
 
 ## 9. Trampas conocidas
+
+**Añadidas el 2026-10-22:**
+
+- **Reimportar la hoja de I2 rompe el módulo de tres maneras a la vez, y ninguna avisa.** Pasó el
+  2026-10-22 y dejó el M1 sin un solo término utilizable: (1) **prefijo duplicado** en 92 términos
+  —`Module1/Module1/Confirm`—, porque I2 trata `Module1/` como categoría y lo vuelve a añadir si
+  las claves de la hoja ya lo traen; (2) **la categoría volvió de `M1` a `Module1`**, y eso no es
+  cosmético porque **la categoría decide la carpeta del audio** (`Resources/Sounds/<categoría>/`,
+  que es donde lee `NarrationPlayer`): los 40 mp3 de `Sounds/M1/` habrían quedado huérfanos; y
+  (3) los 31 elementos nuevos entraron **con el ID de la biblioteca como clave** (`E01`, `O03`)
+  en vez de con la clave del código. **La columna de claves de la hoja debe llevar el nombre sin
+  prefijo** (`Item_HelmetOk`), nunca el ID ni la categoría.
+  - **No hace falta restaurar desde git y perder los textos:** `RideSafe → Módulo 1 → Arreglar la
+    importación de I2` (`Module01I2Repair`) quita el prefijo duplicado, renombra la categoría y
+    traduce los IDs a claves. Es idempotente y deja en consola lo que falta.
+- **Charlie renumera los IDs de la hoja al pasarlos a I2.** El Excel salta huecos (de O02 a O04,
+  de H04 a H06) y él los compacta, así que su `O03` es el `O04` del documento. El mapeo está en
+  `Module01I2Repair.Renumbered` y **se verificó fila a fila comparando el español con la columna
+  «Elemento»: las 31 coinciden exactas.** No es una suposición sobre el orden.
+- **Los textos de la biblioteca son descripciones, no etiquetas.** «Casco certificado, íntegro,
+  talla correcta y abrochado» son 54 caracteres donde antes había 24, y el módulo usa ese texto
+  para **dos** cosas: el nombre del popup y **lo que se locuta**. Charlie decidió el 2026-10-22
+  dejarlos tal cual. Si algún día se parten las líneas en pantalla o la locución se hace larga,
+  la salida es un nombre corto para UI y voz y la descripción en el reporte.
+- **Una voz inglesa leyendo español suena robótica, y era eso.** El batch de locución usaba
+  **Alice** (`Xb7hH8MSUJpSbSDYk0k2`, inglesa) para los dos idiomas. Desde el 2026-10-22 hay una
+  voz por idioma: inglés Alice, español **Daniela — Friendly Host** (`ajOR9IDAaubDK5qtLUqQ`).
+  Los títulos de estación (`Zone_`) quedan fuera de la locución por decisión de Charlie.
+- **Lanzar los tests justo después de editar un `.cs` los corre contra el DLL viejo.** Me pasó y
+  lo atribuí a «el dominio no recargó», que es otra trampa distinta. Los síntomas son idénticos:
+  los fallos salen **exactamente iguales** que antes del cambio. La diferencia está en que aquí
+  no hay error de compilación: basta con esperar y repetir. Para distinguirlo, preguntar al DLL
+  vivo por algo que solo exista en el código nuevo.
 
 **Añadidas el 2026-10-16 (noche, 2):**
 

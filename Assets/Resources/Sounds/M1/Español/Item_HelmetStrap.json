@@ -1,0 +1,35 @@
+{
+  "characters": [
+    "Casco",
+    "con",
+    "correa",
+    "de",
+    "barbilla",
+    "cortada,",
+    "desprendida",
+    "o",
+    "faltante"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.569,
+    0.789,
+    1.173,
+    1.277,
+    1.753,
+    2.577,
+    3.448,
+    3.564
+  ],
+  "character_end_times_seconds": [
+    0.511,
+    0.72,
+    1.126,
+    1.242,
+    1.695,
+    2.403,
+    3.355,
+    3.506,
+    4.505
+  ]
+}

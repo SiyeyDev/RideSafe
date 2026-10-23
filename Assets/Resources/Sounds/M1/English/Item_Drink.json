@@ -1,0 +1,32 @@
+{
+  "characters": [
+    "Cup",
+    "of",
+    "coffee",
+    "or",
+    "takeaway",
+    "drink",
+    "in",
+    "hand"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.302,
+    0.43,
+    0.801,
+    0.964,
+    1.451,
+    1.741,
+    1.892
+  ],
+  "character_end_times_seconds": [
+    0.244,
+    0.36,
+    0.743,
+    0.894,
+    1.393,
+    1.683,
+    1.811,
+    2.508
+  ]
+}

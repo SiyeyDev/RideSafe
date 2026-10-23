@@ -1,0 +1,35 @@
+{
+  "characters": [
+    "Sunglasses",
+    "with",
+    "UV",
+    "protection",
+    "suitable",
+    "for",
+    "sun",
+    "and",
+    "glare"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.801,
+    1.033,
+    1.405,
+    2.032,
+    2.566,
+    2.786,
+    3.181,
+    3.518
+  ],
+  "character_end_times_seconds": [
+    0.743,
+    0.952,
+    1.254,
+    1.95,
+    2.519,
+    2.705,
+    3.088,
+    3.402,
+    4.272
+  ]
+}

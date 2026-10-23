@@ -15,7 +15,11 @@ MonoBehaviour:
   _itemId: cargo_secured
   _nameKey: M1/Item_CargoSecured
   _riskKey: M1/Item_CargoSecured_Risk
-  _category: 0
+  _category: 2
   _displayPrefab: {fileID: 919132149155446097, guid: 49e4b3b227b8f114f9f60dd917b45351, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
+  _weight: 2
+  _hazardGroup: 
+  _exclusiveBonusWith: 
+  _bonusCondition: 

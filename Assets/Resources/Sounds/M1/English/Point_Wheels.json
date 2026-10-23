@@ -2,16 +2,16 @@
   "characters": [
     "Wheels",
     "and",
-    "frame"
+    "structure"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.453,
-    0.639
+    0.488,
+    0.65
   ],
   "character_end_times_seconds": [
-    0.395,
-    0.557,
-    1.254
+    0.43,
+    0.592,
+    1.533
   ]
 }

@@ -1,0 +1,32 @@
+{
+  "characters": [
+    "Gorra",
+    "de",
+    "visera",
+    "seleccionada",
+    "en",
+    "lugar",
+    "del",
+    "casco"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.418,
+    0.534,
+    1.196,
+    2.148,
+    2.322,
+    2.647,
+    2.833
+  ],
+  "character_end_times_seconds": [
+    0.36,
+    0.488,
+    1.045,
+    2.067,
+    2.264,
+    2.589,
+    2.763,
+    3.576
+  ]
+}

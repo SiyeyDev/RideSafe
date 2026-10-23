@@ -1,0 +1,26 @@
+{
+  "characters": [
+    "Flip-flops,",
+    "slides,",
+    "or",
+    "open,",
+    "loose",
+    "sandals"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.708,
+    1.265,
+    1.451,
+    1.881,
+    2.171
+  ],
+  "character_end_times_seconds": [
+    0.662,
+    1.219,
+    1.37,
+    1.834,
+    2.136,
+    3.019
+  ]
+}

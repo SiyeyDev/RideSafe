@@ -1,0 +1,29 @@
+{
+  "characters": [
+    "Compact",
+    "puncture",
+    "repair",
+    "kit",
+    "with",
+    "identifiable",
+    "contents"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.592,
+    1.022,
+    1.37,
+    1.66,
+    1.881,
+    2.728
+  ],
+  "character_end_times_seconds": [
+    0.534,
+    0.987,
+    1.312,
+    1.602,
+    1.823,
+    2.682,
+    3.39
+  ]
+}

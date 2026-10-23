@@ -92,34 +92,31 @@ namespace RideSafe.Module01
 
         private static readonly Station[] Table =
         {
-            // Los cascos y las gafas se quedan en el mostrador del fondo, que es a donde mira
-            // el aprendiz al entrar por la puerta del garaje. Tapa medida: la base de los siete
-            // EPP que el arte ya dejó encima está en 1.079.
+            // ---- Las tres mesas de la biblioteca del cliente (2026-10-22) -------------
             //
-            // El tramo CENTRAL, no 'cabinet (1)'. Ese modulo abarca x de -4.14 a -0.80, pero su
-            // tapa util no llega hasta ahi: la mitad izquierda son armarios altos, y centrar el
-            // grupo sobre su caja dejaba el casco bueno metido en un armario y fuera del
-            // encuadre. El arte dejo los siete EPP entre x=-2.22 y x=2.58: esa es la tapa de
-            // verdad, y 'cabinetmid 1' cae dentro.
-            new Station("head", "cabinetmid 1", 1.079f, StationAxis.X, Vector3.forward),
-
-            // La ropa se va a la mesa metálica de la pared izquierda: está vacía y queda a la
-            // altura de las prendas que el v7 dejó de pie contra esa misma pared. La mesa es
-            // una pieza sola, así que el techo de su caja ES la tapa.
-            new Station("clothing", "metal table", .92f, StationAxis.Z, Vector3.right),
-
-            // La carga, al banco de herramientas de la pared derecha: una guaya y un candado
-            // pertenecen donde están las herramientas, no en la encimera de los cascos. Tapa
-            // medida por la regla y el medidor que ya descansan ahí, en 1.04.
-            new Station("load", "otra mesa", 1.04f, StationAxis.Z, Vector3.left),
-
-            // Los pantalones doblados tienen banco propio desde el v9, por decisión de Charlie:
-            // el banco largo y vacío del fondo derecho. Da 3.72 m -el más largo del garaje- y
-            // así la ropa deja de ir apretada y el recorrido gana un punto más del garaje.
-            // La tapa no se pudo derivar de lo que el arte dejara encima, porque está vacío: se
-            // midió la malla, quedándose con la franja horizontal de más área por debajo de la
-            // balda alta -2.78 m2 mirando hacia arriba a 1.02, frente a 1.39 m2 a 1.74-.
-            new Station("trousers", "mesa", 1.02f, StationAxis.Z, Vector3.left),
+            // Sustituyen a las cuatro estaciones de antes (head / clothing / trousers / load),
+            // que no salían de ningún documento. Medido en la escena, la tapa útil de cada
+            // mueble —caras horizontales a altura de encimera, no la caja del objeto—:
+            //
+            //   mostrador del fondo  cabinet (1) + cabinetmid 1 + cabinet = 7,69 m seguidos
+            //   pared derecha        mesa nueva + otra mesa + mesa       = 9,12 m con 2 juntas
+            //   pared izquierda      metal table                         = 2,61 m
+            //
+            // Con el ancho medio medido de los EPP (0,349 m) y los huecos de StationLayout,
+            // 10 elementos en una fila piden 4,59 m y 11 piden 5,04: no cabe ninguno de los
+            // tres en una sola fila sobre un mueble. En DOS filas —lo plano delante, lo alto
+            // detrás, como ya se resolvió la ropa— bajan a 2,35 y 2,79, y ahí sí entran.
+            //
+            // Por eso cada mesa va a UN mueble con holgura para dos filas, y no repartida
+            // entre varios: un grupo partido en dos muebles con una junta en medio se lee como
+            // dos estaciones distintas, y el recorrido las trata como una.
+            //
+            // «Preparación del trayecto» se lleva el mueble más largo a propósito: ahí caen el
+            // poncho, la alforja, la mochila y el paraguas, que son los objetos más grandes de
+            // toda la hoja y para los que la media de 0,349 se queda corta.
+            new Station("protection", "cabinet", 1.08f, StationAxis.X, Vector3.forward),
+            new Station("control", "otra mesa", 1.04f, StationAxis.Z, Vector3.left),
+            new Station("readiness", "mesa", 1.02f, StationAxis.Z, Vector3.left),
         };
 
         /// <summary>Todas las estaciones, en el orden del recorrido.</summary>

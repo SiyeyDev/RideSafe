@@ -466,7 +466,18 @@ namespace RideSafe.Module01.Editor
         /// de su alcance.
         /// </para>
         /// </summary>
-        private static void BuildMarker(WorldObjectTaskEntity point)
+        /// <summary>
+        /// Monta el signo «!» sobre un punto clicable: apaga su malla, le cuelga el glifo en
+        /// capa UI y le pone el <see cref="InspectionMarker"/>.
+        /// <para>
+        /// Es público porque <c>Module01SceneEntities</c> lo usa para los EPP que todavía no
+        /// tienen 3D. El cálculo de escala y de altura se compensa con la escala del punto, así
+        /// que el signo mide lo mismo cuelgue de la malla de un vehículo o de una esfera sobre
+        /// una mesa: no hace falta una segunda versión para los EPP, y dos versiones acabarían
+        /// divergiendo.
+        /// </para>
+        /// </summary>
+        public static void BuildMarker(WorldObjectTaskEntity point)
         {
             // La esfera deja de verse; su collider es lo unico que sigue haciendo falta.
             foreach (MeshRenderer renderer in point.GetComponents<MeshRenderer>())

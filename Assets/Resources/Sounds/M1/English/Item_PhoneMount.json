@@ -1,0 +1,29 @@
+{
+  "characters": [
+    "Universal",
+    "aluminum",
+    "phone",
+    "and",
+    "passive",
+    "navigation",
+    "mount"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.72,
+    1.196,
+    1.625,
+    1.927,
+    2.392,
+    3.053
+  ],
+  "character_end_times_seconds": [
+    0.673,
+    1.126,
+    1.579,
+    1.834,
+    2.357,
+    2.995,
+    3.576
+  ]
+}

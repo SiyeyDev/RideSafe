@@ -16,6 +16,10 @@ MonoBehaviour:
   _nameKey: M1/Item_HelmetOk
   _riskKey: M1/Item_HelmetOk_Risk
   _category: 0
-  _displayPrefab: {fileID: 919132149155446097, guid: 77fb396a896536145844fa18b70cee0a, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: 424c0332dd29c0a44b7292e71a704ad6, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
+  _weight: 40
+  _hazardGroup: 
+  _exclusiveBonusWith: 
+  _bonusCondition: 

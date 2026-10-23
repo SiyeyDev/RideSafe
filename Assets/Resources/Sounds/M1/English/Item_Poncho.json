@@ -1,0 +1,32 @@
+{
+  "characters": [
+    "Oversized",
+    "poncho-tarp",
+    "with",
+    "open",
+    "sides",
+    "and",
+    "excess",
+    "material"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.685,
+    1.428,
+    1.649,
+    2.055,
+    2.485,
+    2.659,
+    3.088
+  ],
+  "character_end_times_seconds": [
+    0.627,
+    1.37,
+    1.567,
+    1.985,
+    2.426,
+    2.589,
+    3.042,
+    3.901
+  ]
+}

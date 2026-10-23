@@ -5,6 +5,7 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "RideSafe.Module01",
+        "RideSafe.Module01.Editor",
         "RideSafe.UI",
         "TaskSequence",
         "Cachacos",

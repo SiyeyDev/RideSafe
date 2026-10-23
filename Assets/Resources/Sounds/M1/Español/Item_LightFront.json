@@ -1,0 +1,20 @@
+{
+  "characters": [
+    "Luz",
+    "delantera",
+    "blanca",
+    "funcional"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.325,
+    0.882,
+    1.277
+  ],
+  "character_end_times_seconds": [
+    0.29,
+    0.836,
+    1.231,
+    2.229
+  ]
+}

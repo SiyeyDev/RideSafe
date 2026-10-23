@@ -23,26 +23,26 @@ namespace RideSafe.Module01.Editor
         private const string Models = "Assets/_Project/Models/CITY/MODELADOS 3d/";
         private const string ItemsFolder = "Assets/_Project/Module01/Data/Items/";
 
-        /// <summary>(id del elemento, ruta del modelo). Vacío = se queda en greybox.</summary>
-        private static readonly (string ItemId, string Model)[] Map =
+        /// <summary>
+        /// (id del elemento, ruta del modelo). Sale de <see cref="Module01Library"/>, que es la
+        /// transcripción del Excel del cliente.
+        /// <para>
+        /// Esta lista estaba escrita a mano y era uno de los tres sitios donde vivía el
+        /// catálogo. Los tres podían discrepar entre sí y con el documento, y de hecho
+        /// discrepaban: aquí seguían la bufanda, el jean ancho, el pantalón deportivo y los dos
+        /// pares, que el cliente nunca pidió.
+        /// </para>
+        /// <para>
+        /// Los elementos sin modelo <b>no aparecen</b>: se montan con el signo «!» y su
+        /// <c>DisplayPrefab</c> tiene que quedarse vacío para que el pedestal caiga al glifo.
+        /// </para>
+        /// </summary>
+        private static IEnumerable<(string ItemId, string Model)> Map()
         {
-            ("helmet_ok",      Models + "df_g_helmet_01.fbx"),   // Charlie 2026-10-07: este es el bueno
-            ("helmet_damaged", Models + "casco 1.fbx"),
-            ("glasses",        Models + "gafas.fbx"),
-            ("shoes_ok",       Models + "botas.fbx"),
-            ("reflective",     Models + "chaleco refectivo.fbx"),
-            ("cargo_secured",  Models + "guaya candado.fbx"),
-            ("cargo_handheld", Models + "MobilePhone_01.fbx"),
-            ("clothing_loose", Models + "bufanda 01.fbx"),
-            // Desde el v9 los pantalones son los DOBLADOS: el de pie media 1,16 m y habia que
-            // plantarlo en el suelo; doblado se apoya en la tapa como el resto.
-            ("trousers_fitted", Models + "jean_ajustado_doblado 1.fbx"),
-            ("trousers_loose",  Models + "jean ancho doblado.fbx"),
-            ("trousers_tech",   Models + "pantalon deportivo doblado.fbx"),
-            // Los dos pares del v9. En el pedestal se ensena una pieza; en la mesa van las dos.
-            ("elbow_pads",     Models + "codera.fbx"),
-            ("knee_pads",      Models + "rodillera.fbx")
-        };
+            foreach (Module01Library.Entry entry in Module01Library.All)
+                if (!entry.NeedsMarker)
+                    yield return (entry.ItemId, entry.Model);
+        }
 
         [MenuItem("RideSafe/Módulo 1/Usar modelos reales en vez del greybox")]
         public static void Apply()
@@ -50,7 +50,7 @@ namespace RideSafe.Module01.Editor
             int applied = 0;
             List<string> skipped = new List<string>();
 
-            foreach ((string itemId, string modelPath) in Map)
+            foreach ((string itemId, string modelPath) in Map())
             {
                 string assetPath = ItemsFolder + "SO_Item_" + itemId + ".asset";
                 SafetyItemSO item = AssetDatabase.LoadAssetAtPath<SafetyItemSO>(assetPath);

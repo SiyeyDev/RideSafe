@@ -1,0 +1,23 @@
+{
+  "characters": [
+    "Botella",
+    "sellada",
+    "en",
+    "portabotella",
+    "compatible"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.569,
+    1.126,
+    1.277,
+    1.974
+  ],
+  "character_end_times_seconds": [
+    0.522,
+    1.057,
+    1.219,
+    1.916,
+    2.926
+  ]
+}

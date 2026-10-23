@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
+using RideSafe.Module01.Editor;
 
 namespace RideSafe.Module01.Tests
 {
@@ -25,10 +26,12 @@ namespace RideSafe.Module01.Tests
             Assert.IsNotNull(catalog, Missing);
 
             CollectionAssert.IsEmpty(catalog.Validate());
-            // 13 desde el v9: los 11 de siempre mas coderas y rodilleras.
-            Assert.AreEqual(13, new List<SafetyItemSO>(catalog.AllItems).Count);
-            // 4 desde el v9: los pantalones se fueron a su propio banco.
-            Assert.AreEqual(4, catalog.Zones.Count);
+            // Ni el numero ni las zonas se escriben a mano: salen de Module01Library, que es
+            // el Excel del cliente transcrito. Asi el test no hay que retocarlo cada vez que
+            // el cliente mueva un elemento, y a la vez no deja que el catalogo se desvie.
+            Assert.AreEqual(Module01Library.All.Length,
+                            new List<SafetyItemSO>(catalog.AllItems).Count);
+            Assert.AreEqual(Module01Library.Tables.Length, catalog.Zones.Count);
         }
 
         /// <summary>
@@ -58,7 +61,14 @@ namespace RideSafe.Module01.Tests
                     if (item.Category == SafetyItemCategory.Inappropriate) hasInappropriate = true;
                 }
 
-                Assert.IsTrue(hasCore, $"La zona '{zone.ZoneId}' no tiene ningun elemento nucleo.");
+                // Lo que no puede pasar es que una mesa no se juzgue en absoluto: seria
+                // decorado. Pero exigir nucleo EN CADA mesa ya no vale, y el caso es real:
+                // en la mesa de «Visibilidad y control» los dos unicos esenciales de la hoja
+                // son las luces, que son «esencial condicional» y con dia claro cuentan como
+                // bono. Esa mesa ensena a NO llevarse cosas -audifonos, AirPods, mitones, el
+                // vaso de cafe- y eso es un ejercicio legitimo.
+                Assert.IsTrue(hasCore || hasInappropriate,
+                    $"La zona '{zone.ZoneId}' no tiene nada que se juzgue: es decorado.");
 
                 if (ZonesWithoutRisk.TryGetValue(zone.ZoneId, out string reason))
                 {

@@ -1,0 +1,29 @@
+{
+  "characters": [
+    "Chanclas,",
+    "slides",
+    "o",
+    "sandalias",
+    "abiertas",
+    "y",
+    "sueltas"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.789,
+    1.405,
+    1.544,
+    2.078,
+    2.589,
+    2.682
+  ],
+  "character_end_times_seconds": [
+    0.673,
+    1.289,
+    1.486,
+    1.997,
+    2.531,
+    2.624,
+    3.483
+  ]
+}

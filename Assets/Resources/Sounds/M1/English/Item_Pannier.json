@@ -1,0 +1,32 @@
+{
+  "characters": [
+    "Waterproof",
+    "and",
+    "reflective",
+    "saddlebag",
+    "installed",
+    "on",
+    "luggage",
+    "rack"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.755,
+    0.975,
+    1.579,
+    2.241,
+    2.786,
+    2.961,
+    3.413
+  ],
+  "character_end_times_seconds": [
+    0.673,
+    0.906,
+    1.533,
+    2.159,
+    2.74,
+    2.868,
+    3.355,
+    3.994
+  ]
+}
