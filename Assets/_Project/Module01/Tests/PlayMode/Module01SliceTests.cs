@@ -348,10 +348,17 @@ namespace RideSafe.Module01.Tests
                     if (!omitHelmet && item.ItemId == "point_electrics") yield return Capture("pedestal-sin-pieza");
                     bool take = item.Category == SafetyItemCategory.Core || item.Category == SafetyItemCategory.ConditionDependent;
                     if (item.ItemId == "helmet_ok" && omitHelmet) take = false;
+                    // Foco (Cindy, 2026-10-23): con un punto del vehiculo abierto todo se oscurece menos
+                    // el popup y el pedestal; en las mesas de EPP no. Al responder se apaga.
+                    var focus = Object.FindAnyObjectByType<FocusDome>();
+                    Assert.IsNotNull(focus, "La escena no tiene la burbuja de foco");
+                    Assert.AreEqual(_director.InVehicleSection, focus.IsOn,
+                        "Foco con " + item.ItemId + (_director.InVehicleSection ? ": deberia oscurecer" : ": en las mesas de EPP no oscurece"));
                     var button = Field<Button>(_inspector, take ? "_acceptButton" : "_declineButton");
                     AssertOnBrand(button);
                     yield return ClickGraphic(button.GetComponent<RectTransform>());
                     Assert.IsFalse(_inspector.IsPresenting, "El boton no cerro el inspector");
+                    Assert.IsFalse(focus.IsOn, "Al responder, el foco se apaga");
                     Assert.AreEqual(take, _binding.PreparationList.Contains(item.ItemId));
                     Assert.AreEqual(zoneId, _director.CurrentZone.ZoneId, "La zona avanzo antes de pulsar continuar");
                 }

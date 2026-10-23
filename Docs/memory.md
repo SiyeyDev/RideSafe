@@ -1103,6 +1103,35 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 
 ## 11. Bitácora
 
+### 2026-10-23 — foco al revisar un punto del vehículo
+
+- **Pedido de Cindy:** con un punto del vehículo abierto se oscurece todo, el vehículo incluido;
+  quedan a plena luz el popup, el pedestal y su pieza. Al responder vuelve con fundido. En las mesas
+  de EPP no se activa. Diseño en `Docs/superpowers/specs/2026-10-23-foco-al-revisar-vehiculo-design.md`.
+- **Técnica: `FocusDome` (`UI/Runtime`)**, una esfera de Unity vista desde dentro que sigue a la
+  cabeza.
+  - **Material:** `M_FocusDome`, URP Unlit transparente, cara trasera, cola 2950 (antes de la
+    interfaz).
+  - **Por qué no `TheaterMode`:** solo funciona con la `UI Camera` superpuesta, que solo está en la
+    cámara de PC.
+  - **Por qué no desenfoque:** en Quest es caro y marea.
+  - **Fundido:** del alpha a 0,88 en 0,45 s con *smoothstep*. Medido frame a frame: entra en 0,41 s
+    y sale en 0,43 s, y se oculta solo al llegar a 0.
+- **Radio 1,6 m, medido en la v5:**
+  - El popup llega a 1,48 m; la e-bike vista desde atrás, a 1,70 m.
+  - `FocusDomeSceneTests` lo vigila en las 6 zonas de los 2 vehículos.
+  - Oscurece igual que el video: el fondo queda al 25–42 % de brillo, frente al 28–36 % del video.
+- **Arreglo de paso en `ComposeTheaterVideo`** (de siyeydev): buscaba el panel `Explanation` con
+  `Find`, que devolvía al azar el panel o su caja de texto homónima. En esta máquina caía la caja y
+  la composición entera se detenía.
+- **PlayMode M1:** 4 de 6 ya fallaban antes de este cambio, por el catálogo del Excel. El nombre del
+  EPP no cabe en el popup (753 de ancho frente a 580) y `M1/Legend_Correct` sale sin traducir. Las
+  comprobaciones del foco ya están en el recorrido y correrán cuando eso se arregle.
+- **EditMode** 581/583 (los 2 de `Garaje_Test`).
+- **Pendiente:**
+  - Llevar el Módulo 1 a la cámara del visor; hoy cuelga de `Desktop Camera`. Hasta entonces el foco
+    se valida en PC.
+
 ### 2026-10-21 (noche, 3) — partículas de la vitrina y «Estación anterior»
 
 - **Partículas al volver a Vehículo.** Al soltar un vehículo, su plataforma dejaba de emitir pero

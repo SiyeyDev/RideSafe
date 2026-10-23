@@ -33,6 +33,8 @@ namespace RideSafe.Module01
         [SerializeField] private Module01CatalogSO _allItems;
         [Tooltip("Atenúa el garaje durante los videos. Opcional: sin él no hay efecto cine.")]
         [SerializeField] private TheaterMode _theater;
+        [Tooltip("Burbuja oscura alrededor de la cabeza mientras hay un punto del vehiculo abierto.")]
+        [SerializeField] private FocusDome _focus;
         [Tooltip("Barra de salida del reporte final: «Continuar al Módulo 2» y «Repetir Módulo».")]
         [SerializeField] private GameObject _result;
         [Tooltip("Con un asset aquí, Begin salta las pantallas del módulo 0 y usa estos valores. Vacío corre el onboarding completo.")]
@@ -101,6 +103,13 @@ namespace RideSafe.Module01
             _director.Finished += ShowFinalReport;
             _inspector.Accepted += _ => _navigation.SetActive(Phase == "Choosing");
             _inspector.Declined += _ => _navigation.SetActive(Phase == "Choosing");
+            // Foco al revisar un punto del vehiculo (Cindy, 2026-10-23): con el popup abierto se
+            // oscurece todo -el vehiculo incluido- menos el popup y el pedestal, con fundido. En las
+            // mesas de EPP no.
+            _inspector.Presenting += _ => { if (_focus != null && _director.InVehicleSection) _focus.SetOn(true); };
+            _inspector.Accepted += _ => { if (_focus != null) _focus.SetOn(false); };
+            _inspector.Declined += _ => { if (_focus != null) _focus.SetOn(false); };
+            _inspector.Dismissed += () => { if (_focus != null && _focus.IsOn) _focus.SetOn(false); };
             _video.loopPointReached += VideoEnded;
             _video.errorReceived += VideoError;
             if (_onboarding != null)

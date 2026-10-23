@@ -44,6 +44,7 @@ namespace RideSafe.Module01.Editor
         internal static void Compose(UIBuilderKit kit)
         {
             SyncPresentationCatalog();
+            ComposeFocus();
             ComposePopup(kit, Find("ItemInspectorCanvas/Confirmation"), Find("ItemInspectorCanvas/ItemName"));
 
             RectTransform sign = Find("Module01Controls/StationInstruction");
@@ -99,6 +100,92 @@ namespace RideSafe.Module01.Editor
             style.ApplyModifiedPropertiesWithoutUndo();
 
             WriteTranslations();
+        }
+
+        public const string FocusMaterialPath = "Assets/_Project/UI/Materials/M_FocusDome.mat";
+        /// <summary>
+        /// Between the farthest point of the popup (1.48 m) and the nearest of any vehicle in any zone
+        /// (the e-bike from behind, 1.70 m), measured 2026-10-23; FocusDomeSceneTests keeps it so.
+        /// </summary>
+        private const float FocusRadius = 1.6f;
+
+        /// <summary>
+        /// The dark bubble around the head while a vehicle point is open (PO, 2026-10-23): a Unity
+        /// sphere seen from inside, URP Unlit, transparent, at queue 2950 so the popup is drawn after
+        /// it. Under the presentation and following its camera, like everything the learner sees.
+        /// </summary>
+        private static void ComposeFocus()
+        {
+            Material material = FocusMaterial();
+            Transform presentation = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .First(t => t.name == "Module01_Presentation");
+            Transform existing = presentation.Find("FocusDome");
+            GameObject dome;
+            if (existing != null)
+                dome = existing.gameObject;
+            else
+            {
+                dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                dome.name = "FocusDome";
+                dome.transform.SetParent(presentation, false);
+                Object.DestroyImmediate(dome.GetComponent<Collider>());
+            }
+            dome.layer = 0;
+            MeshRenderer renderer = dome.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+            renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+            GameObjectUtility.SetStaticEditorFlags(dome, 0);
+            // Not '??': in the editor a missing component comes back as a fake null.
+            RideSafe.UI.FocusDome focus = dome.GetComponent<RideSafe.UI.FocusDome>();
+            if (focus == null)
+                focus = dome.AddComponent<RideSafe.UI.FocusDome>();
+            focus.ConfigureForTests(renderer, presentation.parent, FocusRadius);
+            focus.Tick(0f);
+            EditorUtility.SetDirty(focus);
+            EditorUtility.SetDirty(renderer);
+
+            Module01Experience experience = Object.FindAnyObjectByType<Module01Experience>(FindObjectsInactive.Include);
+            var serialized = new SerializedObject(experience);
+            serialized.FindProperty("_focus").objectReferenceValue = focus;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>URP Unlit: black, transparent, back faces only (seen from inside), no depth write, queue 2950.</summary>
+        private static Material FocusMaterial()
+        {
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(FocusMaterialPath);
+            if (material == null)
+            {
+                if (!AssetDatabase.IsValidFolder("Assets/_Project/UI/Materials"))
+                    AssetDatabase.CreateFolder("Assets/_Project/UI", "Materials");
+                material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+                AssetDatabase.CreateAsset(material, FocusMaterialPath);
+            }
+            material.shader = Shader.Find("Universal Render Pipeline/Unlit");
+            material.SetColor("_BaseColor", Color.black);
+            material.SetFloat("_Surface", 1f);   // transparent
+            material.SetFloat("_Blend", 0f);     // alpha
+            material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            material.SetFloat("_SrcBlendAlpha", (float)UnityEngine.Rendering.BlendMode.One);
+            material.SetFloat("_DstBlendAlpha", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            material.SetFloat("_ZWrite", 0f);
+            material.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Front); // render face: back
+            material.SetFloat("_AlphaClip", 0f);
+            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.SetOverrideTag("RenderType", "Transparent");
+            material.SetShaderPassEnabled("ShadowCaster", false);
+            material.SetShaderPassEnabled("DepthOnly", false);
+            // URP recomputes the queue from the surface and its priority (_QueueOffset, -50..50):
+            // transparent at the lowest priority is 2950, still before the UI canvases at 3000.
+            material.SetFloat("_QueueOffset", -50f);
+            material.renderQueue = 2950;
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssets();
+            return material;
         }
 
         /// <summary>
@@ -288,7 +375,10 @@ namespace RideSafe.Module01.Editor
 
         private static void ComposeTheaterVideo()
         {
-            RectTransform panel = Find("PF_Module01_UI/Explanation");
+            // El panel es el hijo directo de PF_Module01_UI. Hay dos «Explanation» bajo él —el panel y
+            // su caja de texto— y Find devuelve el primero que encuentre, sin orden garantizado: el
+            // 2026-10-23 cayó la caja y la composición se detuvo al no hallar VideoCard.
+            RectTransform panel = (RectTransform)Find("Desktop Camera/PF_Module01_UI").Find("Explanation");
             Vector2 size = panel.rect.size;
 
             // El video manda su proporcion y se queda con todo menos la franja del subtitulo.
