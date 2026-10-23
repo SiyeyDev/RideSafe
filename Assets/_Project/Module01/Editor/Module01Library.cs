@@ -69,7 +69,8 @@ namespace RideSafe.Module01.Editor
             public Entry(string libraryId, string itemId, SafetyItemCategory category,
                          float weight, string table,
                          string model = null, string hazardGroup = null,
-                         string exclusiveBonusWith = null, string sceneObject = null)
+                         string exclusiveBonusWith = null, string sceneObject = null,
+                         float targetWidth = 0f)
             {
                 LibraryId = libraryId;
                 ItemId = itemId;
@@ -80,6 +81,7 @@ namespace RideSafe.Module01.Editor
                 HazardGroup = hazardGroup;
                 ExclusiveBonusWith = exclusiveBonusWith;
                 SceneObject = sceneObject;
+                TargetWidth = targetWidth;
             }
 
             /// <summary>El ID de la hoja: E01, O04, H13… Es la trazabilidad con el cliente.</summary>
@@ -111,6 +113,31 @@ namespace RideSafe.Module01.Editor
             /// puntos del vehículo que no tienen pieza propia.
             /// </summary>
             public string SceneObject { get; }
+
+            /// <summary>
+            /// Cuánto debe medir el objeto <b>de ancho, en metros de mundo</b>: su dimensión
+            /// horizontal mayor. 0 = dejarlo como venga.
+            /// <para>
+            /// <b>Por qué existe.</b> Los modelos de la carpeta de esenciales llegan a escalas
+            /// disparatadas: el casco mide 1,02 m de ancho, el kit de pinchazos 2,06 y la
+            /// chaqueta impermeable 5 cm. Medido en la escena el 2026-10-22, y con eso
+            /// «Protección personal» pedía 4,61 m sobre una tapa de 3,34.
+            /// </para>
+            /// <para>
+            /// <b>Se declara el tamaño, no un factor de escala</b>, y eso importa: el montador
+            /// calcula <c>escala = objetivo / lo que mide</c>, así que el día que 3D reexporte
+            /// a escala real el factor sale 1 solo y esta tabla no hay que deshacerla. Un factor
+            /// fijo habría que quitarlo a mano y nadie se acordaría.
+            /// </para>
+            /// <para>
+            /// De dónde salen los números: los cinco que tienen equivalente viejo se midieron
+            /// contra él —el casco contra <c>casco 1</c> (0,35), el calzado contra <c>botas</c>
+            /// (0,35), las gafas contra <c>gafas</c> (0,17), el chaleco contra <c>chaleco
+            /// refectivo</c> (0,45)—. Los demás son el tamaño real del objeto físico, puesto por
+            /// Claude y pendiente de que 3D lo confirme.
+            /// </para>
+            /// </summary>
+            public float TargetWidth { get; }
 
             /// <summary>Todavía no hay modelo: va con el signo «!».</summary>
             public bool NeedsMarker => string.IsNullOrEmpty(Model);
@@ -156,40 +183,75 @@ namespace RideSafe.Module01.Editor
         {
             // ---- Esenciales ------------------------------------------------------------
             new Entry("E01", "helmet_ok", Core, 40f, Mesa1,
-                      model: Essentials + "Casco certificado.fbx"),
+                      model: Essentials + "Casco certificado.fbx",
+                      targetWidth: 0.30f),  // medido contra casco 1 (0,35) y df_g_helmet_01 (0,285)
             new Entry("E04", "shoes_ok", Core, 20f, Mesa1,
-                      model: Essentials + "zapatos de seguridad.fbx"),
+                      model: Essentials + "zapatos de seguridad.fbx",
+                      targetWidth: 0.35f),  // medido contra botas (0,349)
             new Entry("E05", "trousers_fitted", Core, 5f, Mesa3,
-                      model: Essentials + "Slim_fit_pants_doblado.fbx"),
+                      model: Essentials + "Slim_fit_pants_doblado.fbx",
+                      targetWidth: 0.36f),  // ya llega bien; igual que jean_ajustado_doblado (0,317)
 
             // ---- Esenciales condicionales: hoy, con día claro, valen +1 de bono ---------
             new Entry("E02", "light_front", Opt, 1f, Mesa2,
-                      model: Essentials + "lintarna.fbx"),
+                      model: Models + "luz grontal.fbx",
+                      targetWidth: 0.10f),
+                      // `luz grontal` en vez de `lintarna`: viene a escala real -0,03 x 0,05 x 0,10-
+                      // y trae un hijo `soporte`, que es justo lo que pide la direccion artistica de
+                      // E02 en la hoja («soporte de manillar visible»). `lintarna` medía 1,17 m y no
+                      // tiene soporte. Charlie, 2026-10-22.
             new Entry("E03", "light_rear", Opt, 1f, Mesa2,
-                      model: Essentials + "luz_tracera.fbx"),
+                      model: Essentials + "luz_tracera.fbx",
+                      targetWidth: 0.09f),  // luz de bici real; hoy mide 0,98
 
             // ---- Recomendados ----------------------------------------------------------
             new Entry("O01", "hiviz_day", Opt, 2f, Mesa2,
-                      exclusiveBonusWith: "reflective"),
+                      model: Models + "rompe veintos.fbx",
+                      exclusiveBonusWith: "reflective",
+                      targetWidth: 0.45f),
+                      // `rompe veintos` NO es «otro rompevientos»: renderizado se ve que es una
+                      // chaqueta amarillo fluor con bandas reflectivas, que es literalmente O01.
+                      // El de la capucha (`rompe vientos_capucha`) se queda para O16.
             new Entry("O02", "reflective", Opt, 3f, Mesa2,
                       model: Essentials + "chaleco reflectivo.fbx",
-                      exclusiveBonusWith: "hiviz_day"),
+                      exclusiveBonusWith: "hiviz_day",
+                      targetWidth: 0.36f),  // el chaleco nuevo es mas esbelto que el viejo (relacion alto/ancho
+                      // 1,61 frente a 1,33), asi que con 0,45 de ancho media 0,73 de alto y
+                      // StationLayout.FloorHeight (0,70) lo plantaba en el suelo. Con 0,36
+                      // mide 0,58 y vuelve a la mesa, que es donde estaba el viejo.
             new Entry("O04", "gloves", Opt, 2f, Mesa1,
-                      model: Essentials + "gloves.fbx"),
+                      model: Essentials + "gloves.fbx",
+                      targetWidth: 0.26f),  // ya llega bien
             new Entry("O07", "glasses", Opt, 1f, Mesa1,
-                      model: Models + "gafdas de seguridad.fbx"),
-            new Entry("O08", "sunglasses", Opt, 1f, Mesa1),
+                      model: Models + "gafdas de seguridad.fbx",
+                      targetWidth: 0.17f),  // medido contra gafas (0,174)
+            new Entry("O08", "sunglasses", Opt, 1f, Mesa1,
+                      model: Models + "gafas.fbx", sceneObject: "gafas", targetWidth: 0.17f),
+                      // Las `gafas` de siempre son OSCURAS y tintadas: son de sol, no las
+                      // transparentes resistentes a impacto. Esas son `gafdas de seguridad`,
+                      // que se ven claras y envolventes y se quedan en O07. Visto renderizado.
             new Entry("O09", "backpack", Opt, 2f, Mesa3),
             new Entry("O11", "cargo_secured", Opt, 2f, Mesa3,
-                      model: Models + "guaya candado.fbx", sceneObject: "guaya candado"),
+                      model: Models + "candado.fbx", sceneObject: "candado"),
+                      // La hoja pide «Candado con soporte o ubicación de transporte segura»:
+                      // un candado, no una guaya. `guaya candado` es una guaya enrollada y se
+                      // queda fuera, igual que `guayya dañado`, su pareja deteriorada: ninguna
+                      // de las dos tiene fila en el Excel. El FBX del candado mide 15,76 m,
+                      // pero su instancia en la escena ya viene a escala 0,02 y mide 0,22, asi
+                      // que se reutiliza en vez de instanciarlo.
             new Entry("O12", "flat_kit", Opt, 2f, Mesa3,
-                      model: Models + "parch.fbx"),
+                      model: Models + "cartuchera_low.fbx",
+                      targetWidth: 0.20f),
+                      // `cartuchera_low` es un estuche con cremallera -visto renderizado-, que
+                      // lee como «kit compacto» mucho mejor que `parch`, una lamina suelta.
             new Entry("O13", "multitool", Opt, 1f, Mesa3,
-                      model: Models + "Tool_Tajima_lowpoly_02.fbx"),
+                      model: Models + "Tool_Tajima_lowpoly_02.fbx",
+                      targetWidth: 0.12f),  // multiherramienta cerrada; hoy mide 1,82
             new Entry("O14", "phone_mount", Opt, 1f, Mesa2),
             new Entry("O15", "bell", Opt, 2f, Mesa2),
             new Entry("O16", "rain_jacket", Opt, 2f, Mesa3,
-                      model: Essentials + "rompe vientos_capucha.fbx"),
+                      model: Essentials + "rompe vientos_capucha.fbx",
+                      targetWidth: 0.40f),  // chaqueta doblada; hoy mide 0,05, es la unica demasiado PEQUENA
             new Entry("O18", "bottle", Opt, 1f, Mesa3),
             new Entry("O19", "pannier", Opt, 3f, Mesa3),
 
@@ -200,11 +262,13 @@ namespace RideSafe.Module01.Editor
                       model: Models + "casco 1.fbx", hazardGroup: "helmet_integrity",
                       sceneObject: "casco 1"),
             new Entry("H03", "headphones", Bad, 20f, Mesa2,
-                      model: Models + "audifonos.fbx", hazardGroup: "auditory_occlusion"),
+                      model: Models + "audifonos.fbx", hazardGroup: "auditory_occlusion",
+                      targetWidth: 0.18f),  // auriculares de diadema; hoy mide 0,13
             new Entry("H13", "airpods", Bad, 20f, Mesa2,
                       hazardGroup: "auditory_occlusion"),
             new Entry("H04", "sandals", Bad, 15f, Mesa1,
-                      model: Models + "Slippers.fbx", hazardGroup: "footwear_control"),
+                      model: Models + "Slippers.fbx", hazardGroup: "footwear_control",
+                      targetWidth: 0.30f),  // par de chanclas; hoy mide 0,43
             new Entry("H06", "poncho", Bad, 20f, Mesa3,
                       hazardGroup: "loose_rainwear"),
             new Entry("H07", "glasses_damaged", Bad, 20f, Mesa1,
@@ -240,6 +304,42 @@ namespace RideSafe.Module01.Editor
             "trousers_tech",    // pantalon deportivo doblado
             "elbow_pads",       // codera (par)
             "knee_pads",        // rodillera (par)
+        };
+
+        /// <summary>
+        /// Objetos de arte que <b>salen del ejercicio</b> y hay que apagar en la escena: o su
+        /// elemento se retiró, o el elemento sigue pero ahora usa otro modelo.
+        /// <para>
+        /// Apagarlos no es cosmético. Los EPP nuevos se colocan sobre las mismas tapas —la
+        /// `mesa` pasó de llevar tres pantalones a llevar los once de «Preparación del
+        /// trayecto»— así que dejar el arte viejo encima significa objetos superpuestos: el
+        /// aprendiz ve dos pantalones y solo uno responde al clic. Ya pasó con los pantalones de
+        /// pie del v9.
+        /// </para>
+        /// <para>
+        /// <b>Se apagan, no se borran.</b> Son modelos del equipo de arte y cada entrega del
+        /// garaje los vuelve a traer; apagarlos es reversible con un clic y repetir el comando
+        /// los deja apagados otra vez.
+        /// </para>
+        /// <para>
+        /// No están aquí <c>casco 1</c>, <c>guaya candado</c> ni <c>MobilePhone_01</c>: esos
+        /// tres siguen siendo el modelo de su elemento y se declaran en
+        /// <see cref="Entry.SceneObject"/>.
+        /// </para>
+        /// </summary>
+        public static readonly string[] RetiredSceneObjects =
+        {
+            // Siguen en el catálogo, pero con el modelo bueno de la carpeta de esenciales.
+            "df_g_helmet_01",               // helmet_ok -> Casco certificado
+            "botas",                        // shoes_ok  -> zapatos de seguridad
+            "chaleco refectivo",            // reflective -> chaleco reflectivo (sin la errata)
+            "jean_ajustado_doblado",        // trousers_fitted -> Slim_fit_pants_doblado
+            // Retirados: la hoja no los pide.
+            "bufanda 01",
+            "jean ancho doblado",
+            "pantalon deportivo doblado",
+            "coderas",
+            "rodilleras",
         };
     }
 }

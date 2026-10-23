@@ -211,7 +211,11 @@ namespace RideSafe.Module01.Tests
                 if (e.NeedsMarker)
                     sinModelo.Add(e.LibraryId);
 
-            Assert.AreEqual(16, sinModelo.Count,
+            // 16 -> 14 el 2026-10-22: al revisar los modelos uno a uno aparecieron dos que
+            // nadie habia mapeado. `rompe veintos` no era «otro rompevientos» sino una chaqueta
+            // amarillo fluor con bandas reflectivas (O01), y las `gafas` de siempre son oscuras,
+            // asi que son las de sol (O08) y no las transparentes.
+            Assert.AreEqual(14, sinModelo.Count,
                 "Si 3D entrega uno, baja el número: actualiza este test y la tabla. Faltan: "
                 + string.Join(", ", sinModelo));
         }

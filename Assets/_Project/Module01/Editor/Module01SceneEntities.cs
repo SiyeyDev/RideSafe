@@ -95,11 +95,130 @@ namespace RideSafe.Module01.Editor
         /// <summary>Idempotente: reutiliza las entidades que ya estén puestas.</summary>
         public static void Apply()
         {
+            RetireArtThatLeftTheExercise();
             HideSuperseded();
             GroupPairs();
             TagEntities();
             FillMissingEntities();
             RemoveOrphanSpawned();
+            RemoveStaleEntitiesOnArt();
+        }
+
+        /// <summary>
+        /// Lleva el objeto al ancho que declara la biblioteca, si lo declara.
+        /// <para>
+        /// Los modelos de la carpeta de esenciales llegan a escalas que no son la real —el casco
+        /// mide 1,02 m de ancho y el kit de pinchazos 2,06— y así no caben en ninguna tapa del
+        /// garaje. Se escala por <b>lo que mide de verdad</b>, no por un factor fijo: cuando 3D
+        /// reexporte a escala real, <c>objetivo / medido</c> dará 1 y esto dejará de hacer nada
+        /// sin que haya que acordarse de quitarlo.
+        /// </para>
+        /// <para>
+        /// Escala uniforme a propósito: corregir cada eje por separado deformaría el objeto, y
+        /// lo que está mal es la escala del export, no las proporciones.
+        /// </para>
+        /// </summary>
+        private static void ScaleToTargetWidth(GameObject go, string itemId)
+        {
+            float objetivo = 0f;
+            foreach (Module01Library.Entry e in Module01Library.All)
+                if (e.ItemId == itemId) { objetivo = e.TargetWidth; break; }
+
+            if (objetivo <= 0f)
+                return;
+
+            Renderer[] rs = go.GetComponentsInChildren<Renderer>(true);
+            if (rs.Length == 0)
+                return;
+
+            Bounds b = rs[0].bounds;
+            foreach (Renderer r in rs) b.Encapsulate(r.bounds);
+
+            float medido = Mathf.Max(b.size.x, b.size.z);
+            if (medido <= 0.0001f)
+                return;
+
+            float factor = objetivo / medido;
+            if (Mathf.Abs(factor - 1f) < 0.02f)
+                return;   // ya llega bien: no se toca la escala por un 2 %
+
+            go.transform.localScale *= factor;
+            Debug.Log($"[Module01] {itemId}: medía {medido:F2} m de ancho y la biblioteca pide "
+                      + $"{objetivo:F2}; escalado x{factor:F3}. Cuando 3D lo reexporte a escala "
+                      + "real este factor será 1.");
+        }
+
+        /// <summary>
+        /// Apaga el arte que salió del ejercicio y le quita su entidad, para que no quede un
+        /// objeto clicable que el catálogo ya no conoce.
+        /// <para>
+        /// Va <b>antes</b> de colocar: los EPP nuevos caen sobre las mismas tapas que ocupaba el
+        /// arte viejo, así que si no se apaga primero quedan objetos superpuestos.
+        /// </para>
+        /// </summary>
+        private static void RetireArtThatLeftTheExercise()
+        {
+            int apagados = 0;
+            foreach (string nombre in Module01Library.RetiredSceneObjects)
+            {
+                GameObject go = Find(nombre);
+                if (go == null)
+                    continue;
+
+                foreach (WorldObjectTaskEntity entity in go.GetComponentsInChildren<WorldObjectTaskEntity>(true))
+                    Undo.DestroyObjectImmediate(entity);
+
+                if (go.activeSelf)
+                {
+                    Undo.RecordObject(go, "Retirar arte del ejercicio");
+                    go.SetActive(false);
+                    apagados++;
+                }
+            }
+
+            if (apagados > 0)
+                Debug.Log($"[Module01] Arte apagado por salir del ejercicio: {apagados}.");
+        }
+
+        /// <summary>
+        /// Quita las entidades que quedaron sobre objetos de arte con un id que el catálogo ya
+        /// no conoce —por ejemplo <c>module01.head.helmet_ok</c> cuando la zona <c>head</c> pasó
+        /// a ser <c>protection</c>—.
+        /// <para>
+        /// <see cref="RemoveOrphanSpawned"/> no las ve: solo mira bajo <c>Module01_Spawned</c>, y
+        /// estas viven en el mueble del arte. Sin esto quedan esferas y modelos que responden al
+        /// clic y no pertenecen a ninguna zona, así que el recorrido nunca las cierra.
+        /// </para>
+        /// </summary>
+        private static void RemoveStaleEntitiesOnArt()
+        {
+            HashSet<string> wanted = new HashSet<string>();
+            foreach (ZoneSO zone in AllZones())
+                foreach (SafetyItemSO item in zone.Items)
+                    if (item != null)
+                        wanted.Add($"module01.{zone.ZoneId}.{item.ItemId}");
+
+            GameObject spawned = Find("Module01_Spawned");
+            int quitadas = 0;
+
+            foreach (WorldObjectTaskEntity entity in
+                     Object.FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                string id = entity.Id.Value;
+                if (!id.StartsWith("module01.") || wanted.Contains(id))
+                    continue;
+                // Lo de dentro de Module01_Spawned ya lo borra RemoveOrphanSpawned, objeto
+                // incluido. Aquí solo se quita el componente: el modelo es del arte.
+                if (spawned != null && entity.transform.IsChildOf(spawned.transform))
+                    continue;
+
+                Debug.Log($"[Module01] Quitada la entidad obsoleta '{id}' de '{entity.name}'.");
+                Undo.DestroyObjectImmediate(entity);
+                quitadas++;
+            }
+
+            if (quitadas > 0)
+                Debug.Log($"[Module01] Entidades obsoletas quitadas del arte: {quitadas}.");
         }
 
         /// <summary>Pone la entidad de tarea sobre cada objeto de EPP ya colocado por arte.</summary>
@@ -178,6 +297,7 @@ namespace RideSafe.Module01.Editor
                     {
                         go = (GameObject)PrefabUtility.InstantiatePrefab(item.DisplayPrefab);
                         go.name = item.ItemId;
+                        ScaleToTargetWidth(go, item.ItemId);
                     }
                     else
                     {

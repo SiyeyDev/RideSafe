@@ -16,7 +16,7 @@ MonoBehaviour:
   _nameKey: M1/Item_LightFront
   _riskKey: M1/Item_LightFront_Risk
   _category: 2
-  _displayPrefab: {fileID: 919132149155446097, guid: d4ca6488f59a0a549910164161855260, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: a428e88d26d710b4d8e839a1075d9cd0, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 1

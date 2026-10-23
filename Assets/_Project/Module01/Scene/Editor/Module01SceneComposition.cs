@@ -56,6 +56,7 @@ namespace RideSafe.Module01.Editor
             UIBrand.Place(kit, text.GetComponent<TMP_Text>(), text, 0f, true);
 
             ComposeDecision(kit, Find("Module01Controls/ReadinessDecision"));
+            ComposeTheaterVideo();
 
             // The vehicle's '!' signs were in TMP's default font (AutoHand's AmmoText): brand font.
             foreach (InspectionMarker marker in Object.FindObjectsByType<InspectionMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None))
@@ -257,6 +258,122 @@ namespace RideSafe.Module01.Editor
             return image != null && image.type == Image.Type.Sliced && image.pixelsPerUnitMultiplier > 0f
                 ? UIBuilderKit.PadFor(image.pixelsPerUnitMultiplier)
                 : 0f;
+        }
+
+        // ---- El video a pantalla completa --------------------------------------------------
+        //
+        // El cliente dijo que los videos salían pequeños, y medido tenía razón: la superficie
+        // ocupaba 1,03 x 0,50 m vista desde 2,03 m, o sea 28,5° de los 91,5° que abarca el ojo
+        // —un 31 % del ancho— y además estaba descentrada 88 cm a la derecha, porque el panel
+        // repartía mitad video y mitad fichas de texto.
+        //
+        // En VR no existe «pantalla completa»: lo que hay es el ángulo que ocupa un plano en el
+        // mundo. Lo que se hace aquí es darle al video el panel entero y pasar el texto a una
+        // banda que se superpone sobre su borde inferior, como el control de un reproductor.
+        // El panel mide 1002 x 556, que es casi exactamente 16:9, así que el video lo llena sin
+        // bandas negras. Resultado: 1,90 m de ancho y 50,2° de ángulo, centrado.
+        //
+        // Por qué no más: pasar de ~60° obliga a mover la cabeza para ver los bordes, y el ancho
+        // está topado por el propio panel. Para ir más allá habría que acercar el panel o subir
+        // la escala del canvas, y las dos cosas afectan a las demás pantallas.
+
+        /// <summary>Margen del video contra el borde del panel, en unidades del kit.</summary>
+        private const float VideoInset = 26f;
+
+        /// <summary>Alto de la banda de controles que se superpone al pie del video.</summary>
+        private const float ControlBand = 118f;
+
+        /// <summary>Franja al pie del panel, fuera del video, donde vive el subtitulo.</summary>
+        private const float SubtitleBand = 58f;
+
+        private static void ComposeTheaterVideo()
+        {
+            RectTransform panel = Find("PF_Module01_UI/Explanation");
+            Vector2 size = panel.rect.size;
+
+            // El video manda su proporcion y se queda con todo menos la franja del subtitulo.
+            // Sin esa franja el subtitulo caia encima de los botones de pausa y repetir: el
+            // video llegaba hasta el borde del panel y no quedaba sitio fuera de el.
+            float alto = size.y - SubtitleBand;
+            float ancho = alto * 16f / 9f;
+            if (ancho > size.x - 2f * VideoInset)
+            {
+                ancho = size.x - 2f * VideoInset;
+                alto = ancho * 9f / 16f;
+            }
+            float arriba = (size.y - SubtitleBand - alto) * .5f;
+
+            // Centrado de verdad: anclarlo al margen izquierdo lo dejaba 6,5 cm a un lado, que
+            // en VR se nota porque el video es lo unico que se mira.
+            float izquierda = (size.x - ancho) * .5f;
+
+            RectTransform card = (RectTransform)panel.Find("VideoCard");
+            Place(card, new Vector2(izquierda, -arriba), new Vector2(ancho, alto));
+
+            // Dentro de la tarjeta todo va en coordenadas suyas, con el origen arriba a la izq.
+            Place(Child(card, "VideoSurface"), new Vector2(0f, 0f), new Vector2(ancho, alto));
+            Place(Child(card, "VideoFrame"), new Vector2(0f, 0f), new Vector2(ancho, alto));
+
+            // La barra de avance, pegada al borde inferior del video.
+            RectTransform progreso = Child(card, "VideoProgress");
+            Place(progreso, new Vector2(0f, -(alto - ControlBand)), new Vector2(ancho, 4f));
+
+            // Leyenda y botones, dentro de la banda, sobre el propio video.
+            float bandaY = -(alto - ControlBand + 14f);
+            Place(Child(card, "Caption"), new Vector2(24f, bandaY), new Vector2(ancho - 300f, 32f));
+
+            float botonesY = -(alto - 56f);
+            MoveOnly(Child(card, "PauseButton"), new Vector2(24f, botonesY));
+            MoveOnly(Child(card, "ReplayButton"), new Vector2(88f, botonesY));
+            MoveOnly(Child(card, "ContinueButton"), new Vector2(ancho - 134f, botonesY));
+            MoveOnly(Child(card, "PlayingTag"), new Vector2(ancho - 120f, -18f));
+
+            // La ficha del elemento y su explicacion pasan a superponerse arriba a la derecha,
+            // que es la esquina con menos informacion en un plano general.
+            RectTransform ficha = (RectTransform)panel.Find("ItemCard");
+            Place(ficha, new Vector2(izquierda + ancho - 351f - 14f, -arriba - 18f), new Vector2(351f, 185f));
+
+            RectTransform caja = (RectTransform)panel.Find("Explanation");
+            Place(caja, new Vector2(izquierda + ancho - 353f - 14f, -arriba - 215f), new Vector2(353f, 122f));
+
+            // El subtitulo baja al pie del panel, fuera del video, para no pisar la banda.
+            RectTransform sub = (RectTransform)panel.Find("Subtitle");
+            if (sub != null)
+                MoveOnly(sub, new Vector2((size.x - sub.rect.width) * .5f,
+                                          -(arriba + alto + (SubtitleBand - sub.rect.height) * .5f)));
+
+            Debug.Log($"[Module01] Video a pantalla completa: {ancho:F0}x{alto:F0} unidades "
+                      + $"= {ancho * .002f:F2} x {alto * .002f:F2} m, centrado. Antes eran 1,03 x 0,50 "
+                      + "descentrados: el angulo pasa de 28,5° a 50,2°.");
+        }
+
+        private static RectTransform Child(RectTransform parent, string name)
+        {
+            Transform t = parent.Find(name);
+            if (t == null)
+                throw new System.InvalidOperationException($"No encuentro '{name}' bajo '{parent.name}'.");
+            return (RectTransform)t;
+        }
+
+        /// <summary>Coloca un rect anclado arriba a la izquierda, con su tamaño visible.</summary>
+        private static void Place(RectTransform rect, Vector2 topLeft, Vector2 visible)
+        {
+            float pad = PadOf(rect);
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(topLeft.x - pad, topLeft.y + pad);
+            rect.sizeDelta = visible + Vector2.one * (2f * pad);
+            EditorUtility.SetDirty(rect);
+        }
+
+        /// <summary>Lo mueve sin tocarle el tamaño: para los botones, que el kit ya midió.</summary>
+        private static void MoveOnly(RectTransform rect, Vector2 topLeft)
+        {
+            float pad = PadOf(rect);
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(topLeft.x - pad, topLeft.y + pad);
+            EditorUtility.SetDirty(rect);
         }
 
         private static void SetVisibleSize(RectTransform rect, Vector2 visible)

@@ -43,6 +43,48 @@ namespace RideSafe.Module01.Editor
         /// <summary>Hueco entre el mueble y lo que se planta de pie en el suelo delante de él.</summary>
         private const float FloorStandoff = .30f;
 
+        /// <summary>Por encima de esto ya no es un prop: es mobiliario, un muro o el suelo.</summary>
+        private const float PropSizeLimit = 8f;
+
+        /// <summary>
+        /// El objeto que hay que mover para apartar esta malla: el ancestro más alto que
+        /// <b>sigue siendo un prop</b>.
+        /// <para>
+        /// Se sube mientras el ancestro quepa en <see cref="PropSizeLimit"/>, así que un
+        /// contenedor grande —<c>epps</c>, el garaje entero— corta la subida y no se mueve media
+        /// escena por apartar una linterna. Sin esto se movían los hijos por separado y los
+        /// modelos de varias piezas se partían.
+        /// </para>
+        /// </summary>
+        private static Transform PropRoot(Transform mesh, GameObject surface)
+        {
+            Transform mejor = mesh;
+            for (Transform t = mesh.parent; t != null; t = t.parent)
+            {
+                if (surface != null && t == surface.transform) break;
+                Bounds? b = WorldBounds(t);
+                if (b == null || b.Value.size.magnitude > PropSizeLimit) break;
+                mejor = t;
+            }
+            return mejor;
+        }
+
+        /// <summary>La caja de todas las mallas visibles que cuelgan de este objeto.</summary>
+        private static Bounds? WorldBounds(Transform t)
+        {
+            Renderer[] rs = t.GetComponentsInChildren<Renderer>(false);
+            if (rs.Length == 0) return null;
+            Bounds b = rs[0].bounds;
+            foreach (Renderer r in rs) b.Encapsulate(r.bounds);
+            return b;
+        }
+
+        private static Bounds Encapsulated(Bounds a, Bounds b)
+        {
+            a.Encapsulate(b);
+            return a;
+        }
+
         [MenuItem("RideSafe/Módulo 1/Repartir las estaciones de EPP por el garaje")]
         public static void LayoutOpenScene()
         {
@@ -368,23 +410,39 @@ namespace RideSafe.Module01.Editor
             List<Bounds> puestos = new List<Bounds>();
             int moved = 0;
 
+            // Se aparta el OBJETO, no cada malla suelta. Un prop con la malla repartida en
+            // hijos —'luz grontal' la tiene en 'model_0:Mesh' y 'soporte'— se partía en dos:
+            // un hijo se iba al otro extremo del garaje y el otro se quedaba, y el modelo
+            // acababa midiendo 8,5 m. Agrupar por raíz y mover una vez lo evita.
+            Dictionary<Transform, Bounds> props = new Dictionary<Transform, Bounds>();
             foreach (Renderer r in estorban)
             {
-                if (!TryFindSpot(r.bounds, group.center, along, ocupado, puestos, out Vector3 destino))
+                Transform raiz = PropRoot(r.transform, surface);
+                props[raiz] = props.TryGetValue(raiz, out Bounds acum)
+                    ? Encapsulated(acum, r.bounds)
+                    : r.bounds;
+            }
+
+            foreach (KeyValuePair<Transform, Bounds> prop in props)
+            {
+                Transform raiz = prop.Key;
+                Bounds caja = WorldBounds(raiz) ?? prop.Value;
+
+                if (!TryFindSpot(caja, group.center, along, ocupado, puestos, out Vector3 destino))
                 {
                     Debug.LogWarning(
-                        $"[Module01] '{r.name}' tapa la estación '{zoneId}' y no he encontrado sitio " +
+                        $"[Module01] '{raiz.name}' tapa la estación '{zoneId}' y no he encontrado sitio " +
                         "libre donde apartarlo. Se queda donde está: hay que moverlo a mano.");
                     continue;
                 }
 
-                Undo.RecordObject(r.transform, "Apartar de la estacion");
-                r.transform.position += destino - r.bounds.center;
-                puestos.Add(new Bounds(destino, r.bounds.size));
+                Undo.RecordObject(raiz, "Apartar de la estacion");
+                raiz.position += destino - caja.center;
+                puestos.Add(new Bounds(destino, caja.size));
                 moved++;
 
                 Debug.LogWarning(
-                    $"[Module01] '{r.name}' estaba entre el aprendiz y la estación '{zoneId}'. " +
+                    $"[Module01] '{raiz.name}' estaba entre el aprendiz y la estación '{zoneId}'. " +
                     $"Apartado a {destino:F2}. Conviene que el equipo de arte no lo coloque ahí " +
                     "en la próxima entrega.");
             }

@@ -16,7 +16,7 @@ MonoBehaviour:
   _nameKey: M1/Item_HivizDay
   _riskKey: M1/Item_HivizDay_Risk
   _category: 2
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: f456f0bed8994f04d94e4f7b92e7a50e, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 2

@@ -447,6 +447,30 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       **Falta relanzarlo**, y antes hay que meter en I2 los ids nuevos del catálogo. Los títulos
       de zona (`Zone_`) quedan **fuera** por decisión de Charlie; sobra el `Zone_Clothing.mp3`
       suelto que hay en español.
+- [x] ~~**Montar los EPP del Excel en la escena**~~ — **hecho el 2026-10-22.** 32 entidades en
+      las tres mesas, **18 con modelo real y 14 con el signo «!»**, las 32 apoyadas en su tapa.
+      Lo monta `RideSafe → Módulo 1 → Rehacer el catálogo` + `Etiquetar entidades` +
+      `Repartir las estaciones`, en ese orden, y es repetible.
+      - **Los modelos llegan a escalas disparatadas y era lo que bloqueaba**: el casco medía 1,02 m
+        de ancho, el kit de pinchazos 2,06, el candado **15,76 m** y la chaqueta impermeable 5 cm.
+        Con eso «Protección personal» pedía 4,61 m sobre una tapa de 3,34. **No es solo la tanda
+        nueva**: hay modelos viejos igual de rotos y nuevos que llegan bien.
+      - La corrección es `Module01Library.Entry.TargetWidth`: se declara **el ancho que debe medir
+        el objeto**, no un factor. El montador calcula `objetivo ÷ medido`, así que cuando 3D
+        reexporte a escala real el factor sale 1 solo y la tabla no hay que deshacerla.
+      - **`StationLayout.FloorHeight` (0,70) planta en el suelo lo que mida más de 70 cm de alto.**
+        El chaleco nuevo es más esbelto que el viejo (relación alto/ancho 1,61 frente a 1,33), así
+        que con 45 cm de ancho medía 73 de alto y se iba al suelo. A 36 cm vuelve a la mesa.
+- [ ] **Faltan 14 modelos, y son estos:** mochila, soporte de móvil, timbre, botella, alforja,
+      casco con correa cortada, poncho, gafas rayadas, mitones, tote, paraguas, vaso de café,
+      gorra y AirPods. Comprobado contra los 287 FBX de la carpeta: **para esos no hay nada**.
+      Mientras tanto van con el «!», que es lo que decidió Charlie el 2026-10-22.
+- [ ] **Al buscar modelo, MIRARLOS, no fiarse del nombre.** Renderizando los candidatos en una
+      escena de muestra aparecieron dos que nadie había mapeado: **`rompe veintos` no es «otro
+      rompevientos»** sino una chaqueta amarillo flúor con bandas reflectivas, o sea O01; y las
+      **`gafas` de siempre son oscuras**, así que son las de sol (O08) y no las transparentes de
+      impacto (esas son `gafdas de seguridad`). Al revés, `casco` resultó ser un casco **intacto**
+      y no servía para «correa cortada» como yo había supuesto por el nombre.
 - [ ] **No hay modelo de escenario, y el bono lo necesita.** La hoja dice «suma de bonos
       **aplicables**» y cada recomendado trae su condición: la chaqueta impermeable solo con
       lluvia, las gafas de sol solo en día soleado, la alforja solo con portaequipajes. El
