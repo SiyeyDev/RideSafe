@@ -1,7 +1,13 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-22 — `dev` traída a `feat/garaje-v6` (`432ee27`): §3 al día.
+> Última actualización: 2026-10-23 — `dev` traída aquí (`e75e876`): el **foco al revisar un punto
+> del vehículo** (`FocusDome`, §11) y el arreglo de `ComposeTheaterVideo`. §3 al día; la revisión
+> de ese commit dejó dos notas en el apartado técnico de §8.
+> **Corrido aquí ese día: EditMode 581/2/1 y PlayMode del M1 2 de 6.** Los 4 fallos son de
+> contenido —el nombre del EPP sale de la columna «Elemento» del Excel y no cabe en el popup, y
+> `M1/Legend_Correct` sin traducir—, no del foco (§4 y §8).
+> Antes, el 2026-10-22: `dev` traída a `feat/garaje-v6` (`432ee27`).
 > La tanda de Cindy del 2026-10-20/21 ya está aquí: isotipo junto a los títulos, semáforo en los
 > iconos, cajas de título del M0, e-bike nueva despiezada, «Atrás» del M0 y «Estación anterior»
 > (§11). Antes, el 2026-10-16 (noche, 3): revisión de las UIs: cada pantalla en una caja,
@@ -56,16 +62,24 @@ y `docs/superpowers/plans/2026-10-05-modulo-01.md`.
 
 - **`main`** — rama compartida. Cindy trabaja aquí. Va por detrás: su punta (`ffcc058`) es
   ancestro de `dev`.
-- **`dev`** — **al día desde el 2026-10-21 y pusheada** (`432ee27`). Tiene todo: el garaje
+- **`dev`** — **al día y pusheada** (`e75e876`, 2026-10-23). Tiene todo: el garaje
   **v9**, el módulo 1 entero con sus 4 estaciones, el patinete despiezado, los materiales e
-  iluminación de Cindy, y la tanda de UI del 2026-10-20/21 (isotipo, semáforo, cajas de título,
-  e-bike nueva despiezada, «Atrás» del M0 y «Estación anterior»).
-- **`feat/garaje-v6`** — la rama de trabajo. **Apunta al mismo commit que `dev`** (`432ee27`),
-  así que ya no hay nada «sin mezclar».
+  iluminación de Cindy, la tanda de UI del 2026-10-20/21 (isotipo, semáforo, cajas de título,
+  e-bike nueva despiezada, «Atrás» del M0 y «Estación anterior»), el catálogo de 32 EPP del Excel
+  y el **foco al revisar un punto del vehículo**.
+- **`feat/garaje-v6`** — la rama de trabajo. **Se quedó dos commits por detrás de `dev`**
+  (`581af73`): le faltan el catálogo del Excel y el foco. Ya no es la punta; hoy se trabaja
+  sobre `dev`.
 - **`feat/garaje-v5`** — congelada, muy por detrás. No usarla.
 - **`Feature/tutorial`** — la de Cindy. Su último commit ya está integrado; lo que suba a partir
   de ahora hay que traerlo **con cuidado**, porque sus importaciones caen en `Assets/CITY` y
   duplican GUID. Ver §9.
+
+**2026-10-23 — `dev` traída** (`581af73 → e75e876`, avance directo, 28 ficheros). Un commit de
+Cindy, el del foco. Aparté antes el churn del Editor con `git stash push` (`stash@{0}`,
+`unity-churn-pre-pull-2026-10-23`) y **acertó**: el commit hornea glifos nuevos en las tres mismas
+fuentes SDF que el Editor de aquí había dejado con la tabla vacía, así que el avance directo
+habría chocado. Ese stash no se repesca.
 
 **2026-10-22 — `dev` traída a `feat/garaje-v6`** (`83a8fb4 → 432ee27`, avance directo, 195
 ficheros). Los 3 commits de Cindy son del 2026-10-16/21: `90dd1e5` correcciones de UI, `6ba024e`
@@ -155,6 +169,17 @@ dominante con el gatillo iluminado, resalta dónde actuar y, solo la primera vez
 Los **6** tests de PlayMode corren sobre la escena real y **entran pulsando Begin**, no por
 atajo. Verdes dos corridas seguidas el 2026-10-14, junto con **347 de 349 de EditMode** —los 2
 que fallan son los de siempre del módulo 0, que vienen de la rama del tutorial—.
+
+**Hoy van 2 de 6, y es contenido, no maquetación** (corrido aquí el 2026-10-23: EditMode
+**581/2/1**, PlayMode del M1 **2/4**). Los 4 fallos son dos textos que no caben, y ninguno es
+regresión del foco:
+- **El nombre del EPP necesita 753 px y el popup tiene 580.** El término `M1/Item_HelmetOk` de
+  I2 dice «Casco certificado, íntegro, talla correcta y abrochado» / «Certified helmet, intact,
+  correct size and fastened», que es **literal la columna «Elemento» del Excel**: una descripción
+  de especificación, no una etiqueta. Al rehacer el catálogo contra la hoja entró como *nombre*.
+  Rompe 3 de los 4 tests, siempre en `helmet_ok`.
+- **`M1/Legend_Correct` sale como clave cruda** y pide 151 px donde hay 120. Es la traducción que
+  falta; traducida («Correcto» / «Correct») cabe.
 
 Desde la tanda del 2026-10-12 el módulo además: esconde el EPP de la mesa mientras gira en el
 pedestal y lo deja escondido al llevárselo puesto; atenúa el garaje durante los videos; no deja
@@ -393,7 +418,16 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
         penalización falsa que la narrativa prohíbe, y si sumara a la nota, «llévatelo todo» sería
         la estrategia ganadora. El aprendiz ve dos cifras: cuán seguro va y cuán preparado vino.
         - El bono de cada elemento sale de la **misma** columna «Peso / puntos»: chaleco
-          reflectivo 3, guantes 2, multiherramienta 1. Los 14 suman 25 y el tope es 15.
+          reflectivo 3, guantes 2, multiherramienta 1. **Son 16 entradas que puntúan y suman 27**,
+          con tope 15 (comprobado contra la tabla el 2026-10-23; antes aquí decía «los 14 suman
+          25», que se quedaba corto). Lo más que se puede cobrar de verdad son **25**, porque
+          O01 y O02 son excluyentes y solo paga el mejor. En los dos casos el tope de 15 manda,
+          así que ninguna nota cambia: era un error de cuenta, no de código.
+        - **Las dos luces dan bono en día claro, y así está puesto.** La hoja dice de E02 y E03
+          «15 de peso esencial si aplica; **+1 de bono en día claro**» (`daylight_bonus = 1`), y
+          la tabla las declara `Opt` con peso **1**, no `Core` con 15. Por eso el pool esencial
+          de día son 65 y las luces no se pierden: pasan al otro marcador. De noche vuelven a
+          `Core` con peso 15 y el pool sube a 95.
         - **El par excluyente** (`exclusive_bonus_with`): la prenda fluorescente de día (+2) y el
           chaleco retroreflectivo de noche (+3) son la misma precaución para dos escenarios, así
           que llevarse las dos cobra solo la mejor. Es campo aparte de `HazardGroup` **a
@@ -440,6 +474,19 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
         la tabla, el montaje del «!», la reubicación en las tres mesas, I2 y audio.
       - **Los 6 tests de PlayMode del M1 van a romperse** al hacerlo: recorren la escena actual y
         esperan los elementos viejos.
+- [ ] **El nombre corto y la descripción del Excel tienen que ser dos campos distintos.**
+      **Decisión de contenido para Charlie, y es lo que hoy deja PlayMode en 2 de 6.** La hoja
+      trae en «Elemento» una especificación completa —«Casco certificado, íntegro, talla correcta
+      y abrochado»— y eso es lo que quedó en `M1/Item_HelmetOk` como nombre, así que el título del
+      popup pide 753 px donde hay 580 (medido el 2026-10-23).
+      - **Ensanchar el popup a 753 sería el arreglo equivocado:** convertiría todos los títulos en
+        frases y el panel está dimensionado para un nombre corto. Lo que falta es el nombre breve
+        («Casco» / «Helmet») en el término del título, y que la frase larga de la hoja viva en su
+        propio campo —exactamente la forma que el proyecto ya usa para `_Risk`—.
+      - Afecta a los 32 elementos, no solo al casco: el casco es el primero que toca el recorrido,
+        así que es el que revienta, pero las descripciones del Excel son largas en toda la columna.
+      - Mientras no se decida, los 4 tests de PlayMode seguirán rojos **por contenido**, y conviene
+        no leerlos como una regresión de código.
 - [ ] **Los audios: una voz por idioma, y faltan los de los EPP nuevos.** Hasta el 2026-10-22 el
       batch generaba los dos idiomas con **Alice**, que es una locutora **inglesa**: por eso el
       español sonaba robótico. Ahora `M1ItemAudioBatch` lleva una voz por idioma — inglés Alice
@@ -478,6 +525,13 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       `SelectionScore.Of`— pero **hoy está vacío en todo el catálogo**, así que todos los bonos
       aplican. Falta decidir las cadenas de condición y quién las publica; el sitio natural es
       `Module01Context`, que ya publica `vehicle` y `language`.
+- [ ] **Ningún test ata los pesos del bono al documento** (revisión del 2026-10-23).
+      `Module01LibraryTests` sí ata el pool esencial (65) y el total de peligros (255) a la hoja,
+      pero del bloque del bono no comprueba nada, así que un peso mal tecleado en la tabla pasaría
+      sin que nadie se enterara. **La lógica del bono sí está bien cubierta** en
+      `SelectionScoreTests` —el tope de 15, el par excluyente (O01 solo 2, O02 solo 3, los dos 3),
+      las condiciones y que no toca la nota—; lo que falta es la aserción del **pool de 27**
+      contra el documento, en la línea de las otras dos.
 - [ ] **El bono no se enseña en ninguna pantalla.** `SelectionScore.PreparednessBonus` ya lo
       calcula, pero el encabezado de «Mi Elección» va justo —«Mi Elección · Conocedor · 100%»— y
       meter un cuarto segmento puede desbordar en español. Hace falta decidir dónde va y un
@@ -586,6 +640,22 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 - [ ] **Correr los 6 tests de PlayMode del M1** tras los cambios del 2026-10-16. El puente se
       cuelga con PlayMode, así que se corren desde el Test Runner. Recorren justo las pantallas
       que cambiaron.
+- [ ] **`ComposeTheaterVideo` quedó clavado a la cámara de PC** (revisión del 2026-10-23). El
+      arreglo del commit es correcto en el fondo: `Find("PF_Module01_UI/Explanation")` era
+      ambiguo de verdad —el ayudante `Find` busca descendientes a cualquier profundidad y hay dos
+      «Explanation» bajo el prefab, el panel y su caja de texto, sin orden garantizado— y
+      resolverlo con un `Transform.Find`, que mira solo hijos directos, lo deja unívoco. Lo que
+      sobra es el camino: `Find("Desktop Camera/PF_Module01_UI")` es **la única línea del fichero
+      que nombra la cámara**, y se rompe justo cuando se haga el pendiente que declara el mismo
+      commit (llevar el M1 a la cámara del visor). Para desacoplarlo basta resolver
+      `PF_Module01_UI` sin exigirle ese ancestro.
+- [ ] **Al foco le falta un test del tamaño real de la burbuja** (revisión del 2026-10-23).
+      `FocusDomeSceneTests` está bien planteado —compara distancias en mundo contra `dome.Radius`
+      en las 6 zonas de los 2 vehículos— pero compara contra **el campo serializado**, nunca
+      contra lo que mide la esfera dibujada. `FocusDome.Tick` hace
+      `transform.localScale = 2 × radio`, que es **local**: si `Module01_Presentation` llegara a
+      tener escala distinta de 1, la burbuja saldría de otro tamaño y los tests seguirían verdes.
+      Es una aserción de una línea (`lossyScale` del renderer), no un fallo de hoy.
 - [ ] **Una sola versión de Unity para el equipo.** El horneado de la v5 hecho en 6000.5.4f1
       **no carga** en 6000.4.9f1 y la escena sale negra (§9). Se rehízo en 6000.4.9f1 el
       2026-10-16 (4 lightmaps, 3 sondas); si alguien vuelve a hornear en la otra versión, se
