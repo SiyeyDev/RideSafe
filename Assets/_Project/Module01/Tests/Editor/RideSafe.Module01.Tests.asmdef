@@ -9,7 +9,8 @@
         "RideSafe.UI",
         "TaskSequence",
         "Cachacos",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "TutorialHelp"
     ],
     "includePlatforms": [
         "Editor"

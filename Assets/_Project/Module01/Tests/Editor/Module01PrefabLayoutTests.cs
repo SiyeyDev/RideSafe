@@ -33,7 +33,9 @@ namespace RideSafe.Module01.Tests
             GrowWithContent grow = review.GetComponentInChildren<GrowWithContent>(true);
             Assert.IsNotNull(grow, "sin él, siete elementos pisan el aviso y los botones");
             SerializedObject serialized = new SerializedObject(grow);
-            Assert.AreEqual("Rows", serialized.FindProperty("_content").objectReferenceValue.name);
+            // Since 2026-10-26 the window grows, up to a cap, and the rows scroll inside it.
+            Assert.AreEqual("Viewport", serialized.FindProperty("_content").objectReferenceValue.name);
+            Assert.AreEqual("Rows", serialized.FindProperty("_scrolledRows").objectReferenceValue.name);
             Assert.AreEqual("ListBox", serialized.FindProperty("_box").objectReferenceValue.name);
             Assert.AreEqual("Modal", serialized.FindProperty("_recentre").objectReferenceValue.name);
             SerializedProperty push = serialized.FindProperty("_pushDown");

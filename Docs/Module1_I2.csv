@@ -6,6 +6,7 @@ M1/Confirm_Question,Add this item to your preparation?,¿Quieres añadir este el
 M1/Continue,Continue,Continuar
 M1/ContinueModule2,Continue to Module 2,Continuar al Módulo 2
 M1/Decision_Correct,Your decision matches the inspection.,Tu decisión coincide con la revisión.
+M1/Decision_Hint,Choose the option that best describes the vehicle.,Elige la opción que mejor describe el vehículo.
 M1/Decision_Question,"After your inspection, what do you decide?","Después de tu revisión, ¿qué decides?"
 M1/Decision_Review,Review your decision before riding.,Revisa tu decisión antes de circular.
 M1/DoNotRide,Do not ride,No circular
@@ -41,11 +42,13 @@ M1/Item_TrousersTech,Sport trousers,Pantalón deportivo
 M1/Item_TrousersTech_Risk,"Sport trousers do not catch, but they do not protect the skin in a fall.","El pantalón deportivo no se engancha, pero no protege la piel en una caída."
 M1/KeepChoosing,Keep choosing,Seguir eligiendo
 M1/Legend_AtRisk,At risk,En riesgo
-M1/Legend_Correct,Correct,Correcta
-M1/Legend_Incorrect,Incorrect,Incorrecta
+M1/Legend_Correct,Correct,Correcto
+M1/Legend_Incorrect,Incorrect,Incorrecto
+M1/Legend_NoEffect,Not needed,No necesario
 M1/Legend_Omission,Omission,Omisión
 M1/M01_Video,"To begin, we're going to show you the following video","Para iniciar, te vamos a mostrar el siguiente video"
 M1/M01_Welcome,"Welcome to Module 1! In this module, you will learn everything about the necessary precautions and PPE you must take before starting your vehicle. Let's begin!","Bienvenido al Modulo1, En este modulo vas a aprender todo sobre los precursores y epps que debes tener en cuenta antes de dar marcha con tu vehiculo. Comencemos!"
+M1/MyChoice_Empty,You didn't choose any item in this section.,No elegiste ningún elemento en esta sección.
 M1/MyChoice_Note,Optional items carry no penalty: only core gear and unsuitable choices count.,Los elementos opcionales no penalizan: solo cuentan el equipo de núcleo y lo que no corresponde llevar.
 M1/MyChoice_Title,My choice,Mi Elección
 M1/NeedsService,Needs service,Necesita servicio
@@ -53,6 +56,7 @@ M1/Next,Continue tour,Continuar recorrido
 M1/No,No,No
 M1/Omitted,Core item omitted,Núcleo omitido
 M1/Orientation_Body,Visit the stations and choose what to take. Then inspect the e-bike. Feedback appears after you submit each section.,Recorre las estaciones y elige qué llevar. Después revisa la e-bike. Verás la retroalimentación al enviar cada sección.
+M1/Orientation_Tag,Module 1 · Readiness,Módulo 1 · Preparación
 M1/Orientation_Title,Prepare before riding,Prepárate antes de rodar
 M1/Pause,Pause / resume,Pausar / seguir
 M1/Point_Brakes,Brakes,Frenos
@@ -74,6 +78,7 @@ M1/Rank_NeedsImprovement,"You are on the right track, but you missed core gear. 
 M1/Rank_NeedsImprovement_Title,Needs improvement,Por mejorar
 M1/Rank_Reconsider,"A good part of the essential gear was missing. Walk the garage again, without rushing, before riding.",Faltó buena parte del equipo imprescindible. Vuelve a recorrer el garaje sin prisa antes de circular.
 M1/Rank_Reconsider_Title,Reconsider,Recapacitar
+M1/Remove_Question,Remove this item from your preparation?,¿Quieres quitar este elemento de tu preparación?
 M1/RepeatAudio,Repeat instructions,Repetir instrucciones
 M1/RepeatModule,Repeat module,Repetir Módulo
 M1/Replay,Replay,Repetir
@@ -95,8 +100,11 @@ M1/WatchVideo,Watch explanation,Ver explicación
 M1/Yes,Yes,Sí
 M1/Zone_Clothing,Clothing and footwear,Ropa y calzado
 M1/Zone_Cockpit,"Steering, brakes and controls","Dirección, frenos y controles"
+M1/Zone_Control,Visibility and control,Visibilidad y control
 M1/Zone_Head,Head protection,Cabeza y protección
 M1/Zone_Load,Load and free hands,Carga y manos libres
+M1/Zone_Protection,Personal protection,Protección personal
+M1/Zone_Readiness,Trip readiness,Preparación del trayecto
 M1/Zone_Trousers,Trousers,Pantalones
 M1/Zone_Visibility,Lights and visibility,Luces y visibilidad
 M1/Zone_Wheels,Wheels and frame,Ruedas y estructura

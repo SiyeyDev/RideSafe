@@ -23,7 +23,18 @@ namespace RideSafe.Module01.Editor
     /// </summary>
     public static class Module01SceneComposition
     {
-        private const float PopupHeight = 232f; // 216 left the answers 21 units off the bottom edge (PO: too tight)
+        // 216 left the answers 21 units off the bottom edge (PO: too tight); +12 for the two-line name.
+        // 274 (a full 22-pt second line) put «Sí»/«No» against the bottom of the PC view.
+        private const float PopupHeight = 244f;
+        /// <summary>
+        /// The item's name: the sheet's «Elemento» column, up to «Casco agrietado, aplastado, talla
+        /// evidentemente incorrecta o de novedad». On one line it shrank to 15 and still touched the edges
+        /// (PO, 2026-10-26), so it wraps to two lines inside a 40-unit margin on each side. A one-line name
+        /// keeps the 22 heading (40.6 units); two lines fit 64 at about 17, the question's size.
+        /// </summary>
+        private const float PopupNameWidth = 540f;
+        private const float PopupNameHeight = 64f;
+        private const float PopupQuestionHeight = 44f;
         private const float MarkerFontSize = 82f;
 
         [MenuItem("RideSafe/Módulo 1/Componer paneles de la escena (popup, cartel, decisión)")]
@@ -313,26 +324,31 @@ namespace RideSafe.Module01.Editor
             name.SetParent(confirm, false);
             name.SetAsLastSibling();
             name.anchorMin = name.anchorMax = name.pivot = new Vector2(0.5f, 0.5f);
-            name.anchoredPosition = new Vector2(0f, 76f);
-            name.sizeDelta = new Vector2(580f, 40f);
+            // 20 under the top edge, as before; a one-line name sits centred in the two-line box.
+            name.anchoredPosition = new Vector2(0f, PopupHeight * 0.5f - 20f - PopupNameHeight * 0.5f);
+            name.sizeDelta = new Vector2(PopupNameWidth, PopupNameHeight);
             TMP_Text title = name.GetComponent<TMP_Text>();
             UIBuilderKit.ApplyStyle(title, kit.H2.With(22f * px, Color.white));
             title.alignment = TextAlignmentOptions.Center;
-            title.textWrappingMode = TextWrappingModes.NoWrap;
+            title.textWrappingMode = TextWrappingModes.Normal;
+            title.overflowMode = TextOverflowModes.Overflow;
             title.enableAutoSizing = true;
-            title.fontSizeMin = 15f * px;
+            title.fontSizeMin = 16f * px;
             title.fontSizeMax = 22f * px;
             EditorUtility.SetDirty(title);
 
             RectTransform question = (RectTransform)confirm.Find("Question");
-            question.anchoredPosition = new Vector2(0f, 22f);
-            question.sizeDelta = new Vector2(580f, 56f);
+            // 6 under the name; the answers 23.35 under the question, 42.65 off the bottom as before.
+            float nameBottom = name.anchoredPosition.y - PopupNameHeight * 0.5f;
+            question.anchoredPosition = new Vector2(0f, nameBottom - 6f - PopupQuestionHeight * 0.5f);
+            question.sizeDelta = new Vector2(580f, PopupQuestionHeight);
             TMP_Text questionText = question.GetComponent<TMP_Text>();
             UIBuilderKit.ApplyStyle(questionText, kit.BodyOnDark.With(17f * px));
             EditorUtility.SetDirty(questionText);
 
-            PlaceButton(Child(confirm, "AcceptButton"), new Vector2(-125f, -51.35f), new Vector2(230f, 44f * px), 16f * px);
-            PlaceButton(Child(confirm, "DeclineButton"), new Vector2(125f, -51.35f), new Vector2(230f, 44f * px), 16f * px);
+            float answersY = question.anchoredPosition.y - PopupQuestionHeight * 0.5f - 23.35f - 22f;
+            PlaceButton(Child(confirm, "AcceptButton"), new Vector2(-125f, answersY), new Vector2(230f, 44f * px), 16f * px);
+            PlaceButton(Child(confirm, "DeclineButton"), new Vector2(125f, answersY), new Vector2(230f, 44f * px), 16f * px);
             // No mark here: the popup opens over the station, whose sign carries it (one logo in view).
             UIBrand.Remove(title);
         }

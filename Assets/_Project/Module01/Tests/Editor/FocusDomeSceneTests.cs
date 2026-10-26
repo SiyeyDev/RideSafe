@@ -133,6 +133,55 @@ namespace RideSafe.Module01.Tests
             }
         }
 
+        /// <summary>
+        /// The EPP tables too (PO, 2026-10-26: «que el fondo se ponga oscuro y que destaque el elemento
+        /// seleccionado, así como se hizo con las partes de la e-bike»): from each station's viewpoint
+        /// every object of its table stays outside the bubble, so the counter dims and the copy on the
+        /// pedestal is the one thing in full light.
+        /// </summary>
+        [Test]
+        public void EveryTableObject_StaysOutsideTheBubble_AtItsStation()
+        {
+            FocusDome dome = Find<FocusDome>();
+            Assume.That(dome, Is.Not.Null);
+            Module01Director director = Find<Module01Director>();
+            Module01CatalogSO catalog = (Module01CatalogSO)new SerializedObject(director).FindProperty("_catalog").objectReferenceValue;
+            Assert.IsNotNull(catalog);
+            var report = new System.Text.StringBuilder();
+            bool inside = false;
+            foreach (ZoneSO zone in catalog.Zones)
+            {
+                Vector3 head = GameObject.Find("anchor_" + zone.ZoneId).transform.position;
+                float nearest = float.MaxValue;
+                string nearestName = null;
+                foreach (SafetyItemSO item in zone.Items)
+                    foreach (WorldObjectTaskEntity entity in FindAll<WorldObjectTaskEntity>())
+                    {
+                        if (entity.ItemId != item.ItemId)
+                            continue;
+                        foreach (Renderer r in entity.GetComponentsInChildren<Renderer>(false))
+                        {
+                            if (!r.enabled)
+                                continue;
+                            float near = Vector3.Distance(head, r.bounds.ClosestPoint(head));
+                            if (near < nearest) { nearest = near; nearestName = item.ItemId + "/" + r.name; }
+                        }
+                    }
+                Assert.IsNotNull(nearestName, "nothing measured at " + zone.ZoneId);
+                report.AppendLine($"  {zone.ZoneId}: nearest {nearestName} at {nearest:0.00} m");
+                inside |= nearest <= dome.Radius;
+            }
+            Assert.IsFalse(inside, $"radius {dome.Radius:0.00} m leaves table objects in full light:\n{report}");
+            Assert.Pass($"radius {dome.Radius:0.00} m:\n{report}");
+        }
+
+        private System.Collections.Generic.IEnumerable<T> FindAll<T>() where T : Component
+        {
+            foreach (GameObject root in _scene.GetRootGameObjects())
+                foreach (T c in root.GetComponentsInChildren<T>(true))
+                    yield return c;
+        }
+
         [Test]
         public void TheMaterial_IsSeenFromInside_AndDrawsBeforeTheUi()
         {

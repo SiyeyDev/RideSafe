@@ -103,10 +103,11 @@ namespace RideSafe.Module01
             _director.Finished += ShowFinalReport;
             _inspector.Accepted += _ => _navigation.SetActive(Phase == "Choosing");
             _inspector.Declined += _ => _navigation.SetActive(Phase == "Choosing");
-            // Foco al revisar un punto del vehiculo (Cindy, 2026-10-23): con el popup abierto se
-            // oscurece todo -el vehiculo incluido- menos el popup y el pedestal, con fundido. En las
-            // mesas de EPP no.
-            _inspector.Presenting += _ => { if (_focus != null && _director.InVehicleSection) _focus.SetOn(true); };
+            // Foco al revisar (Cindy, 2026-10-23): con el popup abierto se oscurece todo -el vehiculo
+            // incluido- menos el popup y el pedestal, con fundido. Desde el 2026-10-26 tambien en las
+            // mesas de EPP, para que destaque el elemento elegido: las tres quedan a 2,6 m o mas del
+            // punto de vista y el radio es 1,6 (FocusDomeSceneTests).
+            _inspector.Presenting += _ => { if (_focus != null) _focus.SetOn(true); };
             _inspector.Accepted += _ => { if (_focus != null) _focus.SetOn(false); };
             _inspector.Declined += _ => { if (_focus != null) _focus.SetOn(false); };
             _inspector.Dismissed += () => { if (_focus != null && _focus.IsOn) _focus.SetOn(false); };

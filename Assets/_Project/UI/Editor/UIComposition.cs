@@ -42,6 +42,29 @@ namespace RideSafe.UI.EditorTools
             Debug.Log("[RideSafe.UI] Panels composed in place: " + Module00Path + ", " + Module01Path);
         }
 
+        /// <summary>
+        /// The video's «Repetir». The atlas's <c>Icon_Replay</c> has a 9-px ring beside the 15-px pause
+        /// bars and a loose arrowhead, and read as something else (PO, 2026-10-26). This one is drawn
+        /// in the same navy with a stroke to match: <c>UI/Icons/Icon_Replay_Round.png</c>.
+        /// </summary>
+        public const string ReplayIcon = "Icon_Replay_Round";
+        public const string IconsFolder = "Assets/_Project/UI/Icons";
+
+        [MenuItem("RideSafe/UI/Icono de repetir del video")]
+        public static void ApplyReplayIcon()
+        {
+            UIBuilderKit kit = RideSafeUIPrefabBuilder.CreateKit();
+            Edit(Module01Path, root =>
+            {
+                RectTransform card = Find(root, "Explanation/VideoCard");
+                RectTransform replay = Find(card, "ReplayButton");
+                RectTransform pause = Find(card, "PauseButton");
+                IconButton(replay, kit, ReplayIcon, pause.anchoredPosition.x + PadOf(pause) + 62f, 52f);
+            });
+            if (kit.MissingSprites.Count > 0)
+                throw new System.InvalidOperationException("Sprites not in the atlases: " + string.Join(", ", kit.MissingSprites));
+        }
+
         private static void Edit(string path, System.Action<GameObject> compose)
         {
             GameObject root = PrefabUtility.LoadPrefabContents(path);
@@ -215,7 +238,10 @@ namespace RideSafe.UI.EditorTools
                 RectTransform pause = Find(card, "PauseButton");
                 float left = pause.anchoredPosition.x + PadOf(pause);
                 IconButton(pause, kit, "Icon_Pause", left, 52f);
-                IconButton(Find(card, "ReplayButton"), kit, "Icon_Replay", left + 62f, 52f);
+                IconButton(Find(card, "ReplayButton"), kit, ReplayIcon, left + 62f, 52f);
+
+                // The review and «Mi Elección» scroll past a cap instead of growing off the view (PO, 2026-10-26).
+                UIScrollList.ApplyToModule01(root, kit);
 
                 LabelsNeverWrap(root);
             });

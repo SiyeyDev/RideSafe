@@ -125,6 +125,36 @@ namespace RideSafe.UI
     [DisallowMultipleComponent]
     public class ComparisonView : MonoBehaviour
     {
+        /// <summary>
+        /// Ancho fijo de la columna del estado, a la derecha de cada fila. Cabe «NO NECESARIO», la
+        /// palabra más larga, y es fijo para que las palabras queden alineadas como una columna de
+        /// tabla (PO, 2026-10-26).
+        /// </summary>
+        public const float StateColumnWidth = 150f;
+
+        /// <summary>La columna del estado de una fila; la usan el constructor del prefab y su arreglo en sitio.</summary>
+        public static void StyleStateColumn(TMP_Text state, LayoutElement column)
+        {
+            state.horizontalAlignment = HorizontalAlignmentOptions.Left;
+            state.verticalAlignment = VerticalAlignmentOptions.Middle;
+            state.textWrappingMode = TextWrappingModes.NoWrap;
+            column.minWidth = column.preferredWidth = StateColumnWidth;
+            column.flexibleWidth = -1f;
+        }
+
+        /// <summary>Una palabra por <see cref="ItemStatus"/>, en su orden.</summary>
+        public static readonly string[] DefaultStateKeys =
+        {
+            "M1/Legend_Correct", "M1/Legend_Omission", "M1/Conditional",
+            "M1/Legend_Incorrect", "M1/Legend_AtRisk", "M1/Legend_NoEffect"
+        };
+
+        /// <summary>
+        /// Vuelve a poner las palabras por defecto. El prefab se serializó cuando había cinco
+        /// estados y se quedó con cinco: la sexta, «No necesario», salía en blanco.
+        /// </summary>
+        public void ResetStateKeys() => _stateKeys = (string[])DefaultStateKeys.Clone();
+
         [SerializeField] private StatusGlyphs _glyphs = new StatusGlyphs();
         [Tooltip("Inactive status row blueprint (children 'Icon', 'Text/Title', 'Text/Detail').")]
         [SerializeField] private RectTransform _rowTemplate;
@@ -144,16 +174,22 @@ namespace RideSafe.UI
 
         [Tooltip("Clave de la palabra de cada estado, en orden de ItemStatus. Se muestra en cada fila.")]
         [SerializeField]
-        private string[] _stateKeys =
-        {
-            "M1/Legend_Correct", "M1/Legend_Omission", "M1/Conditional",
-            "M1/Legend_Incorrect", "M1/Legend_AtRisk", "M1/Legend_NoEffect"
-        };
+        private string[] _stateKeys = (string[])DefaultStateKeys.Clone();
+
+        [Header("Scroll")]
+        [Tooltip("La caja de la lista (filas y aviso de vacía). Vacío = el padre de las filas.")]
+        [SerializeField] private RectTransform _column;
+        [Tooltip("La ventana por la que se desplazan las filas. Vacío = la lista crece entera.")]
+        [SerializeField] private LayoutElement _viewport;
+        [Tooltip("Alto máximo de la ventana; lo que no quepa se desplaza dentro.")]
+        [SerializeField, Min(0f)] private float _maxListHeight = 300f;
 
         private readonly List<ComparisonEntry> _current = new List<ComparisonEntry>();
 
         private RectTransform _below;
         private float _belowGap;
+
+        private RectTransform Column => _column != null ? _column : (_leftRows != null ? _leftRows.parent as RectTransform : null);
 
         /// <summary>
         /// Lo que tiene que quedar siempre por debajo de la lista, mida lo que mida.
@@ -177,7 +213,7 @@ namespace RideSafe.UI
             if (_below == null || _leftRows == null)
                 return;
 
-            RectTransform column = _leftRows.parent as RectTransform;
+            RectTransform column = Column;
             if (column == null)
                 return;
 
@@ -190,9 +226,29 @@ namespace RideSafe.UI
             _below.anchoredPosition = sitio;
         }
 
+        /// <summary>
+        /// La ventana de las filas mide lo que ellas, hasta <see cref="_maxListHeight"/>; lo demás se
+        /// desplaza dentro y la lista vuelve a su primera fila.
+        /// <para>
+        /// Con las catorce filas del reporte final la caja crecía hacia abajo hasta sacar de la vista
+        /// «Continuar al Módulo 2» y «Repetir Módulo», que la siguen. La PO pidió desplazar en vez de
+        /// alargar, «para que mantenga las proporciones» (2026-10-26).
+        /// </para>
+        /// </summary>
+        private void FitViewport()
+        {
+            if (_viewport == null || _leftRows == null)
+                return;
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_leftRows);
+            float rows = LayoutUtility.GetPreferredHeight(_leftRows);
+            _viewport.preferredHeight = _viewport.minHeight = Mathf.Min(rows, _maxListHeight);
+            ScrollRect scroll = _viewport.GetComponent<ScrollRect>();
+            if (scroll != null)
+                scroll.verticalNormalizedPosition = 1f;
+        }
+
         /// <summary>Solo para tests: el alto que ocupa ahora la columna de la lista.</summary>
-        public float ColumnHeight =>
-            _leftRows != null && _leftRows.parent is RectTransform c ? c.rect.height : 0f;
+        public float ColumnHeight => Column != null ? Column.rect.height : 0f;
 
         /// <summary>
         /// Lo que el panel está mostrando. Público para que un test pueda afirmar sobre el
@@ -263,10 +319,11 @@ namespace RideSafe.UI
             if (_rightRows != null && _rightRows.parent != null)
                 _rightRows.parent.gameObject.SetActive(false);
 
-            Fill(_leftRows, entries);
             // Nothing taken in this section: say so, instead of an empty box that reads as a bug.
+            // Before Fill, which measures the list: switched on after it, the note sat over it.
             if (_emptyState != null)
                 _emptyState.SetActive(entries == null || entries.Count == 0);
+            Fill(_leftRows, entries);
         }
 
         private void Fill(RectTransform container, IList<ComparisonEntry> entries)
@@ -277,8 +334,15 @@ namespace RideSafe.UI
             for (int i = container.childCount - 1; i >= 0; i--)
             {
                 Transform child = container.GetChild(i);
-                if (child != _rowTemplate)
+                if (child == _rowTemplate)
+                    continue;
+                // Out of the layout now: Destroy waits for the end of the frame, and until then the
+                // old rows counted when the list was measured for the note below it.
+                child.gameObject.SetActive(false);
+                if (Application.isPlaying)
                     Destroy(child.gameObject);
+                else
+                    DestroyImmediate(child.gameObject);
             }
 
             for (int i = 0; i < entries.Count; i++)
@@ -296,6 +360,7 @@ namespace RideSafe.UI
 
             if (container == _leftRows)
             {
+                FitViewport();
                 ArrangeBelow();
                 _current.Clear();
                 _current.AddRange(entries);

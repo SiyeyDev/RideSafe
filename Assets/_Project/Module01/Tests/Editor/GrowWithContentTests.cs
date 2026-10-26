@@ -83,6 +83,49 @@ namespace RideSafe.Module01.Tests
             Assert.AreEqual(-50f + extra / 2f, _modal.anchoredPosition.y, .01f, "re-centred, not sliding to the floor");
         }
 
+        /// <summary>
+        /// With twenty items the box went down past the view (PO, 2026-10-26: «un scrollview para que
+        /// no quede tan largo sino que mantenga las proporciones»). The rows sit in a scrolled viewport:
+        /// the box grows with them only up to a cap, and past it the rows scroll inside.
+        /// </summary>
+        private RectTransform Scrolled(float maxExtra)
+        {
+            RectTransform viewport = Rect(_box, "Viewport", 19f, -17f, 590f, 119f);
+            _rows.SetParent(viewport, false);
+            _rows.anchorMin = new Vector2(0f, 1f);
+            _rows.anchorMax = Vector2.one;
+            _rows.pivot = new Vector2(.5f, 1f);
+            _rows.anchoredPosition = Vector2.zero;
+            _rows.sizeDelta = Vector2.zero;
+            _rows.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            _grow.Configure(viewport, _box, new[] { _modal }, new[] { _notice }, _modal, _rows, maxExtra);
+            return viewport;
+        }
+
+        [Test]
+        public void AScrolledList_GrowsTheBoxUpToTheCap_AndScrollsTheRest()
+        {
+            RectTransform viewport = Scrolled(120f);
+            SetRows(20);
+            Assert.AreEqual(150f + 120f, _box.sizeDelta.y, .01f, "the box stops at the cap");
+            Assert.AreEqual(119f + 120f, viewport.sizeDelta.y, .01f, "so does the visible window");
+            Assert.AreEqual(450f + 120f, _modal.sizeDelta.y, .01f);
+            Assert.AreEqual(-284f - 120f, _notice.anchoredPosition.y, .01f, "the notice stays right under the box");
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_rows);
+            Assert.AreEqual(20 * RowHeight, _rows.rect.height, .5f, "the rows keep their full height to scroll through");
+        }
+
+        [Test]
+        public void AScrolledShortList_LeavesThePanelAsBuilt()
+        {
+            RectTransform viewport = Scrolled(120f);
+            SetRows(2);
+            Assert.AreEqual(150f, _box.sizeDelta.y, .01f);
+            Assert.AreEqual(119f, viewport.sizeDelta.y, .01f);
+            SetRows(4);
+            Assert.AreEqual(150f + 4 * RowHeight - 119f, _box.sizeDelta.y, .01f, "under the cap it grows as before");
+        }
+
         [Test]
         public void ShrinkingTheList_GoesBackToTheBuiltLayout()
         {

@@ -345,13 +345,12 @@ namespace RideSafe.UI.EditorTools
             _kit.AddText(UIBuilderKit.NewUi("Title", column.transform), "Item", _kit.Body, TextAlignmentOptions.TopLeft);
             _kit.AddText(UIBuilderKit.NewUi("Detail", column.transform), "Detail", _kit.Small, TextAlignmentOptions.TopLeft);
 
-            // La palabra del estado, alineada a la derecha y con ancho fijo para que las doce
-            // filas queden en columna y se puedan comparar de un vistazo.
+            // La palabra del estado en su propia columna, de ancho fijo, para que las filas se
+            // lean como una tabla: el elemento a la izquierda y si fue correcto, no necesario o
+            // incorrecto a la derecha (PO, 2026-10-26).
             GameObject stateGo = UIBuilderKit.NewUi("State", row.transform);
-            TMP_Text state = _kit.AddText(stateGo, string.Empty, _kit.Caps.With(12f), TextAlignmentOptions.MidlineRight);
-            state.textWrappingMode = TextWrappingModes.NoWrap;
-            UnityEngine.UI.LayoutElement stateLayout = stateGo.AddComponent<UnityEngine.UI.LayoutElement>();
-            stateLayout.minWidth = stateLayout.preferredWidth = 120f;
+            TMP_Text state = _kit.AddText(stateGo, string.Empty, _kit.Caps.With(12f), TextAlignmentOptions.MidlineLeft);
+            ComparisonView.StyleStateColumn(state, stateGo.AddComponent<UnityEngine.UI.LayoutElement>());
             return (RectTransform)row.transform;
         }
 

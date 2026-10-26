@@ -146,7 +146,11 @@ namespace RideSafe.Module01.Editor
             GrowWithContent grow = modal.GetComponent<GrowWithContent>();
             if (grow == null)
                 grow = modal.gameObject.AddComponent<GrowWithContent>();
-            grow.Configure((RectTransform)Find(modal, "Rows"), (RectTransform)Find(modal, "ListBox"),
+            // Since 2026-10-26 the rows scroll inside a window (UIScrollList), which owns this wiring.
+            RectTransform rows = (RectTransform)Find(modal, "Rows");
+            if (rows.parent.name == "Viewport")
+                return;
+            grow.Configure(rows, (RectTransform)Find(modal, "ListBox"),
                            new[] { modal },
                            new[]
                            {
@@ -164,6 +168,43 @@ namespace RideSafe.Module01.Editor
             ColumnComposition.Arrange(panel, bar, 16f / 2.4f, (RectTransform)Find(bar, "Title"),
                                       (RectTransform)Find(panel, "Body"), (RectTransform)Find(panel, "LeftColumn"), 16f / 2.8f,
                                       (RectTransform)Find(panel, "ExplainButton"));
+        }
+
+        /// <summary>
+        /// «Mi Elección» como tabla (PO, 2026-10-26): el estado en su columna de ancho fijo, y una
+        /// palabra para cada estado. El prefab se quedó con las cinco de cuando había cinco estados.
+        /// <para>
+        /// Aparte de <see cref="Apply"/> a propósito: aquel vuelve a pasar ColumnComposition, que pone
+        /// la nota bajo el título, y UIComposition la movió después bajo la lista.
+        /// </para>
+        /// </summary>
+        [MenuItem("RideSafe/Módulo 1/Mi Elección como tabla (estado en su columna)")]
+        public static void ApplyReportTable()
+        {
+            GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                ArrangeReportTable(Find(root.transform, "Comparison").GetComponent<ComparisonView>());
+                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+                Debug.Log("[Module01] Report table applied to " + PrefabPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        private static void ArrangeReportTable(ComparisonView view)
+        {
+            view.ResetStateKeys();
+            EditorUtility.SetDirty(view);
+            RectTransform template = (RectTransform)new SerializedObject(view).FindProperty("_rowTemplate").objectReferenceValue;
+            Transform state = template.Find("State");
+            TMPro.TMP_Text word = state.GetComponent<TMPro.TMP_Text>();
+            UnityEngine.UI.LayoutElement column = state.GetComponent<UnityEngine.UI.LayoutElement>();
+            ComparisonView.StyleStateColumn(word, column);
+            EditorUtility.SetDirty(word);
+            EditorUtility.SetDirty(column);
         }
 
         private static Transform Find(Transform root, string name)

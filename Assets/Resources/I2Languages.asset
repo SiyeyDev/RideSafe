@@ -1574,6 +1574,221 @@ MonoBehaviour:
       - 
       Flags: 0000
       Languages_Touch: []
+    - Term: M1/Orientation_Tag
+      TermType: 0
+      Description: 
+      Languages:
+      - "Module 1 \xB7 Readiness"
+      - "M\xF3dulo 1 \xB7 Preparaci\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/MyChoice_Empty
+      TermType: 0
+      Description: 
+      Languages:
+      - You didn't choose any item in this section.
+      - "No elegiste ning\xFAn elemento en esta secci\xF3n."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Decision_Hint
+      TermType: 0
+      Description: 
+      Languages:
+      - Choose the option that best describes the vehicle.
+      - "Elige la opci\xF3n que mejor describe el veh\xEDculo."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Zone_Protection
+      TermType: 0
+      Description: 
+      Languages:
+      - Personal protection
+      - "Protecci\xF3n personal"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Zone_Control
+      TermType: 0
+      Description: 
+      Languages:
+      - Visibility and control
+      - Visibilidad y control
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Zone_Readiness
+      TermType: 0
+      Description: 
+      Languages:
+      - Trip readiness
+      - "Preparaci\xF3n del trayecto"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Remove_Question
+      TermType: 0
+      Description: 
+      Languages:
+      - Remove this item from your preparation?
+      - "\xBFQuieres quitar este elemento de tu preparaci\xF3n?"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/MyChoice_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - My choice
+      - "Mi Elecci\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/MyChoice_Note
+      TermType: 0
+      Description: 
+      Languages:
+      - 'Optional items carry no penalty: only core gear and unsuitable choices count.'
+      - "Los elementos opcionales no penalizan: solo cuentan el equipo de n\xFAcleo
+        y lo que no corresponde llevar."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Legend_Correct
+      TermType: 0
+      Description: 
+      Languages:
+      - Correct
+      - Correcto
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Legend_NoEffect
+      TermType: 0
+      Description: 
+      Languages:
+      - Not needed
+      - No necesario
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Legend_Incorrect
+      TermType: 0
+      Description: 
+      Languages:
+      - Incorrect
+      - Incorrecto
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Legend_Omission
+      TermType: 0
+      Description: 
+      Languages:
+      - Omission
+      - "Omisi\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Legend_AtRisk
+      TermType: 0
+      Description: 
+      Languages:
+      - At risk
+      - En riesgo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Rank_Knowledgeable_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Knowledgeable
+      - Conocedor
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Rank_Knowledgeable
+      TermType: 0
+      Description: 
+      Languages:
+      - You prepared the ride well. You can move on to Module 2.
+      - "Has preparado bien el recorrido. Sigues con el M\xF3dulo 2."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Rank_NeedsImprovement_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Needs improvement
+      - Por mejorar
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Rank_NeedsImprovement
+      TermType: 0
+      Description: 
+      Languages:
+      - You are on the right track, but you missed core gear. Repeat the module and
+        look at what you left unchecked.
+      - "Vas por buen camino, pero se te escap\xF3 equipo de n\xFAcleo. Repite el
+        m\xF3dulo y f\xEDjate en lo que qued\xF3 sin marcar."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Rank_Reconsider_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Reconsider
+      - Recapacitar
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Rank_Reconsider
+      TermType: 0
+      Description: 
+      Languages:
+      - A good part of the essential gear was missing. Walk the garage again, without
+        rushing, before riding.
+      - "Falt\xF3 buena parte del equipo imprescindible. Vuelve a recorrer el garaje
+        sin prisa antes de circular."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Rank_Inexperienced_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Inexperienced
+      - Inexperto
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Rank_Inexperienced
+      TermType: 0
+      Description: 
+      Languages:
+      - Almost none of the essentials were covered. Repeat the module and go through
+        each station calmly.
+      - "Casi nada de lo imprescindible qued\xF3 cubierto. Repite el m\xF3dulo y
+        revisa cada estaci\xF3n con calma."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/ContinueModule2
+      TermType: 0
+      Description: 
+      Languages:
+      - Continue to Module 2
+      - "Continuar al M\xF3dulo 2"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/RepeatModule
+      TermType: 0
+      Description: 
+      Languages:
+      - Repeat module
+      - "Repetir M\xF3dulo"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: TutorialHelp/SelectInterface
+      TermType: 0
+      Description: 
+      Languages:
+      - Point and press the trigger
+      - Apunta y presiona el gatillo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: TutorialHelp/SelectObject
+      TermType: 0
+      Description: 
+      Languages:
+      - Point at the object and press the trigger
+      - Apunta al objeto y presiona el gatillo
+      Flags: 0000
+      Languages_Touch: []
     CaseInsensitiveTerms: 0
     OnMissingTranslation: 1
     mTerm_AppName: 

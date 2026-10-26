@@ -18,8 +18,13 @@ namespace RideSafe.Help
         /// Objects count only within reach: the ray goes 8 m, but a module presents what it wants
         /// selected near the learner, while far objects (e.g. module 1's EPP behind the garage door,
         /// which has no collider) are still in ray reach long before they matter.
+        /// <para>
+        /// 5.5 and not 4: the client's EPP tables (2026-10-23) put objects up to 4.88 m from their
+        /// station's viewpoint, and those past 4 m never got a halo (PO, 2026-10-26). From outside the
+        /// garage the nearest EPP is still over 7 m away (Module01 TutorialHaloReachTests).
+        /// </para>
         /// </summary>
-        public const float MaxObjectDistance = 4f;
+        public const float MaxObjectDistance = 5.5f;
         public const float ObjectRefreshSeconds = 1f;
 
         private readonly HashSet<Transform> _seen = new HashSet<Transform>();

@@ -1173,6 +1173,47 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 
 ## 11. Bitácora
 
+### 2026-10-26 — correcciones de Cindy tras recorrer el flujo entero
+
+Salieron al ensayar el video del flujo completo en Modo PC. Sin commit (pendiente de su revisión).
+
+- **Los «M1/…» en pantalla:** la importación de la hoja de `febeb75` borró 24 términos (reporte,
+  leyendas, rangos, botones finales, `Decision_Hint`, `TutorialHelp/Select*`) y los títulos de las
+  tres mesas y `M1/Remove_Question` nunca existieron. `Module01UiTerms` los repone —los borrados con
+  el texto de `febeb75^`— y están en `Docs/Module1_I2.csv`. Siguen sin término los 22 `Item_*_Risk`
+  de los EPP nuevos y los retirados (coderas, pantalones…). **`I2TermsTests`** lee el asset como texto
+  y falla si una clave que se ve no tiene los dos idiomas.
+- **Nombre del EPP en el popup:** dos líneas (540 de ancho, 40 de margen) en vez de una que encogía
+  hasta tocar los bordes; el popup crece hacia abajo (232 → 274). `PopupNameLayoutTests`.
+- **«Mi Elección» como tabla:** el estado en su columna de ancho fijo (150, alineada a la izquierda)
+  y en todas las filas: «Correcto», «No necesario», «Incorrecto». El prefab tenía 5 palabras para 6
+  estados y las amarillas salían en blanco (`Module01LayoutFixes.ApplyReportTable`).
+- **La nota de Mi Elección pegada a la lista:** se medía la lista con las filas viejas aún dentro
+  (`Destroy` espera al final del fotograma: hueco en el reporte del vehículo) y antes de encender el
+  aviso de lista vacía (se le montaba encima). `ComparisonNoteFollowsListTests`.
+- **Listas con scroll** («Revisa tus elecciones» y «Mi Elección», PO: «que mantenga las
+  proporciones»): las filas van en un `Viewport` (RectMask2D, imagen transparente para arrastrar con
+  el rayo —`AutoInputModule` envía drag—, ScrollRect vertical sin rebote, barra fina que solo sale si
+  no cabe). La caja crece con las filas hasta un tope —`GrowWithContent` con `_scrolledRows`/
+  `_maxExtra` (≈330 de ventana) en la revisión, `ComparisonView._maxListHeight` (300) en Mi
+  Elección— y vuelve a la primera fila al cambiar la lista. Así los botones finales quedan a la
+  vista; sustituye al «subir el panel» que se probó antes. Lo monta `UIScrollList`
+  (`RideSafe → UI → Listas con scroll`, y `ComposeModule01` lo llama), que además revierte en la v5
+  las sobrescrituras de RectTransform de las filas movidas. `ScrollListSceneTests`.
+- **Halo del tutorial sobre los EPP:** `TargetScanner.MaxObjectDistance` 4 → 5,5 m. Las mesas del
+  Excel dejaron EPP a 4,05–4,88 m de su estación y no recibían halo; desde fuera del garaje siguen a
+  más de 7 m (`TutorialHaloReachTests`). Los EPP con «!» no tienen malla que delinear: los marca el signo.
+- **Icono «Repetir» del video redibujado** (`UI/Icons/Icon_Replay_Round.png`, en el atlas): el del
+  atlas tenía el aro de 9 px junto a las barras de 15 de la pausa y la flecha suelta.
+- **Foco también en las mesas de EPP**, mismo radio: las mesas quedan a 2,60–3,37 m del punto de vista
+  (`FocusDomeSceneTests`). Nota añadida al spec del 23-10.
+- **`Module01SliceTests`** esperaba las zonas `load` y `visibility`, que ya no existen: no llegaba a la
+  revisión. Ahora deriva la última zona de cada sección, toma un opcional (o un peligro, en la corrida
+  sin casco) por mesa para que el reporte enseñe los tres estados, y comprueba la tabla, la nota y
+  que los botones finales quepan en la vista. **Sin correr todavía** (necesita Unity al frente).
+- **EditMode M1 331/331, TutorialHelp 72/72; el resto 265/267** (los 2 de `Garaje_Test`). La escena v5 guardó ~300 sobrescrituras de RectTransform conducidas por
+  layout que antes estaban a 0; las recalcula el layout en runtime.
+
 ### 2026-10-23 — foco al revisar un punto del vehículo
 
 - **Pedido de Cindy:** con un punto del vehículo abierto se oscurece todo, el vehículo incluido;

@@ -276,7 +276,7 @@ namespace RideSafe.Module01.Tests
                 }
                 // El checklist con filas ya dentro: es donde el texto largo en espanol se
                 // apretaba contra la nota al pie, y eso hay que mirarlo, no solo medirlo.
-                if (zoneId == "clothing") yield return Capture("checklist");
+                if (zoneId == catalogo.Zones.Last().ZoneId) yield return Capture("checklist");
                 // Una captura por estacion personal: desde el 2026-10-14 cada una vive en un
                 // mueble distinto del garaje, y que se vean despejadas no lo dice ningun
                 // assert -el arte llega sin colliders, asi que el raycast miente-.
@@ -298,6 +298,12 @@ namespace RideSafe.Module01.Tests
                 }
                 var experience = Object.FindAnyObjectByType<Module01Experience>();
                 Assert.AreEqual(subtitles, Field<GameObject>(experience, "_instruction").activeInHierarchy, "La preferencia de subtitulos no se conserva");
+                // One extra per table so the report shows every status: an optional item («No
+                // necesario») in the clean run, a hazard («Incorrecto») in the one that is already
+                // critical for the missing helmet.
+                SafetyItemCategory extraCategory = omitHelmet ? SafetyItemCategory.Inappropriate : SafetyItemCategory.Optional;
+                SafetyItemSO extra = _director.InVehicleSection ? null
+                    : _director.CurrentZone.Items.FirstOrDefault(i => i.Category == extraCategory);
                 foreach (var item in _director.CurrentZone.Items)
                 {
                     var entity = Object.FindObjectsByType<WorldObjectTaskEntity>(FindObjectsSortMode.None).Single(e => e.ItemId == item.ItemId);
@@ -348,12 +354,12 @@ namespace RideSafe.Module01.Tests
                     if (!omitHelmet && item.ItemId == "point_electrics") yield return Capture("pedestal-sin-pieza");
                     bool take = item.Category == SafetyItemCategory.Core || item.Category == SafetyItemCategory.ConditionDependent;
                     if (item.ItemId == "helmet_ok" && omitHelmet) take = false;
-                    // Foco (Cindy, 2026-10-23): con un punto del vehiculo abierto todo se oscurece menos
-                    // el popup y el pedestal; en las mesas de EPP no. Al responder se apaga.
+                    if (item == extra) take = true;
+                    // Foco (Cindy, 2026-10-23): con un punto abierto todo se oscurece menos el popup y
+                    // el pedestal. Desde el 2026-10-26 también en las mesas de EPP. Al responder se apaga.
                     var focus = Object.FindAnyObjectByType<FocusDome>();
                     Assert.IsNotNull(focus, "La escena no tiene la burbuja de foco");
-                    Assert.AreEqual(_director.InVehicleSection, focus.IsOn,
-                        "Foco con " + item.ItemId + (_director.InVehicleSection ? ": deberia oscurecer" : ": en las mesas de EPP no oscurece"));
+                    Assert.IsTrue(focus.IsOn, "Foco con " + item.ItemId + ": deberia oscurecer");
                     var button = Field<Button>(_inspector, take ? "_acceptButton" : "_declineButton");
                     AssertOnBrand(button);
                     yield return ClickGraphic(button.GetComponent<RectTransform>());
@@ -364,7 +370,10 @@ namespace RideSafe.Module01.Tests
                 }
                 AssertHudDoesNotOverlap();   // ahora sin presentar: vuelven navegacion e instruccion
                 yield return Press(_binding.Module.transform, "NextZoneButton");
-                if (zoneId == "load")
+                // Las ultimas de cada seccion, derivadas como las zonas: escritas a mano ('load',
+                // 'visibility') quedaron viejas con las tres mesas del Excel y el test dejo de
+                // llegar a la revision.
+                if (zoneId == catalogo.Zones.Last().ZoneId)
                 {
                     Assert.AreEqual("ReviewChoices", _binding.Module.Current);
                     Assert.IsNull(personal, "Feedback antes del envio");
@@ -373,7 +382,7 @@ namespace RideSafe.Module01.Tests
                     Assert.AreEqual(omitHelmet, personal.HasCriticalProblem);
                     yield return ReviewAndVideo();
                 }
-                if (zoneId == "visibility")
+                if (zoneId == _director.SelectedVehicle.InspectionZones.Last().ZoneId)
                 {
                     // Orden desde 2026-10-20 (Cindy): «Mi Elección» del vehículo y su video, luego
                     // la decisión, y por último el reporte final.
@@ -395,7 +404,13 @@ namespace RideSafe.Module01.Tests
                 "El reporte no muestra el vehiculo");
             Assert.IsFalse(_binding.Comparison.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("point_brakes")),
                 "El id crudo 'point_brakes' se esta viendo en pantalla.");
+            yield return null;
             AssertTextIsLegible("reporte final");
+            AssertReportLayout("reporte final");
+            // Con las catorce filas el panel crecia hasta sacar de la vista los botones (PO, 2026-10-26).
+            foreach (string name in new[] { "ContinueModule2Button", "RepeatModuleButton" })
+                AssertWhollyOnScreen(Object.FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                    .Single(b => b.name == name).GetComponent<RectTransform>());
             // 4 y no 6: tres saltos a las estaciones de protección personal y UNO al punto de
             // exhibición del vehículo. Las otras dos zonas del vehículo ya no mueven al
             // aprendiz —gira el vehículo, que es lo que pidió la reunión—, así que exigir seis
@@ -409,9 +424,11 @@ namespace RideSafe.Module01.Tests
         private IEnumerator ReviewAndVideo()
         {
             Assert.AreEqual("Comparison", _binding.Module.Current);
+            yield return null;   // the frame (Enclose) and the note follow the list in LateUpdate
             AssertTextIsLegible("reporte de seccion");
+            AssertReportLayout("reporte de seccion");
             DumpTexts("reporte de seccion");
-            yield return Capture("reporte-seccion");
+            yield return Capture(_director.InVehicleSection ? "reporte-vehiculo" : "reporte-epp");
             yield return Press(_binding.Comparison.transform, "ExplainButton");
             Assert.AreEqual("Explanation", _binding.Module.Current);
             var video = _binding.Module.GetComponentInChildren<UnityEngine.Video.VideoPlayer>();
@@ -1031,6 +1048,63 @@ namespace RideSafe.Module01.Tests
                 Assert.AreSame(highlight.Outline.transform.parent, entity.transform.parent,
                     "La esfera clicable de " + item.ItemId + " no se mudo a su pieza: el aprendiz "
                     + "apunta a lo que brilla y pulsa el aire.");
+            }
+        }
+
+        /// <summary>
+        /// «Mi Elección» como tabla (PO, 2026-10-26): el elemento a la izquierda y, en su propia
+        /// columna, si fue correcto, no necesario o incorrecto. Cada fila dice su estado —las
+        /// amarillas salían en blanco— y la nota va justo bajo la lista, sin el hueco que dejaba
+        /// el reporte del vehículo ni montada sobre el aviso de lista vacía.
+        /// </summary>
+        private void AssertReportLayout(string momento)
+        {
+            Canvas.ForceUpdateCanvases();
+            Transform panel = _binding.Comparison.transform;
+            RectTransform list = (RectTransform)panel.Find("LeftColumn");
+            RectTransform note = (RectTransform)panel.Find("Header/Body");
+            RectTransform rows = (RectTransform)list.Find("Rows");
+            foreach (Transform row in rows)
+            {
+                if (!row.gameObject.activeInHierarchy)
+                    continue;
+                TMP_Text state = row.Find("State")?.GetComponent<TMP_Text>();
+                Assert.IsNotNull(state, "[" + momento + "] fila sin columna de estado: " + row.name);
+                Assert.IsTrue(state.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(state.text),
+                    "[" + momento + "] fila sin estado: " + row.name);
+                Assert.IsFalse(state.text.StartsWith("M1/"), "[" + momento + "] estado sin traducir: " + state.text);
+                TMP_Text title = row.Find("Text/Title").GetComponent<TMP_Text>();
+                Assert.LessOrEqual(Right(title.rectTransform, row), Left(state.rectTransform, row) + .5f,
+                    "[" + momento + "] el nombre invade la columna de estado: " + row.name);
+            }
+
+            // The note's top edge right under the list's visible bottom.
+            float listBottom = Bottom(list, panel), noteTop = Top(note, panel);
+            Assert.GreaterOrEqual(listBottom - noteTop, -.5f, "[" + momento + "] la nota se monta sobre la lista");
+            Assert.LessOrEqual(listBottom - noteTop, ColumnComposition.Gap * 2f,
+                "[" + momento + "] hueco entre la lista y la nota: " + (listBottom - noteTop));
+            GameObject empty = list.Find("EmptyState")?.gameObject;
+            if (empty != null && empty.activeInHierarchy)
+                Assert.GreaterOrEqual(Bottom((RectTransform)empty.transform, panel), listBottom - .5f,
+                    "[" + momento + "] el aviso de lista vacía se sale de su caja");
+        }
+
+        private static float Left(RectTransform r, Transform space) { var c = new Vector3[4]; r.GetWorldCorners(c); return space.InverseTransformPoint(c[0]).x; }
+        private static float Right(RectTransform r, Transform space) { var c = new Vector3[4]; r.GetWorldCorners(c); return space.InverseTransformPoint(c[2]).x; }
+        // y in the panel's space, growing up: «Bottom» is the lower edge.
+        private static float Bottom(RectTransform r, Transform space) { var c = new Vector3[4]; r.GetWorldCorners(c); return space.InverseTransformPoint(c[0]).y; }
+        private static float Top(RectTransform r, Transform space) { var c = new Vector3[4]; r.GetWorldCorners(c); return space.InverseTransformPoint(c[1]).y; }
+
+        private void AssertWhollyOnScreen(RectTransform rect)
+        {
+            AssertVisible(rect);
+            var corners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            foreach (Vector3 corner in corners)
+            {
+                Vector3 p = _camera.WorldToScreenPoint(corner);
+                Assert.IsTrue(p.z > 0 && p.x >= 0 && p.x <= Screen.width && p.y >= 0 && p.y <= Screen.height,
+                    rect.name + " se sale de la vista: esquina en " + p + " de " + Screen.width + "x" + Screen.height);
             }
         }
 

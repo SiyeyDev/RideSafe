@@ -196,6 +196,9 @@ namespace RideSafe.UI.EditorTools
             // The white status glyphs for the traffic-light tints (UIStatusIcons).
             foreach (string source in UIStatusIcons.Sources)
                 paths.Add(UIStatusIcons.Folder + "/" + UIStatusIcons.MonoName(source) + ".png");
+            // Icons drawn for the project where the atlas's fell short (UIComposition.ReplayIcon).
+            foreach (string icon in AssetDatabase.FindAssets("t:Texture2D", new[] { UIComposition.IconsFolder }))
+                paths.Add(AssetDatabase.GUIDToAssetPath(icon));
             // The company mark, navy and white, beside the panel titles (UIBrand).
             UIBrand.EnsureImported();
             paths.AddRange(UIBrand.Paths);

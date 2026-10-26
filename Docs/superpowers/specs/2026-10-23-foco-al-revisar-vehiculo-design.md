@@ -2,6 +2,13 @@
 
 Fecha: 2026-10-23 · Estado: implementado (validado en PC) · Pidió: Cindy (PO)
 
+> **Actualización 2026-10-26 (Cindy):** el foco se extiende a las **mesas de EPP**, «así como se
+> hizo con las partes de la e-bike y de la patineta». Mismo componente y mismo radio: desde el
+> punto de vista de cada estación el objeto más cercano de su mesa queda a 3,08 m (protección),
+> 2,60 m (control) y 3,37 m (preparación), fuera del radio de 1,6 m
+> (`FocusDomeSceneTests.EveryTableObject_StaysOutsideTheBubble_AtItsStation`). Donde abajo dice
+> «solo en la sección del vehículo» o «Mesas de EPP: fuera de alcance», ya no aplica.
+
 ## Objetivo
 
 Al abrir un punto de revisión de la e-bike o de la patineta (popup + pieza en el pedestal), el

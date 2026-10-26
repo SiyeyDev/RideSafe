@@ -8,7 +8,8 @@ namespace RideSafe.UI
     /// was built with, the box and its panels grow by the difference, what sits below the list
     /// moves down by it, and the panel is re-centred vertically. A short list leaves the panel
     /// exactly as built. Recomputed when the rows change. Assumes top-left anchors and pivots
-    /// (UIBuilderKit layout).
+    /// (UIBuilderKit layout). With the rows in a scrolled viewport the growth stops at a cap and
+    /// the rest scrolls, so a long list keeps the panel's proportions.
     /// </summary>
     [AddComponentMenu("RideSafe/UI/Grow With Content")]
     public class GrowWithContent : MonoBehaviour
@@ -23,6 +24,10 @@ namespace RideSafe.UI
         [SerializeField] private RectTransform[] _pushDown = new RectTransform[0];
         [Tooltip("Optional: moved up by half the extra height, so the panel stays centred.")]
         [SerializeField] private RectTransform _recentre;
+        [Tooltip("Optional: the rows when they scroll inside Content (the viewport). Counted and measured instead of it.")]
+        [SerializeField] private RectTransform _scrolledRows;
+        [Tooltip("Most the box grows; past it the rows scroll. Negative = no cap.")]
+        [SerializeField] private float _maxExtra = -1f;
 
         private bool _captured;
         private float _contentHeight, _boxHeight, _recentreY;
@@ -41,6 +46,20 @@ namespace RideSafe.UI
             _captured = false;
         }
 
+        /// <summary>
+        /// The same with the rows scrolling inside <paramref name="viewport"/>: the box grows with them
+        /// up to <paramref name="maxExtra"/>, and past it the rows scroll (PO, 2026-10-26).
+        /// </summary>
+        public void Configure(RectTransform viewport, RectTransform box, RectTransform[] grow, RectTransform[] pushDown,
+                              RectTransform recentre, RectTransform scrolledRows, float maxExtra)
+        {
+            Configure(viewport, box, grow, pushDown, recentre);
+            _scrolledRows = scrolledRows;
+            _maxExtra = maxExtra;
+        }
+
+        private RectTransform Rows => _scrolledRows != null ? _scrolledRows : _content;
+
         private void LateUpdate()
         {
             if (_content != null && ActiveRows() != _lastCount)
@@ -52,10 +71,20 @@ namespace RideSafe.UI
             if (_content == null || _box == null)
                 return;
             Capture();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_content);
-            float needed = LayoutUtility.GetPreferredHeight(_content);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(Rows);
+            float needed = LayoutUtility.GetPreferredHeight(Rows);
             float extra = Mathf.Max(0f, needed - _contentHeight);
+            if (_maxExtra >= 0f)
+                extra = Mathf.Min(extra, _maxExtra);
+            bool rowsChanged = ActiveRows() != _lastCount;
             _lastCount = ActiveRows();
+            // A new list starts at its first row, wherever the last one was left.
+            if (rowsChanged && _scrolledRows != null)
+            {
+                ScrollRect scroll = _content.GetComponentInParent<ScrollRect>(true);
+                if (scroll != null)
+                    scroll.verticalNormalizedPosition = 1f;
+            }
             if (Mathf.Approximately(extra, _lastExtra))
                 return;
             _lastExtra = extra;
@@ -90,9 +119,10 @@ namespace RideSafe.UI
 
         private int ActiveRows()
         {
+            RectTransform rows = Rows;
             int count = 0;
-            for (int i = 0; i < _content.childCount; i++)
-                if (_content.GetChild(i).gameObject.activeSelf)
+            for (int i = 0; i < rows.childCount; i++)
+                if (rows.GetChild(i).gameObject.activeSelf)
                     count++;
             return count;
         }
