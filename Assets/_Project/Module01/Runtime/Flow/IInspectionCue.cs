@@ -5,10 +5,9 @@ namespace RideSafe.Module01
     /// <para>
     /// Hay dos maneras y conviven: <see cref="InspectionMarker"/>, el signo de exclamación
     /// flotante, y <see cref="InspectionHighlight"/>, el contorno sobre la pieza real de la
-    /// malla. Cuál se usa depende de qué piezas traiga despiezadas el vehículo —la e-bike,
-    /// <c>manubrio</c> y <c>rueda_trasera</c>; el patinete, además, su <c>freno</c>—, y eso
-    /// es cosa del escenario, no del recorrido. Ningún vehículo las tiene todas: lo que no
-    /// existe como pieza se queda con el signo.
+    /// malla. Cuál se usa depende de qué piezas traiga despiezadas el vehículo —la e-bike las
+    /// cinco; la patineta dirección, frenos, ruedas y plataforma—, y eso es cosa del escenario,
+    /// no del recorrido. Lo que no existe como pieza se queda con el signo.
     /// </para>
     /// <para>
     /// <see cref="ZoneRunner"/> habla por esta interfaz justamente para no enterarse: recorre

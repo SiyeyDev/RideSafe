@@ -15,8 +15,8 @@ namespace RideSafe.Module01.Tests
     /// </para>
     /// <para>
     /// Desde que los vehículos llegan despiezados, algunos de esos puntos <b>sí</b> tienen
-    /// pieza real —en la bici, <c>manubrio</c> y <c>rueda_trasera</c>; en el patinete, además,
-    /// su <c>freno</c>—, así que el pedestal puede enseñar la pieza de verdad. Los demás se
+    /// pieza real —los frenos, las ruedas, la dirección—, así que el pedestal puede enseñar la
+    /// pieza de verdad. Los demás se
     /// quedan con el signo, que es el mismo idioma que ya usan en el mundo.
     /// </para>
     /// </summary>

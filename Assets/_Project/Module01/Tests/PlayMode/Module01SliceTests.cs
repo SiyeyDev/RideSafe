@@ -105,8 +105,8 @@ namespace RideSafe.Module01.Tests
                 "Elegir patinete dejo al director con el perfil de la bici.");
 
             GameObject bike = FindIncludingInactive("ebike");
-            GameObject scooter = FindIncludingInactive("scooter");
-            Assert.IsNotNull(scooter, "La escena no tiene una malla llamada 'scooter'.");
+            GameObject scooter = FindIncludingInactive("E_Scooter");
+            Assert.IsNotNull(scooter, "La escena no tiene una malla llamada 'E_Scooter'.");
             Assert.IsNotNull(bike, "La escena no tiene una malla llamada 'ebike'.");
             Assert.IsTrue(scooter.activeInHierarchy, "El patinete elegido tiene que verse.");
             Assert.IsFalse(bike.activeInHierarchy, "La bici tiene que quedar apagada al elegir patinete.");
@@ -245,6 +245,12 @@ namespace RideSafe.Module01.Tests
                 .Concat(_director.SelectedVehicle.InspectionZones.Select(z => z.ZoneId))
                 .ToArray();
             Assert.That(zones, Is.EquivalentTo(zones.Distinct()), "Hay zonas repetidas en el recorrido.");
+            string[] vehicleZones = _director.SelectedVehicle.InspectionZones.Select(z => z.ZoneId).ToArray();
+            if (vehicleId == "escooter")
+                CollectionAssert.AreEqual(new[] { "cockpit", "wheels", "deck", "visibility" }, vehicleZones,
+                    "Narrativa §4.8.2: el scooter revisa tambien la plataforma.");
+            else
+                CollectionAssert.DoesNotContain(vehicleZones, "deck", "La bici no tiene plataforma.");
             foreach (string zoneId in zones)
             {
                 yield return WaitFor(() => _director.CurrentZone != null && _director.CurrentZone.ZoneId == zoneId && Object.FindAnyObjectByType<Module01Experience>().Phase == "Choosing" && Field<CanvasGroup>(Object.FindAnyObjectByType<GuidedTour>(), "_fade").alpha == 0, "Llegada a " + zoneId);
@@ -295,6 +301,10 @@ namespace RideSafe.Module01.Tests
                     // lo dice ningun assert, hay que mirarlo.
                     if (zoneId == "cockpit") yield return Capture("vehiculo-contorno-cockpit");
                     if (zoneId == "wheels") yield return Capture("vehiculo-contorno-wheels");
+                    // La plataforma de tres cuartos y las luces por detras: que se lean tambien
+                    // es cosa de mirarlo.
+                    if (zoneId == "deck") yield return Capture("vehiculo-contorno-deck");
+                    if (zoneId == "visibility") yield return Capture("vehiculo-visibility");
                 }
                 var experience = Object.FindAnyObjectByType<Module01Experience>();
                 Assert.AreEqual(subtitles, Field<GameObject>(experience, "_instruction").activeInHierarchy, "La preferencia de subtitulos no se conserva");
@@ -387,6 +397,9 @@ namespace RideSafe.Module01.Tests
                     // Orden desde 2026-10-20 (Cindy): «Mi Elección» del vehículo y su video, luego
                     // la decisión, y por último el reporte final.
                     Assert.IsNotNull(vehicle);
+                    bool deckGraded = vehicle.CoreSelected.Concat(vehicle.CoreOmitted).Contains("point_deck");
+                    Assert.AreEqual(vehicleId == "escooter", deckGraded,
+                        "La plataforma se califica en el scooter y en la bici no existe.");
                     Assert.IsFalse(_director.IsFinished, "La decisión todavía no se ha tomado");
                     yield return ReviewAndVideo();
                     Assert.AreEqual("Decision", Object.FindAnyObjectByType<Module01Experience>().Phase);
@@ -405,6 +418,8 @@ namespace RideSafe.Module01.Tests
             Assert.IsFalse(_binding.Comparison.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("point_brakes")),
                 "El id crudo 'point_brakes' se esta viendo en pantalla.");
             yield return null;
+            // Antes de afirmar: si algo falla, la captura es lo que hay que mirar.
+            yield return Capture(omitHelmet ? "final-report-sin-casco" : "final-report");
             AssertTextIsLegible("reporte final");
             AssertReportLayout("reporte final");
             // Con las catorce filas el panel crecia hasta sacar de la vista los botones (PO, 2026-10-26).
@@ -418,7 +433,6 @@ namespace RideSafe.Module01.Tests
             // Lo que sigue guardado, y es lo que importa, es que CADA salto que sí ocurre pasa
             // con la pantalla en negro; eso se comprueba arriba, en ZoneReached.
             Assert.GreaterOrEqual(blackTeleports, 4, "No se probaron todos los cambios de zona con fade");
-            if (!omitHelmet) yield return Capture("final-report");
             CollectionAssert.IsEmpty(_problems, string.Join("\n", _problems));
         }
         private IEnumerator ReviewAndVideo()
@@ -433,6 +447,10 @@ namespace RideSafe.Module01.Tests
             Assert.AreEqual("Explanation", _binding.Module.Current);
             var video = _binding.Module.GetComponentInChildren<UnityEngine.Video.VideoPlayer>();
             Assert.IsNotNull(video);
+            // Cada vehículo tiene su video de revisión (PO, 2026-10-27).
+            if (_director.InVehicleSection)
+                Assert.AreSame(_director.SelectedVehicle.ExplanationVideo, video.clip,
+                    "La revisión del vehículo tiene que ser la de " + _director.SelectedVehicle.name);
             // O arranca, o el propio modulo se rinde y abre la puerta. Las dos salidas son
             // legitimas y las dos dejan seguir el recorrido.
             yield return WaitFor(() => (video.isPlaying && video.frame > 0) || _binding.Explanation.CanContinue,
@@ -733,8 +751,13 @@ namespace RideSafe.Module01.Tests
                 t.ForceMeshUpdate();
                 Rect caja = t.rectTransform.rect;
 
-                // Alto: lo que necesita con el ancho que tiene.
-                float altoNecesario = t.GetPreferredValues(t.text, caja.width, 0f).y;
+                // Alto: lo que necesita con el ancho que tiene. Con autoajuste se mide lo que
+                // pinta: GetPreferredValues de TMP calcula al tamaño MAXIMO, y el nombre del
+                // popup (dos lineas que encogen, PO 2026-10-26) salia «no cabe» cabiendo. Que
+                // no haya tenido que encoger hasta el suelo lo vigila el assert de abajo.
+                float altoNecesario = t.enableAutoSizing
+                    ? t.GetRenderedValues(true).y
+                    : t.GetPreferredValues(t.text, caja.width, 0f).y;
                 Assert.LessOrEqual(altoNecesario, caja.height + 1f, string.Format(
                     "[{0}] El texto '{1}' no cabe de alto: necesita {2:0.0} y tiene {3:0.0}. Dice: \"{4}\"",
                     momento, Ruta(t.transform), altoNecesario, caja.height, Recorta(t.text)));
@@ -816,7 +839,26 @@ namespace RideSafe.Module01.Tests
             if (quad.All(v => v.x < 0f) || quad.All(v => v.x > Screen.width)
                 || quad.All(v => v.y < 0f) || quad.All(v => v.y > Screen.height))
                 return false;
-            return true;
+
+            // Lo que recorta una ventana que se desplaza (RectMask2D) no se ve: se compara solo
+            // la parte visible. Sin esto, las filas de «Mi Elección» que quedan fuera de la
+            // ventana «se pisaban» con la nota y con «Continuar al Módulo 2» sin verse.
+            RectMask2D mask = t.GetComponentInParent<RectMask2D>();
+            return mask == null || ClipToMask(mask, ref quad);
+        }
+
+        /// <summary>Recorta el cuadrilátero a la caja en pantalla de la máscara; false si no queda nada.</summary>
+        private bool ClipToMask(RectMask2D mask, ref Vector2[] quad)
+        {
+            Vector3[] corners = new Vector3[4];
+            mask.rectTransform.GetWorldCorners(corners);
+            Vector2[] window = corners.Select(c => (Vector2)_camera.WorldToScreenPoint(c)).ToArray();
+            Vector2 min = new Vector2(window.Min(v => v.x), window.Min(v => v.y));
+            Vector2 max = new Vector2(window.Max(v => v.x), window.Max(v => v.y));
+
+            quad = quad.Select(v => Vector2.Max(min, Vector2.Min(max, v))).ToArray();
+            return quad.Max(v => v.x) - quad.Min(v => v.x) > 1f
+                && quad.Max(v => v.y) - quad.Min(v => v.y) > 1f;
         }
 
         /// <summary>
@@ -1063,7 +1105,8 @@ namespace RideSafe.Module01.Tests
             Transform panel = _binding.Comparison.transform;
             RectTransform list = (RectTransform)panel.Find("LeftColumn");
             RectTransform note = (RectTransform)panel.Find("Header/Body");
-            RectTransform rows = (RectTransform)list.Find("Rows");
+            // Desde que la lista se desplaza (PO, 2026-10-26) las filas viven en su ventana.
+            RectTransform rows = (RectTransform)(list.Find("Viewport/Rows") ?? list.Find("Rows"));
             foreach (Transform row in rows)
             {
                 if (!row.gameObject.activeInHierarchy)

@@ -127,6 +127,40 @@ namespace RideSafe.Module01.Tests
             Assert.AreEqual(built, panel.anchoredPosition, "the panel keeps its place");
         }
 
+        /// <summary>
+        /// La nota del reporte final junta el rango y el cierre del módulo, y sin casco pedía tres
+        /// líneas en una caja hecha para dos: la última se salía (54,5 de 38). La caja crece con su
+        /// texto, nunca por debajo de lo construido.
+        /// </summary>
+        [TestCase("Nota", false)]
+        [TestCase("Faltó buena parte del equipo imprescindible. Vuelve a recorrer el garaje sin prisa " +
+                  "antes de circular. · Módulo completado. Revisa el resumen de tu preparación e inspección.", true)]
+        public void La_caja_de_la_nota_crece_con_su_texto_y_nunca_encoge(string note, bool grows)
+        {
+            const float BuiltHeight = 64f, Padding = 13f;
+            _note.sizeDelta = new Vector2(400f, BuiltHeight);
+            HorizontalLayoutGroup card = _note.gameObject.AddComponent<HorizontalLayoutGroup>();
+            card.padding = new RectOffset(13, 13, 13, 13);
+            card.childControlWidth = card.childControlHeight = true;
+            card.childForceExpandWidth = card.childForceExpandHeight = true;
+            TMPro.TextMeshProUGUI text = new GameObject("Text", typeof(RectTransform)).AddComponent<TMPro.TextMeshProUGUI>();
+            text.transform.SetParent(_note, false);
+            text.fontSize = 15f;
+            text.textWrappingMode = TMPro.TextWrappingModes.Normal;
+            SerializedObject serialized = new SerializedObject(_view);
+            serialized.FindProperty("_subtitle").objectReferenceValue = text;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            _view.SetSingleList("Mi Elección", note, Entries(3));
+
+            float needed = text.GetPreferredValues(note, 400f - 2f * Padding, 0f).y + 2f * Padding;
+            Assert.GreaterOrEqual(_note.sizeDelta.y, needed - .5f, "el texto se sale de su caja");
+            if (grows)
+                Assert.Greater(_note.sizeDelta.y, BuiltHeight, "tres lineas no caben en la caja construida");
+            else
+                Assert.AreEqual(BuiltHeight, _note.sizeDelta.y, .5f, "una nota corta deja la caja como se construyo");
+        }
+
         private static List<ComparisonEntry> Entries(int count) =>
             Enumerable.Range(0, count).Select(i => new ComparisonEntry(ItemStatus.Selected, "Fila " + i)).ToList();
 

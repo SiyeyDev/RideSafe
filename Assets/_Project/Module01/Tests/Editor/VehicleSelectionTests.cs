@@ -143,7 +143,7 @@ namespace RideSafe.Module01.Tests
         {
             Wire();
             GameObject bike = new GameObject("ebike");
-            GameObject scooter = new GameObject("scooter");
+            GameObject scooter = new GameObject("E_Scooter");
             VehicleStage stage = _go.AddComponent<VehicleStage>();
             stage.ConfigureForTests(("ebike", bike), ("escooter", scooter));
             _director.ConfigureStageForTests(stage);
@@ -217,6 +217,7 @@ namespace RideSafe.Module01.Tests
     {
         private GameObject _go;
         private GameObject _bike;
+        private VehicleProfileSO _profile;
         private VehicleStage _stage;
 
         [SetUp]
@@ -226,7 +227,8 @@ namespace RideSafe.Module01.Tests
             _bike = new GameObject("ebike");
             _stage = _go.AddComponent<VehicleStage>();
             _stage.ConfigureForTests(("ebike", _bike));
-            _stage.Show("ebike");
+            _profile = TestVehicles.Profile("ebike");
+            _stage.Show(_profile);
         }
 
         [TearDown]
@@ -234,6 +236,7 @@ namespace RideSafe.Module01.Tests
         {
             Object.DestroyImmediate(_go);
             Object.DestroyImmediate(_bike);
+            Object.DestroyImmediate(_profile);
         }
 
         [Test]
@@ -281,14 +284,18 @@ namespace RideSafe.Module01.Tests
         private GameObject _go;
         private GameObject _bike;
         private GameObject _scooter;
+        private VehicleProfileSO _ebike, _escooter, _unicycle;
         private VehicleStage _stage;
 
         [SetUp]
         public void SetUp()
         {
+            _ebike = TestVehicles.Profile("ebike");
+            _escooter = TestVehicles.Profile("escooter");
+            _unicycle = TestVehicles.Profile("monociclo");
             _go = new GameObject("stage");
             _bike = new GameObject("ebike");
-            _scooter = new GameObject("scooter");
+            _scooter = new GameObject("E_Scooter");
             _stage = _go.AddComponent<VehicleStage>();
             _stage.ConfigureForTests(("ebike", _bike), ("escooter", _scooter));
         }
@@ -299,12 +306,15 @@ namespace RideSafe.Module01.Tests
             Object.DestroyImmediate(_go);
             Object.DestroyImmediate(_bike);
             Object.DestroyImmediate(_scooter);
+            Object.DestroyImmediate(_ebike);
+            Object.DestroyImmediate(_escooter);
+            Object.DestroyImmediate(_unicycle);
         }
 
         [Test]
         public void Mostrar_un_vehiculo_apaga_los_demas()
         {
-            _stage.Show("ebike");
+            _stage.Show(_ebike);
 
             Assert.IsTrue(_bike.activeSelf);
             Assert.IsFalse(_scooter.activeSelf);
@@ -313,8 +323,8 @@ namespace RideSafe.Module01.Tests
         [Test]
         public void Mostrar_el_otro_invierte_el_encendido()
         {
-            _stage.Show("ebike");
-            _stage.Show("escooter");
+            _stage.Show(_ebike);
+            _stage.Show(_escooter);
 
             Assert.IsFalse(_bike.activeSelf);
             Assert.IsTrue(_scooter.activeSelf);
@@ -323,13 +333,125 @@ namespace RideSafe.Module01.Tests
         [Test]
         public void Un_vehiculo_sin_malla_avisa_y_no_deja_el_garaje_vacio()
         {
-            _stage.Show("ebike");
+            _stage.Show(_ebike);
 
             LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("monociclo"));
-            _stage.Show("monociclo");
+            _stage.Show(_unicycle);
 
             Assert.IsTrue(_bike.activeSelf,
                 "Sin malla para lo pedido, mejor dejar lo que había que apagar todo.");
+        }
+    }
+
+    /// <summary>
+    /// La plataforma solo la revisa el scooter. Su punto es una entidad de la escena como las
+    /// demás, así que con la bici encendida tiene que desaparecer, y volver con el scooter.
+    /// </summary>
+    public class VehicleStageOwnPointsTests
+    {
+        private readonly List<Object> _objects = new List<Object>();
+        private VehicleStage _stage;
+        private VehicleProfileSO _bike, _scooter;
+        private WorldObjectTaskEntity _deck, _brakes;
+
+        private T Keep<T>(T o) where T : Object { _objects.Add(o); return o; }
+
+        private GameObject Model(string name, params string[] mounts)
+        {
+            GameObject model = Keep(new GameObject(name));
+            foreach (string itemId in mounts)
+                new GameObject("mount_" + itemId).transform.SetParent(model.transform, false);
+            return model;
+        }
+
+        private WorldObjectTaskEntity Point(string zone, string itemId)
+        {
+            // El punto exige un collider: es lo que recibe el clic.
+            GameObject go = Keep(new GameObject(itemId, typeof(BoxCollider)));
+            go.SetActive(false);
+            WorldObjectTaskEntity entity = go.AddComponent<WorldObjectTaskEntity>();
+            entity.Configure(new RideSafe.TaskSequence.EntityId($"module01.{zone}.{itemId}"), itemId);
+            go.SetActive(true);
+            return entity;
+        }
+
+        private VehicleProfileSO Profile(string value, GameObject model, params (string Zone, string Item)[] points)
+        {
+            List<ZoneSO> zones = new List<ZoneSO>();
+            foreach ((string zoneId, string itemId) in points)
+            {
+                SafetyItemSO item = Keep(ScriptableObject.CreateInstance<SafetyItemSO>());
+                item.ConfigureForTests(itemId, "k", "k_Risk", SafetyItemCategory.Core);
+                ZoneSO zone = Keep(ScriptableObject.CreateInstance<ZoneSO>());
+                zone.ConfigureForTests(zoneId, "t", new[] { item });
+                zones.Add(zone);
+            }
+            VehicleProfileSO profile = Keep(ScriptableObject.CreateInstance<VehicleProfileSO>());
+            profile.Configure(value, model, zones);
+            return profile;
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            GameObject bike = Model("ebike", "point_brakes");
+            GameObject scooter = Model("E_Scooter", "point_brakes", "point_deck");
+            _bike = Profile("ebike", bike, ("cockpit", "point_brakes"));
+            _scooter = Profile("escooter", scooter, ("cockpit", "point_brakes"), ("deck", "point_deck"));
+            _brakes = Point("cockpit", "point_brakes");
+            _deck = Point("deck", "point_deck");
+
+            _stage = Keep(new GameObject("stage")).AddComponent<VehicleStage>();
+            _stage.ConfigureForTests(("ebike", bike), ("escooter", scooter));
+            _stage.ConfigurePointsForTests(_brakes, _deck);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            foreach (Object o in _objects)
+                if (o != null) Object.DestroyImmediate(o);
+            _objects.Clear();
+        }
+
+        [Test]
+        public void Con_la_bici_la_plataforma_no_se_ve_y_los_frenos_si()
+        {
+            _stage.Show(_bike);
+
+            Assert.IsFalse(_deck.gameObject.activeSelf, "La bici no tiene plataforma que revisar.");
+            Assert.IsTrue(_brakes.gameObject.activeSelf);
+        }
+
+        [Test]
+        public void Volver_al_scooter_devuelve_la_plataforma_colgada_de_el()
+        {
+            _stage.Show(_scooter);
+            _stage.Show(_bike);
+            _stage.Show(_scooter);
+
+            Assert.IsTrue(_deck.gameObject.activeSelf);
+            Assert.AreEqual("mount_point_deck", _deck.transform.parent.name);
+            Assert.AreEqual("E_Scooter", _deck.transform.parent.parent.name);
+        }
+
+        [Test]
+        public void El_perfil_sabe_que_puntos_revisa()
+        {
+            Assert.IsTrue(_scooter.Inspects("point_deck"));
+            Assert.IsFalse(_bike.Inspects("point_deck"));
+            Assert.IsFalse(_bike.Inspects(null));
+        }
+    }
+
+    /// <summary>Un perfil de vehículo en memoria, sin zonas ni modelo, para tests del escenario.</summary>
+    internal static class TestVehicles
+    {
+        public static VehicleProfileSO Profile(string contextValue)
+        {
+            VehicleProfileSO profile = ScriptableObject.CreateInstance<VehicleProfileSO>();
+            profile.Configure(contextValue, null, new List<ZoneSO>());
+            return profile;
         }
     }
 }

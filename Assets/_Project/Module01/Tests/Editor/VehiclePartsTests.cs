@@ -10,13 +10,10 @@ namespace RideSafe.Module01.Tests
     /// Afirma, contra los FBX de verdad, que cada perfil delinea piezas que existen y que el
     /// giro de cada zona las pone donde el aprendiz puede verlas.
     /// <para>
-    /// Esto nace de un fallo que ningún test tocaba. <b>Las dos mallas están en espejo</b>: la
-    /// e-bike trae el morro en la X local baja (<c>manubrio</c> en u=0.19) y el patinete en la
-    /// alta (<c>control_de_direccion</c> en u=0.74). Hasta el garaje v8 daba igual, porque el
-    /// aviso era un signo flotante colocado a mano en un hueco despejado; desde que el aviso es
-    /// el contorno de la pieza real, el giro decide si esa pieza se ve o queda de espaldas. Con
-    /// la tabla de giros compartida entre los dos vehículos, el patinete se presentaba <b>de
-    /// culo</b> en la zona de manubrio y con la rueda detrás del checklist en la de llantas.
+    /// <b>Cada FBX viene orientado a su manera</b>: la e-bike con el eje largo en X y el morro
+    /// en la X baja, la patineta con el eje largo en Z y el morro en la Z alta. Desde que el aviso
+    /// es el contorno de la pieza real, el giro decide si esa pieza se ve o queda de espaldas, y
+    /// una tabla de giros compartida presentaba uno de los dos de espaldas.
     /// </para>
     /// <para>
     /// Por eso el invariante no se escribe como «el giro del patinete vale −90»: eso solo
@@ -71,7 +68,7 @@ namespace RideSafe.Module01.Tests
                 .FirstOrDefault(t => t != model.transform && t.name == partName);
             Assert.IsNotNull(part,
                 $"'{model.name}' no tiene la pieza '{partName}' que declara su perfil. " +
-                "Si una entrega de arte la renombro, hay que actualizar Module01VehicleStaging.Parts.");
+                "Si una entrega de arte la renombro, hay que actualizar VehicleProfiles.");
             return part;
         }
 
@@ -124,28 +121,30 @@ namespace RideSafe.Module01.Tests
         private static readonly string[] PointIds =
         {
             "point_steering", "point_brakes", "point_lights", "point_wheels", "point_electrics",
+            "point_deck",
         };
 
         /// <summary>
-        /// El patinete llega despiezado en siete el 2026-10-14 y trae <b>la maneta de freno
-        /// como pieza propia</b>, que la e-bike no tiene: en la bici el freno vive dentro del
-        /// <c>manubrio</c>. Así que aquí son tres de cinco los puntos con contorno, no dos.
+        /// La patineta llega despiezada en dos piezas anidadas: <c>Manubrio</c>
+        /// (con <c>freno_iz</c>, <c>freno_de</c> y <c>llanta_delantera</c> dentro) y
+        /// <c>cuerpo</c> (con <c>llanta_tracera</c> y <c>soporte</c>). Frenos y ruedas tienen
+        /// dos piezas y se delinean las dos, como en la bici; la plataforma es el <c>cuerpo</c>.
         /// </summary>
         [Test]
-        public void El_patinete_delinea_direccion_freno_y_rueda()
+        public void El_patinete_delinea_sus_piezas()
         {
             VehicleProfileSO scooter = Profile(ScooterPath);
 
-            Assert.AreEqual("control_de_direccion", scooter.PartNameFor("point_steering"));
-            Assert.AreEqual("freno", scooter.PartNameFor("point_brakes"));
-            Assert.AreEqual("rueda_tracera", scooter.PartNameFor("point_wheels"));
+            CollectionAssert.AreEqual(new[] { "Manubrio" }, scooter.PartNamesFor("point_steering"));
+            CollectionAssert.AreEqual(new[] { "freno_iz", "freno_de" }, scooter.PartNamesFor("point_brakes"));
+            CollectionAssert.AreEqual(new[] { "llanta_tracera", "llanta_delantera" }, scooter.PartNamesFor("point_wheels"));
+            CollectionAssert.AreEqual(new[] { "cuerpo" }, scooter.PartNamesFor("point_deck"));
         }
 
         /// <summary>
-        /// Y los otros dos se quedan con el signo <b>a propósito</b>, por el mismo motivo que
-        /// en la bici: la batería va dentro del <c>cuerpo</c>, que es la plataforma entera, y
-        /// delinear 1,16 m de patinete para decir «revisa el sistema eléctrico» enseña algo
-        /// falso. El faro no existe como pieza en el FBX.
+        /// Y los otros dos se quedan con el signo <b>a propósito</b>: la pantalla es un material
+        /// del <c>Manubrio</c>, no una pieza, y delinear el manubrio entero para decir «revisa el
+        /// sistema eléctrico» repite la dirección. El faro no existe como pieza en el FBX.
         /// </summary>
         [Test]
         public void El_patinete_deja_en_el_signo_lo_que_no_tiene_pieza_propia()
@@ -153,7 +152,7 @@ namespace RideSafe.Module01.Tests
             VehicleProfileSO scooter = Profile(ScooterPath);
 
             Assert.AreEqual(string.Empty, scooter.PartNameFor("point_electrics"),
-                "La bateria vive dentro de 'cuerpo'; delinear la plataforma entera enseña algo falso.");
+                "La pantalla es un material del Manubrio, no una pieza: delinear el manubrio entero para lo electrico repite la direccion.");
             Assert.AreEqual(string.Empty, scooter.PartNameFor("point_lights"),
                 "El patinete no trae faro como pieza.");
         }
@@ -179,9 +178,8 @@ namespace RideSafe.Module01.Tests
 
         /// <summary>
         /// El invariante que caza el espejo: en la zona del manubrio, la pieza de la dirección
-        /// tiene que acabar <b>entre el centro del vehículo y el aprendiz</b>. Con la tabla de
-        /// giros compartida, el patinete cumplía lo contrario —el morro a −Z, de espaldas— y el
-        /// aprendiz revisaba la dirección mirándole el guardabarros de atrás.
+        /// tiene que acabar <b>entre el centro del vehículo y el aprendiz</b>: de espaldas, el
+        /// aprendiz revisaría la dirección mirando la parte de atrás.
         /// </summary>
         [Test]
         public void El_giro_de_la_zona_de_manubrio_pone_la_direccion_de_cara_al_aprendiz()
@@ -223,13 +221,13 @@ namespace RideSafe.Module01.Tests
         }
 
         /// <summary>
-        /// Las dos mallas están en espejo, así que los giros <b>no pueden</b> ser los mismos.
-        /// Esto es lo que fija que la tabla de giros sea por vehículo y no una compartida: si
-        /// alguien la vuelve a unificar, los dos invariantes de arriba no pueden cumplirse a la
-        /// vez y esto lo dice con el motivo delante.
+        /// Cada FBX viene orientado a su manera —la bici con el eje largo en X y el morro en la
+        /// X baja, el scooter de 2026-10-26 con el eje largo en <b>Z</b> y el morro en la Z alta—,
+        /// así que la tabla de giros es por vehículo. Si alguien la unifica, alguno de los
+        /// invariantes de arriba deja de cumplirse; esto lo dice con el motivo delante.
         /// </summary>
         [Test]
-        public void Los_dos_vehiculos_no_pueden_compartir_la_tabla_de_giros()
+        public void Cada_vehiculo_tiene_su_tabla_de_giros()
         {
             VehicleProfileSO ebike = Profile(EbikePath);
             VehicleProfileSO scooter = Profile(ScooterPath);
@@ -244,9 +242,26 @@ namespace RideSafe.Module01.Tests
             }
 
             CollectionAssert.IsEmpty(iguales,
-                "La bici tiene el morro en la X local baja y el patinete en la alta: " +
-                "cada zona necesita su giro por vehiculo. Zonas con el giro compartido: " +
-                string.Join(", ", iguales));
+                "Los dos FBX no estan orientados igual: cada zona necesita su giro por vehiculo. " +
+                "Zonas con el giro compartido: " + string.Join(", ", iguales));
+        }
+
+        /// <summary>
+        /// En la zona de plataforma el scooter se ve de tres cuartos por detrás: la rueda de
+        /// atrás —el extremo de la plataforma— hacia el aprendiz y a su izquierda, lejos del
+        /// checklist. De costado puro no cambiaría nada respecto a la zona de llantas.
+        /// </summary>
+        [Test]
+        public void En_la_zona_de_plataforma_el_scooter_se_ve_de_tres_cuartos_por_detras()
+        {
+            VehicleProfileSO scooter = Profile(ScooterPath);
+            float yaw = scooter.YawFor(Zone(scooter, "deck"));
+            Vector3 tail = OffsetAfterYaw(scooter, "llanta_tracera", yaw);
+
+            Assert.Greater(tail.z * TowardLearner, 0f, $"A {yaw:F0}° la cola queda de espaldas.");
+            Assert.Greater(tail.x, 0f, $"A {yaw:F0}° la cola cae por la derecha, bajo el checklist.");
+            Assert.AreNotEqual(scooter.YawFor(Zone(scooter, "wheels")), yaw,
+                "Si no gira entre llantas y plataforma, el aprendiz no nota que cambio de zona.");
         }
     }
 }

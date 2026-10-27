@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using RideSafe.Module01.Editor;
 
@@ -201,6 +202,35 @@ namespace RideSafe.Module01.Tests
             }
         }
 
+        /// <summary>
+        /// Lo que arte entregó en la carpeta de esenciales el 26 y el 27-10: las gafas de sol de
+        /// montura negra, la mochila y un candado con textura. Los tres se instancian desde su
+        /// FBX —no se reutiliza arte de la escena— y a un ancho declarado, porque llegan a la
+        /// escala del export.
+        /// </summary>
+        [TestCase("O08", "gafas de sol.fbx")]
+        [TestCase("O09", "mochila.fbx")]
+        [TestCase("O11", "candado.fbx")]
+        public void Los_EPP_nuevos_de_esenciales_usan_su_modelo(string libraryId, string file)
+        {
+            Module01Library.Entry e = Module01Library.All.First(x => x.LibraryId == libraryId);
+
+            Assert.AreEqual(Module01Library.Essentials + file, e.Model);
+            Assert.IsNull(e.SceneObject, $"{libraryId} se instancia desde el FBX nuevo, no desde el arte viejo.");
+            Assert.Greater(e.TargetWidth, 0f, $"{libraryId} llega a la escala del export: hay que declarar su ancho.");
+        }
+
+        /// <summary>
+        /// Y el arte que hacía de esos elementos se apaga: si no, el aprendiz ve dos gafas de sol
+        /// o dos candados en la mesa y solo uno responde al clic.
+        /// </summary>
+        [TestCase("gafas")]
+        [TestCase("candado")]
+        public void El_arte_viejo_de_esos_EPP_se_apaga(string sceneObject)
+        {
+            CollectionAssert.Contains(Module01Library.RetiredSceneObjects, sceneObject);
+        }
+
         [Test]
         public void Cuantos_esperan_modelo_todavia()
         {
@@ -215,7 +245,8 @@ namespace RideSafe.Module01.Tests
             // nadie habia mapeado. `rompe veintos` no era «otro rompevientos» sino una chaqueta
             // amarillo fluor con bandas reflectivas (O01), y las `gafas` de siempre son oscuras,
             // asi que son las de sol (O08) y no las transparentes.
-            Assert.AreEqual(14, sinModelo.Count,
+            // 14 -> 13 el 2026-10-27: la mochila (O09) llegó en la carpeta de esenciales.
+            Assert.AreEqual(13, sinModelo.Count,
                 "Si 3D entrega uno, baja el número: actualiza este test y la tabla. Faltan: "
                 + string.Join(", ", sinModelo));
         }

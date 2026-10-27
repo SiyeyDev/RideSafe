@@ -53,7 +53,7 @@ namespace RideSafe.Module00.Editor
         private static readonly (string Id, string Model)[] Vehicles =
         {
             ("ebike", "ebike"),
-            ("escooter", "scooter")
+            ("escooter", "E_Scooter")
         };
 
         [MenuItem("RideSafe/Módulo 0/Montar escena de prueba (Garaje_Test)")]

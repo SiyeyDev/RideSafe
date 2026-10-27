@@ -42,7 +42,7 @@ namespace RideSafe.Module01.Editor
             // panel and the twin stays lit on top of it. Find() would pick one in silence.
             RequireUnique("PF_Module00_UI"); RequireUnique("PF_Module01_UI"); RequireUnique("Module01");
             _kit=RideSafeUIPrefabBuilder.CreateKit(); _ui=new UIElements(_kit);
-            foreach (var g in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects()) if (g.name == "XRPlayer" || g.name == "Tutorial") g.SetActive(false);
+            foreach (var g in RideSafe.UI.SceneFolder.TopLevelObjects(UnityEngine.SceneManagement.SceneManager.GetActiveScene())) if (g.name == "XRPlayer" || g.name == "Tutorial") g.SetActive(false);
             _camera = Find("Desktop Camera").transform;
             _camera.position = new Vector3(0,1.45f,10.3f); // 3.9 m from the door, not 2.9: module 0 and its showroom need air in front of it (PO, 2026-10-20)
             _camera.rotation = Quaternion.Euler(0,180,0);
@@ -251,7 +251,7 @@ namespace RideSafe.Module01.Editor
             vp.SetTargetAudioSource(0,speaker);
             var rt=AssetDatabase.LoadAssetAtPath<RenderTexture>("Assets/_Project/Video/VideoScreen_RT.renderTexture"); vp.targetTexture=rt;
             Set(exp,"_video",vp);
-            var clip=AssetDatabase.LoadAssetAtPath<VideoClip>("Assets/_Project/Video/VideoTest.mp4"); Set(exp,"_personalVideo",clip); Set(exp,"_vehicleVideo",clip);
+            var clip=AssetDatabase.LoadAssetAtPath<VideoClip>("Assets/_Project/Video/VideoTest.mp4"); Set(exp,"_personalVideo",clip);
             // Por SerializedObject, no por propiedad: asignar .texture directo sobre un RawImage
             // que vive en el prefab no registra el override y al recargar la escena vuelve a null.
             Set(ui.Get<ExplanationView>("Explanation").VideoSurface,"m_Texture",rt);
@@ -260,7 +260,8 @@ namespace RideSafe.Module01.Editor
             if(all==null) { all=ScriptableObject.CreateInstance<Module01CatalogSO>(); AssetDatabase.CreateAsset(all,"Assets/_Project/Module01/Data/SO_Module01PresentationCatalog.asset"); }
             var catalog=AssetDatabase.LoadAssetAtPath<Module01CatalogSO>("Assets/_Project/Module01/Data/SO_Module01Catalog.asset");
             var vehicle=AssetDatabase.LoadAssetAtPath<VehicleProfileSO>("Assets/_Project/Module01/Data/SO_VehicleProfile_Ebike.asset");
-            all.ConfigureForTests(catalog.Zones.Concat(vehicle.InspectionZones)); EditorUtility.SetDirty(all); Set(exp,"_allItems",all);
+            // Todos los vehiculos: solo con la e-bike, la plataforma del scooter no tenia nombre.
+            all.ConfigureForTests(catalog.Zones.Concat(VehicleProfiles.AllInspectionZones())); EditorUtility.SetDirty(all); Set(exp,"_allItems",all);
             // Quien esconde el EPP de la mesa mientras gira en el pedestal, y lo deja marcado
             // en verde cuando el aprendiz se lo lleva puesto. Solo los del catalogo personal:
             // los puntos del vehiculo no se "llevan", se validan.

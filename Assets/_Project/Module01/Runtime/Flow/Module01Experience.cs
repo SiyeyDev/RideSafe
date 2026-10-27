@@ -403,7 +403,8 @@ namespace RideSafe.Module01
             // guardado en la escena, que es justo lo que se perdía y dejaba el video en negro.
             if (_binding.Explanation.VideoSurface != null) _binding.Explanation.VideoSurface.texture = _video.targetTexture;
             // Demo media can be replaced independently for the personal and vehicle reviews.
-            _video.clip = _director.InVehicleSection ? _vehicleVideo : _personalVideo;
+            // Cada vehículo trae el suyo: la revisión de la bici no es la de la patineta.
+            _video.clip = _director.InVehicleSection ? _director.SelectedVehicle.ExplanationVideo : _personalVideo;
             _videoComplete = false;
             StartCoroutine(PrepareAndPlay());
         }
@@ -489,7 +490,6 @@ namespace RideSafe.Module01
             }
         }
         [SerializeField] private VideoClip _personalVideo;
-        [SerializeField] private VideoClip _vehicleVideo;
         private void VideoEnded(VideoPlayer _) { _videoComplete = true; _binding.Explanation.SetContinueEnabled(true); }
         /// <summary>
         /// Un video que no carga tambien desbloquea el boton: si no, un archivo roto deja al

@@ -65,6 +65,23 @@ namespace RideSafe.Module01.Tests
             Assert.AreEqual("No necesario", ReadTerms(File.ReadAllText(AssetPath))["M1/Legend_NoEffect"][1]);
         }
 
+        [TestCase("M1/Point_Deck", "Plataforma y fijaciones", "Deck and fasteners")]
+        [TestCase("M1/Zone_Deck", "Plataforma", "Deck")]
+        public void La_plataforma_del_scooter_tiene_texto(string key, string es, string en)
+        {
+            Dictionary<string, string[]> terms = ReadProjectTerms();
+            Assert.IsTrue(terms.ContainsKey(key), key + " no existe en I2Languages.");
+            CollectionAssert.AreEqual(new[] { en, es }, terms[key], "Idiomas en el orden del asset: [English, Español].");
+        }
+
+        [Test]
+        public void El_riesgo_de_la_plataforma_tiene_texto()
+        {
+            Dictionary<string, string[]> terms = ReadProjectTerms();
+            Assert.IsTrue(terms.ContainsKey("M1/Point_Deck_Risk"));
+            StringAssert.Contains("plataforma", terms["M1/Point_Deck_Risk"][1]);
+        }
+
         /// <summary>Término → [inglés, español] del asset de I2 del proyecto.</summary>
         internal static Dictionary<string, string[]> ReadProjectTerms() => ReadTerms(File.ReadAllText(AssetPath));
 

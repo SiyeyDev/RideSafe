@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Video;
 using RideSafe.TaskSequence;
 using EntityId = RideSafe.TaskSequence.EntityId;
 
@@ -59,14 +60,18 @@ namespace RideSafe.Module01.Editor
             ("point_brakes",    "M1/Point_Brakes",    new Vector3(0.25f, 0.5f, 0.3f)),
             ("point_electrics", "M1/Point_Electrics", new Vector3(0f, 0.1f, 0f)),
             ("point_wheels",    "M1/Point_Wheels",    new Vector3(0f, -0.3f, 0.5f)),
-            ("point_lights",    "M1/Point_Lights",    new Vector3(0f, 0.3f, 0.6f))
+            ("point_lights",    "M1/Point_Lights",    new Vector3(0f, 0.3f, 0.6f)),
+            ("point_deck",      "M1/Point_Deck",      new Vector3(0f, -0.2f, 0f))
         };
 
         private static readonly (string ZoneId, string TitleKey, string[] PointIds)[] VehicleZones =
         {
             ("cockpit",    "M1/Zone_Cockpit",    new[] { "point_steering", "point_brakes", "point_electrics" }),
             ("wheels",     "M1/Zone_Wheels",     new[] { "point_wheels" }),
-            ("visibility", "M1/Zone_Visibility", new[] { "point_lights" })
+            ("visibility", "M1/Zone_Visibility", new[] { "point_lights" }),
+            // Solo la recorre el scooter: narrativa §4.8.2, «Deck/baseboard and visible
+            // load-bearing fasteners». Que zona recorre cada vehiculo lo dice VehicleProfiles.
+            ("deck",       "M1/Zone_Deck",       new[] { "point_deck" })
         };
 
         /// <summary>
@@ -112,14 +117,26 @@ namespace RideSafe.Module01.Editor
             List<ZoneSO> personalZones = CreateZones(Zones(), items, "SO_Zone_");
             CreateCatalog(personalZones);
 
-            GameObject greybox = CreateEbikeGreybox(items);
+            RebuildVehicleData();
+            Debug.Log("[Module01] Datos de la primera pasada listos en " + DataFolder);
+        }
+
+        /// <summary>
+        /// Rehace <b>solo</b> los datos del vehículo: los puntos, sus zonas y los dos perfiles.
+        /// No toca los EPP ni las piezas ni los giros de cada perfil (<c>Configure</c> no borra
+        /// <c>_partBindings</c> ni <c>_zoneViews</c>; eso lo escribe el montador del vehículo).
+        /// </summary>
+        [MenuItem("RideSafe/Módulo 1/Rehacer los datos del vehículo")]
+        public static void RebuildVehicleData()
+        {
+            EnsureFolders();
+            GameObject greybox = CreateEbikeGreybox(null);
             Dictionary<string, SafetyItemSO> pointItems = CreateVehiclePointItems();
             List<ZoneSO> vehicleZones = CreateZones(VehicleZones, pointItems, "SO_ZoneVehicle_");
             CreateVehicleProfile(greybox, vehicleZones);
-
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[Module01] Datos de la primera pasada listos en " + DataFolder);
+            Debug.Log("[Module01] Datos del vehículo rehechos: " + vehicleZones.Count + " zonas.");
         }
 
         private static void EnsureFolders()
@@ -224,28 +241,39 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>
-        /// Un perfil por vehículo, los dos sobre las mismas tres zonas: se revisa lo
-        /// mismo en bici y en patinete —frenos, luces, llantas—, solo que en sitios
-        /// distintos. Compartir las <see cref="ZoneSO"/> es lo que evita duplicar los
-        /// cinco elementos y sus claves de localización.
+        /// Un perfil por vehículo, cada uno con <b>sus</b> zonas de <see cref="VehicleProfiles"/>.
+        /// Las que comparten —cockpit, wheels, visibility— son el mismo <see cref="ZoneSO"/>, así
+        /// que los cinco puntos y sus claves no se duplican; el scooter suma la plataforma.
         /// </summary>
         private static void CreateVehicleProfile(GameObject greybox, List<ZoneSO> zones)
         {
-            Profile("Ebike", "ebike", Model("ebike.fbx") ?? greybox, zones);
-            Profile("Escooter", "escooter", Model("scooter.fbx") ?? greybox, zones);
-        }
+            foreach (VehicleProfiles.Definition definition in VehicleProfiles.Definitions)
+            {
+                List<ZoneSO> own = new List<ZoneSO>();
+                foreach (string zoneId in definition.ZoneIds)
+                {
+                    ZoneSO zone = zones.Find(z => z.ZoneId == zoneId);
+                    // Un hueco en la lista para el recorrido ahí: mejor decirlo que dejarlo.
+                    if (zone == null)
+                        Debug.LogError($"[Module01] {definition.AssetSuffix} declara la zona '{zoneId}', que no existe.");
+                    else
+                        own.Add(zone);
+                }
 
-        private static void Profile(string assetSuffix, string contextValue, GameObject model, List<ZoneSO> zones)
-        {
-            VehicleProfileSO profile =
-                LoadOrCreate<VehicleProfileSO>($"{DataFolder}/SO_VehicleProfile_{assetSuffix}.asset");
-            profile.Configure(contextValue, model, zones);
-            EditorUtility.SetDirty(profile);
-        }
+                GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(definition.ModelPath);
+                if (model == null)
+                    Debug.LogError($"[Module01] {definition.AssetSuffix}: no carga {definition.ModelPath}.");
 
-        private static GameObject Model(string fileName) =>
-            AssetDatabase.LoadAssetAtPath<GameObject>(
-                "Assets/_Project/Models/CITY/MODELADOS 3d/" + fileName);
+                VideoClip video = AssetDatabase.LoadAssetAtPath<VideoClip>(definition.VideoPath);
+                if (video == null)
+                    Debug.LogError($"[Module01] {definition.AssetSuffix}: no carga el video {definition.VideoPath}.");
+
+                VehicleProfileSO profile = LoadOrCreate<VehicleProfileSO>(VehicleProfiles.AssetPath(definition));
+                profile.Configure(definition.ContextValue, model != null ? model : greybox, own);
+                profile.ConfigureVideo(video);
+                EditorUtility.SetDirty(profile);
+            }
+        }
 
         /// <summary>Un prop gris por elemento, con collider y entidad ya configurada.</summary>
         private static GameObject CreateProp(string itemId)

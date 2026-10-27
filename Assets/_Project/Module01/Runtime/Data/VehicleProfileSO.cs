@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace RideSafe.Module01
 {
     /// <summary>
     /// Un vehículo y sus puntos de inspección.
     /// <para>
-    /// Añadir el e-scooter es crear otro de estos con <see cref="VehicleContextValue"/>
-    /// distinto. Ningún código pregunta por el vehículo: lo resuelve
-    /// <c>ContextRequirement</c> sobre la clave <c>vehicle</c>.
+    /// Cada vehículo es uno de estos, con su <see cref="VehicleContextValue"/>. Ningún código
+    /// pregunta por el vehículo: lo resuelve <c>ContextRequirement</c> sobre la clave
+    /// <c>vehicle</c>.
     /// </para>
     /// </summary>
     [CreateAssetMenu(fileName = "SO_VehicleProfile", menuName = "RideSafe/Module 01/Vehicle Profile")]
@@ -47,9 +48,9 @@ namespace RideSafe.Module01
         /// <para>
         /// Es dato y por vehículo porque cada uno despieza su FBX a su manera, y no coinciden
         /// ni en los nombres ni en el corte: la e-bike (2026-10-21) trae <c>marco</c> con
-        /// <c>tenedor</c>, frenos, ruedas, luces y <c>pantalla</c>; el patinete, <c>control_de_direccion</c> con
-        /// <c>freno</c>, <c>guardabarros</c> y <c>rueda_frontal</c> dentro, y <c>cuerpo</c> con
-        /// <c>rueda_tracera</c> y <c>soporte</c>. Y es un <b>nombre</b>, no una referencia a la
+        /// <c>tenedor</c>, frenos, ruedas, luces y <c>pantalla</c>; el patinete, <c>Manubrio</c> con
+        /// <c>freno_iz</c>, <c>freno_de</c> y <c>llanta_delantera</c> dentro, y <c>cuerpo</c> con
+        /// <c>llanta_tracera</c> y <c>soporte</c>. Y es un <b>nombre</b>, no una referencia a la
         /// escena, porque hay una sola entidad por punto para los dos vehículos y la pieza se
         /// busca en el que esté encendido.
         /// </para>
@@ -72,6 +73,9 @@ namespace RideSafe.Module01
         [Tooltip("Pieza que delinea cada punto. Vacío = ese punto se queda con el signo.")]
         [SerializeField] private List<PartBinding> _partBindings = new List<PartBinding>();
 
+        [Tooltip("Video que explica la revisión de este vehículo, tras «Mi Elección».")]
+        [SerializeField] private VideoClip _explanationVideo;
+
         public string VehicleContextValue =>
             string.IsNullOrWhiteSpace(_vehicleContextValue)
                 ? string.Empty
@@ -79,6 +83,15 @@ namespace RideSafe.Module01
 
         public GameObject Model => _model;
         public IReadOnlyList<ZoneSO> InspectionZones => _inspectionZones;
+
+        /// <summary>
+        /// La revisión de este vehículo en video. La bici y la patineta se revisan parecido, pero
+        /// son vehículos distintos y cada una tiene el suyo (PO, 2026-10-27).
+        /// </summary>
+        public VideoClip ExplanationVideo => _explanationVideo;
+
+        /// <summary>Usado por el generador de datos y por los tests.</summary>
+        public void ConfigureVideo(VideoClip video) => _explanationVideo = video;
 
         /// <summary>Grados que debe girar el vehículo en esa zona. Sin declarar, no gira.</summary>
         public float YawFor(ZoneSO zone)
@@ -128,6 +141,23 @@ namespace RideSafe.Module01
                 if (binding != null && Normalize(binding.ItemId) == wanted && !string.IsNullOrWhiteSpace(binding.PartName))
                     names.Add(binding.PartName.Trim());
             return names;
+        }
+
+        /// <summary>
+        /// ¿Revisa este vehículo ese punto? Los cinco de siempre los revisan los dos; la
+        /// plataforma, solo el scooter (narrativa §4.8.2).
+        /// </summary>
+        public bool Inspects(string itemId)
+        {
+            string wanted = Normalize(itemId);
+            if (wanted.Length == 0)
+                return false;
+            foreach (ZoneSO zone in _inspectionZones)
+                if (zone != null)
+                    foreach (SafetyItemSO item in zone.Items)
+                        if (item != null && Normalize(item.ItemId) == wanted)
+                            return true;
+            return false;
         }
 
         /// <summary>Usado por el montador de escena y por los tests.</summary>

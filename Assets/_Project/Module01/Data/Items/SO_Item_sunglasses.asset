@@ -16,7 +16,7 @@ MonoBehaviour:
   _nameKey: M1/Item_Sunglasses
   _riskKey: M1/Item_Sunglasses_Risk
   _category: 2
-  _displayPrefab: {fileID: 919132149155446097, guid: 267e57f7a3c0d8743914f675d618b5eb, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: 35a6883e5b4a9e44bae740eb2411d3e5, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 1

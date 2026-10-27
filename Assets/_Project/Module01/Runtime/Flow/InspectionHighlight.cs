@@ -149,7 +149,12 @@ namespace RideSafe.Module01
             go.GetComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
 
             MeshRenderer outline = go.GetComponent<MeshRenderer>();
-            outline.sharedMaterial = _outlineMaterial;
+            // Un material por submalla: con uno solo Unity dibuja la primera y nada mas, y el
+            // Manubrio del scooter o la pantalla de la e-bike se quedaban medio delineados.
+            Material[] materials = new Material[Mathf.Max(1, filter.sharedMesh.subMeshCount)];
+            for (int i = 0; i < materials.Length; i++)
+                materials[i] = _outlineMaterial;
+            outline.sharedMaterials = materials;
             // Un contorno no es geometria: ni proyecta sombra, ni la recibe, ni se ilumina.
             // Dejarlo participar lo mete ademas en el horneado, que aqui viene dado del v8.
             outline.shadowCastingMode = ShadowCastingMode.Off;

@@ -42,7 +42,7 @@ namespace RideSafe.Module01.Editor
         private static readonly string[] WorldRoots =
         {
             "enviroment", "House04", "luces", "FX", "Box Volume", "Directional Light",
-            "ebike", "ebike (1)", "scooter", "candado", "plataform", "plataform (1)",
+            "ebike", "ebike (1)", "E_Scooter", "candado", "plataform", "plataform (1)",
             "casco 1", "guaya candado", "luz grontal", "luz roja 1",
             "chaleco refectivo", "gafas", "MobilePhone_01"
         };

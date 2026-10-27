@@ -1,3 +1,4 @@
+using RideSafe.UI;
 using System.Collections.Generic;
 using NUnit.Framework;
 using RideSafe.Tutorial;
@@ -34,7 +35,8 @@ namespace RideSafe.Help.Tests
 
         private GameObject Root(string name)
         {
-            foreach (GameObject root in _scene.GetRootGameObjects())
+            // De primer nivel, también dentro de las carpetas del Hierarchy.
+            foreach (GameObject root in SceneFolder.TopLevelObjects(_scene))
             {
                 if (root.name == name)
                     return root;

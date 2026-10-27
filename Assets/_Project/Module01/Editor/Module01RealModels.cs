@@ -20,7 +20,6 @@ namespace RideSafe.Module01.Editor
     /// </summary>
     public static class Module01RealModels
     {
-        private const string Models = "Assets/_Project/Models/CITY/MODELADOS 3d/";
         private const string ItemsFolder = "Assets/_Project/Module01/Data/Items/";
 
         /// <summary>
@@ -80,9 +79,10 @@ namespace RideSafe.Module01.Editor
                 applied++;
             }
 
-            // Los perfiles de los dos vehículos dejan de apuntar al cubo.
-            PointProfileAtModel("Ebike", "ebike.fbx");
-            PointProfileAtModel("Escooter", "scooter.fbx");
+            // Los perfiles de los vehículos dejan de apuntar al cubo. El modelo sale de
+            // VehicleProfiles, la única lista de vehículos.
+            foreach (VehicleProfiles.Definition definition in VehicleProfiles.Definitions)
+                PointProfileAtModel(definition);
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[Module01] Modelos reales aplicados: {applied}.");
@@ -90,14 +90,13 @@ namespace RideSafe.Module01.Editor
                 Debug.LogWarning("[Module01] " + s);
         }
 
-        private static void PointProfileAtModel(string assetSuffix, string fileName)
+        private static void PointProfileAtModel(VehicleProfiles.Definition definition)
         {
-            VehicleProfileSO profile = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(
-                $"Assets/_Project/Module01/Data/SO_VehicleProfile_{assetSuffix}.asset");
-            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(Models + fileName);
+            VehicleProfileSO profile = VehicleProfiles.Load(definition);
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(definition.ModelPath);
             if (profile == null || model == null)
             {
-                Debug.LogWarning($"[Module01] No pude apuntar {assetSuffix} a {fileName}.");
+                Debug.LogWarning($"[Module01] No pude apuntar {definition.AssetSuffix} a {definition.ModelFile}.");
                 return;
             }
 
@@ -105,7 +104,7 @@ namespace RideSafe.Module01.Editor
             so.FindProperty("_model").objectReferenceValue = model;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(profile);
-            Debug.Log($"[Module01] Perfil {assetSuffix} apuntando a {fileName}.");
+            Debug.Log($"[Module01] Perfil {definition.AssetSuffix} apuntando a {definition.ModelFile}.");
         }
     }
 }

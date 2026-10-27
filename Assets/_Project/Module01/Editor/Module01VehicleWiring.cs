@@ -17,8 +17,6 @@ namespace RideSafe.Module01.Editor
     /// </summary>
     public static class Module01VehicleWiring
     {
-        private const string DataFolder = "Assets/_Project/Module01/Data";
-
         [MenuItem("RideSafe/Módulo 1/Cablear los vehículos en la escena abierta")]
         public static void WireOpenScene()
         {
@@ -39,14 +37,10 @@ namespace RideSafe.Module01.Editor
             VehicleStage stage = Module01EditorComponents.Ensure<VehicleStage>(director.gameObject);
             ConfigureStage(stage);
 
-            SetVehicles(director, Profile("Ebike"), Profile("Escooter"));
+            SetVehicles(director, VehicleProfiles.LoadAll().ToArray());
             SetReference(director, "_stage", stage);
             EditorUtility.SetDirty(director);
         }
-
-        private static VehicleProfileSO Profile(string assetSuffix) =>
-            AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(
-                $"{DataFolder}/SO_VehicleProfile_{assetSuffix}.asset");
 
         /// <summary>
         /// Empareja cada perfil con su malla del garaje por el nombre del modelo. Si una
@@ -60,12 +54,12 @@ namespace RideSafe.Module01.Editor
             list.ClearArray();
 
             int index = 0;
-            foreach (string suffix in new[] { "Ebike", "Escooter" })
+            foreach (VehicleProfiles.Definition definition in VehicleProfiles.Definitions)
             {
-                VehicleProfileSO profile = Profile(suffix);
+                VehicleProfileSO profile = VehicleProfiles.Load(definition);
                 if (profile == null || profile.Model == null)
                 {
-                    Debug.LogWarning($"[Module01] Sin perfil o modelo para {suffix}; no entra al escenario.");
+                    Debug.LogWarning($"[Module01] Sin perfil o modelo para {definition.AssetSuffix}; no entra al escenario.");
                     continue;
                 }
 
@@ -73,7 +67,7 @@ namespace RideSafe.Module01.Editor
                 if (model == null)
                 {
                     Debug.LogWarning(
-                        $"[Module01] La escena no tiene una malla '{profile.Model.name}' para {suffix}.");
+                        $"[Module01] La escena no tiene una malla '{profile.Model.name}' para {definition.AssetSuffix}.");
                     continue;
                 }
 

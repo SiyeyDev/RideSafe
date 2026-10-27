@@ -16,7 +16,7 @@ MonoBehaviour:
   _nameKey: M1/Item_Backpack
   _riskKey: M1/Item_Backpack_Risk
   _category: 2
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: 21da473ea6504094b9f5fc93e397deba, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 2

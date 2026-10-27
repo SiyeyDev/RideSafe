@@ -66,7 +66,7 @@ namespace RideSafe.Module00.Editor
         private static readonly (string Id, string Model, string Label)[] Vehicles =
         {
             ("ebike", "ebike", "Option_ebike"),
-            ("escooter", "scooter", "Option_escooter")
+            ("escooter", "E_Scooter", "Option_escooter")
         };
 
         [MenuItem("RideSafe/Módulo 0/Montar vitrina de vehículos (Garaje_v5)")]
@@ -166,7 +166,7 @@ namespace RideSafe.Module00.Editor
             foreach ((string id, string modelName, string _) in Vehicles)
             {
                 Transform slot = root.transform.Find("Stage/Slot_" + id);
-                Transform old = slot != null ? slot.Find(modelName + " (display)") : null;
+                Transform old = ShownModel(entries, id);
                 GameObject source = FindByName(scene, modelName, root.transform);
                 if (old != null && SameMeshes(source.transform, old))
                 {
@@ -178,8 +178,10 @@ namespace RideSafe.Module00.Editor
                 if (old != null)
                 {
                     // Where the old one stood: VehicleShowroom places the slot, not the copy.
-                    copy.transform.SetLocalPositionAndRotation(old.localPosition, old.localRotation);
-                    copy.transform.localScale = old.localScale;
+                    // Rotation and scale stay as DisplayCopy derives them from the vehicle: a new
+                    // model may lie along another axis (E_Scooter is long in Z) or stand at
+                    // another size (×1.4), and the old copy's values would undo both.
+                    copy.transform.localPosition = old.localPosition;
                     copy.transform.SetSiblingIndex(old.GetSiblingIndex());
                     copy.SetActive(old.gameObject.activeSelf);
                     Object.DestroyImmediate(old.gameObject);
@@ -197,6 +199,22 @@ namespace RideSafe.Module00.Editor
             if (!EditorSceneManager.SaveScene(scene))
                 throw new System.InvalidOperationException("Could not save " + ScenePath);
             Debug.Log(report.ToString());
+        }
+
+        /// <summary>
+        /// The copy the showroom shows for that vehicle, by the reference it keeps. Not by name:
+        /// when a vehicle's model changes the old copy keeps the old name, and a lookup by the new
+        /// one would leave it standing in the slot.
+        /// </summary>
+        private static Transform ShownModel(SerializedProperty entries, string id)
+        {
+            for (int i = 0; i < entries.arraySize; i++)
+            {
+                SerializedProperty entry = entries.GetArrayElementAtIndex(i);
+                if (entry.FindPropertyRelative("_id").stringValue == id)
+                    return entry.FindPropertyRelative("_model").objectReferenceValue as Transform;
+            }
+            return null;
         }
 
         private static bool SameMeshes(Transform a, Transform b)
@@ -229,7 +247,9 @@ namespace RideSafe.Module00.Editor
                 Object.DestroyImmediate(collider);
             copy.transform.localPosition = Vector3.zero;
             copy.transform.localRotation = Quaternion.identity;
-            copy.transform.localScale = Vector3.one * DisplayScale;
+            // 0.6 of the vehicle as the artist sized it, not 0.6 of the FBX: the 2026-10-26
+            // scooter stands in the garage at ×1.4, and a fixed 0.6 shrank it to half the bike.
+            copy.transform.localScale = source.transform.localScale * DisplayScale;
 
             Bounds bounds = new Bounds(copy.transform.position, Vector3.zero);
             foreach (Renderer renderer in copy.GetComponentsInChildren<Renderer>(true))
@@ -268,7 +288,8 @@ namespace RideSafe.Module00.Editor
 
         private static GameObject FindRoot(Scene scene, string name)
         {
-            foreach (GameObject root in scene.GetRootGameObjects())
+            // De primer nivel, también dentro de las carpetas del Hierarchy.
+            foreach (GameObject root in SceneFolder.TopLevelObjects(scene))
             {
                 if (root.name == name)
                     return root;

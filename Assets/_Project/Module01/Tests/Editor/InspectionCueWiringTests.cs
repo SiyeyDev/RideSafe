@@ -111,7 +111,7 @@ namespace RideSafe.Module01.Tests
         /// <summary>
         /// Al cambiar a un vehículo que no despieza ese componente, el mismo punto se queda
         /// sin pieza, y entonces el signo tiene que volver. Pasa de verdad en los dos
-        /// sentidos: el freno es pieza en el patinete y no en la bici.
+        /// sentidos: la pantalla es pieza en la bici y no en la patineta.
         /// </summary>
         [Test]
         public void Dejar_de_silenciarlo_lo_devuelve()
@@ -139,6 +139,7 @@ namespace RideSafe.Module01.Tests
         private VehicleStage _stage;
         private VehicleProfileSO _ebike;
         private VehicleProfileSO _escooter;
+        private ZoneSO _zone;
         private Material _material;
         private Mesh _mesh;
 
@@ -158,7 +159,7 @@ namespace RideSafe.Module01.Tests
             _manubrio = new GameObject("manubrio", typeof(MeshFilter), typeof(MeshRenderer));
             _manubrio.GetComponent<MeshFilter>().sharedMesh = _mesh;
             _manubrio.transform.SetParent(_bike.transform, false);
-            _scooter = new GameObject("scooter");
+            _scooter = new GameObject("E_Scooter");
             // Los dos llevan sus mounts, como en la escena: es el mount el que recoge el punto
             // cuando el vehiculo nuevo no tiene pieza para el.
             foreach (GameObject vehicle in new[] { _bike, _scooter })
@@ -168,17 +169,35 @@ namespace RideSafe.Module01.Tests
             _steering = Point("point_steering", out _steeringMarker, out _steeringHighlight);
             _lights = Point("point_lights", out _lightsMarker, out _);
 
+            // Los dos revisan los dos puntos, como los perfiles reales: un vehiculo apaga los
+            // puntos que no revisa (la plataforma con la bici), y estos tests no van de eso.
+            _zone = Zone("point_steering", "point_lights");
+
             _ebike = ScriptableObject.CreateInstance<VehicleProfileSO>();
-            _ebike.Configure("ebike", null, new List<ZoneSO>());
+            _ebike.Configure("ebike", null, new[] { _zone });
             _ebike.ConfigurePartBindings(new[] { ("point_steering", "manubrio") });
 
             _escooter = ScriptableObject.CreateInstance<VehicleProfileSO>();
-            _escooter.Configure("escooter", null, new List<ZoneSO>());
+            _escooter.Configure("escooter", null, new[] { _zone });
 
             _go = new GameObject("stage");
             _stage = _go.AddComponent<VehicleStage>();
             _stage.ConfigureForTests(("ebike", _bike), ("escooter", _scooter));
             _stage.ConfigurePointsForTests(_steering, _lights);
+        }
+
+        private ZoneSO Zone(params string[] itemIds)
+        {
+            List<SafetyItemSO> items = new List<SafetyItemSO>();
+            foreach (string itemId in itemIds)
+            {
+                SafetyItemSO item = ScriptableObject.CreateInstance<SafetyItemSO>();
+                item.ConfigureForTests(itemId, "k", "k_Risk", SafetyItemCategory.Core);
+                items.Add(item);
+            }
+            ZoneSO zone = ScriptableObject.CreateInstance<ZoneSO>();
+            zone.ConfigureForTests("zone", "t", items);
+            return zone;
         }
 
         private WorldObjectTaskEntity Point(
@@ -208,6 +227,9 @@ namespace RideSafe.Module01.Tests
             if (_lights != null) Object.DestroyImmediate(_lights.gameObject);
             Object.DestroyImmediate(_ebike);
             Object.DestroyImmediate(_escooter);
+            foreach (SafetyItemSO item in _zone.Items)
+                Object.DestroyImmediate(item);
+            Object.DestroyImmediate(_zone);
             Object.DestroyImmediate(_material);
             Object.DestroyImmediate(_mesh);
         }

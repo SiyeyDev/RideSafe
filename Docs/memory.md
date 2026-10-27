@@ -53,8 +53,7 @@ suficiente para construirlo, y es la que el equipo siguió al generar `PF_Module
 **Ojo:** la narrativa declara canónico un `RideSafe_VR_GDD_v2.0_Evidence_Based.md`
 que el equipo nunca compartió. Si aparece, hay que revisar la spec.
 
-Spec y plan del módulo 1: `docs/superpowers/specs/2026-10-05-modulo-01-ready-to-ride-design.md`
-y `docs/superpowers/plans/2026-10-05-modulo-01.md`.
+Spec y plan del módulo 1 (borrados el 2026-10-27; lo que importa está en §12, «2026-10-05»).
 
 ---
 
@@ -151,8 +150,7 @@ dominante con el gatillo iluminado, resalta dónde actuar y, solo la primera vez
   rozaba «Comenzar» y el control se iba al lado sin motivo.
 - **Cómo lo llama un módulo (solo si hace falta):** `TutorialHelp.Show/Stop/Resume/Pause`, o los
   componentes `TutorialCue` / `TutorialPause`.
-- **Spec y plan:** `Docs/superpowers/specs/2026-10-15-tutorial-agnostico-design.md` y
-  `Docs/superpowers/plans/2026-10-15-tutorial-agnostico.md`.
+- **Spec y plan:** borrados el 2026-10-27; el resumen de lo que importa está en §12, «2026-10-15».
 - **Montaje:**
   - menú `RideSafe → Tutorial Help → Montar en RideSafe_Garaje_v5`, idempotente; quita el
     objeto `Tutorial` viejo;
@@ -1102,6 +1100,8 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 ## 10. El scooter — diseño pendiente
 
 > **Estado: aprobado el 2026-10-07. Tramo 1 hecho y afirmado; tramo 2 pendiente.**
+> **2026-10-26 (PO):** el scooter nuevo añade un sexto punto propio, la **plataforma**
+> (narrativa §4.8.2); los cinco de siempre se comparten. Ver §11, 2026-10-27.
 > Charlie confirmó la premisa: «los mismos items de la inspección de e-bike también para la
 > scooter, se revisa casi lo mismo, llantas, luces, frenos». Y eligió hacerlo en dos entregas.
 
@@ -1173,6 +1173,96 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 
 ## 11. Bitácora
 
+### 2026-10-27 (noche) — reporte final, fuera la patineta vieja, video por vehículo y Hierarchy ordenado
+
+Sin commit. Pedido de la PO tras revisar las fases 1 y 2.
+
+- **Reporte final.** La caja de la nota crece con su texto (`ComparisonView.FitNoteBox`), nunca por
+  debajo de lo construido (`ColumnComposition.NoteHeight`): sin casco la nota pedía tres líneas en una
+  caja de dos. Y la comprobación de PlayMode que cruza textos ya mide solo lo **visible** a través de
+  una ventana con desplazamiento (`RectMask2D`): las filas fuera de la ventana de «Mi Elección» «se
+  pisaban» con la nota sin verse. PlayMode del M1: **6/6**.
+- **Fuera la patineta vieja de lo nuestro** (PO: «solo lo nuestro»). Código, tests, comentarios, v5 y
+  `RideSafe_Garaje_Test` ya no la nombran; `Garaje_Test` usa `E_Scooter` (cambiada con un script de un
+  solo uso que se borró). **El FBX `scooter.fbx` y la escena `Garage` del artista no se tocaron:** son
+  suyos, y él decide.
+- **Todo lo del vehículo en `VehicleProfiles`:** zonas con su giro, piezas, puntos de anclaje y
+  **video**. `Module01VehicleStaging` solo lo aplica a la escena. Una zona mal escrita ya no deja un
+  hueco silencioso: el generador avisa.
+- **Un video de revisión por vehículo** (`VehicleProfileSO.ExplanationVideo`). La bici y la patineta
+  se revisan parecido pero son vehículos distintos, cada una con el suyo; hasta que lleguen, los dos
+  usan `VideoTest.mp4`. `Module01Experience` reproduce el del vehículo elegido.
+- **`VehicleStage.Show(string)` eliminado:** solo se enciende un vehículo por su perfil, así que el
+  escenario siempre sabe qué puntos revisa.
+- **Hierarchy de v5 por función:** `--- ESCENARIO ---`, `--- ILUMINACION ---`, `--- JUGADOR ---`,
+  `--- VEHICULOS ---`, `--- EPP ---` (con `Retirados (apagados)`), `--- UI ---`, `--- LOGICA ---`.
+  Comando «RideSafe → Escena → Ordenar el Hierarchy por función» (`SceneHierarchyLayout`, idempotente;
+  avisa de lo que no tenga carpeta). Las carpetas llevan `SceneFolder` y están en el origen.
+  **Trampa:** para el código las carpetas no existen — quien busque un objeto «de la raíz» usa
+  `SceneFolder.TopLevelObjects(scene)` o `SceneFolder.TopLevel(t)`, nunca `GetRootGameObjects()` +
+  nombre ni `transform.root`. Ya lo usan `Module01WorldSwap` (que además re-archiva el mundo nuevo),
+  `Module01VehicleModels`, `Module00ShowroomSetup`, `TutorialHelpSceneSetup`, `DemoMode`,
+  `Module01PresentationBuilder` y `GestureHintView`. Ningún objeto de v5 usa `DontDestroyOnLoad`.
+- **Specs borrados:** los de `Docs/superpowers/` se resumieron en el §12 y se borraron.
+- **Unity:** 6000.5.4f1 es la versión del artista y del otro desarrollador; aquí se usa 6000.4.9f1
+  por espacio. Los 13 fallos de `GarajeTestSceneContractTests` (el `LightingData` de `Garage` horneado
+  en 6000.5) son **locales**: no hay que pedir nada al artista.
+- **Números:** EditMode M0+M1+TutorialHelp 481 pasan (fallan solo los 13 locales). PlayMode M1 6/6.
+  PlayMode UI 11/13: fallan `Comparison_ServesSafetyAndDiagnosticReviews` (el prefab de muestra trae 3
+  filas, no 4) y el atlas de `PF_Module01_UI/Icon`, los dos del rediseño del 26-10. Los 2 de
+  `GarageTutorialSliceTests` son de la escena vieja `RideSafe_Garaje`.
+- **Pendiente de la PO:** mover a mano `mesa nueva` y `gazon_lp`, que tapan la estación de protección.
+
+### 2026-10-27 (tarde) — fase 1: gafas de sol, mochila y candado nuevos
+
+Sin commit. Modelos de `EPPS ESCENCIALES`, instanciados desde el FBX a un ancho declarado en
+`Module01Library` (llegan a la escala del export: medían 1,62, 0,75 y 1,03 m de ancho):
+
+- **O08 gafas de sol** → `gafas de sol.fbx`, 0,17 m. Las `gafas` viejas se apagan. O07 no cambia
+  (PO: las `gafas_deportivas` no la reemplazan).
+- **O09 mochila** → `mochila.fbx`, 0,32 m. Deja de ser «!»: quedan 13 elementos esperando 3D.
+- **O11 candado** → el candado con textura que subió arte hoy (`1b19841`), 0,22 m como el viejo,
+  que se apaga.
+- `Module01SceneEntities` vuelve a crear lo que instanció cuando el catálogo cambia de modelo
+  (`ReplaceOutdatedSpawned`): sin eso la mochila se quedaba con el signo.
+- Comandos, en orden: «Rehacer el catálogo de EPP desde la biblioteca», «Etiquetar entidades»,
+  «Repartir las estaciones de EPP». `mesa nueva` y `gazon_lp` tapan la estación de protección y
+  el reparto no encuentra a dónde apartarlos: hay que moverlos a mano.
+
+**Revisión final de la patineta** (revisor nuevo): tres arreglos con test que falló primero —
+el catálogo de presentación solo tenía las zonas de la bici (la plataforma se calificaba pero no
+salía en «Mi Elección»); «Usar modelos reales» devolvía `scooter.fbx`; `point_deck` quedaba
+encendido colgando de la bici en el editor. EditMode 470 pasan (fallan los 13 de `GarajeTest`).
+
+### 2026-10-27 — patineta nueva (`E_Scooter`) y su punto «Plataforma»
+
+Sin commit (pendiente de revisión de la PO). Spec y plan (borrados el 2026-10-27) resumidos en §12, «2026-10-26».
+
+- **Modelo:** `E_Scooter.fbx` (arte, `4537635`) reemplaza a `scooter.fbx` en v5, a ×1.4 —la escala
+  del artista: 1,40 m de largo y 1,38 de alto, frente a la bici de 2,01—. El viejo se **borró** de
+  la escena para que no entre en la build. Viene con el eje largo en **Z** y el morro en la Z alta.
+- **Una sola lista de vehículos:** `VehicleProfiles.Definitions` (perfil, modelo, escala, zonas). La
+  leen los comandos de datos, de escena, de cableado y de puesta en escena.
+- **Plataforma, solo del scooter** (narrativa §4.8.2, decisión de la PO del 2026-10-26 sobre la de
+  Charlie del §10): zona `deck` con `point_deck`. La bici no la recorre, y con la bici encendida
+  `VehicleStage` apaga ese punto (`VehicleProfileSO.Inspects`).
+- **Mapa de piezas:** dirección → `Manubrio`; frenos → `freno_iz` + `freno_de`; ruedas →
+  `llanta_tracera` + `llanta_delantera`; plataforma → `cuerpo`. Luces y eléctrico siguen con «!»:
+  no hay faro, y la pantalla es un material del `Manubrio`.
+- **Giros:** cockpit 0°, wheels −90°, deck −135° (tres cuartos por detrás), visibility 180°.
+- **Contorno de todas las submallas:** el `Manubrio` (y la `pantalla` de la bici) traen dos
+  materiales y el contorno solo dibujaba el primero.
+- **Mounts por el eje largo de la caja**, X o Z (`Module01VehicleStaging.MountPosition`).
+- **Vitrina del M0:** la copia hereda la escala del modelo (×1.4 × 0,6).
+- **PlayMode:** los dos tests del 26-10 (`47957d8`) no se habían corrido y fallaban por el test,
+  no por el juego: el nombre del popup (autoajuste: `GetPreferredValues` de TMP mide al tamaño
+  máximo) y las filas de «Mi Elección», que ahora viven en `LeftColumn/Viewport/Rows`. Corregidos.
+- **Números:** EditMode M0+M1+TutorialHelp 457 pasan; fallan 13, los de `GarajeTestSceneContractTests`,
+  porque el `LightingData` de `Garage` lo horneó arte con 6000.5. PlayMode: el patinete recorre sus
+  cuatro zonas con contornos y califica la plataforma. Los tres recorridos caen después, en el
+  **reporte final**: una fila de la lista se cruza con la nota, y sin casco la nota no cabe (54
+  de 38). Viene del rediseño de «Mi Elección» del 26-10, no del patinete. **Pendiente.**
+
 ### 2026-10-26 — correcciones de Cindy tras recorrer el flujo entero
 
 Salieron al ensayar el video del flujo completo en Modo PC. Sin commit (pendiente de su revisión).
@@ -1218,7 +1308,7 @@ Salieron al ensayar el video del flujo completo en Modo PC. Sin commit (pendient
 
 - **Pedido de Cindy:** con un punto del vehículo abierto se oscurece todo, el vehículo incluido;
   quedan a plena luz el popup, el pedestal y su pieza. Al responder vuelve con fundido. En las mesas
-  de EPP no se activa. Diseño en `Docs/superpowers/specs/2026-10-23-foco-al-revisar-vehiculo-design.md`.
+  de EPP no se activa. Diseño resumido en §12, «2026-10-23».
 - **Técnica: `FocusDome` (`UI/Runtime`)**, una esfera de Unity vista desde dentro que sigue a la
   cabeza.
   - **Material:** `M_FocusDome`, URP Unlit transparente, cara trasera, cola 2950 (antes de la
@@ -2256,3 +2346,132 @@ causas explicaban la mitad**.
 - Revisión de escena, navegación de módulos 00 y 01, 35 textos con I2, XR para Link,
   subtítulos con revelado por palabra, narración, pantalla de video, modos VR/PC,
   MeshColliders del garaje.
+
+---
+
+## 12. Diseños aplicados (resumen de los specs borrados)
+
+Los specs y planes de `Docs/superpowers/` se borraron el 2026-10-27 porque ya estaban implementados; esta sección guarda lo que sigue importando (decisiones, porqués, contratos).
+El texto completo, con el código de los planes, sigue en git: `git log --oneline -- Docs/superpowers` y `git show <commit>:Docs/superpowers/specs/<archivo>`. **Excepción:** los de 2026-10-26 (patineta y plataforma) nunca se commitearon, así que solo existen en este resumen.
+
+### 2026-10-05 — Módulo 1 «Ready to Ride»
+
+**Qué es:** el módulo responde dos preguntas antes de rodar: *qué debo preparar o evitar* y *qué partes del vehículo debo diagnosticar antes de decidir que está listo*. No hay conducción ni frenado: es selección, reconocimiento, diagnóstico y retroalimentación. Objetivo de esa iteración: jugable de punta a punta **en PC con mouse**, un solo vehículo (e-bike), multimedia de marcador de posición. VR y segundo vehículo entran sin rediseñar.
+
+Ya está en otras secciones (no se repite): quién manda entre GDD y narrativa (§2), el motor `TaskSequence`, la modularidad por contexto, el enlace por nombre y la localización (§5), el catálogo (§6).
+
+**Recorrido (contrato del flujo):**
+- El aprendiz **nunca se mueve por su cuenta**: entre zonas, fade out → el rig se reposiciona en el ancla → fade in → arranca la voz. El mismo mecanismo sirve para la entrada al garaje y el salto al vehículo.
+- Orden: Orientación → Cabeza → Ropa y calzado → Carga → «Revisar mis elecciones» → Comparación A → Video A → fade al vehículo → zonas del vehículo → decisión go/no-go → Comparación B → Video B → Reporte.
+- En cada zona el objeto sale al frente rotando, con un popup arriba (nombre) y otro abajo (confirmación Sí/No). Al confirmar entra en la lista lateral, que solo muestra lo elegido.
+- **No** devuelve el objeto a su sitio sin registrar nada y la zona sigue abierta. Un elemento añadido se puede quitar desde la lista mientras no se envíe la sección (`ChecklistView.RemoveItem` / `onItemRemoved`); volver atrás nunca borra elecciones previas.
+- **Nada revela si va bien antes de enviar:** sin contador de aciertos, sin check verde, sin checklist completo a la vista. **El color nunca es la única señal** (icono, forma o texto además).
+
+**Reglas de datos y de puntuación:**
+- Cada elemento lleva su **categoría real** (Núcleo, Inapropiado, Opcional, Según condición), no un booleano.
+- **Lo opcional no penaliza**, ni al elegirlo ni al omitirlo. El chaleco reflectivo solo es exigible si la condición es noche, baja visibilidad o lluvia; la escena es de día claro (§6).
+- Se evalúan **dos envíos independientes** (personal y vehículo). El reporte separa, sin mezclar: núcleo acertados, núcleo omitidos, opcionales/condicionales «sin penalización falsa», inapropiados elegidos con su mecanismo de riesgo, componentes del vehículo requeridos elegidos y omitidos, no esenciales añadidos, y la decisión go/no-go.
+- El `VehicleProfileSO` cubre los dominios V1–V6 de la narrativa (frenos, ruedas, dirección y estructura, luces y reflectivos, eléctrico y controles, respuesta ante falla) y referencia el modelo: sustituir el greybox por el FBX real no toca lógica ni datos.
+- La decisión **go/no-go** entra porque está en los dos documentos (fila 8 de los dos checklists, *universal critical decision*).
+
+**Paneles de `PF_Module01_UI` y su uso:** `Orientation` (explicación y ensayo con objetos neutros), `Preparation` (lista lateral persistente), `ReviewChoices` (cierre de la sección A con doble confirmación), `Diagnostic`, `Comparison` (tableros A y B, cuatro estados con icono+texto+forma), `Explanation` (video). Lo nuevo fue el inspector rotatorio con sus dos popups y el panel go/no-go.
+
+**Criterios de «terminado» (siguen valiendo como regresión, en PC):** flujo completo sin intervención y consola en cero errores; cambiar idioma en el M0 cambia todo el M1; ningún texto visible en código; opcional sin penalización; el reporte distingue las cuatro categorías; los tests de binding pasan contra el prefab regenerado; cambiar `vehicle` en el contexto cambia de perfil sin tocar código (matizado en §5: hace falta `SelectVehicle`).
+
+**Riesgos de revisión que el plan fijó** (cada uno tiene test): opcional elegido/omitido sin penalizar; repintar al cambiar idioma a mitad del módulo; quitar un elemento tras confirmarlo y antes de enviar no lo cuenta; prefab regenerado con nombres distintos falla en el test de binding y no en Play; contexto `vehicle` vacío o desconocido no carga una secuencia equivocada y registra el motivo.
+
+**Fuera de alcance (sigue vigente):** los dos videos de revisión (hay `VideoTest.mp4`), transferencia cambiada (fase 2), gate de montaje y familiarización de controles (posterior y VR puro), telemetría completa, verificación con gafas.
+
+**Decisiones abiertas de entonces:** el primer vehículo fue la **e-bike** sobre un cubo con colliders nombrados (resuelta). Siguen sin cerrar: quién genera los audios con `GenerateAudioFIle`, cuándo se retira `MenuRuntimeTextLocalizer` y cuánto conviven las dos versiones de Unity (§8).
+
+### 2026-10-12 — Garaje v6 y las tareas de la reunión
+
+**Qué se persiguió, y en este orden:** (1) sustituir el garaje v5 por el v6 en `RideSafe_Garaje_v5.unity` conservando la lógica y presentación del M1; (2) aplicar las ~40 tareas de la reunión (fuente: `carlos-rey-tareas-uiux-v3.md`). El orden importa: v6 resuelve solo dos pendientes que la reunión también pedía (objetos apoyados en la mesa, colocación a mano de los EPP); haciendo primero las tareas se habría tirado ese trabajo. Lo que no se pudo construir por falta de assets quedó **listado, no silenciado ni fingido**, en `Docs/Pendientes_Reunion_2026-10-12.md`. La bitácora de ese día está en §11.
+
+**Hallazgos medidos que condicionaron el diseño:**
+- **Paquete v6:** 942 MB, 436 assets con rutas `Assets/CITY/…`; 365 GUID ya existían (sobrescriben en sitio, incluido `scenas/Garage.unity`, de donde lee `Module01SceneBuilder.ArtScene`) y 71 eran nuevos. Esos 71 se **mueven desde Unity** a `_Project/Models/CITY/` (mover dentro del editor conserva el GUID); al final `Assets/CITY` queda vacío y se borra.
+- **`Module01SceneBuilder.WorldRoots` quedó obsoleto** (19 nombres, v6 conserva 5; los 7 EPP pasaron a la raíz `epps`; aparecen `Camera` y `Main Camera`, que **no** deben pasar: la escena ya tuvo el bug de dos cámaras). Correr «Montar escena jugable» habría regenerado la escena perdiendo la presentación **y** dejándola sin EPP.
+- **Por qué `ArrangeStations` dejó de colocar y escalar los EPP:** la fila flotante a 1,5 m y la normalización a 32 cm eran a la vez el bug «los objetos no se apoyan en la mesa», el de «escala 1:1» y lo que hacía enana a una linterna y gigante a un tornillo. v6 trae cada EPP apoyado (una `y` distinta por objeto). Conserva **solo** el ajuste del `BoxCollider` a los bounds reales, más un **volumen mínimo de clic** (la guaya y el teléfono son láminas de 2 cm, invisibles de canto pero con collider). Las anclas de zona sí se siguen colocando: son el punto de vista.
+- **El vehículo era malla única:** no había sub-mallas que delinear; no se arregla en código, lo resolvieron después la e-bike despiezada (§11, 2026-10-21) y la patineta nueva. Mientras tanto el highlight iba sobre el marcador del punto.
+- **Cero audio** en `Assets/_Project`: se construyó **el enchufe, no el contenido** (campo `AudioClip` en los datos, reproductor y silencio limpio con clip null). Cuando lleguen las voces se arrastran al asset sin tocar código.
+- **Ya estaba hecho y no se reconstruyó:** los 3 botones de decisión (`RoadReadyButton`/`NeedsServiceButton`/`DoNotRideButton`), el billboard `RideSafe.UI.GazeFollower`, la plantilla `Docs/Guion_Modulo1_RideSafe_PLANTILLA.docx`, el fade `GuidedTour._fade` y `_videoComplete` en `Module01Experience` (que no se usaba y era el bloqueo de «Continuar»).
+- **Conflicto de decisiones:** antes los 3 botones go/no-go eran secundarios a propósito (un pill coral en `RoadReady` sugiere la respuesta). La reunión pidió verde/ámbar/rojo y, por ser posterior, **mandó la reunión**; quedó anotado para que Charlie lo confirme o revierta.
+
+**Diseño por fases (decisiones que siguen explicando el código):**
+- **`Module01WorldSwap`** (no destructivo, sobre la escena abierta, en `Module01/Editor/`): verifica que no está en Play, abre la escena de arte en aditivo, borra de la de trabajo **lo que es mundo** y trae las raíces de arte salvo las cámaras. **La lista de mundo sale de la escena de arte, no se escribe a mano** (sobrevive a un v7 que reagrupe) y se compara contra toda la jerarquía, nunca «todo lo que no reconozco» (un objeto de lógica nuevo no debe desaparecer en silencio). Después: re-etiquetar entidades con `Module01SceneEntities` dejándolas **donde el arte las puso**, y reponer MeshColliders y rehornear (el bake es por escena y no viaja con el trasplante).
+- **Inspector:** al presentar un item se apaga el objeto de mundo (si no, se ven dos: el original y la copia del pedestal) y se enciende al terminar. Al aceptar un EPP desaparece de la mesa; al quitarlo de la lista reaparece (lo hace `ZoneRunner`, que conoce el libro). Los `DisplayPrefab` sí se normalizan a `DisplaySize` (es una vitrina), los objetos del mundo no; una desproporción en la mesa es del FBX.
+- **Vehículo:** ancla `vehicle` única en el centro del `piso` (el código ya estaba guardado tras `_tour.HasAnchor`); yaw por zona (`cockpit` de frente, `wheels` de costado, `visibility` por detrás) **derivados de los bounds y aproximados: necesitan ojo humano**; marcadores `!` colgados de la malla que viajan con el giro; clic valida y no hacer clic cuenta como omisión (`CoreOmitted`). El highlight usa shader URP propio porque `Outline.shader` de AutoHand es del pipeline viejo.
+- **Estados del reporte:** se añadió `ItemStatus.AtRisk` (elemento deteriorado elegido, p. ej. `helmet_damaged`) para tener los 4 que pidió la reunión (correcto / incorrecto / omisión / en riesgo). `ConditionDependent` (el chaleco) no es «en riesgo» y se pinta neutro; `NotSuited` queda para la elección equivocada de otra naturaleza (el teléfono en mano). Pendiente de confirmar por Charlie.
+- **Nota con rango:** capa de puntuación pura en `Scoring/` (sin Unity, hecha con TDD). Cortes: **≥75 aprobado** y desbloquea «Continuar al Módulo 2»; 50–74, 25–49 y <25 solo «Repetir Módulo». La nota se retiene hasta la pantalla de confirmación final (punto de no retorno).
+- **Teatro de video:** «Continuar» bloqueado hasta el 100 % del video (botón no interactuable para que no parezca roto), entorno atenuado con un panel negro en la capa UI (debajo del video, encima del 3D), fade en M0→M1 y reposicionamientos, **sin botón de mute** (pausa y repetir se quedan). El teatro salió de `Module01Experience` a un componente reutilizable (`TheaterMode`) para los módulos 2–5.
+- **UI:** el solapamiento del texto en español se mide en **unidades de canvas, nunca en píxeles de pantalla** (equivocarse en esto costó revertir un arreglo correcto); canvas a la derecha y abajo con `GazeFollower` colgado del checklist; descripción en tarjeta blanca con texto negro; H1/H2 en negrita; «Mi Elección» en un único panel sin la tabla de referencia duplicada.
+- **Quest:** v5 ya iba en 370k triángulos con presupuesto de 150–350k; v6 sube. No se prometió APK instalado: se configura y mide, y cualquier bloqueo de toolchain se reporta.
+
+**Pruebas (reglas que se mantienen):** EditMode con TDD para lógica pura (rangos, `AtRisk`, visibilidad por libro); EditMode sobre la escena para lo estructural (existen las 12 entidades, ninguna en `Module01_Spawned`, las `y` de los EPP siguen siendo distintas —si vuelven a ser iguales alguien los puso en fila—, una sola cámara); PlayMode entra **pulsando Begin**, no por atajo; capturas exigiendo marca de escritura nueva (una que solo comprueba que el archivo existe miente). Antes de lanzar PlayMode comprobar `EditorApplication.isPlaying`: era la causa de los «fallos intermitentes» del 2026-10-07.
+
+**Fuera de alcance entonces:** voces y videos (no existen), highlight por sub-malla (no había), alinear la hoja de I2 del Drive (la original no está en el Drive y el relay no tiene API de celdas; se exportó lo que había para alinear a mano), APK en el visor.
+
+### 2026-10-15 — Tutorial agnóstico
+
+**Qué es y qué no es:** un **apoyo**, no un flujo. No tiene pantallas ni secuencias y no conoce los módulos: solo conoce **gestos** («seleccionar con el gatillo»). **Los módulos no se modifican** por existir el tutorial; pueden llamarlo con una línea cuando algo no se detecta desde fuera. Se rehízo desde cero: del viejo (`Systems/Tutorial`, sobre `TaskSequence`) solo se reutilizaron los modelos Touch Plus y sus poses; ese código se queda mientras `Garaje_Test` lo use (retirada pendiente, §4).
+
+Qué hace, cuándo, dónde y las llamadas de módulo: ver §4 («Tutorial — agnóstico») y §11 (2026-10-15/16). Lo que sigue es lo que allí no está.
+
+**Reglas de producto:**
+- Dos disparadores: **primera vez de cada tipo de interacción** (interfaz u objeto 3D; control + resaltado + frase corta) y **atasco** (10 s sin clic con objetivos visibles; control + resaltado, sin texto). `Show` explícito muestra lo que pida; con el observador detenido (`Stop`) no hay nada automático pero `Show` sí funciona.
+- **«Aprendido»** = primer **clic real** del usuario sobre un objetivo de ese tipo con el observador activo. Dura **toda la sesión** (también al repetir un módulo) y se reinicia al cerrar la app: las gafas se comparten y una apertura nueva es un usuario nuevo, así que **no se guarda nada en el dispositivo**. El atasco ayuda siempre, aunque el tipo esté aprendido.
+- **Mano:** la dominante elegida en Comfort (`ComfortSettingsPanel.onStart`, UI compartida, no código de módulo); la derecha antes de elegir.
+- **Evaluación:** con varias opciones se resaltan **todas por igual**; el tutorial nunca distingue la correcta.
+- Un clic durante una pausa (`Stop`) no enseña: la primera interacción 3D con el observador detenido debe dar ayuda en la siguiente parte observada.
+
+**Contrato técnico:**
+- Código en `Assets/_Project/Systems/TutorialHelp/`, namespace **`RideSafe.Help`**. No puede ser `RideSafe.TutorialHelp`: desde un módulo en `RideSafe.*`, `TutorialHelp.Stop()` resolvería al namespace y no a la clase.
+- Piezas: `TutorialGestureSO` (dato del gesto: control del Touch Plus, animación, clave I2, mano), fachada estática `TutorialHelp` (`Show`/`Stop`/`Resume`/`Pause`, resuelve el gestor por `ServiceLocator`; **sin tutorial en la escena todas las llamadas son inocuas**), `TutorialHelpManager` (uno por escena) sobre lógica sin `MonoBehaviour` (`HelpRules`, `HelpDirector`) para probarla sin escena, observador (`TargetScanner`, `ClickWitness`, `QuietDetector`, `HandTracker`), vista (`GestureHintView`, `TargetPulse`/`TargetHalo`, `HintCaption`) y componentes sin código `TutorialCue`/`TutorialPause`. `Stop`/`Resume` son un interruptor simple: gana la última llamada. `Resume` reinicia el contador de atasco.
+- Ensamblados: `TutorialHelp` (runtime, **no depende de AutoHand**; referencia `Tutorial` y `Tutorial.Presentation` solo por los Touch Plus), `TutorialHelp.Editor`, `TutorialHelp.Tests`. Los términos I2 van con un script en `Localization/Editor/` porque I2 no tiene asmdef.
+- Detección: objetivos cada 0,2 s (la lista 3D cada 1 s); interfaz = `Selectable` activo e interactuable con canvas visible (botón desactivado no cuenta); 3D = `Collider` activo con `IPointerClickHandler`. Tipo: bajo un `Canvas` es interfaz, si no 3D. Solo cuentan los **canvas en espacio de mundo** (un overlay no tiene posición a la que apuntar). Se excluyen manos, rayo de AutoHand y objetos del propio tutorial. Espera de 1 s tras aparecer objetivos antes de la ayuda de primera vez.
+- El contador de atasco **no corre** con `VideoPlayer` reproduciendo, con un `AudioSource` no-bucle de más de 2 s (narración), sin objetivos visibles (fades, teletransportes) ni con el observador detenido; con video o narración tampoco sale la ayuda de primera vez (no hablar encima de la voz). Un audio largo que no es narración también pausa el atasco: aceptado; si molesta, `Stop()` local o ajustar el umbral.
+- **Clic real:** `ClickWitness` en el propio objetivo, no en el módulo de entrada (`HideFlags.DontSave`, se retira al cerrar la escena). Se descartó leer el `AutoInputModule` porque no veía los clics de PC (`InputSystemUIInputModule`) ni los de las pruebas.
+- Valores que **cambiaron al probar en la v5** (mandan los de §11): cono de visión 45° (el spec decía 35°) y alcance del rayo 3D 4 m (el spec decía 8 m).
+- Visual: control abajo y a un lado de la mirada sobre `Panel_Dark_Base`; halo 3D Mint `#A9E2D4`; titileo 2D blanco → gris ≈85 % → blanco en ~1,6 s, sinusoidal, aplicado en el `CanvasRenderer` (no en el color guardado) y restaurado exacto; no interfiere con los estados del botón, que usan SpriteSwap, no color. Texto corto solo la primera vez y nunca repite lo que dice la pantalla. Un gesto que pide un botón que el Touch Plus no tiene oculta la vista y avisa, sin excepción.
+- **Escena v5:** se añade la raíz `TutorialHelp` y se retira el `Tutorial` desactivado (con su segunda copia de `PF_Module00_UI`). No se toca nada del M0/M1, el rig de AutoHand (manos, `UIPointer`, `AutoInputModule`), XR ni la iluminación. Modo PC: `DesktopMode` existente; la simulación de entrada vive en pruebas/editor, no en la experiencia. Por eso hay un test de contrato: ningún componente del M0/M1 referencia al tutorial.
+
+**Fuera de alcance:** cambios al M0 (orden Welcome → Language → Jurisdiction → Vehicle → Comfort, tipografía, título bilingüe, tarjetas EN/ES de `Garaje_Test`), práctica Point/Select previa al M0, y gestos distintos de «seleccionar con el gatillo» (p. ej. la puerta de familiarización con el manillar antes del módulo 2: el diseño los admite como datos, no se construyeron).
+
+**Riesgos y cobertura:** si la heurística de «espera acción» falla en una pantalla, `Stop()`/`TutorialPause` ahí; coste en Quest (búsqueda cada 0,2 s, nada si está detenido; **rendimiento en Quest por medir**); titileo que resta contraste al texto (tono suave, ajustado con captura); versiones de Unity distintas (§8).
+
+### 2026-10-23 — Foco al revisar un punto del vehículo
+
+El qué, la técnica, el radio medido y los números están en §11 (2026-10-23). Aquí lo que allí no está.
+
+- **Pidió la PO (Cindy):** se activa solo con un punto abierto y vuelve al elegir «Sí»/«No»; oscurece todo, **incluido el vehículo**; quedan a plena luz popup, pedestal y pieza. **Oscurecer, sin desenfoque** (eligió esa opción frente a desaturar y a desenfoque real). Ampliación del 2026-10-26: también en las **mesas de EPP**, «como con las partes de la e-bike y de la patineta»; mismo componente y radio (el objeto más cercano de cada mesa queda a 3,08/2,60/3,37 m, fuera del 1,6 m; `FocusDomeSceneTests.EveryTableObject_StaysOutsideTheBubble_AtItsStation`).
+- **Por qué una esfera y no `TheaterMode`:** el teatro es un panel negro en la capa `UI` pintado por la `UI Camera` superpuesta, lo que tapa también el pedestal, y solo funciona con esa cámara apilada en la de PC; la del visor pinta todo en una pasada. **Por qué no desenfoque:** `Mobile_RPAsset` del Quest no tiene textura de profundidad ni copia de la imagen, y el fondo borroso en VR incomoda (el ojo intenta enfocar y no puede).
+- **Cómo funciona (invariante de la técnica):** esfera de Unity vista desde dentro, centrada en la cabeza, material negro semitransparente. Lo más lejano que el radio queda oscurecido; lo cercano no, porque pedestal y pieza son opacos (escriben profundidad y la pared de la esfera no pasa la prueba de profundidad donde ellos están) y popup/interfaz son transparentes y se dibujan después. Geometría real: correcta en estéreo, independiente de qué cámara pinta qué.
+- **`FocusDome`** (`UI/Runtime`, `RideSafe.UI`), reutilizable junto a `TheaterMode` para los módulos 2–5. API como `TheaterMode`: `SetOn(bool)` con fundido, `SetOnImmediate`, `IsOn`, `CurrentAlpha`, `ConfigureForTests`. Campos: `_renderer`, `_head` (si vacío, `Camera.main` en cada `LateUpdate`), `_radius`, `_dimAmount` (.88), `_fadeSeconds` (.45). Sigue la posición de la cabeza (la rotación da igual); escala `2 × _radius` (la esfera mide 1 m de diámetro). Opacidad por `MaterialPropertyBlock` (`_BaseColor.a`), sin instanciar el material; con alpha 0 apaga el renderer (no cuesta nada).
+- **Fundido, pedido explícito de la PO: nunca de golpe.** Alpha con *smoothstep*, **tiempo no escalado** (una pausa no lo congela), y si se responde mientras aún oscurece, la salida **arranca del alpha de ese momento** (no salta al máximo ni a 0). Solo `SetOnImmediate` cambia sin fundido (montaje y tests).
+- **Material `M_FocusDome`** (`UI/Materials/`): URP Unlit, Transparent, Alpha, Render Face *Back*, **render queue 2950** (después de lo opaco, antes de la cola 3000 donde están los canvas). Con 3000 la esfera, centrada en la cámara, se ordenaría la última y oscurecería el popup. Es lo mínimo que permite URP (`_QueueOffset` −50…50).
+- **Integración:** `Module01Experience._focus` (opcional, sin asignar no hace nada). Se enciende con `_inspector.Presenting`, se apaga con `Accepted`/`Declined`/`Dismissed`. Montaje idempotente en `Module01SceneComposition`: objeto `FocusDome` bajo `Module01_Presentation`, sin collider ni sombras.
+- **Radio: medido, no supuesto.** Debe quedar entre el punto más lejano del pedestal/popup y el más cercano del vehículo en cada zona; el caso crítico es la cabina (la rueda delantera se acerca bastante más que los 2,7 m del centro). Un test lo vigila.
+- **Efecto conocido:** el suelo se oscurece a partir del radio y se ve un círculo oscuro bajo el pedestal, bajo la línea de mirada. Si molesta: dos o tres esferas de oscuridad creciente (solo si la PO lo pide).
+- **Fuera de alcance / pendiente:** llevar la presentación del M1 (popup, pedestal, interfaz y video) a la cámara del visor (hoy cuelga de `DesktopMode/Desktop Camera`, que el modo VR apaga), por lo que el foco solo está validado en PC; desenfoque, desaturación y suavizado del borde.
+- **Pruebas:** `FocusDomeTests` (fundido por pasos intermedios, apagar a mitad parte del alpha actual, el renderer sigue encendido durante la salida, sigue a la cabeza), geometría contra la v5 en las zonas de ambos vehículos con su giro, material (cola 2950, cara trasera, transparente) y PlayMode (se enciende al abrir, se apaga tras Sí/No). Capturas de cada zona antes de dar por terminado.
+
+### 2026-10-26 — Patineta nueva (`E_Scooter`) y su punto «Plataforma»
+
+Resultado y números en §11 (2026-10-27). Aquí el porqué y los contratos.
+
+- **Qué se pidió:** cambiar `scooter.fbx` por `E_Scooter.fbx` (arte, `4537635`) en M0 (vitrina), M1 (punto de exhibición, gira por zona y se delinea como la e-bike) y build (la vieja sale de v5). Y dar al scooter **su propia lista de revisión**: los 5 puntos de hoy + «Plataforma y fijaciones». Escala ×1.4 (la del artista en `Garage`; la PO la ve realista, aunque es ~15 % mayor que un patinete real). Código limpio y SOLID.
+- **Qué pide la documentación:** narrativa v2.0 §4.8.2 (checklist del e-scooter de pie) y §4.7 (e-bike y e-scooter usan mapas de componentes y listas **separados**). Se amplía la decisión de Charlie del 2026-10-07 («mismos items»): los cinco se comparten y el scooter suma `point_deck`. El grupo «Estado general» (golpes, cables, alerta) **no es un punto** (es un vistazo) y «Decisión» es la decisión final.
+- **Modelo (medido en el FBX):** `cuerpo` (hijos `llanta_tracera`, `soporte`) y `Manubrio` (2 materiales `SCOOTER_mat`/`Pantalla_Mat`; hijos `llanta_delantera`, `freno_iz`, `freno_de`). Eje largo en **Z local** y morro en Z alta (el viejo era X). **Sin faro ni batería propios** (la batería va dentro de `cuerpo`).
+- **Mapa de piezas:** `point_steering` → `Manubrio` (contorno de su malla propia, sin hijos); `point_brakes` → `freno_iz`+`freno_de`; `point_wheels` → `llanta_tracera` (primera: lleva la esfera)+`llanta_delantera`; `point_deck` → `cuerpo`; `point_electrics` y `point_lights` sin pieza, con «!».
+- **Zonas:** el scooter recorre **cuatro** (`cockpit` → `wheels` → `deck` → `visibility`); la e-bike sus tres. `deck` es un `ZoneSO` nuevo con solo `point_deck`, listado solo por el perfil del scooter. Giros (el aprendiz mira a −Z, el morro está en +Z): 0° / de costado / tres cuartos trasero para ver la superficie / 180°. Los afirma `VehiclePartsTests` desde la geometría y se confirman con capturas (valores finales en §11).
+- **Decisiones de diseño por unidad:**
+  - `VehicleProfiles` (editor) es **la única lista de perfiles** para las herramientas de editor. Antes `Module01SceneEntities`, `Module01VehicleWiring` y `Module01VehicleStaging` cargaban las rutas a mano y dos de ellos solo la de la e-bike: por eso las zonas del scooter no habrían tenido entidades.
+  - `Module01Greybox` sigue siendo la fuente de los datos; cada perfil declara sus zonas.
+  - Los *mounts* dejan de suponer que el eje largo es X: toman el eje horizontal más largo de la caja local, válido para cualquier FBX futuro.
+  - `VehicleStage` **oculta** un punto que no pertenece al perfil encendido (antes solo avisaba y lo dejaba colgando). Si el punto sí es del perfil, seguir avisando cuando falte el *mount* es correcto.
+  - `InspectionHighlight` pone el material en **todas** las submallas (antes solo la primera; afectaba al `Manubrio` y ya afectaba a la `pantalla` de la e-bike).
+  - `Module00ShowroomSetup`: `DisplayCopy` conserva la escala del vehículo (×0,6 sobre la que trae, no 0,6 fijo) y `RefreshDisplayCopies` halla la copia vieja por la referencia que guarda la vitrina, no por nombre (con el nombre nuevo dejaría `scooter (display)` huérfana).
+- **Textos:** `M1/Point_Deck` «Plataforma y fijaciones» / «Deck and fasteners»; `M1/Point_Deck_Risk` «Una plataforma agrietada o con tornillos flojos puede ceder bajo tu peso.» / «A cracked deck or loose bolts can give way under your weight.»; `M1/Zone_Deck` «Plataforma» / «Deck». Van en `Module01UiTerms` y `Docs/Module1_I2.csv`. Sin locución todavía: `ItemInspector` sigue en silencio si no halla el mp3.
+- **Escena v5, regla:** todo cambio se hace corriendo los comandos de menú (son la fuente de verdad), nunca a mano. Orden: instancia de `E_Scooter` ×1.4 → borrar `scooter` y sus *mounts* → «Crear datos de la primera pasada» → «Etiquetar entidades» (nace `module01.deck.point_deck`) → montar punto de exhibición y cablear vehículos → rehacer la copia de la vitrina. Después, `scooter.fbx` solo lo usan `Garage` (arte) y `RideSafe_Garaje_Test`, ninguna en la build; `Garaje_Test` no se toca.
+- **Comprobaciones de regresión que fijó el plan:** patineta → bici → patineta debe volver a mostrar `point_deck` en el scooter; un FBX de un solo material mantiene un solo material de contorno; repetir los comandos de escena no duplica `E_Scooter` ni copias de la vitrina; la e-bike no gana `mount_point_deck`; el reporte del scooter lista seis puntos y el de la bici no incluye `point_deck`.
+- **Fuera de alcance:** grupos de la e-bike que faltan según §4.8.3 (cadena y pedales, sillín y tija), «Estado general» como punto, locución de `point_deck`, `RideSafe_Garaje_Test` y su builder (`Module00TestSceneBuilder`), y las secuencias de zona (`Module01Sequences`), que ni el runtime ni la escena usan.

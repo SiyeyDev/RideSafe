@@ -18,8 +18,33 @@ namespace RideSafe.Module00.Tests
         private const string ScenePath = "Assets/_Project/Scene/RideSafe_Garaje_v5.unity";
 
         [TestCase("ebike")]
-        [TestCase("scooter")]
+        [TestCase("E_Scooter")]
         public void TheShowroomCopy_HasTheSameMeshesAsTheVehicle(string vehicle)
+        {
+            WithCopyAndSource(vehicle, (copy, source) =>
+            {
+                List<string> missing = copy.GetComponentsInChildren<MeshFilter>(true)
+                    .Where(f => f.sharedMesh == null).Select(f => f.name).ToList();
+                CollectionAssert.IsEmpty(missing, "meshes the FBX no longer has; run RideSafe > Módulo 0 > Rehacer las copias de la vitrina");
+
+                CollectionAssert.AreEquivalent(Meshes(source), Meshes(copy), "the copy shows what the vehicle shows");
+            });
+        }
+
+        /// <summary>
+        /// The copy is 0.6 of the vehicle as the artist sized it in the garage, not 0.6 of the
+        /// FBX: the E_Scooter stands at ×1.4, and a fixed 0.6 shrank it to half the bike.
+        /// </summary>
+        [TestCase("ebike")]
+        [TestCase("E_Scooter")]
+        public void TheShowroomCopy_KeepsTheVehicleScale(string vehicle)
+        {
+            WithCopyAndSource(vehicle, (copy, source) =>
+                Assert.AreEqual(source.localScale.x * 0.6f, copy.localScale.x, 1e-3f));
+        }
+
+        /// <summary>Runs the check with v5 loaded, on the showroom copy and on the garage vehicle.</summary>
+        private static void WithCopyAndSource(string vehicle, System.Action<Transform, Transform> check)
         {
             Scene scene = SceneManager.GetSceneByPath(ScenePath);
             bool openedHere = !scene.isLoaded;
@@ -38,12 +63,7 @@ namespace RideSafe.Module00.Tests
                     }
                 Assert.IsNotNull(copy, "the showroom has no copy of " + vehicle);
                 Assert.IsNotNull(source, "the scene has no " + vehicle);
-
-                List<string> missing = copy.GetComponentsInChildren<MeshFilter>(true)
-                    .Where(f => f.sharedMesh == null).Select(f => f.name).ToList();
-                CollectionAssert.IsEmpty(missing, "meshes the FBX no longer has; run RideSafe > Módulo 0 > Rehacer las copias de la vitrina");
-
-                CollectionAssert.AreEquivalent(Meshes(source), Meshes(copy), "the copy shows what the vehicle shows");
+                check(copy, source);
             }
             finally
             {

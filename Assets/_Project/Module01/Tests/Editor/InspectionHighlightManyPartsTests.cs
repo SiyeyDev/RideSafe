@@ -117,5 +117,36 @@ namespace RideSafe.Module01.Tests
             CollectionAssert.AreEqual(new[] { _front }, _highlight.Parts);
             Assert.AreSame(_front, _highlight.Part);
         }
+
+        /// <summary>
+        /// El <c>Manubrio</c> del scooter y la <c>pantalla</c> de la e-bike traen dos materiales.
+        /// Con un solo material en el contorno, Unity solo dibuja la primera submalla y la
+        /// pantalla se queda sin contorno.
+        /// </summary>
+        [Test]
+        public void El_contorno_cubre_todas_las_submallas_de_la_pieza()
+        {
+            Mesh twoParts = new Mesh { subMeshCount = 2 };
+            _objects.Add(twoParts);
+            twoParts.SetVertices(new[] { Vector3.zero, Vector3.right, Vector3.up, Vector3.forward });
+            twoParts.SetTriangles(new[] { 0, 1, 2 }, 0);
+            twoParts.SetTriangles(new[] { 0, 2, 3 }, 1);
+            Transform handlebar = Part("Manubrio", Vector3.zero, twoParts);
+
+            Assert.IsTrue(_highlight.BindParts(new[] { handlebar }));
+
+            Material[] materials = handlebar.Find(InspectionHighlight.OutlineName)
+                .GetComponent<MeshRenderer>().sharedMaterials;
+            Assert.AreEqual(2, materials.Length, "Un material por submalla.");
+            Assert.AreSame(materials[0], materials[1], "Los dos con el material del contorno.");
+        }
+
+        [Test]
+        public void Una_pieza_de_un_solo_material_sigue_con_uno()
+        {
+            Assert.IsTrue(_highlight.BindParts(new[] { _rear }));
+            Assert.AreEqual(1, _rear.Find(InspectionHighlight.OutlineName)
+                .GetComponent<MeshRenderer>().sharedMaterials.Length);
+        }
     }
 }

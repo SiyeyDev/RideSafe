@@ -1,3 +1,4 @@
+using RideSafe.UI;
 using System.Collections.Generic;
 using System.Text;
 using RideSafe.Tutorial;
@@ -294,7 +295,8 @@ namespace RideSafe.Help.Editor
 
         private static GameObject FindRoot(Scene scene, string name)
         {
-            foreach (GameObject root in scene.GetRootGameObjects())
+            // De primer nivel, también dentro de las carpetas del Hierarchy.
+            foreach (GameObject root in SceneFolder.TopLevelObjects(scene))
             {
                 if (root.name == name)
                     return root;

@@ -17,3 +17,9 @@ MonoBehaviour:
   _riskKey: M1/Point_Wheels_Risk
   _category: 0
   _displayPrefab: {fileID: 0}
+  _deteriorated: 0
+  _promptClip: {fileID: 0}
+  _weight: 1
+  _hazardGroup: 
+  _exclusiveBonusWith: 
+  _bonusCondition: 

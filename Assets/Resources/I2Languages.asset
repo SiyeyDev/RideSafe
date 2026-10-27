@@ -1789,6 +1789,30 @@ MonoBehaviour:
       - Apunta al objeto y presiona el gatillo
       Flags: 0000
       Languages_Touch: []
+    - Term: M1/Zone_Deck
+      TermType: 0
+      Description: 
+      Languages:
+      - Deck
+      - Plataforma
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Point_Deck
+      TermType: 0
+      Description: 
+      Languages:
+      - Deck and fasteners
+      - Plataforma y fijaciones
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Point_Deck_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - A cracked deck or loose bolts can give way under your weight.
+      - Una plataforma agrietada o con tornillos flojos puede ceder bajo tu peso.
+      Flags: 0000
+      Languages_Touch: []
     CaseInsensitiveTerms: 0
     OnMissingTranslation: 1
     mTerm_AppName: 

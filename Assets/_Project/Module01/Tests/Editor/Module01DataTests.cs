@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using RideSafe.Module01.Editor;
@@ -99,24 +100,134 @@ namespace RideSafe.Module01.Tests
             Assert.IsNotNull(profile, Missing);
 
             Assert.AreEqual("escooter", profile.VehicleContextValue);
-            Assert.IsNotNull(profile.Model, "El perfil debe apuntar a scooter.fbx.");
+            Assert.IsNotNull(profile.Model, "El perfil debe apuntar a E_Scooter.fbx.");
         }
 
         /// <summary>
-        /// Se revisa lo mismo en los dos vehículos —frenos, luces, llantas—, solo que
-        /// en sitios distintos. Compartir las 3 zonas es lo que evita duplicar los
-        /// elementos y sus claves de localización.
+        /// Se revisa casi lo mismo en los dos vehículos —frenos, luces, llantas—, solo que
+        /// en sitios distintos. Compartir esas 3 zonas es lo que evita duplicar los
+        /// elementos y sus claves de localización: el scooter suma la plataforma, pero las
+        /// otras tres son <b>las mismas</b> <see cref="ZoneSO"/> de la bici, no copias.
         /// </summary>
         [Test]
-        public void Los_dos_vehiculos_comparten_las_mismas_tres_zonas()
+        public void Los_dos_vehiculos_comparten_las_tres_zonas_comunes()
         {
             VehicleProfileSO ebike = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(VehiclePath);
             VehicleProfileSO scooter = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(ScooterPath);
             Assert.IsNotNull(ebike, Missing);
             Assert.IsNotNull(scooter, Missing);
 
-            CollectionAssert.AreEqual(ebike.InspectionZones, scooter.InspectionZones,
-                "Los dos perfiles deben apuntar a las mismas ZoneSO, en el mismo orden.");
+            CollectionAssert.AreEqual(ebike.InspectionZones,
+                scooter.InspectionZones.Where(z => z.ZoneId != "deck").ToList(),
+                "Las zonas comunes deben ser las mismas ZoneSO, en el mismo orden.");
+        }
+
+        [Test]
+        public void El_escooter_recorre_plataforma_y_la_ebike_no()
+        {
+            VehicleProfileSO ebike = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(VehiclePath);
+            VehicleProfileSO scooter = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(ScooterPath);
+            Assert.IsNotNull(ebike, Missing);
+            Assert.IsNotNull(scooter, Missing);
+
+            CollectionAssert.AreEqual(new[] { "cockpit", "wheels", "visibility" },
+                ebike.InspectionZones.Select(z => z.ZoneId).ToArray());
+            CollectionAssert.AreEqual(new[] { "cockpit", "wheels", "deck", "visibility" },
+                scooter.InspectionZones.Select(z => z.ZoneId).ToArray(),
+                "Narrativa §4.8.2: el scooter revisa la plataforma; la bici no tiene plataforma.");
+
+            ZoneSO deck = scooter.InspectionZones.First(z => z.ZoneId == "deck");
+            Assert.AreEqual("M1/Zone_Deck", deck.TitleKey);
+            Assert.AreEqual(1, deck.Items.Count);
+            Assert.AreEqual("point_deck", deck.Items[0].ItemId);
+            Assert.AreEqual(SafetyItemCategory.Core, deck.Items[0].Category,
+                "Como los otros puntos: omitirlo es no diagnosticar el vehiculo.");
+        }
+
+        [Test]
+        public void El_escooter_usa_el_modelo_nuevo()
+        {
+            VehicleProfileSO scooter = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(ScooterPath);
+            Assert.IsNotNull(scooter, Missing);
+            Assert.AreEqual("E_Scooter", scooter.Model.name);
+        }
+
+        /// <summary>
+        /// «Usar modelos reales» deja el perfil del scooter en el modelo que declara
+        /// <c>VehicleProfiles</c>. El comando se corre de verdad y el perfil se restaura después,
+        /// pase lo que pase.
+        /// </summary>
+        [Test]
+        public void Usar_modelos_reales_deja_al_scooter_su_modelo()
+        {
+            VehicleProfileSO scooter = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(ScooterPath);
+            Assert.IsNotNull(scooter, Missing);
+            SerializedObject so = new SerializedObject(scooter);
+            UnityEngine.Object before = so.FindProperty("_model").objectReferenceValue;
+            try
+            {
+                Module01RealModels.Apply();
+                Assert.AreEqual("E_Scooter", scooter.Model.name);
+            }
+            finally
+            {
+                so.Update();
+                so.FindProperty("_model").objectReferenceValue = before;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                AssetDatabase.SaveAssets();
+            }
+        }
+
+        /// <summary>
+        /// La bici y la patineta se revisan parecido, pero son vehículos distintos y cada una tiene
+        /// su video de revisión (PO, 2026-10-27). Mientras lleguen los reales, los dos llevan el de
+        /// prueba; lo que no puede pasar es que uno se quede sin video.
+        /// </summary>
+        [Test]
+        public void Cada_vehiculo_tiene_su_video_de_revision()
+        {
+            foreach (VehicleProfiles.Definition definition in VehicleProfiles.Definitions)
+            {
+                VehicleProfileSO profile = VehicleProfiles.Load(definition);
+                Assert.IsNotNull(profile, Missing);
+                Assert.IsNotNull(profile.ExplanationVideo, $"{profile.name} no tiene video de revisión.");
+                Assert.AreEqual(definition.VideoPath, AssetDatabase.GetAssetPath(profile.ExplanationVideo));
+            }
+        }
+
+        /// <summary>
+        /// Cada zona que declara un vehículo existe: una mal escrita dejaba un hueco en su lista de
+        /// zonas y el recorrido se paraba ahí.
+        /// </summary>
+        [Test]
+        public void Cada_zona_que_declara_un_vehiculo_esta_en_su_perfil()
+        {
+            foreach (VehicleProfiles.Definition definition in VehicleProfiles.Definitions)
+            {
+                VehicleProfileSO profile = VehicleProfiles.Load(definition);
+                Assert.IsNotNull(profile, Missing);
+                CollectionAssert.AreEqual(definition.ZoneIds.ToArray(),
+                    profile.InspectionZones.Select(z => z != null ? z.ZoneId : "(vacía)").ToArray(), profile.name);
+            }
+        }
+
+        /// <summary>
+        /// El reporte nombra cada fila con el catálogo de presentación. Hecho solo con la e-bike,
+        /// la plataforma se calificaba pero no salía en «Mi Elección» del scooter.
+        /// </summary>
+        [Test]
+        public void El_catalogo_de_presentacion_tiene_los_puntos_de_todos_los_vehiculos()
+        {
+            Module01CatalogSO presentation = AssetDatabase.LoadAssetAtPath<Module01CatalogSO>(
+                "Assets/_Project/Module01/Data/SO_Module01PresentationCatalog.asset");
+            Assert.IsNotNull(presentation, Missing);
+            HashSet<string> named = new HashSet<string>(presentation.AllItems.Select(i => i.ItemId));
+
+            foreach (VehicleProfileSO profile in VehicleProfiles.LoadAll())
+                foreach (ZoneSO zone in profile.InspectionZones)
+                    foreach (SafetyItemSO item in zone.Items)
+                        Assert.IsTrue(named.Contains(item.ItemId),
+                            $"'{item.ItemId}' de {profile.name} no tiene nombre en el reporte.");
         }
 
         [Test]

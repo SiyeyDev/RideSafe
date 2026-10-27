@@ -99,6 +99,7 @@ namespace RideSafe.Module01.Editor
             HideSuperseded();
             GroupPairs();
             TagEntities();
+            ReplaceOutdatedSpawned();
             FillMissingEntities();
             RemoveOrphanSpawned();
             RemoveStaleEntitiesOnArt();
@@ -254,6 +255,49 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>
+        /// Borra lo que este script instanció para un elemento cuyo modelo cambió después —el
+        /// signo «!» de un elemento que ya tiene FBX, o un FBX que el catálogo cambió—, para que
+        /// <see cref="FillMissingEntities"/> lo vuelva a crear con el modelo del catálogo.
+        /// <para>
+        /// Sin esto la entidad ya existe, <see cref="FillMissingEntities"/> se la salta y el
+        /// elemento se queda con el signo aunque 3D haya entregado su modelo. Pasó con la mochila
+        /// el 2026-10-27.
+        /// </para>
+        /// </summary>
+        private static void ReplaceOutdatedSpawned()
+        {
+            GameObject spawned = Find("Module01_Spawned");
+            if (spawned == null)
+                return;
+
+            Dictionary<string, SafetyItemSO> items = new Dictionary<string, SafetyItemSO>();
+            foreach (ZoneSO zone in AllZones())
+                foreach (SafetyItemSO item in zone.Items)
+                    if (item != null)
+                        items[item.ItemId] = item;
+
+            int replaced = 0;
+            foreach (WorldObjectTaskEntity entity in
+                     spawned.GetComponentsInChildren<WorldObjectTaskEntity>(true))
+            {
+                // Uno que ya no está en ninguna zona lo borra RemoveOrphanSpawned.
+                if (!items.TryGetValue(entity.ItemId, out SafetyItemSO item))
+                    continue;
+
+                Object shown = PrefabUtility.GetCorrespondingObjectFromSource(entity.gameObject);
+                if (shown == item.DisplayPrefab)
+                    continue;
+
+                Debug.Log($"[Module01] '{entity.Id.Value}' cambió de modelo; se vuelve a crear.");
+                Undo.DestroyObjectImmediate(entity.gameObject);
+                replaced++;
+            }
+
+            if (replaced > 0)
+                Debug.Log($"[Module01] EPP vueltos a crear con su modelo nuevo: {replaced}.");
+        }
+
+        /// <summary>
         /// Toda zona debe tener una entidad por elemento, o nunca se cierra y el módulo
         /// se queda esperando. Lo que el equipo de arte no colocó se crea aquí: el
         /// modelo del catálogo si lo tiene, y si no una primitiva gris.
@@ -262,8 +306,6 @@ namespace RideSafe.Module01.Editor
         {
             Module01CatalogSO catalog = AssetDatabase.LoadAssetAtPath<Module01CatalogSO>(
                 "Assets/_Project/Module01/Data/SO_Module01Catalog.asset");
-            VehicleProfileSO vehicle = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(
-                "Assets/_Project/Module01/Data/SO_VehicleProfile_Ebike.asset");
 
             HashSet<string> present = new HashSet<string>();
             foreach (WorldObjectTaskEntity e in Object.FindObjectsByType<WorldObjectTaskEntity>(
@@ -277,8 +319,9 @@ namespace RideSafe.Module01.Editor
             List<(ZoneSO Zone, bool OnVehicle)> all = new List<(ZoneSO, bool)>();
             if (catalog != null)
                 foreach (ZoneSO z in catalog.Zones) if (z != null) all.Add((z, false));
-            if (vehicle != null)
-                foreach (ZoneSO z in vehicle.InspectionZones) if (z != null) all.Add((z, true));
+            // Todos los vehiculos, no solo la bici: la plataforma es zona solo del scooter.
+            foreach (ZoneSO z in VehicleProfiles.AllInspectionZones())
+                all.Add((z, true));
 
             foreach ((ZoneSO zone, bool onVehicle) in all)
             {
@@ -444,12 +487,8 @@ namespace RideSafe.Module01.Editor
                     if (zone != null)
                         yield return zone;
 
-            VehicleProfileSO vehicle = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(
-                "Assets/_Project/Module01/Data/SO_VehicleProfile_Ebike.asset");
-            if (vehicle != null)
-                foreach (ZoneSO zone in vehicle.InspectionZones)
-                    if (zone != null)
-                        yield return zone;
+            foreach (ZoneSO zone in VehicleProfiles.AllInspectionZones())
+                yield return zone;
         }
 
         /// <summary>Nombre del primer objeto de arte de la zona, para colocar su ancla.</summary>

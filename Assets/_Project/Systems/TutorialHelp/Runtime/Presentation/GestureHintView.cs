@@ -1,3 +1,4 @@
+using RideSafe.UI;
 using System.Collections.Generic;
 using RideSafe.Tutorial;
 using RideSafe.Tutorial.Presentation;
@@ -201,7 +202,9 @@ namespace RideSafe.Help
                 _panelsListedAt = Time.realtimeSinceStartup;
             }
             _panelRects.Clear();
-            Transform own = transform.root;
+            // Lo propio es el objeto de primer nivel de la pista, no la raíz: en una carpeta del
+            // Hierarchy, la raíz es la carpeta y se llevaría los paneles de sus vecinos.
+            Transform own = SceneFolder.TopLevel(transform);
             for (int c = 0; c < _canvases.Count; c++)
             {
                 Canvas canvas = _canvases[c];

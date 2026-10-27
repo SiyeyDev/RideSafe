@@ -207,8 +207,9 @@ namespace RideSafe.Module01.Editor
         {
             var all = AssetDatabase.LoadAssetAtPath<Module01CatalogSO>("Assets/_Project/Module01/Data/SO_Module01PresentationCatalog.asset");
             var catalog = AssetDatabase.LoadAssetAtPath<Module01CatalogSO>("Assets/_Project/Module01/Data/SO_Module01Catalog.asset");
-            var vehicle = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>("Assets/_Project/Module01/Data/SO_VehicleProfile_Ebike.asset");
-            all.ConfigureForTests(catalog.Zones.Concat(vehicle.InspectionZones));
+            // Las zonas de todos los vehiculos: solo con la e-bike, la plataforma del scooter se
+            // calificaba pero no salia en «Mi Eleccion».
+            all.ConfigureForTests(catalog.Zones.Concat(VehicleProfiles.AllInspectionZones()));
             EditorUtility.SetDirty(all);
             AssetDatabase.SaveAssets();
         }

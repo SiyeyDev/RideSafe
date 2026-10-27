@@ -226,19 +226,23 @@ namespace RideSafe.Module01.Editor
                       model: Models + "gafdas de seguridad.fbx",
                       targetWidth: 0.17f),  // medido contra gafas (0,174)
             new Entry("O08", "sunglasses", Opt, 1f, Mesa1,
-                      model: Models + "gafas.fbx", sceneObject: "gafas", targetWidth: 0.17f),
-                      // Las `gafas` de siempre son OSCURAS y tintadas: son de sol, no las
-                      // transparentes resistentes a impacto. Esas son `gafdas de seguridad`,
-                      // que se ven claras y envolventes y se quedan en O07. Visto renderizado.
-            new Entry("O09", "backpack", Opt, 2f, Mesa3),
+                      model: Essentials + "gafas de sol.fbx", targetWidth: 0.17f),
+                      // Montura negra tipo Holbrook, la que pide la hoja: llegó el 2026-10-26 y
+                      // reemplaza a las `gafas` oscuras de siempre, que se apagan. El ancho es el
+                      // de aquellas (0,17). Las transparentes siguen siendo O07 (PO: las
+                      // `gafas_deportivas` no la reemplazan).
+            new Entry("O09", "backpack", Opt, 2f, Mesa3,
+                      model: Essentials + "mochila.fbx", targetWidth: 0.32f),
+                      // Mochila de diario real, ~32 cm de ancho. La textura trae un logo que arte
+                      // cambia después (PO, 2026-10-26): no afecta al modelo.
             new Entry("O11", "cargo_secured", Opt, 2f, Mesa3,
-                      model: Models + "candado.fbx", sceneObject: "candado"),
+                      model: Essentials + "candado.fbx", targetWidth: 0.22f),
                       // La hoja pide «Candado con soporte o ubicación de transporte segura»:
                       // un candado, no una guaya. `guaya candado` es una guaya enrollada y se
                       // queda fuera, igual que `guayya dañado`, su pareja deteriorada: ninguna
-                      // de las dos tiene fila en el Excel. El FBX del candado mide 15,76 m,
-                      // pero su instancia en la escena ya viene a escala 0,02 y mide 0,22, asi
-                      // que se reutiliza en vez de instanciarlo.
+                      // de las dos tiene fila en el Excel. Desde el 2026-10-27 es el candado con
+                      // textura de la carpeta de esenciales, al ancho que tenía el viejo de la
+                      // escena (0,22), que se apaga.
             new Entry("O12", "flat_kit", Opt, 2f, Mesa3,
                       model: Models + "cartuchera_low.fbx",
                       targetWidth: 0.20f),
@@ -334,6 +338,8 @@ namespace RideSafe.Module01.Editor
             "botas",                        // shoes_ok  -> zapatos de seguridad
             "chaleco refectivo",            // reflective -> chaleco reflectivo (sin la errata)
             "jean_ajustado_doblado",        // trousers_fitted -> Slim_fit_pants_doblado
+            "gafas",                        // sunglasses -> gafas de sol (2026-10-26)
+            "candado",                      // cargo_secured -> candado con textura (2026-10-27)
             // Retirados: la hoja no los pide.
             "bufanda 01",
             "jean ancho doblado",

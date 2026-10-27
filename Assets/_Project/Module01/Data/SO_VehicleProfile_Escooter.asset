@@ -13,22 +13,32 @@ MonoBehaviour:
   m_Name: SO_VehicleProfile_Escooter
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.VehicleProfileSO
   _vehicleContextValue: escooter
-  _model: {fileID: 919132149155446097, guid: 938efb3cdcf949149bae60b1163be134, type: 3}
+  _model: {fileID: 919132149155446097, guid: 1fb91a68150f4d3449e1dff97451d1b7, type: 3}
   _inspectionZones:
   - {fileID: 11400000, guid: 2e812fb54e2d7364fa3302d91d7e907d, type: 2}
   - {fileID: 11400000, guid: 65b474ed86641f9468aec537c0de391d, type: 2}
+  - {fileID: 11400000, guid: 95fe0ad9f50e77e4fae277cd66505147, type: 2}
   - {fileID: 11400000, guid: 01bccd36419332147ae3c3be8d6e16f1, type: 2}
   _zoneViews:
   - Zone: {fileID: 11400000, guid: 2e812fb54e2d7364fa3302d91d7e907d, type: 2}
-    Yaw: -90
+    Yaw: 0
   - Zone: {fileID: 11400000, guid: 65b474ed86641f9468aec537c0de391d, type: 2}
-    Yaw: 180
+    Yaw: -90
+  - Zone: {fileID: 11400000, guid: 95fe0ad9f50e77e4fae277cd66505147, type: 2}
+    Yaw: -135
   - Zone: {fileID: 11400000, guid: 01bccd36419332147ae3c3be8d6e16f1, type: 2}
-    Yaw: 90
+    Yaw: 180
   _partBindings:
   - ItemId: point_steering
-    PartName: control_de_direccion
+    PartName: Manubrio
   - ItemId: point_brakes
-    PartName: freno
+    PartName: freno_iz
+  - ItemId: point_brakes
+    PartName: freno_de
   - ItemId: point_wheels
-    PartName: rueda_tracera
+    PartName: llanta_tracera
+  - ItemId: point_wheels
+    PartName: llanta_delantera
+  - ItemId: point_deck
+    PartName: cuerpo
+  _explanationVideo: {fileID: 32900000, guid: 17736dd0a8a77ca45a0743be7ee95c6d, type: 3}

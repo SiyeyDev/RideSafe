@@ -30,6 +30,11 @@ public static class Module01UiTerms
         Set(data, es, en, "M1/Zone_Protection", "Protección personal", "Personal protection");
         Set(data, es, en, "M1/Zone_Control", "Visibilidad y control", "Visibility and control");
         Set(data, es, en, "M1/Zone_Readiness", "Preparación del trayecto", "Trip readiness");
+
+        // Narratives §4.8.2: the scooter also checks its deck and fasteners; the e-bike has none.
+        Set(data, es, en, "M1/Zone_Deck", "Plataforma", "Deck");
+        Set(data, es, en, "M1/Point_Deck", "Plataforma y fijaciones", "Deck and fasteners");
+        Set(data, es, en, "M1/Point_Deck_Risk", "Una plataforma agrietada o con tornillos flojos puede ceder bajo tu peso.", "A cracked deck or loose bolts can give way under your weight.");
         Set(data, es, en, "M1/Remove_Question", "¿Quieres quitar este elemento de tu preparación?", "Remove this item from your preparation?");
 
         // «Mi Elección» and the final report.

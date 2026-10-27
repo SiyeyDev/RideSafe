@@ -27,7 +27,7 @@ namespace RideSafe.Module00.Tests
         public void SetUp()
         {
             _ebike = Create("ebike", EbikeRest, EbikeRestRotation).transform;
-            _scooter = Create("scooter", ScooterRest, ScooterRestRotation).transform;
+            _scooter = Create("E_Scooter", ScooterRest, ScooterRestRotation).transform;
             _ebikePlatform = Create("plataform", Vector3.zero, Quaternion.identity);
             _scooterPlatform = Create("plataform (1)", Vector3.zero, Quaternion.identity);
 

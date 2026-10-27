@@ -188,6 +188,7 @@ namespace RideSafe.UI
 
         private RectTransform _below;
         private float _belowGap;
+        private float _belowBuiltHeight = -1f;
 
         private RectTransform Column => _column != null ? _column : (_leftRows != null ? _leftRows.parent as RectTransform : null);
 
@@ -202,9 +203,37 @@ namespace RideSafe.UI
         /// </summary>
         public void KeepBelow(RectTransform follower, float gap)
         {
+            if (follower != _below)
+                _belowBuiltHeight = -1f;   // se mide al primer ajuste, ya construida
             _below = follower;
             _belowGap = gap;
             ArrangeBelow();
+        }
+
+        /// <summary>
+        /// Si lo que va bajo la lista es la caja de la nota, la alarga hasta que quepa su texto,
+        /// nunca por debajo del alto con que se construyó (<c>ColumnComposition.NoteHeight</c>).
+        /// <para>
+        /// La nota del reporte final junta el rango y el cierre del módulo; sin casco pedía tres
+        /// líneas en una caja de dos y la última se salía. Crece hacia abajo —el pivote es la
+        /// esquina de arriba—, así que la lista no se mueve y el marco la sigue.
+        /// </para>
+        /// </summary>
+        private void FitNoteBox()
+        {
+            if (_below == null || _subtitle == null || !_subtitle.transform.IsChildOf(_below))
+                return;
+
+            if (_belowBuiltHeight < 0f)
+                _belowBuiltHeight = _below.sizeDelta.y;
+
+            LayoutGroup card = _below.GetComponent<LayoutGroup>();
+            RectOffset padding = card != null ? card.padding : new RectOffset();
+            float width = _below.sizeDelta.x - padding.horizontal;
+            float needed = _subtitle.GetPreferredValues(_subtitle.text, width, 0f).y + padding.vertical;
+
+            _below.sizeDelta = new Vector2(_below.sizeDelta.x, Mathf.Max(_belowBuiltHeight, needed));
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_below);
         }
 
         /// <summary>Baja lo que sigue a la lista hasta justo debajo de ella.</summary>
@@ -286,6 +315,7 @@ namespace RideSafe.UI
         {
             if (_title != null) _title.text = title;
             if (_subtitle != null) _subtitle.text = subtitle;
+            FitNoteBox();
             if (_leftHeading != null) { _leftHeading.text = leftHeading; _leftHeading.gameObject.SetActive(true); }
             if (_rightHeading != null) { _rightHeading.text = rightHeading; _rightHeading.gameObject.SetActive(true); }
             Fill(_leftRows, left);
@@ -311,6 +341,7 @@ namespace RideSafe.UI
         {
             if (_title != null) _title.text = title;
             if (_subtitle != null) _subtitle.text = note;
+            FitNoteBox();
             if (_leftHeading != null) _leftHeading.gameObject.SetActive(false);
             if (_rightHeading != null) _rightHeading.gameObject.SetActive(false);
 

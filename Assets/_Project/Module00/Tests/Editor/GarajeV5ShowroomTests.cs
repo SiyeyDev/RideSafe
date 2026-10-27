@@ -1,3 +1,4 @@
+using RideSafe.UI;
 using NUnit.Framework;
 using RideSafe.Module00.Editor;
 using UnityEditor;
@@ -21,7 +22,7 @@ namespace RideSafe.Module00.Tests
             _openedHere = !_scene.isLoaded;
             if (_openedHere)
                 _scene = EditorSceneManager.OpenScene(Module00ShowroomSetup.ScenePath, OpenSceneMode.Additive);
-            foreach (GameObject root in _scene.GetRootGameObjects())
+            foreach (GameObject root in SceneFolder.TopLevelObjects(_scene))
             {
                 if (root.name == Module00ShowroomSetup.RootName)
                     _root = root;

@@ -73,6 +73,10 @@ namespace RideSafe.UI.Tests
             return component;
         }
 
+        /// <summary>Las filas de «Mi Elección», dentro de su ventana desde que la lista se desplaza.</summary>
+        private static Transform ComparisonRows(Transform panel) =>
+            panel.Find("LeftColumn/Viewport/Rows") ?? panel.Find("LeftColumn/Rows");
+
         private static int ActiveChildren(Transform parent)
         {
             int count = 0;
@@ -299,7 +303,8 @@ namespace RideSafe.UI.Tests
             GameObject panel = Open("PF_Module01_UI", "ReviewChoices");
             yield return null;
 
-            Transform rows = panel.transform.Find("Modal/ListBox/Rows");
+            // Desde que la lista se desplaza (PO, 2026-10-26) las filas viven en su ventana.
+            Transform rows = panel.transform.Find("Modal/ListBox/Viewport/Rows") ?? panel.transform.Find("Modal/ListBox/Rows");
             Assert.AreEqual(0, ActiveChildren(rows), "Preview sample rows must not survive into runtime.");
 
             panel.GetComponent<ChecklistView>().SetItems(new[]
@@ -320,7 +325,7 @@ namespace RideSafe.UI.Tests
             GameObject panel = Open("PF_Module01_UI", "Comparison");
             yield return null;
 
-            Assert.AreEqual(4, ActiveChildren(panel.transform.Find("LeftColumn/Rows")));
+            Assert.AreEqual(4, ActiveChildren(ComparisonRows(panel.transform)));
             Assert.AreEqual(4, ActiveChildren(panel.transform.Find("RightColumn/Rows")));
 
             panel.GetComponent<ComparisonView>().SetContent("What you checked", "Your pre-ride check.",
@@ -334,7 +339,7 @@ namespace RideSafe.UI.Tests
 
             Transform right = panel.transform.Find("RightColumn/Rows");
             Assert.AreEqual("What you checked", Child<TMP_Text>(panel, "Header/Title").text);
-            Assert.AreEqual(1, ActiveChildren(panel.transform.Find("LeftColumn/Rows")));
+            Assert.AreEqual(1, ActiveChildren(ComparisonRows(panel.transform)));
             Assert.AreEqual(2, ActiveChildren(right));
             Assert.AreEqual("Status_Retry", right.Find("Row · Bag on handlebar/Icon").GetComponent<UnityEngine.UI.Image>().sprite.name,
                             "NotSuited must use its own glyph, not colour alone.");

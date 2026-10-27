@@ -42,3 +42,4 @@ MonoBehaviour:
     PartName: luz_tracera
   - ItemId: point_electrics
     PartName: pantalla
+  _explanationVideo: {fileID: 32900000, guid: 17736dd0a8a77ca45a0743be7ee95c6d, type: 3}

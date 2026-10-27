@@ -48,8 +48,9 @@ namespace RideSafe.Module01
         public Transform ActiveModel => _active?.Model == null ? null : _active.Model.transform;
 
         /// <summary>
-        /// Enciende la malla del vehículo del perfil y delinea las piezas que ese perfil
-        /// declara. Es la entrada buena: la otra sobrecarga no sabe qué piezas hay.
+        /// Enciende la malla del vehículo del perfil, apaga las demás y delinea las piezas que el
+        /// perfil declara. Si no hay malla para ese vehículo avisa y deja el garaje como estaba:
+        /// apagarlo todo dejaría al aprendiz inspeccionando el aire.
         /// </summary>
         public void Show(VehicleProfileSO profile)
         {
@@ -58,19 +59,8 @@ namespace RideSafe.Module01
                 Debug.LogError("[Module01] Se pidio encender un vehiculo sin perfil.", this);
                 return;
             }
-            Show(profile.VehicleContextValue, profile);
-        }
 
-        /// <summary>
-        /// Enciende la malla del vehículo pedido y apaga las demás. Si no hay malla para
-        /// ese valor avisa y deja el garaje como estaba: apagarlo todo dejaría al
-        /// aprendiz inspeccionando el aire.
-        /// </summary>
-        public void Show(string vehicleContextValue) => Show(vehicleContextValue, null);
-
-        private void Show(string vehicleContextValue, VehicleProfileSO profile)
-        {
-            string wanted = Normalize(vehicleContextValue);
+            string wanted = Normalize(profile.VehicleContextValue);
             Entry match = null;
             foreach (Entry entry in _vehicles)
             {
@@ -84,7 +74,7 @@ namespace RideSafe.Module01
             if (match == null)
             {
                 Debug.LogError(
-                    $"[Module01] El escenario no tiene malla para el vehiculo '{vehicleContextValue}'.", this);
+                    $"[Module01] El escenario no tiene malla para el vehiculo '{profile.VehicleContextValue}'.", this);
                 return;
             }
 
@@ -93,7 +83,7 @@ namespace RideSafe.Module01
                     entry.Model.SetActive(entry == match);
 
             _active = match;
-            AttachInspectionPoints(match);
+            AttachInspectionPoints(match, profile);
             BindParts(profile);
             FaceYaw(TargetYaw, immediate: true);
         }
@@ -104,9 +94,8 @@ namespace RideSafe.Module01
         /// el contorno, encontrar todas las piezas con la vista costaba): se pulsa el signo o la
         /// pieza, y al revisarlo los dos se ponen en verde.
         /// <para>
-        /// Se llama en <b>cada</b> <c>Show</c>, también cuando no hay perfil, porque lo primero
-        /// que tiene que pasar al cambiar de vehículo es soltar el contorno del anterior: cuelga
-        /// de la malla que se acaba de apagar.
+        /// Se llama en <b>cada</b> <c>Show</c>, porque lo primero que tiene que pasar al cambiar de
+        /// vehículo es soltar el contorno del anterior: cuelga de la malla que se acaba de apagar.
         /// </para>
         /// </summary>
         private void BindParts(VehicleProfileSO profile)
@@ -126,7 +115,7 @@ namespace RideSafe.Module01
                     // Todas las piezas del punto: la e-bike de 2026-10-21 trae frenos, ruedas y
                     // luces en dos (Cindy: delinear las dos). La esfera va a la primera.
                     List<Transform> parts = new List<Transform>();
-                    if (profile != null && model != null)
+                    if (model != null)
                         foreach (string partName in profile.PartNamesFor(point.ItemId))
                         {
                             Transform part = FindPart(model, partName);
@@ -217,7 +206,7 @@ namespace RideSafe.Module01
         /// búsqueda por nombre.
         /// </para>
         /// </summary>
-        private void AttachInspectionPoints(Entry entry)
+        private void AttachInspectionPoints(Entry entry, VehicleProfileSO profile)
         {
             if (entry?.Model == null)
                 return;
@@ -225,6 +214,13 @@ namespace RideSafe.Module01
             foreach (WorldObjectTaskEntity point in _inspectionPoints)
             {
                 if (point == null || string.IsNullOrEmpty(point.ItemId))
+                    continue;
+
+                // Un punto que este vehiculo no revisa —la plataforma con la bici— se apaga:
+                // dejarlo colgado del otro vehiculo lo dejaria a la vista y clicable.
+                bool own = profile.Inspects(point.ItemId);
+                point.gameObject.SetActive(own);
+                if (!own)
                     continue;
 
                 Transform mount = entry.Model.transform.Find("mount_" + point.ItemId);

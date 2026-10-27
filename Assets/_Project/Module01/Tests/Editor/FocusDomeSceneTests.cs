@@ -104,7 +104,7 @@ namespace RideSafe.Module01.Tests
             {
                 VehicleProfileSO profile = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(path);
                 GameObject model = null;
-                foreach (GameObject root in _scene.GetRootGameObjects())
+                foreach (GameObject root in SceneFolder.TopLevelObjects(_scene))
                     if (root.name == profile.Model.name)
                         model = root;
                 Assert.IsNotNull(model, profile.name);

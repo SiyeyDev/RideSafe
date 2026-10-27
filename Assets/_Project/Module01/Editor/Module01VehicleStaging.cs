@@ -28,11 +28,8 @@ namespace RideSafe.Module01.Editor
     /// que es lo que conserva ese ajuste.
     /// </para>
     /// <para>
-    /// Esa indirección es también lo que hace que una sola tabla de mounts sirva a los dos
-    /// vehículos <b>aunque estén en espejo</b>: las fracciones se escribieron con el morro en la
-    /// X alta, que es el caso del patinete, y en la bici —morro en la X baja— el punto acaba en
-    /// el borde de la pieza correcta igualmente. Los <i>giros</i>, en cambio, no se salvan así:
-    /// esos sí van por vehículo. Ver <see cref="Yaws"/>.
+    /// Lo que distingue a un vehículo de otro —zonas y giros, piezas, puntos de anclaje— vive
+    /// en <see cref="VehicleProfiles"/>; aquí solo se aplica a la escena abierta.
     /// </para>
     /// </summary>
     public static class Module01VehicleStaging
@@ -40,7 +37,6 @@ namespace RideSafe.Module01.Editor
         private const string AnchorsRoot = "Module01_Anchors";
         public const string MarkerFontPath = "Assets/_Project/UI/Fonts/Manrope-Bold SDF.asset";
         private const string VehicleAnchor = "anchor_" + Module01Director.VehicleAnchorId;
-        private const string DataFolder = "Assets/_Project/Module01/Data";
 
         /// <summary>Altura de los ojos del aprendiz de pie. La misma que usan las zonas personales.</summary>
         private const float EyeHeight = 1.45f;
@@ -50,85 +46,6 @@ namespace RideSafe.Module01.Editor
         /// casi dos metros quepa de costado sin que los marcadores se salgan por los lados.
         /// </summary>
         private const float ViewDistance = 2.7f;
-
-        /// <summary>
-        /// Dónde cuelga cada punto, en fracciones de la caja del vehículo:
-        /// <c>u</c> a lo largo, <c>v</c> en altura, <c>w</c> en anchura.
-        /// <para>
-        /// El eje largo es la <b>X local</b> en los dos vehículos: la bici mide 1.97 en Z de
-        /// mundo pero está girada 90°, y el patinete 1.27 girado 270°. Medido, no supuesto.
-        /// </para>
-        /// </summary>
-        private static readonly Dictionary<string, Vector3> Mounts = new Dictionary<string, Vector3>
-        {
-            // Los tres de la zona 'cockpit' van separados EN ANCHURA, no solo en altura.
-            // Medido: con los tres centrados (w = .50), al girar el vehiculo de frente para
-            // ensenar el manubrio, la profundidad deja de separar en pantalla y los tres signos
-            // de exclamacion se montan unos sobre otros. Repartirlos a lo ancho los separa, y
-            // ademas es donde estan de verdad: la maneta de freno a un lado, la bateria al otro.
-            //
-            // Desde 2026-10-21 el signo va otra vez con la esfera sobre la pieza (Cindy lo pidió
-            // de vuelta junto al contorno), y en la e-bike el tenedor, la maneta freno_de y la
-            // pantalla están las tres hacia el centro del manubrio: con la dirección al centro y
-            // el freno en .18 —que cae en el borde interior de freno_de— los tres signos se
-            // amontonaban. La dirección va a un puño y el freno al lado de su maneta: quedan
-            // puño, pantalla y maneta, de izquierda a derecha.
-            { "point_steering",  new Vector3(.86f, .94f, .15f) }, // manubrio, en un puño
-            { "point_brakes",    new Vector3(.79f, .78f, .82f) }, // maneta de freno, al otro lado
-            { "point_lights",    new Vector3(.95f, .62f, .50f) }, // faro delantero
-            // La rueda subió de .13 a .18 para no salirse del encuadre por abajo, y el 2026-10-21
-            // a .80: con el signo otra vez junto al contorno, a .18 caía dentro de la rueda, naranja
-            // sobre los radios naranjas del contorno, y no se veía (medido: activo, a 0,50 m). Por
-            // encima de la rueda la esfera se arrima a su borde de arriba y el signo queda sobre el
-            // cuadro, que es gris.
-            { "point_wheels",    new Vector3(.10f, .80f, .50f) }, // sobre la rueda
-            { "point_electrics", new Vector3(.45f, .36f, .82f) }, // bateria, al otro lado
-        };
-
-        /// <summary>
-        /// Giro del vehículo en cada zona, en grados y <b>absolutos</b>: <c>VehicleStage</c>
-        /// asigna la rotación local, no la suma. <b>Por vehículo, y no hay forma de evitarlo:
-        /// las dos mallas están en espejo.</b>
-        /// <para>
-        /// Con el aprendiz mirando hacia −Z: a 0° el eje largo del vehículo queda a lo ancho de
-        /// la vista, que es el costado; a ±90° queda de frente o de espaldas. Cuál de los dos
-        /// extremos es el morro depende del FBX, y los dos que entregó Daniel no coinciden:
-        /// medido el 2026-10-14, la bici trae el <c>manubrio</c> en la X local <b>baja</b>
-        /// (u=0.19) y el patinete el <c>control_de_direccion</c> en la <b>alta</b> (u=0.74).
-        /// Así que el giro que presenta la bici de frente presenta el patinete de espaldas.
-        /// </para>
-        /// <para>
-        /// Hasta el garaje v8 esto daba igual y la tabla podía ser una sola: el aviso era un
-        /// signo flotante que se colocaba a mano en un hueco despejado, y daba lo mismo por
-        /// dónde cayera el morro. Desde que el aviso es el <b>contorno de la pieza real</b>, el
-        /// giro decide si esa pieza se ve o queda detrás. Lo guarda
-        /// <c>VehiclePartsTests</c>, que lo afirma derivándolo de la geometría del FBX en vez
-        /// de repetir estos números.
-        /// </para>
-        /// </summary>
-        private static readonly Dictionary<string, Dictionary<string, float>> Yaws =
-            new Dictionary<string, Dictionary<string, float>>
-            {
-                ["ebike"] = new Dictionary<string, float>
-                {
-                    { "cockpit",    90f },   // de frente: manubrio, frenos, electrico
-                    // De costado. Bajó de 180 a 0 con el v8: el signo estaba colocado a mano en
-                    // un hueco despejado y daba igual, pero el contorno va sobre la rueda de
-                    // verdad, y a 180 la rueda trasera queda detrás del checklist —que vive a
-                    // la derecha—. El test pasaba igual; lo cazó la captura.
-                    { "wheels",      0f },   // de costado: se ven las dos ruedas
-                    { "visibility", -90f },  // por detras: luces y reflectivos
-                },
-                // El patinete, espejado: cada zona lleva el giro contrario al de la bici. No es
-                // una convención elegida, es lo que sale de que su morro esté en el otro
-                // extremo de la X local.
-                ["escooter"] = new Dictionary<string, float>
-                {
-                    { "cockpit",   -90f },   // de frente: control_de_direccion y su freno
-                    { "wheels",    180f },   // de costado, con rueda_tracera a la izquierda
-                    { "visibility", 90f },   // por detras
-                },
-            };
 
         [MenuItem("RideSafe/Módulo 1/Montar el punto de exhibición del vehículo")]
         public static void StageOpenScene()
@@ -142,11 +59,7 @@ namespace RideSafe.Module01.Editor
             if (!TryDisplayPoint(out Vector3 display))
                 return;
 
-            VehicleProfileSO[] profiles =
-            {
-                AssetDatabase.LoadAssetAtPath<VehicleProfileSO>($"{DataFolder}/SO_VehicleProfile_Ebike.asset"),
-                AssetDatabase.LoadAssetAtPath<VehicleProfileSO>($"{DataFolder}/SO_VehicleProfile_Escooter.asset"),
-            };
+            VehicleProfileSO[] profiles = VehicleProfiles.LoadAll().ToArray();
 
             float tallest = 0f;
             foreach (VehicleProfileSO profile in profiles)
@@ -167,7 +80,7 @@ namespace RideSafe.Module01.Editor
                 MoveToDisplay(model, display);
                 if (TryBounds(model, out Bounds box))
                     tallest = Mathf.Max(tallest, box.size.y);
-                CreateMounts(model);
+                CreateMounts(model, profile);
                 ApplyYaws(profile);
             }
 
@@ -178,6 +91,7 @@ namespace RideSafe.Module01.Editor
             // que el escenario enciende tambien en runtime mientras nadie elija.
             ShowOnlyFirst(profiles);
             AttachPointsToMounts();
+            ParkPointsTheShownVehicleDoesNotInspect(profiles);
             WireOutlines(profiles);
 
             // Y el escenario se queda con la lista de puntos, para recolgarlos del vehiculo que
@@ -193,59 +107,6 @@ namespace RideSafe.Module01.Editor
                 $"[Module01] Vehículos en el punto de exhibición {display:F2}, ancla a {ViewDistance} m. " +
                 "Los sitios de los puntos son aproximados: conviene repasarlos a ojo en la escena.");
         }
-
-        /// <summary>
-        /// Qué pieza de la malla delinea cada punto, por vehículo.
-        /// <para>
-        /// La e-bike llegó el 2026-10-21 con las piezas que faltaban para revisar, anidadas:
-        /// <c>marco</c> con <c>pedales</c>, <c>rueda_tracera</c>, <c>luz_tracera</c> y el
-        /// <c>tenedor</c>, y del tenedor <c>freno_de</c>, <c>freno_iz</c>, <c>llanta_delantera</c>,
-        /// <c>luz_delantera</c> y <c>pantalla</c>. Los cinco puntos tienen pieza, y frenos, ruedas
-        /// y luces tienen dos: se delinean las dos (Cindy). Ya no hay <c>manubrio</c>: la dirección
-        /// es el tenedor, horquilla y manubrio. El orden importa: la primera pieza lleva la esfera,
-        /// y en las ruedas va primero la trasera, la que el giro de la zona deja fuera del checklist.
-        /// 'tracera', con la falta, es como viene en el FBX: se busca por nombre.
-        /// </para>
-        /// <para>
-        /// El patinete llegó despiezado el 2026-10-14 y viene en <b>siete</b> piezas, anidadas
-        /// en dos niveles: <c>control_de_direccion</c> (con <c>freno</c>, <c>guardabarros</c> y
-        /// <c>rueda_frontal</c> dentro) y <c>cuerpo</c> (con <c>rueda_tracera</c> y
-        /// <c>soporte</c>). Son tres de cinco los puntos con pieza, uno más que la bici, porque
-        /// <b>el patinete sí trae la maneta de freno como pieza propia</b>. El anidamiento no
-        /// molesta: <c>VehicleStage.FindPart</c> busca en toda la jerarquía, no solo en los
-        /// hijos directos.
-        /// </para>
-        /// <para>
-        /// <c>point_electrics</c> se queda con el signo por el mismo motivo que en la bici: la
-        /// batería va dentro de <c>cuerpo</c>, que es la plataforma entera —1,16 m—, y
-        /// delinearla para decir «revisa el sistema eléctrico» enseña algo falso. Y
-        /// <c>point_lights</c> porque el FBX no trae faro: <c>guardabarros</c> es el
-        /// guardabarros y <c>soporte</c> es la pata de cabra.
-        /// </para>
-        /// </summary>
-        private static readonly Dictionary<string, (string Item, string Part)[]> Parts =
-            new Dictionary<string, (string Item, string Part)[]>
-            {
-                ["ebike"] = new[]
-                {
-                    ("point_steering", "tenedor"),
-                    ("point_brakes", "freno_de"),
-                    ("point_brakes", "freno_iz"),
-                    ("point_wheels", "rueda_tracera"),
-                    ("point_wheels", "llanta_delantera"),
-                    ("point_lights", "luz_delantera"),
-                    ("point_lights", "luz_tracera"),
-                    ("point_electrics", "pantalla"),
-                },
-                ["escooter"] = new[]
-                {
-                    ("point_steering", "control_de_direccion"),
-                    ("point_brakes", "freno"),
-                    // 'tracera', con la falta, es como viene en el FBX. Se copia tal cual: la
-                    // pieza se busca por nombre y corregirla aqui la dejaria sin encontrar.
-                    ("point_wheels", "rueda_tracera"),
-                },
-            };
 
         private const string OutlineMaterialPath =
             "Assets/_Project/Module01/Art/M_InspectionOutline.mat";
@@ -269,8 +130,8 @@ namespace RideSafe.Module01.Editor
             {
                 if (profile == null)
                     continue;
-                (string Item, string Part)[] table = Parts.TryGetValue(profile.VehicleContextValue, out var t)
-                    ? t
+                (string Item, string Part)[] table = VehicleProfiles.TryGet(profile.VehicleContextValue, out VehicleProfiles.Definition definition)
+                    ? definition.Parts.ToArray()
                     : new (string Item, string Part)[0];
                 Undo.RecordObject(profile, "Piezas del vehiculo");
                 profile.ConfigurePartBindings(table);
@@ -299,6 +160,30 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>Deja encendida solo la malla del primer perfil.</summary>
+        /// <summary>
+        /// Aparta y apaga los puntos que no revisa el vehículo que queda a la vista —la
+        /// plataforma, con la bici—, igual que hace <c>VehicleStage</c> en runtime. Sin esto el
+        /// punto se quedaba encendido colgando de la bici: se veía y respondía al clic en el
+        /// módulo 0, y la copia de la vitrina se lo llevaba dentro.
+        /// </summary>
+        private static void ParkPointsTheShownVehicleDoesNotInspect(VehicleProfileSO[] profiles)
+        {
+            VehicleProfileSO shown = profiles.FirstOrDefault(p => p != null && p.Model != null && Find(p.Model.name) != null);
+            if (shown == null)
+                return;
+
+            GameObject parking = Find("Module01_Spawned") ?? new GameObject("Module01_Spawned");
+            foreach (WorldObjectTaskEntity point in Object
+                         .FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                         .Where(e => e.ItemId.StartsWith("point_") && !shown.Inspects(e.ItemId)))
+            {
+                Undo.SetTransformParent(point.transform, parking.transform, "Apartar punto de otro vehiculo");
+                Undo.RecordObject(point.gameObject, "Apartar punto de otro vehiculo");
+                point.gameObject.SetActive(false);
+                Debug.Log($"[Module01] '{point.ItemId}' no es de '{shown.name}': apagado en {parking.name} hasta que se elija su vehículo.");
+            }
+        }
+
         private static void ShowOnlyFirst(VehicleProfileSO[] profiles)
         {
             bool first = true;
@@ -396,13 +281,17 @@ namespace RideSafe.Module01.Editor
         /// Cuelga de la malla un punto de anclaje por cada componente, derivado de su caja.
         /// Idempotente: si el mount ya existe no se mueve, para no deshacer un ajuste a mano.
         /// </summary>
-        private static void CreateMounts(GameObject model)
+        private static void CreateMounts(GameObject model, VehicleProfileSO profile)
         {
             if (!TryLocalBounds(model, out Bounds local))
                 return;
 
-            foreach (KeyValuePair<string, Vector3> entry in Mounts)
+            foreach (KeyValuePair<string, Vector3> entry in VehicleProfiles.Mounts)
             {
+                // Solo los puntos que revisa este vehiculo: la bici no tiene plataforma.
+                if (!profile.Inspects(entry.Key))
+                    continue;
+
                 string name = "mount_" + entry.Key;
                 Transform mount = model.transform.Find(name);
                 if (mount != null)
@@ -410,10 +299,24 @@ namespace RideSafe.Module01.Editor
 
                 mount = new GameObject(name).transform;
                 mount.SetParent(model.transform, false);
-                mount.localPosition = local.min + Vector3.Scale(local.size, entry.Value);
+                mount.localPosition = MountPosition(local, entry.Value);
                 mount.localRotation = Quaternion.identity;
                 Undo.RegisterCreatedObjectUndo(mount.gameObject, "Mount del vehiculo");
             }
+        }
+
+        /// <summary>
+        /// Dónde cae una fracción <c>(u, v, w)</c> de la caja local: <c>u</c> a lo largo,
+        /// <c>v</c> en altura y <c>w</c> a lo ancho. El largo es el eje horizontal <b>mayor</b>
+        /// de la caja, X o Z: las fracciones se escribieron cuando los dos FBX lo traían en X, y
+        /// el scooter de 2026-10-26 lo trae en Z.
+        /// </summary>
+        public static Vector3 MountPosition(Bounds local, Vector3 uvw)
+        {
+            Vector3 fraction = local.size.z > local.size.x
+                ? new Vector3(uvw.z, uvw.y, uvw.x)
+                : uvw;
+            return local.min + Vector3.Scale(local.size, fraction);
         }
 
         /// <summary>
@@ -548,14 +451,15 @@ namespace RideSafe.Module01.Editor
 
         private static void ApplyYaws(VehicleProfileSO profile)
         {
-            if (!Yaws.TryGetValue(profile.VehicleContextValue, out Dictionary<string, float> table))
-            {
+            Dictionary<string, float> table = new Dictionary<string, float>();
+            if (VehicleProfiles.TryGet(profile.VehicleContextValue, out VehicleProfiles.Definition definition))
+                foreach ((string id, float yaw) in definition.Zones)
+                    table[id] = yaw;
+            else
                 Debug.LogWarning(
-                    $"[Module01] No hay tabla de giros para '{profile.VehicleContextValue}', asi que " +
+                    $"[Module01] '{profile.VehicleContextValue}' no está en VehicleProfiles, asi que " +
                     "se queda a 0° en todas las zonas: el vehiculo no girara y las piezas que se " +
-                    "delinean pueden quedar de espaldas. Hay que añadirla en Module01VehicleStaging.Yaws.");
-                table = new Dictionary<string, float>();
-            }
+                    "delinean pueden quedar de espaldas.");
 
             List<(ZoneSO Zone, float Yaw)> views = new List<(ZoneSO, float)>();
             foreach (ZoneSO zone in profile.InspectionZones)

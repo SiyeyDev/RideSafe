@@ -1,3 +1,4 @@
+using RideSafe.UI;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -113,6 +114,9 @@ namespace RideSafe.Module01.Editor
 
             ApplyGarageFinishes();
 
+            // El mundo nuevo llega a la raíz: se archiva en sus carpetas.
+            SceneHierarchyLayout.Apply(work);
+
             SceneManager.SetActiveScene(work);
             EditorSceneManager.MarkSceneDirty(work);
 
@@ -134,7 +138,8 @@ namespace RideSafe.Module01.Editor
         private static int RemoveOldWorld(Scene work, HashSet<string> worldNames)
         {
             int removed = 0;
-            foreach (GameObject go in work.GetRootGameObjects())
+            // Por objeto de primer nivel, no por raíz: el mundo vive en las carpetas del Hierarchy.
+            foreach (GameObject go in SceneFolder.TopLevelObjects(work).ToList())
             {
                 if (ProtectedRoots.Contains(go.name))
                     continue;
@@ -269,7 +274,7 @@ namespace RideSafe.Module01.Editor
         /// </summary>
         private static int RemoveStaleCatalogInstances(Scene work)
         {
-            GameObject spawned = work.GetRootGameObjects().FirstOrDefault(go => go.name == SpawnedRoot);
+            GameObject spawned = SceneFolder.TopLevelObjects(work).FirstOrDefault(go => go.name == SpawnedRoot);
             if (spawned == null)
                 return 0;
 
