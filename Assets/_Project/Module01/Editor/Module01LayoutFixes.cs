@@ -93,14 +93,7 @@ namespace RideSafe.Module01.Editor
                 var changed = new System.Collections.Generic.List<string>();
                 foreach (GameObject root in scene.GetRootGameObjects())
                     foreach (WorldObjectTaskEntity entity in root.GetComponentsInChildren<WorldObjectTaskEntity>(true))
-                        foreach (Transform t in entity.GetComponentsInChildren<Transform>(true))
-                        {
-                            StaticEditorFlags flags = GameObjectUtility.GetStaticEditorFlags(t.gameObject);
-                            if ((flags & StaticEditorFlags.BatchingStatic) == 0)
-                                continue;
-                            GameObjectUtility.SetStaticEditorFlags(t.gameObject, flags & ~StaticEditorFlags.BatchingStatic);
-                            changed.Add(t.name);
-                        }
+                        changed.AddRange(Module01EditorComponents.ClearBatchingStatic(entity.gameObject));
                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
                 UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene);
                 Debug.Log("[Module01] Batching Static removed from " + changed.Count + " object(s): " +

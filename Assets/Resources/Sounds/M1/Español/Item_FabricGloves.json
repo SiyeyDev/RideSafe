@@ -1,0 +1,17 @@
+{
+  "characters": [
+    "Guantes",
+    "de",
+    "tela"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.464,
+    0.592
+  ],
+  "character_end_times_seconds": [
+    0.43,
+    0.522,
+    1.254
+  ]
+}

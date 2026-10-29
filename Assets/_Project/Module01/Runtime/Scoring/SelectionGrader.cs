@@ -33,7 +33,12 @@ namespace RideSafe.Module01
                         if (chosen) optional.Add(item.ItemId);
                         break;
                     case SafetyItemCategory.Inappropriate:
-                        if (chosen) inappropriate.Add(item.ItemId);
+                        // «Peligrosa condicional»: la gorra solo es peligro si se elige EN LUGAR
+                        // del casco. Junto a él no cambia nada, como un recomendado (hoja, H12).
+                        if (chosen && item.SubstitutesFor.Length > 0 && ledger.Contains(item.SubstitutesFor))
+                            optional.Add(item.ItemId);
+                        else if (chosen)
+                            inappropriate.Add(item.ItemId);
                         break;
                 }
             }

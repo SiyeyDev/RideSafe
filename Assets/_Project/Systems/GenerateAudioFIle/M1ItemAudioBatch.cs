@@ -2,7 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using I2.Loc;
+using Newtonsoft.Json.Linq;
+using RideSafe.Module01;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -80,23 +84,97 @@ public static class M1ItemAudioBatch
         ("English", VoiceAlice),
     };
 
+    public const string PlanPath = "Temp/ridesafe-audio-plan.txt";
+
     [MenuItem("RideSafe/Módulo 1/Generar locución de los elementos (ES + EN)")]
     public static void Run()
     {
-        EditorCoroutineUtility.StartCoroutineOwnerless(Batch());
+        EditorCoroutineUtility.StartCoroutineOwnerless(Batch(false));
     }
 
-    private static IEnumerator Batch()
+    /// <summary>
+    /// Solo lo que hace falta: los nombres del catálogo de hoy sin audio, o con un audio que ya
+    /// no dice el texto de I2. El 2026-10-28 faltaban 24 de 61 elementos y los que había decían el
+    /// nombre largo del Excel («Casco certificado, íntegro, talla correcta y abrochado») cuando el
+    /// popup ya muestra el corto: voz y subtítulo contra la pantalla. Rehacerlo todo costaría
+    /// créditos por los que están bien y por términos retirados.
+    /// </summary>
+    [MenuItem("RideSafe/Módulo 1/Generar la locución que falta o cambió (ES + EN)")]
+    public static void RunMissing()
     {
-        LanguageSourceAsset asset =
-            AssetDatabase.LoadAssetAtPath<LanguageSourceAsset>("Assets/Resources/I2Languages.asset");
-        LanguageSourceData data = asset.SourceData;
+        EditorCoroutineUtility.StartCoroutineOwnerless(Batch(true));
+    }
 
-        List<TermData> terms = new List<TermData>();
-        foreach (TermData t in data.mTerms)
-            if (EsLocutable(t.Term))
-                terms.Add(t);
+    /// <summary>Lo que haría <see cref="RunMissing"/>, en <see cref="PlanPath"/>, sin llamar a ElevenLabs.</summary>
+    public static void DryRunMissing()
+    {
+        LanguageSourceData data = Source();
+        HashSet<string> catalog = CatalogTerms();
+        var plan = new System.Text.StringBuilder();
+        int count = 0;
+        foreach ((string language, string _) in Languages)
+        {
+            int idx = data.GetLanguageIndex(language);
+            foreach (TermData term in Locutables(data, catalog))
+            {
+                string name = term.Term.Substring(Category.Length + 1);
+                string why = Stale($"Assets/Resources/Sounds/{Category}/{language}", name, term.Languages[idx]);
+                if (why == null)
+                    continue;
+                plan.AppendLine($"{language}/{name}: {why} -> «{term.Languages[idx]}»");
+                count++;
+            }
+        }
+        plan.Insert(0, $"{count} audios por generar" + System.Environment.NewLine);
+        File.WriteAllText(PlanPath, plan.ToString());
+    }
+
+    private static LanguageSourceData Source() =>
+        AssetDatabase.LoadAssetAtPath<LanguageSourceAsset>("Assets/Resources/I2Languages.asset").SourceData;
+
+    /// <summary>Los nombres que el juego enseña hoy: el de cada elemento y punto del catálogo.</summary>
+    private static HashSet<string> CatalogTerms()
+    {
+        var terms = new HashSet<string>();
+        foreach (string guid in AssetDatabase.FindAssets("t:SafetyItemSO"))
+        {
+            SafetyItemSO item = AssetDatabase.LoadAssetAtPath<SafetyItemSO>(AssetDatabase.GUIDToAssetPath(guid));
+            if (item != null && !string.IsNullOrEmpty(item.NameKey))
+                terms.Add(item.NameKey);
+        }
+        return terms;
+    }
+
+    private static List<TermData> Locutables(LanguageSourceData data, HashSet<string> only)
+    {
+        List<TermData> terms = data.mTerms.Where(t => EsLocutable(t.Term) && (only == null || only.Contains(t.Term))).ToList();
         terms.Sort((a, b) => string.CompareOrdinal(a.Term, b.Term));
+        return terms;
+    }
+
+    /// <summary>
+    /// Por qué hay que rehacer este audio, o <c>null</c> si dice el texto de hoy. El <c>.json</c>
+    /// guarda las palabras locutadas: unidas con un espacio tienen que dar el texto de I2.
+    /// </summary>
+    private static string Stale(string folder, string name, string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
+        if (!File.Exists($"{folder}/{name}.mp3"))
+            return "falta";
+        if (!File.Exists($"{folder}/{name}.json"))
+            return "sin tiempos";
+        JToken words = JObject.Parse(File.ReadAllText($"{folder}/{name}.json"))["characters"];
+        string said = words == null ? string.Empty : string.Join(" ", words.Select(w => (string)w));
+        return Normalize(said) == Normalize(text) ? null : $"dice «{said}»";
+    }
+
+    private static string Normalize(string text) => Regex.Replace(text ?? string.Empty, @"\s+", " ").Trim();
+
+    private static IEnumerator Batch(bool onlyStale)
+    {
+        LanguageSourceData data = Source();
+        List<TermData> terms = Locutables(data, onlyStale ? CatalogTerms() : null);
 
         Directory.CreateDirectory("Temp");
         File.WriteAllText(ResultPath, "RUNNING\n");
@@ -123,6 +201,8 @@ public static class M1ItemAudioBatch
             {
                 string name = term.Term.Substring(Category.Length + 1);
                 string text = term.Languages[idx];
+                if (onlyStale && !string.IsNullOrWhiteSpace(text) && Stale(folder, name, text) == null)
+                    continue;
                 if (string.IsNullOrWhiteSpace(text))
                 {
                     Log($"SALTADO {language}/{name}: sin texto");

@@ -25,8 +25,6 @@ namespace RideSafe.Module01.Editor
     /// </summary>
     public static class Module01PresentationBuilder
     {
-        private static readonly string[] Zones =
-            { "protection", "control", "readiness", "cockpit", "wheels", "visibility" };
         private static Transform _camera;
 
         /// <summary>Escala de canvas con la que esta dibujado el storyboard del kit.</summary>
@@ -186,7 +184,7 @@ namespace RideSafe.Module01.Editor
             Button("PreviousZoneButton",nav,new Vector2(-105,0),new Vector2(200,48),"M1/Previous",false,16f);
             Button("NextZoneButton",nav,new Vector2(105,0),new Vector2(200,48),"M1/Next",true,16f);
             Set(exp,"_navigation",nav.gameObject);
-            var instructions=Panel("StationInstruction",hud.transform,new Vector2(-110,220),new Vector2(610,85),"Panel_Modal_Dark",2.4f);
+            var instructions=Panel("StationInstruction",hud.transform,new Vector2(-230,220),new Vector2(610,85),"Panel_Modal_Dark",2.4f);
             Set(exp,"_instruction",instructions.gameObject);
             Set(exp,"_instructionText",Text("Instruction",instructions,Vector2.zero,new Vector2(585,80),"",_kit.BodyOnDark.With(18f)));
             var decision=Panel("ReadinessDecision",hud.transform,Vector2.zero,new Vector2(760,290),"Panel_Modal_Light",2.4f);
@@ -278,7 +276,7 @@ namespace RideSafe.Module01.Editor
                 "Falta Assets/_Project/Module01/Art/M_SelectedHolo.mat, el material del verde de 'ya seleccionado'.");
             Set(worn,"_holoMaterial",holo);
 
-            ArrangeStations(catalog,vehicle);
+            ArrangeStations(vehicle);
             Module01SceneComposition.Compose(_kit);
             AssignUiLayer();
             // Un sprite mal escrito dibuja nada y se ve como "quedo feo". Que reviente, no que calle.
@@ -325,29 +323,18 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>
-        /// Coloca el punto de vista de cada zona personal frente a los objetos **donde el
-        /// equipo de arte los dejó**, y no toca los objetos.
-        /// <para>
-        /// Antes esto reparentaba los 7 EPP a <c>Module01_Spawned</c>, los ponía en fila
-        /// flotando a 1.5 m del ancla y los normalizaba a 32 cm en su lado mayor. De ahí
-        /// salían tres problemas a la vez: los objetos no se apoyaban en nada —y por eso
-        /// «se hacía clic en la nada»—, la escala dejaba una linterna enana al lado de un
-        /// casco gigante, y el trabajo de colocación del equipo de arte se perdía en cada
-        /// montaje. El garaje v6 ya los trae puestos sobre el mostrador, cada uno a su
-        /// altura; lo único que falta es mirar desde donde se ven.
-        /// </para>
+        /// Los puntos de vista. Los de las mesas de EPP los calcula
+        /// <see cref="RideSafe.Module01.Editor.Module01EppLayout"/> mirando lo que el artista
+        /// puso en cada una, que es el mismo cálculo que corre al colocar los EPP: dos sitios que
+        /// lo calcularan distinto se pisarían el uno al otro.
         /// <para>
         /// Las zonas del vehículo conservan su ancla fija: ahí manda el punto único de
         /// exhibición, que vive en el ancla <c>vehicle</c> y lo coloca otro comando.
         /// </para>
         /// </summary>
-        private static void ArrangeStations(Module01CatalogSO catalog, VehicleProfileSO vehicle)
+        private static void ArrangeStations(VehicleProfileSO vehicle)
         {
-            var entities=Object.FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Include,FindObjectsSortMode.None);
-            var personal=catalog.Zones.ToArray();
-
-            for(int z=0;z<personal.Length;z++)
-                PlaceViewpoint(personal[z],entities);
+            RideSafe.Module01.Editor.Module01EppLayout.LayoutOpenScene();
 
             // Zonas del vehiculo: ancla fija hasta que exista el punto de exhibicion.
             var vehicleZones=vehicle.InspectionZones;
@@ -357,122 +344,6 @@ namespace RideSafe.Module01.Editor
                 anchor.position=new Vector3(-2+z*1.5f,k_EyeHeight,2.3f);
                 anchor.rotation=Quaternion.Euler(0,180,0);
             }
-        }
-
-        /// <summary>
-        /// Pone el ancla de la zona a la distancia justa para que entren todos sus elementos
-        /// en pantalla, mirándolos.
-        /// <para>
-        /// La distancia se deriva del ancho real que ocupan y del campo de visión, no de un
-        /// número a ojo: si el equipo de arte junta o separa los objetos, el punto de vista
-        /// se ajusta solo. Se avisa cuando una zona queda demasiado desparramada, porque eso
-        /// no se arregla alejando la cámara —los objetos se ven diminutos— sino acercándolos
-        /// entre ellos en la escena.
-        /// </para>
-        /// </summary>
-        private static void PlaceViewpoint(ZoneSO zone,WorldObjectTaskEntity[] entities)
-        {
-            var anchor=Find("anchor_"+zone.ZoneId).transform;
-
-            var mine=zone.Items.Where(i=>i!=null)
-                .Select(i=>entities.FirstOrDefault(e=>e.ItemId==i.ItemId))
-                .Where(e=>e!=null).ToArray();
-            if(mine.Length==0)
-            {
-                Debug.LogWarning($"[Module01] La zona '{zone.ZoneId}' no tiene ningun objeto en la escena; su ancla se queda donde estaba.");
-                return;
-            }
-
-            // Caja que encierra lo visible de la zona, en mundo.
-            Bounds box=new Bounds(mine[0].transform.position,Vector3.zero);
-            foreach(var e in mine)
-            {
-                var renderers=e.GetComponentsInChildren<Renderer>();
-                if(renderers.Length==0) { box.Encapsulate(e.transform.position); continue; }
-                foreach(var r in renderers) box.Encapsulate(r.bounds);
-            }
-
-            // Medio campo horizontal de la camara de juego: FOV 60 vertical sobre 16:9.
-            const float halfFovTan=1.026f;
-
-            // Distancia minima: el popup de confirmacion del inspector flota a 1.15 m del ojo y
-            // el frente del mostrador sobresale unos 30 cm por delante de los objetos. A 1.30 m
-            // -lo que pedia el encuadre- el aprendiz quedaba a 1.00 m del mueble y el popup
-            // caia DENTRO del armario: medido, el panel estaba en pantalla (y de 0.03 a 0.26)
-            // pero no se veia, tapado por la madera. Se vio en una captura de PlayMode, porque
-            // la comprobacion de "esta en pantalla" no sabe de oclusion.
-            const float popupDistance=1.15f, counterOverhang=.30f, clearance=.45f;
-            float minDistance=popupDistance+counterOverhang+clearance;
-
-            float width=Mathf.Max(box.size.x,box.size.y);
-            float distance=Mathf.Clamp(width*.5f/halfFovTan+.45f,minDistance,3.00f);
-
-            if(width>2.5f)
-                Debug.LogWarning(
-                    $"[Module01] La zona '{zone.ZoneId}' ocupa {width:F2} m de ancho: desde un solo punto "+
-                    "sus elementos se ven diminutos. Hay que juntarlos en la escena, no alejar la camara.");
-
-            // El mostrador esta contra la pared del fondo (z negativo), asi que se mira hacia
-            // -z y el aprendiz se coloca por delante. El signo sale de la propia caja para que
-            // siga valiendo si el arte mueve la estacion a otra pared.
-            float sign=box.center.z<0f?1f:-1f;
-            distance=PushBackUntilBodyIsClear(box.center,distance,sign,zone.ZoneId);
-            Vector3 eye=new Vector3(box.center.x,k_EyeHeight,box.center.z+sign*distance);
-            anchor.position=eye;
-
-            Vector3 look=box.center-eye; look.y=0f;
-            anchor.rotation=look.sqrMagnitude>1e-4f?Quaternion.LookRotation(look,Vector3.up):Quaternion.Euler(0,180,0);
-        }
-        /// <summary>
-        /// Aparta el punto de observacion hasta que el aprendiz no quede dentro de nada.
-        /// <para>
-        /// El encuadre decide a que distancia se ve bien la estacion; esto decide si ahi se
-        /// puede estar. El garaje v7 dejo una bufanda y una mascada colgadas a z≈-2.9, y el
-        /// punto de la zona de ropa caia justo encima: medido, la tela quedaba a 5 cm del
-        /// cuerpo y a la altura de la cara. Apartarse 15 cm lo resuelve y no se nota en el
-        /// encuadre, pero habia que <b>mirarlo</b>, no suponerlo.
-        /// </para>
-        /// <para>
-        /// Se mide contra las cajas de los renderers y no con fisica: el arte importado llega
-        /// casi siempre sin colliders, asi que un <c>Raycast</c> habria dicho que todo estaba
-        /// despejado. Se dejan fuera las mallas enormes —suelo, muros, techo— porque el cuerpo
-        /// siempre esta «dentro» de la caja del suelo, y la UI, que vive colgada de la camara.
-        /// </para>
-        /// </summary>
-        private static float PushBackUntilBodyIsClear(Vector3 target,float distance,float sign,string zoneId)
-        {
-            const float bodyRadius=.30f,bodyHeight=1.80f,step=.05f,maxDistance=3.00f;
-
-            var art=Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude,FindObjectsSortMode.None)
-                .Where(r=>r.enabled
-                    && r.bounds.size.magnitude<=8f
-                    && r.GetComponentInParent<Canvas>()==null)
-                .ToArray();
-
-            for(float d=distance;d<=maxDistance+1e-3f;d+=step)
-            {
-                Vector3 feet=new Vector3(target.x,0f,target.z+sign*d);
-                Bounds body=new Bounds(feet+Vector3.up*(bodyHeight*.5f),
-                    new Vector3(bodyRadius*2f,bodyHeight,bodyRadius*2f));
-
-                Renderer blocker=art.FirstOrDefault(r=>r.bounds.Intersects(body));
-                if(blocker==null)
-                {
-                    if(d>distance+1e-3f)
-                        Debug.Log($"[Module01] El punto de la zona '{zoneId}' se aparto "+
-                            $"{(d-distance)*100f:F0} cm ({distance:F2} -> {d:F2} m) para no quedar dentro del arte.");
-                    return d;
-                }
-
-                if(d+step>maxDistance)
-                {
-                    Debug.LogWarning($"[Module01] En la zona '{zoneId}' no hay sitio despejado entre "+
-                        $"{distance:F2} y {maxDistance:F2} m: a {d:F2} m el aprendiz sigue dentro de "+
-                        $"'{blocker.name}'. Hay que mover ese objeto en la escena.");
-                    return d;
-                }
-            }
-            return distance;
         }
 
         private static void PlaceCanvas(Canvas canvas)

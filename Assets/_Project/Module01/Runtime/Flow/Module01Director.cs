@@ -89,6 +89,12 @@ namespace RideSafe.Module01
 
         private void OnDisable() => Unsubscribe();
 
+        private void OnDestroy()
+        {
+            if (_catalog != null)
+                ReleaseVehicleViews();
+        }
+
         public void Begin()
         {
             if (_catalog == null || _runner == null)
@@ -97,13 +103,19 @@ namespace RideSafe.Module01
                 return;
             }
 
-            _personalZones.Clear();
+            VehicleProfileSO vehicle = SelectedVehicle;
+            string vehicleValue = vehicle != null ? vehicle.VehicleContextValue : null;
+
+            // Con lo que aplica al vehículo elegido y nada más: la alforja no aparece con el
+            // scooter ni la mochila con la e-bike (hoja, «Aplicabilidad»). Filtrar aquí, al armar
+            // la vuelta, es lo que hace que el recorrido, la nota y el reporte cuadren solos.
+            ReleaseVehicleViews();
             foreach (ZoneSO zone in _catalog.Zones)
                 if (zone != null)
-                    _personalZones.Add(zone);
+                    _personalZones.Add(zone.ForVehicle(vehicleValue));
+            ShowOnlyItemsFor(vehicleValue);
 
             _vehicleZones.Clear();
-            VehicleProfileSO vehicle = SelectedVehicle;
             if (vehicle != null)
             {
                 foreach (ZoneSO zone in vehicle.InspectionZones)
@@ -121,6 +133,35 @@ namespace RideSafe.Module01
 
             Subscribe();
             Advance();
+        }
+
+        /// <summary>Suelta las copias por vehículo de la vuelta anterior; las zonas del catálogo se quedan.</summary>
+        private void ReleaseVehicleViews()
+        {
+            HashSet<ZoneSO> assets = new HashSet<ZoneSO>(_catalog.Zones);
+            foreach (ZoneSO zone in _personalZones)
+                if (zone != null && !assets.Contains(zone))
+                {
+                    if (Application.isPlaying) Destroy(zone);
+                    else DestroyImmediate(zone);
+                }
+            _personalZones.Clear();
+        }
+
+        /// <summary>
+        /// Enciende en el garaje los EPP que aplican al vehículo y apaga los que no: elegir el
+        /// scooter esconde la alforja de la mesa, no solo la saca de la nota.
+        /// </summary>
+        private void ShowOnlyItemsFor(string vehicleValue)
+        {
+            Dictionary<string, bool> shows = new Dictionary<string, bool>();
+            foreach (SafetyItemSO item in _catalog.AllItems)
+                shows[item.ItemId] = item.AppliesTo(vehicleValue);
+
+            foreach (WorldObjectTaskEntity entity in FindObjectsByType<WorldObjectTaskEntity>(
+                         FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (shows.TryGetValue(entity.ItemId, out bool show) && entity.gameObject.activeSelf != show)
+                    entity.gameObject.SetActive(show);
         }
 
         private void Subscribe()

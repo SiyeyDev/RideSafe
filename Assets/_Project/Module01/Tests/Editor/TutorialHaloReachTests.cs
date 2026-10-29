@@ -33,10 +33,11 @@ namespace RideSafe.Module01.Tests
                     Transform anchor = all.First(t => t.name == "anchor_" + zone.ZoneId);
                     foreach (WorldObjectTaskEntity entity in Modelled(all, zone))
                     {
+                        // Al alcance, no a la vista: el escáner mira desde la cabeza real, y la
+                        // mochila de la mesa del centro está en el suelo, por debajo del encuadre.
                         Vector3 at = entity.GetComponentInChildren<Collider>().transform.position;
                         float distance = Vector3.Distance(anchor.position, at);
-                        if (distance > TargetScanner.MaxObjectDistance ||
-                            !TargetScanner.InView(new Pose(anchor.position, anchor.rotation), at))
+                        if (distance > TargetScanner.MaxObjectDistance)
                             far.Add($"{zone.ZoneId}/{entity.ItemId} at {distance:0.00} m");
                     }
                 }

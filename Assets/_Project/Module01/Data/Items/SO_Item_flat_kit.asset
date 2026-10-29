@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_FlatKit
   _riskKey: M1/Item_FlatKit_Risk
   _category: 2
-  _displayPrefab: {fileID: 919132149155446097, guid: 5fd67ac1bd9afdf4f95b93255968082a, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: 2d0412345b5434f4097d56f5468ffe78, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 2
   _hazardGroup: 
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: ebike
+  _substitutesFor: 

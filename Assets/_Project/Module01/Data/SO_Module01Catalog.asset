@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: SO_Module01Catalog
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.Module01CatalogSO
   _zones:
-  - {fileID: 11400000, guid: 7f2eef71aa1a9b647a9f66b3eefc677c, type: 2}
-  - {fileID: 11400000, guid: 51e569f8f7969f544be97dbbdabdd0f5, type: 2}
-  - {fileID: 11400000, guid: b24ee94928d15cc4f957f284f49db937, type: 2}
+  - {fileID: 11400000, guid: dcbc03c5daf4d8347811e9b9ff7af8cb, type: 2}
+  - {fileID: 11400000, guid: d62fcbdbd98cab2419e4c3950bd39640, type: 2}
+  - {fileID: 11400000, guid: b995a0883da8fd442bb21335b663ecee, type: 2}
+  - {fileID: 11400000, guid: 58a45466db8d5b645bd56a5f840c0532, type: 2}

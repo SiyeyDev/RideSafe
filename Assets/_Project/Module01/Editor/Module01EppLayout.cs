@@ -7,90 +7,35 @@ using UnityEngine;
 namespace RideSafe.Module01.Editor
 {
     /// <summary>
-    /// Reparte las tres zonas personales por el garaje y apoya los EPP de cada una sobre el
-    /// mueble que le toca.
+    /// Lo que queda por colocar en las mesas de EPP cuando el artista ya colocó los suyos: el
+    /// signo «!» de lo que aún no tiene modelo, y el punto desde el que se mira cada mesa.
     /// <para>
-    /// Antes las tres estaban en el mismo mostrador del fondo: el aprendiz se teletransportaba
-    /// tres veces para mirar siempre a la misma pared. Lo pidió Charlie el 2026-10-14 —«tenemos
-    /// un entorno bonito, podemos usarlo»—. Qué mueble le toca a cada zona es dato, en
-    /// <see cref="Module01Stations"/>; la aritmética de la fila y del punto de vista es
-    /// <see cref="StationLayout"/>, que se afirma sin abrir una escena. Aquí solo queda
-    /// aplicarlo a la escena abierta y apartar lo que estorbe.
+    /// Hasta el 2026-10-27 esto repartía todos los EPP en fila sobre un mueble por mesa y
+    /// apartaba el decorado que estorbaba. Ahora los EPP van donde los dejó el artista
+    /// (<see cref="Module01ArtEpp"/>) y aquí <b>no se mueve nada suyo</b>: solo lo que este
+    /// proyecto instancia, y solo a huecos libres.
     /// </para>
     /// <para>
-    /// <b>El ancla de cada zona deja de estar escrita a mano:</b> se deriva del grupo que acaba
-    /// de colocarse, a la distancia y altura de siempre, por el lado libre que declara la
-    /// estación. Antes eran tres posiciones fijas en fila, que es justo lo que amarraba las tres
-    /// zonas al mismo mueble.
-    /// </para>
-    /// <para>
-    /// Los muebles <b>no tienen collider</b> —ni uno—, así que la altura de la tapa no se puede
-    /// sondear con física y la oclusión no se puede comprobar con un rayo: contesta «despejado»
-    /// y miente. Las tapas son dato medido y el despeje se hace comparando cajas.
+    /// Los muebles <b>no tienen collider</b>, así que no se sondea con física: se comparan cajas
+    /// de renderers, que es lo que de verdad ocupa sitio.
     /// </para>
     /// </summary>
     public static class Module01EppLayout
     {
         private const string CatalogAsset = "Assets/_Project/Module01/Data/SO_Module01Catalog.asset";
         private const string AnchorsRoot = "Module01_Anchors";
+        private const string SpawnedRoot = "Module01_Spawned";
+        private const string ArtFolder = "Assets/_Project/Models/";
 
-        /// <summary>Lo que hay que dejar libre entre el aprendiz y su estación.</summary>
-        private const float CorridorMargin = .30f;
-
-        /// <summary>Hasta qué altura estorba de verdad. Por encima están las luces del techo.</summary>
-        private const float EyeBand = 1.75f;
-
-        /// <summary>Hueco entre el mueble y lo que se planta de pie en el suelo delante de él.</summary>
-        private const float FloorStandoff = .30f;
-
-        /// <summary>Por encima de esto ya no es un prop: es mobiliario, un muro o el suelo.</summary>
+        /// <summary>Por encima de esto no es un objeto: es el suelo, un muro o el techo.</summary>
         private const float PropSizeLimit = 8f;
 
-        /// <summary>
-        /// El objeto que hay que mover para apartar esta malla: el ancestro más alto que
-        /// <b>sigue siendo un prop</b>.
-        /// <para>
-        /// Se sube mientras el ancestro quepa en <see cref="PropSizeLimit"/>, así que un
-        /// contenedor grande —<c>epps</c>, el garaje entero— corta la subida y no se mueve media
-        /// escena por apartar una linterna. Sin esto se movían los hijos por separado y los
-        /// modelos de varias piezas se partían.
-        /// </para>
-        /// </summary>
-        private static Transform PropRoot(Transform mesh, GameObject surface)
-        {
-            Transform mejor = mesh;
-            for (Transform t = mesh.parent; t != null; t = t.parent)
-            {
-                if (surface != null && t == surface.transform) break;
-                Bounds? b = WorldBounds(t);
-                if (b == null || b.Value.size.magnitude > PropSizeLimit) break;
-                mejor = t;
-            }
-            return mejor;
-        }
-
-        /// <summary>La caja de todas las mallas visibles que cuelgan de este objeto.</summary>
-        private static Bounds? WorldBounds(Transform t)
-        {
-            Renderer[] rs = t.GetComponentsInChildren<Renderer>(false);
-            if (rs.Length == 0) return null;
-            Bounds b = rs[0].bounds;
-            foreach (Renderer r in rs) b.Encapsulate(r.bounds);
-            return b;
-        }
-
-        private static Bounds Encapsulated(Bounds a, Bounds b)
-        {
-            a.Encapsulate(b);
-            return a;
-        }
-
-        [MenuItem("RideSafe/Módulo 1/Repartir las estaciones de EPP por el garaje")]
+        [MenuItem("RideSafe/Módulo 1/Colocar los signos y el punto de vista de las mesas de EPP")]
         public static void LayoutOpenScene()
         {
             if (EditorApplication.isPlaying)
             {
-                Debug.LogError("[Module01] Sal de Play antes de recolocar los EPP.");
+                Debug.LogError("[Module01] Sal de Play antes de colocar las mesas.");
                 return;
             }
 
@@ -107,198 +52,375 @@ namespace RideSafe.Module01.Editor
                     .GroupBy(e => e.ItemId)
                     .ToDictionary(g => g.Key, g => g.First());
 
-            int done = 0;
-            foreach (ZoneSO zone in catalog.Zones)
-            {
-                if (zone != null && LayoutZone(zone, byId))
-                    done++;
-            }
+            List<ZoneSO> zones = catalog.Zones.Where(z => z != null).ToList();
+            foreach (ZoneSO zone in zones)
+                PlaceLoose(zone, Mine(zone, byId));
 
-            // El collider de cada EPP es local y los objetos se han movido: hay que reajustarlo
-            // o el clic queda desplazado respecto a lo que se ve.
-            Module01SceneEntities.Apply();
+            // Las cajas de los colliders van con retraso respecto a los transforms recién movidos.
+            Physics.SyncTransforms();
+            List<Bounds> blocked = Obstacles();
+            Bounds floor = GarageFloor();
+            foreach (ZoneSO zone in zones)
+                PlaceViewPoint(zone, Mine(zone, byId), blocked, floor);
 
+            RevealLoose(zones, byId);
+            // Con todo en su sitio: quién se pulsa por su forma y quién por su caja depende de
+            // lo que tenga al lado.
+            Module01SceneEntities.FitClickShapes();
+            Physics.SyncTransforms();
+            ReportHidden(zones, byId);
+            RemoveRetiredAnchors(zones);
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-            Debug.Log($"[Module01] {done} estaciones repartidas por el garaje.");
         }
 
-        private static bool LayoutZone(ZoneSO zone, Dictionary<string, WorldObjectTaskEntity> byId)
+        /// <summary>
+        /// Quita las anclas de zonas que ya no existen: las de las tres mesas del Excel desde que
+        /// las paradas son muebles, y las de las estaciones de antes. Quedan las de las paradas,
+        /// las del vehículo y la de su punto de exhibición.
+        /// </summary>
+        private static void RemoveRetiredAnchors(List<ZoneSO> zones)
         {
+            GameObject root = Find(AnchorsRoot);
+            if (root == null)
+                return;
+            HashSet<string> alive = new HashSet<string>(zones.Select(z => "anchor_" + z.ZoneId)
+                .Concat(VehicleProfiles.AllInspectionZones().Select(z => "anchor_" + z.ZoneId))
+                .Append("anchor_" + Module01Director.VehicleAnchorId));
+            foreach (Transform anchor in root.transform.Cast<Transform>().ToList())
+                if (!alive.Contains(anchor.name))
+                {
+                    Debug.Log($"[Module01] Fuera '{anchor.name}': su zona ya no existe.");
+                    Undo.DestroyObjectImmediate(anchor.gameObject);
+                }
+        }
+
+        /// <summary>
+        /// Lo que, con todo colocado, sigue sin verse desde el ancla de su mesa: un EPP que el
+        /// artista dejó detrás de otra cosa, o un signo que no encontró hueco a la vista.
+        /// </summary>
+        private static void ReportHidden(List<ZoneSO> zones, Dictionary<string, WorldObjectTaskEntity> byId)
+        {
+            Physics.SyncTransforms();
+            List<Bounds> occluders = Occluders(null);
+            foreach (ZoneSO zone in zones)
+            {
+                Transform anchor = Find("anchor_" + zone.ZoneId)?.transform;
+                if (anchor == null)
+                    continue;
+                List<string> hidden = Mine(zone, byId)
+                    .Where(e => TryBounds(e.gameObject, out Bounds b)
+                                && StationLayout.Hidden(anchor.position, new List<Bounds> { Clickable(e, b) }, occluders) > 0)
+                    .Select(e => $"{e.ItemId} ({e.name})").ToList();
+                if (hidden.Count > 0)
+                    Debug.LogWarning($"[Module01] Desde el ancla de '{zone.ZoneId}' no se ve entero: " +
+                                     string.Join(", ", hidden) + ".");
+            }
+        }
+
+        private static List<WorldObjectTaskEntity> Mine(ZoneSO zone, Dictionary<string, WorldObjectTaskEntity> byId) =>
+            zone.Items.Where(i => i != null && byId.ContainsKey(i.ItemId)).Select(i => byId[i.ItemId]).ToList();
+
+        /// <summary>Lo de la mesa que instancia este proyecto, no el artista: los signos «!».</summary>
+        private static List<WorldObjectTaskEntity> LooseOf(List<WorldObjectTaskEntity> mine) =>
+            mine.Where(IsLoose).ToList();
+
+        private static bool IsLoose(WorldObjectTaskEntity e)
+        {
+            GameObject spawnedRoot = Find(SpawnedRoot);
+            return spawnedRoot != null && e.transform.IsChildOf(spawnedRoot.transform);
+        }
+
+        /// <summary>Los muebles de la mesa que están en la escena y cuya tapa cuadra.</summary>
+        private static List<(Surface Surface, GameObject Go, Bounds Box)> Tops(ZoneSO zone)
+        {
+            var tops = new List<(Surface, GameObject, Bounds)>();
             if (!Module01Stations.TryGet(zone.ZoneId, out Station station))
             {
-                Debug.LogWarning(
-                    $"[Module01] La zona '{zone.ZoneId}' no tiene estación declarada en " +
-                    "Module01Stations; sus EPP se quedan donde el arte los dejó.");
-                return false;
+                Debug.LogWarning($"[Module01] La zona '{zone.ZoneId}' no tiene mueble declarado en Module01Stations; " +
+                                 "sus signos se quedan donde estén.");
+                return tops;
             }
+            foreach (Surface s in station.Surfaces)
+                if (TryTop(zone.ZoneId, s, out GameObject go, out Bounds box))
+                    tops.Add((s, go, box));
+            return tops;
+        }
 
-            GameObject surfaceGo = Find(station.SurfaceName);
-            if (surfaceGo == null || !TryBounds(surfaceGo, out Bounds surface))
+        /// <summary>
+        /// Lo que ocupa sitio en los muebles. El mueble mismo no cuenta: su caja incluye las
+        /// alacenas de encima de la tapa, y un signo cabe debajo de ellas.
+        /// </summary>
+        private static List<Bounds> Occupied(List<(Surface Surface, GameObject Go, Bounds Box)> tops,
+            List<WorldObjectTaskEntity> except) =>
+            Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
+                .Where(r => r.enabled && r.bounds.size.magnitude <= PropSizeLimit
+                            && r.GetComponentInParent<Canvas>() == null
+                            && !tops.Any(t => r.transform.IsChildOf(t.Go.transform))
+                            && !except.Any(e => r.transform.IsChildOf(e.transform)))
+                .Select(r => r.bounds).ToList();
+
+        /// <summary>
+        /// Lleva los signos «!» de la mesa a huecos libres de su mueble, lo más cerca posible de
+        /// lo que el artista puso de esa mesa.
+        /// </summary>
+        private static void PlaceLoose(ZoneSO zone, List<WorldObjectTaskEntity> mine)
+        {
+            List<WorldObjectTaskEntity> loose = LooseOf(mine);
+            if (loose.Count == 0)
+                return;
+            var tops = Tops(zone);
+            if (tops.Count == 0)
+                return;
+
+            List<WorldObjectTaskEntity> placed = mine.Except(loose).ToList();
+            Vector3 near = placed.Count > 0 && TryBounds(placed.Select(e => e.gameObject), out Bounds group)
+                ? group.center
+                : tops[0].Box.center;
+            List<Bounds> occupied = Occupied(tops, loose);
+
+            foreach (WorldObjectTaskEntity entity in loose)
             {
-                Debug.LogError(
-                    $"[Module01] La zona '{zone.ZoneId}' apunta al mueble '{station.SurfaceName}', " +
-                    "que no está en la escena o no tiene malla. Esa estación se queda sin montar.");
+                if (!TryBounds(entity.gameObject, out Bounds box))
+                    continue;
+                if (!TryFirstSpot(tops, Clickable(entity, box).size, occupied, near, _ => true, out Vector3 spot, out Bounds used))
+                {
+                    Debug.LogWarning($"[Module01] No queda hueco libre en los muebles de '{zone.ZoneId}' para " +
+                                     $"'{entity.ItemId}'; se queda donde está.");
+                    continue;
+                }
+                Move(entity, spot, occupied, used);
+            }
+        }
+
+        /// <summary>
+        /// Con las anclas puestas, cada signo vuelve a buscar sitio: uno que se vea desde el ancla de
+        /// su mesa y que no tape nada que antes se viera desde <b>ninguna</b> ancla. El más cercano a
+        /// su grupo quedaba detrás del chaleco del artista, o delante del signo de otra mesa.
+        /// </summary>
+        private static void RevealLoose(List<ZoneSO> zones, Dictionary<string, WorldObjectTaskEntity> byId)
+        {
+            Physics.SyncTransforms();
+            var views = new List<(ZoneSO Zone, Vector3 Eye, List<WorldObjectTaskEntity> Mine)>();
+            foreach (ZoneSO zone in zones)
+            {
+                Transform anchor = Find("anchor_" + zone.ZoneId)?.transform;
+                if (anchor != null)
+                    views.Add((zone, anchor.position, Mine(zone, byId)));
+            }
+            List<WorldObjectTaskEntity> allLoose = views.SelectMany(v => LooseOf(v.Mine)).ToList();
+            List<Bounds> fixedOccluders = Occluders(allLoose);
+            var where = new Dictionary<WorldObjectTaskEntity, Bounds>();
+            foreach (WorldObjectTaskEntity e in allLoose)
+                if (TryBounds(e.gameObject, out Bounds b))
+                    where[e] = Clickable(e, b);
+
+            foreach ((ZoneSO zone, Vector3 eye, List<WorldObjectTaskEntity> mine) in views)
+            {
+                var tops = Tops(zone);
+                if (tops.Count == 0)
+                    continue;
+                foreach (WorldObjectTaskEntity entity in LooseOf(mine))
+                {
+                    if (!where.TryGetValue(entity, out Bounds box))
+                        continue;
+                    where.Remove(entity);
+                    List<Bounds> occupied = Occupied(tops, allLoose).Concat(where.Values).ToList();
+                    List<Bounds> around = fixedOccluders.Concat(where.Values).ToList();
+                    int before = TotalHidden(views, where, around, null);
+
+                    bool Shows(Vector3 c)
+                    {
+                        Bounds at = new Bounds(c, box.size);
+                        // Fuera de la burbuja de foco de su ancla, como todo lo de la mesa. El alcance
+                        // del halo del tutorial no cuenta: un signo no tiene malla que delinear.
+                        return Vector3.Distance(eye, at.ClosestPoint(eye)) >= Module01Stations.ViewDistance
+                               && StationLayout.Hidden(eye, new List<Bounds> { at }, around) == 0
+                               && TotalHidden(views, where, around, (entity, at)) <= before;
+                    }
+
+                    if (TryFirstSpot(tops, box.size, occupied, box.center, Shows, out Vector3 spot, out Bounds used))
+                        box = Move(entity, spot, occupied, used);
+                    else
+                        Debug.LogWarning($"[Module01] Ningún hueco de '{zone.ZoneId}' deja '{entity.ItemId}' a la vista " +
+                                         "sin tapar otra cosa; se queda donde estaba.");
+                    where[entity] = box;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cuántos elementos quedan tapados sumando todas las anclas, con los signos donde dice
+        /// <paramref name="loose"/> y, si se da, <paramref name="moving"/> en su sitio de prueba.
+        /// </summary>
+        private static int TotalHidden(List<(ZoneSO Zone, Vector3 Eye, List<WorldObjectTaskEntity> Mine)> views,
+            Dictionary<WorldObjectTaskEntity, Bounds> loose, List<Bounds> around,
+            (WorldObjectTaskEntity Entity, Bounds At)? moving)
+        {
+            List<Bounds> occluders = moving == null ? around : around.Append(moving.Value.At).ToList();
+            int hidden = 0;
+            foreach ((ZoneSO _, Vector3 eye, List<WorldObjectTaskEntity> mine) in views)
+            {
+                List<Bounds> targets = new List<Bounds>();
+                foreach (WorldObjectTaskEntity e in mine)
+                {
+                    if (loose.TryGetValue(e, out Bounds b))
+                        targets.Add(b);
+                    else if (moving != null && e == moving.Value.Entity)
+                        targets.Add(moving.Value.At);
+                    else if (!IsLoose(e) && TryBounds(e.gameObject, out Bounds art))
+                        targets.Add(Clickable(e, art));
+                }
+                hidden += StationLayout.Hidden(eye, targets, occluders);
+            }
+            return hidden;
+        }
+
+        /// <summary>El primer hueco libre de los muebles, en orden, que cumpla <paramref name="accept"/>.</summary>
+        private static bool TryFirstSpot(List<(Surface Surface, GameObject Go, Bounds Box)> tops, Vector3 size,
+            List<Bounds> occupied, Vector3 near, System.Func<Vector3, bool> accept, out Vector3 spot, out Bounds used)
+        {
+            foreach ((Surface s, GameObject _, Bounds top) in tops)
+                foreach (Vector3 c in StationLayout.FreeCandidates(top, s.WorktopHeight, size, occupied, near))
+                    if (accept(c))
+                    {
+                        spot = c;
+                        used = top;
+                        return true;
+                    }
+            spot = default;
+            used = default;
+            return false;
+        }
+
+        /// <summary>Lleva el signo al hueco y deja ocupado su tramo del mueble.</summary>
+        private static Bounds Move(WorldObjectTaskEntity entity, Vector3 spot, List<Bounds> occupied, Bounds top)
+        {
+            TryBounds(entity.gameObject, out Bounds box);
+            box = Clickable(entity, box);
+            Undo.RecordObject(entity.transform, "Colocar signo");
+            entity.transform.position += spot - box.center;
+            occupied.Add(DepthColumn(top, spot, box.size));
+            return new Bounds(spot, box.size);
+        }
+
+        /// <summary>
+        /// Lo que un signo deja ocupado: su tramo del mueble <b>en todo el fondo</b>. Otro signo
+        /// justo detrás, en el mismo tramo, quedaría tapado por este desde donde se mira la mesa
+        /// —pasó con los de «Visibilidad y control» en la captura del 2026-10-27—.
+        /// </summary>
+        private static Bounds DepthColumn(Bounds top, Vector3 spot, Vector3 size)
+        {
+            bool alongX = top.size.x >= top.size.z;
+            return new Bounds(
+                new Vector3(alongX ? spot.x : top.center.x, spot.y, alongX ? top.center.z : spot.z),
+                new Vector3(alongX ? size.x : top.size.x, size.y, alongX ? top.size.z : size.z));
+        }
+
+        /// <summary>El mueble en la escena, si está y su tapa declarada cae dentro de él.</summary>
+        private static bool TryTop(string zoneId, Surface surface, out GameObject go, out Bounds box)
+        {
+            box = default;
+            go = Find(surface.Name);
+            if (go == null || !TryBounds(go, out box))
+            {
+                Debug.LogError($"[Module01] La zona '{zoneId}' apunta al mueble '{surface.Name}', " +
+                               "que no está en la escena o no tiene malla.");
                 return false;
             }
 
             // Una tapa declarada que cae fuera del mueble significa que el arte cambió y el
             // dato se quedó viejo. Es la única forma de enterarse: no hay collider que sondear.
-            if (station.WorktopHeight < surface.min.y - .05f || station.WorktopHeight > surface.max.y + .05f)
+            if (surface.WorktopHeight < box.min.y - .05f || surface.WorktopHeight > box.max.y + .05f)
             {
-                Debug.LogError(
-                    $"[Module01] La tapa declarada de '{zone.ZoneId}' está en y={station.WorktopHeight:F2}, " +
-                    $"fuera de la caja de '{station.SurfaceName}' (y de {surface.min.y:F2} a {surface.max.y:F2}). " +
-                    "El mueble ha cambiado: hay que volver a medirla.");
+                Debug.LogError($"[Module01] La tapa declarada de '{surface.Name}' está en y={surface.WorktopHeight:F2}, " +
+                               $"fuera de su caja (y de {box.min.y:F2} a {box.max.y:F2}). El mueble ha " +
+                               "cambiado: hay que volver a medirla.");
                 return false;
             }
-
-            List<(WorldObjectTaskEntity Entity, Bounds Box)> plan = new List<(WorldObjectTaskEntity, Bounds)>();
-            foreach (SafetyItemSO item in zone.Items)
-            {
-                if (item == null || !byId.TryGetValue(item.ItemId, out WorldObjectTaskEntity entity))
-                    continue;
-                if (!TryBounds(entity.gameObject, out Bounds box))
-                {
-                    Debug.LogWarning($"[Module01] '{item.ItemId}' no tiene renderer; no se recoloca.");
-                    continue;
-                }
-                plan.Add((entity, box));
-            }
-
-            if (plan.Count == 0)
-            {
-                Debug.LogWarning($"[Module01] La zona '{zone.ZoneId}' no tiene ningún EPP en la escena.");
-                return false;
-            }
-
-            List<Vector3> sizes = plan.Select(p => p.Box.size).ToList();
-
-            // El hueco declarado es un maximo comodo: si la fila no entra, se aprieta hasta el
-            // minimo legible antes de dejarla colgando por los lados. Con los pantalones
-            // doblados y los dos pares, la ropa pide mas de lo que da la mesa al hueco de
-            // siempre, y apretar es mejor que que las botas floten fuera de la tapa.
-            float gap = StationLayout.FittingGap(surface, station.Axis, sizes, Module01Stations.Gap);
-            float span = StationLayout.Span(sizes, station.Axis, gap);
-            float room = station.Axis == StationAxis.X ? surface.size.x : surface.size.z;
-
-            Vector3[] spots;
-            string forma;
-            if (span <= room)
-            {
-                spots = StationLayout.Arrange(surface, station.WorktopHeight, station.Axis, sizes, gap);
-                forma = "una fila";
-            }
-            else
-            {
-                // No cabe en una sola fila, asi que se usa el FONDO de la tapa: lo plano
-                // delante y lo alto detras. Lo plano no puede tapar nada -5 cm de canto- y la
-                // alternativa es dejar la fila colgando por los lados, que es lo que pasaba.
-                spots = ArrangeTwoRanks(surface, station, sizes, out gap, out span, out int delante);
-                forma = $"dos filas ({delante} planos delante)";
-            }
-
-            if (span > room)
-                Debug.LogWarning(
-                    $"[Module01] Los {plan.Count} elementos de '{zone.ZoneId}' miden {span:F2} m y " +
-                    $"'{station.SurfaceName}' solo da {room:F2} m, ya en {forma} y con el hueco " +
-                    $"apretado a {gap:F2}: van a colgar por los lados.");
-
-            float floorY = GarageFloorTop();
-            for (int i = 0; i < plan.Count; i++)
-            {
-                // Lo que no cabe de pie sobre la tapa -los pantalones miden mas de un metro- se
-                // planta en el suelo, conservando su hueco en la fila para no tapar a nadie.
-                if (StationLayout.StandsOnFloor(sizes[i]))
-                    spots[i] = StationLayout.OnFloor(
-                        spots[i], sizes[i], surface, floorY, station.Outward, FloorStandoff);
-
-                // Se mueve por la diferencia entre el centro visible y el destino, no se asigna
-                // la posición: el pivote de un FBX casi nunca está en el centro de la malla, y
-                // asignarla lo deja descolocado y hundido.
-                Undo.RecordObject(plan[i].Entity.transform, "Repartir EPP");
-                plan[i].Entity.transform.position += spots[i] - plan[i].Box.center;
-            }
-
-            Bounds group = new Bounds(spots[0], sizes[0]);
-            for (int i = 1; i < spots.Length; i++)
-                group.Encapsulate(new Bounds(spots[i], sizes[i]));
-
-            Pose pose = StationLayout.ViewPoint(
-                group, station.Outward, Module01Stations.ViewDistance, Module01Stations.EyeHeight,
-                Module01Stations.HudClearance);
-            PlaceAnchor(zone.ZoneId, pose);
-            ClearCorridor(zone.ZoneId, group, station.Outward, pose.position, surfaceGo);
-
-            Debug.Log(
-                $"[Module01] '{zone.ZoneId}' -> {station.SurfaceName}: {plan.Count} elementos sobre " +
-                $"y={station.WorktopHeight:F3}, {forma}, {span:F2} m de los {room:F2} que da el " +
-                $"mueble, hueco {gap:F2}, ancla en {pose.position:F2}.");
+            box = surface.Clip(box);
             return true;
         }
 
         /// <summary>
-        /// Reparte en <b>dos filas</b>: lo plano delante, hacia el aprendiz, y lo alto detras.
-        /// <para>
-        /// Es lo que permite meter ocho elementos en una mesa de 2.62 m. El orden importa y es
-        /// este y no el contrario: un elemento plano delante de uno alto no lo tapa —la vista y
-        /// el rayo del clic le pasan por encima—, mientras que el chaleco, que mide 60 cm,
-        /// esconderia detras de si un pantalon doblado de 5 cm.
-        /// </para>
-        /// <para>
-        /// Cada fila se coloca con <see cref="StationLayout.Arrange"/> sobre la misma tapa
-        /// corrida en profundidad, de modo que la aritmetica de centrado y de huecos es la misma
-        /// y no hay una segunda version que se pueda desincronizar.
-        /// </para>
+        /// Planta el ancla de la parada de frente a su mueble y centrada en él (ver
+        /// <see cref="StationLayout.TryFrontView"/>).
         /// </summary>
-        private static Vector3[] ArrangeTwoRanks(
-            Bounds surface, Station station, List<Vector3> sizes,
-            out float gap, out float span, out int flatCount)
+        private static void PlaceViewPoint(ZoneSO zone, List<WorldObjectTaskEntity> mine, List<Bounds> blocked, Bounds floor)
         {
-            List<int> planos = new List<int>();
-            List<int> altos = new List<int>();
-            for (int i = 0; i < sizes.Count; i++)
+            var tops = Tops(zone);
+            if (tops.Count == 0)
+                return;
+            Bounds furniture = tops[0].Box;
+            foreach (var top in tops)
+                furniture.Encapsulate(top.Box);
+
+            // Solo lo del artista: los signos se recolocan después a la distancia de la burbuja.
+            List<Bounds> items = new List<Bounds>();
+            foreach (WorldObjectTaskEntity e in mine.Where(e => !IsLoose(e)))
+                if (TryBounds(e.gameObject, out Bounds b))
+                    items.Add(Clickable(e, b));
+
+            if (!StationLayout.TryFrontView(furniture, items, blocked, floor,
+                    Module01Stations.ViewDistance, Module01Stations.EyeHeight, out Pose pose))
             {
-                if (StationLayout.IsFlat(sizes[i]))
-                    planos.Add(i);
-                else
-                    altos.Add(i);
+                Debug.LogError($"[Module01] Delante de '{tops[0].Surface.Name}' no hay sitio libre dentro del garaje " +
+                               $"para mirar '{zone.ZoneId}' de frente.");
+                return;
             }
 
-            flatCount = planos.Count;
-
-            float fondo = station.Axis == StationAxis.X ? surface.size.z : surface.size.x;
-            float corrimiento = fondo * StationLayout.RankOffset;
-
-            Bounds detras = StationLayout.Rank(surface, station.Outward, -corrimiento);
-            Bounds delante = StationLayout.Rank(surface, station.Outward, corrimiento);
-
-            Vector3[] spots = new Vector3[sizes.Count];
-            gap = Module01Stations.Gap;
-            span = 0f;
-
-            // La fila de atras manda en el hueco y en el ancho, que es la que va justa.
-            foreach ((List<int> fila, Bounds tapa) in new[] { (altos, detras), (planos, delante) })
-            {
-                if (fila.Count == 0)
-                    continue;
-
-                List<Vector3> tam = fila.Select(i => sizes[i]).ToList();
-                float g = StationLayout.FittingGap(tapa, station.Axis, tam, Module01Stations.Gap);
-                float s = StationLayout.Span(tam, station.Axis, g);
-
-                Vector3[] sitios = StationLayout.Arrange(
-                    tapa, station.WorktopHeight, station.Axis, tam, g);
-
-                for (int k = 0; k < fila.Count; k++)
-                    spots[fila[k]] = sitios[k];
-
-                if (s > span) { span = s; gap = g; }
-            }
-
-            return spots;
+            PlaceAnchor(zone.ZoneId, pose);
+            Debug.Log($"[Module01] '{zone.ZoneId}': {items.Count} elementos, ancla en {pose.position:F2} " +
+                      $"mirando a {pose.rotation.eulerAngles.y:F0}°.");
         }
 
-        /// <summary>Crea o recoloca <c>anchor_&lt;zona&gt;</c> con la pose derivada del grupo.</summary>
+        /// <summary>
+        /// Lo que ocupa el elemento para el clic: lo que se ve y su collider, que es más grueso a
+        /// propósito (6 cm como mínimo) y es lo que de verdad intercepta el rayo del puntero.
+        /// </summary>
+        private static Bounds Clickable(WorldObjectTaskEntity entity, Bounds visible)
+        {
+            foreach (Collider c in entity.GetComponentsInChildren<Collider>(false))
+                if (c.enabled)
+                    visible.Encapsulate(c.bounds);
+            return visible;
+        }
+
+        /// <summary>
+        /// Donde no se puede plantar el aprendiz: el mobiliario, los EPP y los vehículos —también
+        /// el que está apagado, que se enciende al elegirlo—. Solo arte importado: la UI y el
+        /// propio jugador no ocupan sitio en el suelo.
+        /// </summary>
+        private static List<Bounds> Obstacles() =>
+            Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .Where(r => r.bounds.size.magnitude <= PropSizeLimit && IsArt(r))
+                .Select(r => r.bounds).ToList();
+
+        /// <summary>
+        /// Lo que puede tapar un EPP: los objetos encendidos del arte que caben en
+        /// <see cref="OccluderSizeLimit"/>. Los muebles no: cada uno es un solo renderer cuya caja
+        /// incluye las alacenas, y envuelve justo lo que tiene encima.
+        /// </summary>
+        private static List<Bounds> Occluders(List<WorldObjectTaskEntity> except) =>
+            Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
+                .Where(r => r.enabled && r.bounds.size.magnitude <= OccluderSizeLimit && IsArt(r))
+                .Select(r => r.bounds)
+                .Concat(Object.FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
+                    .Where(e => except == null || !except.Contains(e))
+                    .SelectMany(e => e.GetComponentsInChildren<Collider>(false))
+                    .Where(c => c.enabled).Select(c => c.bounds))
+                .ToList();
+
+        /// <summary>Lo más grande que cuenta como objeto que tapa: el gazón mide 1,76 y una mesa 4,1.</summary>
+        private const float OccluderSizeLimit = 2f;
+
+        private static bool IsArt(Renderer r)
+        {
+            Mesh mesh = r is SkinnedMeshRenderer s ? s.sharedMesh
+                : r.TryGetComponent(out MeshFilter f) ? f.sharedMesh : null;
+            return mesh != null && AssetDatabase.GetAssetPath(mesh).StartsWith(ArtFolder);
+        }
+
+        /// <summary>Crea o recoloca <c>anchor_&lt;zona&gt;</c>.</summary>
         private static void PlaceAnchor(string zoneId, Pose pose)
         {
             GameObject root = Find(AnchorsRoot);
@@ -321,190 +443,12 @@ namespace RideSafe.Module01.Editor
             anchor.SetPositionAndRotation(pose.position, pose.rotation);
         }
 
-        /// <summary>
-        /// Aparta lo que el paquete de arte planta entre el aprendiz y su estación.
-        /// <para>
-        /// No se busca por nombre. El v6 ponía ahí tres maniquíes; el v7 los cambió por seis
-        /// prendas de pie. Una lista escrita a mano habría que reescribirla en cada entrega, y
-        /// entre entrega y entrega la estación queda inservible sin que nada avise.
-        /// </para>
-        /// <para>
-        /// <b>Y no se puede comprobar con física.</b> El arte llega sin colliders, así que un
-        /// <c>Raycast</c> contesta «despejado» y miente; y un solo rayo al centro tampoco vale
-        /// —medido, la línea de visión pasaba a 4 cm de una bufanda y daba por buena una
-        /// estación que en la captura no se veía—. Se compara contra la caja de cada renderer,
-        /// que es lo que de verdad ocupa sitio.
-        /// </para>
-        /// <para>
-        /// Se aparta, no se apaga: es decorado del equipo de arte, no basura.
-        /// </para>
-        /// </summary>
-        private static void ClearCorridor(
-            string zoneId, Bounds group, Vector3 outward, Vector3 eye, GameObject surface)
-        {
-            // El pasillo va de la cara del grupo que mira al aprendiz hasta sus ojos, y NO
-            // incluye la rebanada que ocupa el propio grupo.
-            //
-            // Esta distincion es todo. La primera version cogia la caja que envuelve al grupo y
-            // al ojo, y con eso aparto CATORCE herramientas del banco de la derecha -regla,
-            // martillo, machete, segueta- que no tapaban nada: estaban AL LADO de la estacion,
-            // sobre el mismo banco, no ENTRE el aprendiz y ella. Dos acabaron fuera del garaje.
-            // Vaciar el banco de herramientas es justo lo contrario de "usar el entorno".
-            bool alongX = Mathf.Abs(outward.x) > Mathf.Abs(outward.z);
-            float sign = alongX ? Mathf.Sign(outward.x) : Mathf.Sign(outward.z);
-
-            float groupNear = alongX
-                ? (sign > 0 ? group.max.x : group.min.x)
-                : (sign > 0 ? group.max.z : group.min.z);
-            float eyeAt = alongX ? eye.x : eye.z;
-
-            float from = Mathf.Min(groupNear, eyeAt);
-            float to = Mathf.Max(groupNear, eyeAt);
-
-            // A lo ancho, solo lo que se cruza con el grupo mas un margen.
-            float sideMin = (alongX ? group.min.z : group.min.x) - CorridorMargin;
-            float sideMax = (alongX ? group.max.z : group.max.x) + CorridorMargin;
-
-            // El pasillo arranca un palmo POR DELANTE de la estacion, no en su borde. Sin esto
-            // se marca lo que descansa en la misma tapa rozando el frente -un candado, una
-            // regla, un soporte-, que esta al lado y no en medio.
-            const float clearance = .25f;
-            if (sign > 0) from = Mathf.Max(from, groupNear + clearance);
-            else to = Mathf.Min(to, groupNear - clearance);
-
-            Renderer[] todos = Object.FindObjectsByType<Renderer>(
-                FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-
-            List<Renderer> estorban = todos.Where(r =>
-            {
-                if (r.GetComponentInParent<WorldObjectTaskEntity>() != null) return false;
-                if (r.GetComponentInParent<Canvas>() != null) return false;
-                // El mueble de la propia estacion toca el pasillo por definicion: no es estorbo.
-                if (surface != null && r.transform.IsChildOf(surface.transform)) return false;
-
-                Bounds b = r.bounds;
-                if (b.size.magnitude > 8f) return false;        // ni suelo, ni muros, ni techo
-                if (b.min.y > EyeBand) return false;            // las luces del techo se quedan
-                if (b.max.y < group.min.y - .25f) return false; // lo que esta por debajo no tapa
-
-                // Se mide el CENTRO, no el roce. Un objeto cuyo centro cae en el pasillo esta
-                // de verdad en medio; uno que solo lo roza con una esquina, no. Comparando
-                // cajas se marcaban catorce herramientas del banco que no tapaban nada.
-                float at = alongX ? b.center.x : b.center.z;
-                if (at < from || at > to) return false;
-
-                float side = alongX ? b.center.z : b.center.x;
-                return side > sideMin && side < sideMax;
-            }).ToList();
-
-            if (estorban.Count == 0)
-                return;
-
-            List<Renderer> ocupado = todos.Where(r =>
-                !estorban.Contains(r) && r.bounds.size.magnitude <= 8f
-                && r.GetComponentInParent<Canvas>() == null).ToList();
-
-            // Se apartan a lo largo de la pared de la estación, alejándose del grupo: es el
-            // sitio que con más probabilidad sigue siendo decorado creíble.
-            Vector3 along = new Vector3(-outward.z, 0f, outward.x);
-            List<Bounds> puestos = new List<Bounds>();
-            int moved = 0;
-
-            // Se aparta el OBJETO, no cada malla suelta. Un prop con la malla repartida en
-            // hijos —'luz grontal' la tiene en 'model_0:Mesh' y 'soporte'— se partía en dos:
-            // un hijo se iba al otro extremo del garaje y el otro se quedaba, y el modelo
-            // acababa midiendo 8,5 m. Agrupar por raíz y mover una vez lo evita.
-            Dictionary<Transform, Bounds> props = new Dictionary<Transform, Bounds>();
-            foreach (Renderer r in estorban)
-            {
-                Transform raiz = PropRoot(r.transform, surface);
-                props[raiz] = props.TryGetValue(raiz, out Bounds acum)
-                    ? Encapsulated(acum, r.bounds)
-                    : r.bounds;
-            }
-
-            foreach (KeyValuePair<Transform, Bounds> prop in props)
-            {
-                Transform raiz = prop.Key;
-                Bounds caja = WorldBounds(raiz) ?? prop.Value;
-
-                if (!TryFindSpot(caja, group.center, along, ocupado, puestos, out Vector3 destino))
-                {
-                    Debug.LogWarning(
-                        $"[Module01] '{raiz.name}' tapa la estación '{zoneId}' y no he encontrado sitio " +
-                        "libre donde apartarlo. Se queda donde está: hay que moverlo a mano.");
-                    continue;
-                }
-
-                Undo.RecordObject(raiz, "Apartar de la estacion");
-                raiz.position += destino - caja.center;
-                puestos.Add(new Bounds(destino, caja.size));
-                moved++;
-
-                Debug.LogWarning(
-                    $"[Module01] '{raiz.name}' estaba entre el aprendiz y la estación '{zoneId}'. " +
-                    $"Apartado a {destino:F2}. Conviene que el equipo de arte no lo coloque ahí " +
-                    "en la próxima entrega.");
-            }
-
-            if (moved > 0)
-                Debug.Log($"[Module01] {moved} objetos de decorado apartados del frente de '{zoneId}'.");
-        }
-
-        /// <summary>
-        /// Busca un hueco libre alejándose del grupo a lo largo de la pared.
-        /// <para>
-        /// Hace falta buscar y no calcular: la primera versión dejaba las prendas en una fila a
-        /// intervalos fijos y cuatro de las seis acabaron metidas dentro de la estantería. Un
-        /// sitio «libre» hay que comprobarlo contra lo que ya hay y contra lo que acabamos de
-        /// poner, o se apilan entre ellas.
-        /// </para>
-        /// </summary>
-        private static bool TryFindSpot(Bounds piece, Vector3 from, Vector3 along,
-            List<Renderer> ocupado, List<Bounds> puestos, out Vector3 spot)
-        {
-            const float step = .25f, margin = .08f, reach = 9f;
-            Bounds garaje = GarageFloor();
-
-            for (float d = 1f; d <= reach; d += step)
-            {
-                foreach (int sign in new[] { 1, -1 })
-                {
-                    Vector3 candidate = from + along * (d * sign);
-                    spot = new Vector3(candidate.x, piece.center.y, candidate.z);
-                    Bounds probe = new Bounds(spot, piece.size + Vector3.one * margin);
-
-                    // Dentro del garaje. Sin esto el buscador empuja hacia fuera hasta que no
-                    // choca con nada, que es lo que hay al otro lado de la pared: medido, una
-                    // regla acabo en z=7.01 y una tuerca en z=-4.99, en la calle.
-                    if (!garaje.Contains(new Vector3(spot.x, garaje.center.y, spot.z))) continue;
-                    if (ocupado.Any(r => r.bounds.Intersects(probe))) continue;
-                    if (puestos.Any(b => b.Intersects(probe))) continue;
-                    return true;
-                }
-            }
-
-            spot = default;
-            return false;
-        }
-
-        /// <summary>Cara superior del suelo del garaje. Donde se apoya lo que va de pie.</summary>
-        private static float GarageFloorTop()
-        {
-            GameObject floor = Find("piso");
-            if (floor != null && TryBounds(floor, out Bounds b))
-                return b.max.y;
-            Debug.LogWarning("[Module01] No encuentro 'piso'; lo que vaya de pie se apoya en y=0.");
-            return 0f;
-        }
-
-        /// <summary>La planta del garaje, para no apartar nada a la calle.</summary>
+        /// <summary>La planta del garaje, un palmo hacia dentro: pegado a la pared tampoco vale.</summary>
         private static Bounds GarageFloor()
         {
             GameObject floor = Find("piso");
             if (floor == null || !TryBounds(floor, out Bounds b))
                 return new Bounds(Vector3.zero, new Vector3(1000f, 1000f, 1000f));
-            // Un palmo hacia dentro: pegado a la pared tampoco vale.
             b.Expand(new Vector3(-.60f, 0f, -.60f));
             return b;
         }
@@ -513,9 +457,11 @@ namespace RideSafe.Module01.Editor
             .FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None)
             .FirstOrDefault(t => t.name == name)?.gameObject;
 
-        private static bool TryBounds(GameObject go, out Bounds box)
+        private static bool TryBounds(GameObject go, out Bounds box) => TryBounds(new[] { go }, out box);
+
+        private static bool TryBounds(IEnumerable<GameObject> gos, out Bounds box)
         {
-            Renderer[] renderers = go.GetComponentsInChildren<Renderer>(true);
+            Renderer[] renderers = gos.SelectMany(g => g.GetComponentsInChildren<Renderer>(true)).ToArray();
             if (renderers.Length == 0)
             {
                 box = default;

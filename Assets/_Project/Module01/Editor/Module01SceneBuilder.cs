@@ -47,10 +47,14 @@ namespace RideSafe.Module01.Editor
             "chaleco refectivo", "gafas", "MobilePhone_01"
         };
 
-        private static readonly string[] ZoneIds =
+        /// <summary>Las paradas de EPP y las zonas del vehículo: una ancla por cada una.</summary>
+        private static IEnumerable<string> ZoneIds()
         {
-            "protection", "control", "readiness", "cockpit", "wheels", "visibility"
-        };
+            foreach (Module01Library.Stop stop in Module01Library.Stops)
+                yield return stop.Id;
+            foreach (ZoneSO zone in VehicleProfiles.AllInspectionZones())
+                yield return zone.ZoneId;
+        }
 
         [MenuItem("RideSafe/Módulo 1/Montar escena jugable con el garaje nuevo")]
         public static void Build()
@@ -115,7 +119,7 @@ namespace RideSafe.Module01.Editor
         {
             GameObject root = Find("Module01_Anchors") ?? new GameObject("Module01_Anchors");
 
-            foreach (string zone in ZoneIds)
+            foreach (string zone in ZoneIds())
             {
                 string name = "anchor_" + zone;
                 Transform existing = root.transform.Find(name);
@@ -136,11 +140,11 @@ namespace RideSafe.Module01.Editor
             }
         }
 
-        private static GameObject FirstObjectOfZone(string zone)
-        {
-            string objName = Module01SceneEntities.FirstObjectNameOfZone(zone);
-            return (objName == null ? null : Find(objName)) ?? Find("ebike");
-        }
+        /// <summary>
+        /// Referencia provisional del ancla: la bici. Las de las mesas de EPP las recoloca
+        /// <see cref="Module01EppLayout"/> mirando lo que el artista puso en cada una.
+        /// </summary>
+        private static GameObject FirstObjectOfZone(string zone) => Find("ebike");
 
         /// <summary>El objeto que gobierna el módulo, con sus componentes cableados.</summary>
         private static void BuildOrchestrator()

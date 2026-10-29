@@ -33,6 +33,19 @@ namespace RideSafe.UI
         public UnityEngine.UI.RawImage VideoSurface => _videoSurface;
 
         /// <summary>
+        /// Puts the player's texture on the screen in its own colours. The builder paints the
+        /// RawImage navy so an empty screen is not a white hole, but a RawImage multiplies its
+        /// texture by that colour: left as it was, every frame came out dark blue (PO, 2026-10-28).
+        /// </summary>
+        public void ShowVideo(Texture texture)
+        {
+            if (_videoSurface == null)
+                return;
+            _videoSurface.texture = texture;
+            _videoSurface.color = Color.white;
+        }
+
+        /// <summary>
         /// Si el prefab es anterior a que existiera <see cref="_continueButton"/>, el botón se
         /// busca por nombre.
         /// <para>

@@ -34,7 +34,71 @@ namespace RideSafe.UI
 
         private readonly List<KeyValuePair<string, GameObject>> _rows = new List<KeyValuePair<string, GameObject>>();
 
+        // Plegable (PO, 2026-10-28: «un tipo de dropdown donde contenga los elementos y no se haga
+        // tan largo»). Plegado solo queda el título con cuántos hay; el resto se abre al pulsarlo.
+        private GameObject[] _foldParts = new GameObject[0];
+        private TMP_Text _foldLabel;
+        private bool _collapsible;
+
         public int Count => _rows.Count;
+
+        /// <summary>Si la lista está plegada: solo se ve el título.</summary>
+        public bool Collapsed { get; private set; }
+
+        /// <summary>
+        /// Convierte el título en el botón de un desplegable. Al plegar se esconden las filas, el
+        /// estado vacío, la nota y el subtítulo, que ya gobierna esta vista, y además
+        /// <paramref name="parts"/> (el separador, por ejemplo).
+        /// </summary>
+        public void MakeCollapsible(TMP_Text header, IEnumerable<GameObject> parts, bool collapsed = true)
+        {
+            var fold = new List<GameObject>(parts);
+            if (_rowTemplate != null && _rowTemplate.parent != transform && !fold.Contains(_rowTemplate.parent.gameObject))
+                fold.Add(_rowTemplate.parent.gameObject);
+            _foldParts = fold.ToArray();
+            _collapsible = true;
+
+            Transform existing = header.transform.Find("Fold");
+            _foldLabel = existing != null ? existing.GetComponent<TMP_Text>() : CreateFoldLabel(header);
+
+            header.raycastTarget = true;
+            UnityEngine.UI.Button button = header.GetComponent<UnityEngine.UI.Button>();
+            if (button == null)
+            {
+                button = header.gameObject.AddComponent<UnityEngine.UI.Button>();
+                button.targetGraphic = header;
+                button.transition = UnityEngine.UI.Selectable.Transition.None;
+                button.onClick.AddListener(Toggle);
+            }
+
+            SetCollapsed(collapsed);
+        }
+
+        public void Toggle() => SetCollapsed(!Collapsed);
+
+        public void SetCollapsed(bool collapsed)
+        {
+            Collapsed = _collapsible && collapsed;
+            Refresh();
+        }
+
+        /// <summary>La cuenta y la flecha, a la derecha del título y con su misma letra.</summary>
+        private static TMP_Text CreateFoldLabel(TMP_Text header)
+        {
+            GameObject go = new GameObject("Fold", typeof(RectTransform));
+            go.transform.SetParent(header.transform, false);
+            RectTransform rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            TextMeshProUGUI label = go.AddComponent<TextMeshProUGUI>();
+            label.font = header.font;
+            label.fontSize = header.fontSize;
+            label.color = header.color;
+            label.alignment = TextAlignmentOptions.Right;
+            label.raycastTarget = false;
+            return label;
+        }
 
         private void Awake()
         {
@@ -50,6 +114,17 @@ namespace RideSafe.UI
                 }
             }
             Refresh();
+        }
+
+        /// <summary>
+        /// Sizes every row to its name now (<see cref="ChecklistRowFit"/>); each row also refits
+        /// itself when its width or name changes.
+        /// </summary>
+        public void FitRows()
+        {
+            foreach (KeyValuePair<string, GameObject> row in _rows)
+                if (row.Value.TryGetComponent(out ChecklistRowFit fit))
+                    fit.Fit();
         }
 
         public void ConfigureLabels(string empty, string filled, string tag)
@@ -74,6 +149,12 @@ namespace RideSafe.UI
                 button.interactable = _removable;
                 button.onClick.AddListener(() => RemoveItem(id));
             }
+
+            // On the row and not on this view: «Mi preparación» lifts its rows out to the head-following
+            // sidebar and leaves this view inactive, where its own LateUpdate never runs.
+            if (!row.TryGetComponent(out ChecklistRowFit rowFit))
+                rowFit = row.AddComponent<ChecklistRowFit>();
+            rowFit.Fit();
 
             _rows.Add(new KeyValuePair<string, GameObject>(id, row));
             Refresh();
@@ -119,16 +200,22 @@ namespace RideSafe.UI
         private void Refresh()
         {
             bool filled = _rows.Count > 0;
+            bool open = !Collapsed;
             if (_emptyState != null)
-                _emptyState.SetActive(!filled);
+                _emptyState.SetActive(open && !filled);
             if (_footnote != null)
-                _footnote.SetActive(filled);
+                _footnote.SetActive(open && filled);
             if (_subtitle != null)
             {
                 string text = filled ? _filledSubtitle : _emptySubtitle;
                 _subtitle.text = UIText.Resolve(text);
-                _subtitle.gameObject.SetActive(!string.IsNullOrEmpty(text));
+                _subtitle.gameObject.SetActive(open && !string.IsNullOrEmpty(text));
             }
+            foreach (GameObject part in _foldParts)
+                if (part != null)
+                    part.SetActive(open);
+            if (_foldLabel != null)
+                _foldLabel.text = $"({_rows.Count})  {(Collapsed ? "↓" : "↑")}";
             if (_counter != null)
             {
                 _counter.text = string.Format(_counterFormat, _rows.Count);

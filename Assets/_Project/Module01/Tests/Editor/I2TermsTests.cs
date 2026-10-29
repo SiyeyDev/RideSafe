@@ -41,6 +41,13 @@ namespace RideSafe.Module01.Tests
                 yield return key;
             foreach (var table in Module01Library.Tables)
                 yield return table.TitleKey;
+            // El título que se ve en cada parada (2026-10-27: una por mueble).
+            foreach (Module01Library.Stop stop in Module01Library.Stops)
+                yield return stop.TitleKey;
+            // El nombre de cada elemento: sin él el popup enseña la clave. Pasó con las
+            // rodilleras, que volvieron al catálogo sin su término (2026-10-28).
+            foreach (Module01Library.Entry e in Module01Library.All)
+                yield return e.NameKey;
             foreach (PerformanceRank rank in Enum.GetValues(typeof(PerformanceRank)))
             {
                 yield return rank.FeedbackKey();

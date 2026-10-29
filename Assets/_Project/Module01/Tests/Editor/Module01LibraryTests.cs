@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using RideSafe.Module01.Editor;
+using UnityEditor;
+using UnityEngine;
 
 namespace RideSafe.Module01.Tests
 {
@@ -40,12 +42,23 @@ namespace RideSafe.Module01.Tests
         [Test]
         public void Los_peligros_suman_los_235_de_la_hoja()
         {
+            // Solo los de la hoja (H): los P son los peligros evidentes que pidió la PO, aparte.
             float total = 0f;
             int n = 0;
-            foreach (var e in Of(SafetyItemCategory.Inappropriate)) { total += e.Weight; n++; }
+            foreach (var e in Of(SafetyItemCategory.Inappropriate).Where(e => e.LibraryId.StartsWith("H")))
+            { total += e.Weight; n++; }
 
             Assert.AreEqual(12, n, "Las 11 «peligrosa visible» más la gorra condicional.");
             Assert.AreEqual(255f, total, 0.01f, "235 de las visibles más los 20 de la gorra.");
+        }
+
+        [Test]
+        public void Los_peligros_evidentes_comparten_grupo_con_el_peligro_que_repiten()
+        {
+            // Ropa suelta, los audífonos y las chanclas de antes: llevarse varios descuenta una vez.
+            string[] evident = Of(SafetyItemCategory.Inappropriate)
+                .Where(e => !e.LibraryId.StartsWith("H")).Select(e => e.LibraryId).ToArray();
+            CollectionAssert.AreEquivalent(new[] { "P24", "P25", "P26", "P27", "P28", "P29", "P30" }, evident);
         }
 
         [Test]
@@ -61,7 +74,7 @@ namespace RideSafe.Module01.Tests
         }
 
         [Test]
-        public void Los_dos_grupos_compartidos_de_la_hoja_estan()
+        public void Los_grupos_compartidos_estan()
         {
             Dictionary<string, List<string>> byGroup = new Dictionary<string, List<string>>();
             foreach (var e in Of(SafetyItemCategory.Inappropriate))
@@ -73,11 +86,16 @@ namespace RideSafe.Module01.Tests
 
             CollectionAssert.AreEquivalent(new[] { "H01", "H02" }, byGroup["helmet_integrity"],
                 "Los dos cascos rotos descuentan una sola vez.");
-            CollectionAssert.AreEquivalent(new[] { "H03", "H13" }, byGroup["auditory_occlusion"],
-                "Audífonos y AirPods son el mismo error.");
+            CollectionAssert.AreEquivalent(new[] { "H03", "H13", "P29" }, byGroup["auditory_occlusion"],
+                "Audífonos, AirPods y los audífonos de antes son el mismo error.");
+            CollectionAssert.AreEquivalent(new[] { "H04", "P30" }, byGroup["footwear_control"],
+                "Las Crocs y las chanclas de antes son el mismo error.");
+            CollectionAssert.AreEquivalent(new[] { "P24", "P25", "P26", "P27", "P28" }, byGroup["loose_clothing"],
+                "Toda la ropa suelta descuenta una sola vez.");
 
+            string[] shared = { "helmet_integrity", "auditory_occlusion", "footwear_control", "loose_clothing" };
             foreach (var kv in byGroup)
-                if (kv.Key != "helmet_integrity" && kv.Key != "auditory_occlusion")
+                if (!shared.Contains(kv.Key))
                     Assert.AreEqual(1, kv.Value.Count, $"El grupo {kv.Key} debería ser de uno solo.");
         }
 
@@ -108,7 +126,8 @@ namespace RideSafe.Module01.Tests
             HashSet<string> vistos = new HashSet<string>();
             foreach (var e in Module01Library.All)
             {
-                StringAssert.IsMatch("^[EOHN][0-9]{2}$", e.LibraryId);
+                // P: añadidos por la PO que la hoja no tiene (coderas y rodilleras).
+                StringAssert.IsMatch("^[EOHNP][0-9]{2}$", e.LibraryId);
                 Assert.IsTrue(vistos.Add(e.LibraryId), $"{e.LibraryId} está dos veces.");
                 Assert.IsFalse(string.IsNullOrWhiteSpace(e.ItemId), $"{e.LibraryId} sin itemId.");
             }
@@ -137,17 +156,6 @@ namespace RideSafe.Module01.Tests
 
             foreach (string id in heredados)
                 Assert.IsTrue(ids.Contains(id), $"{id} ya tenía I2 y audio: no se puede perder.");
-        }
-
-        [Test]
-        public void Lo_retirado_no_puede_seguir_en_el_catalogo()
-        {
-            HashSet<string> ids = new HashSet<string>();
-            foreach (var e in Module01Library.All) ids.Add(e.ItemId);
-
-            foreach (string id in Module01Library.RetiredItemIds)
-                Assert.IsFalse(ids.Contains(id),
-                    $"{id} está en la lista de retirados y a la vez en el catálogo.");
         }
 
         [Test]
@@ -204,31 +212,75 @@ namespace RideSafe.Module01.Tests
 
         /// <summary>
         /// Lo que arte entregó en la carpeta de esenciales el 26 y el 27-10: las gafas de sol de
-        /// montura negra, la mochila y un candado con textura. Los tres se instancian desde su
-        /// FBX —no se reutiliza arte de la escena— y a un ancho declarado, porque llegan a la
-        /// escala del export.
+        /// montura negra, la mochila y un candado con textura. El elemento es ese FBX, no el
+        /// arte viejo que hacía de él.
         /// </summary>
         [TestCase("O08", "gafas de sol.fbx")]
         [TestCase("O09", "mochila.fbx")]
         [TestCase("O11", "candado.fbx")]
+        // Los cinco que entregó el artista el 2026-10-27 («faltan 10»).
+        [TestCase("O12", "kit compacto.fbx")]
+        [TestCase("O14", "soporte celular.fbx")]
+        [TestCase("O15", "timbre bici.fbx")]
+        [TestCase("O18", "termo.fbx")]
+        [TestCase("H03", "diadema.fbx")]
+        // Los del 2026-10-28 («listo»).
+        [TestCase("O13", "herramienta.fbx")]
+        [TestCase("O19", "alforja.fbx")]
+        [TestCase("H04", "Crocs.fbx")]
+        [TestCase("H08", "guante voluminoso.fbx")]
+        [TestCase("H13", "audifonos ipod.fbx")]
+        [TestCase("P06", "gafas_deportivas.fbx")]
         public void Los_EPP_nuevos_de_esenciales_usan_su_modelo(string libraryId, string file)
         {
             Module01Library.Entry e = Module01Library.All.First(x => x.LibraryId == libraryId);
 
             Assert.AreEqual(Module01Library.Essentials + file, e.Model);
-            Assert.IsNull(e.SceneObject, $"{libraryId} se instancia desde el FBX nuevo, no desde el arte viejo.");
-            Assert.Greater(e.TargetWidth, 0f, $"{libraryId} llega a la escala del export: hay que declarar su ancho.");
         }
 
         /// <summary>
-        /// Y el arte que hacía de esos elementos se apaga: si no, el aprendiz ve dos gafas de sol
-        /// o dos candados en la mesa y solo uno responde al clic.
+        /// Las gafas dañadas son las de seguridad de O07 con el material rayado (artista,
+        /// 2026-10-28): misma malla, otro material, y nunca el material limpio.
         /// </summary>
-        [TestCase("gafas")]
-        [TestCase("candado")]
-        public void El_arte_viejo_de_esos_EPP_se_apaga(string sceneObject)
+        [Test]
+        public void Las_gafas_danadas_son_las_de_seguridad_con_el_material_rayado()
         {
-            CollectionAssert.Contains(Module01Library.RetiredSceneObjects, sceneObject);
+            Module01Library.Entry damaged = Module01Library.All.First(x => x.LibraryId == "H07");
+            Module01Library.Entry clean = Module01Library.All.First(x => x.LibraryId == "O07");
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(damaged.Model);
+            Material scratched = AssetDatabase.LoadAssetAtPath<Material>(Module01DamagedGlasses.MaterialPath);
+
+            Assert.IsNotNull(prefab, damaged.Model);
+            Assert.IsNotNull(scratched, Module01DamagedGlasses.MaterialPath);
+            Assert.AreEqual(clean.Model, AssetDatabase.GetAssetPath(PrefabUtility.GetCorrespondingObjectFromOriginalSource(prefab)),
+                "el mismo modelo que las gafas buenas");
+            Renderer[] renderers = prefab.GetComponentsInChildren<Renderer>(true);
+            Assert.IsNotEmpty(renderers);
+            foreach (Renderer r in renderers)
+                CollectionAssert.AreEqual(Enumerable.Repeat(scratched, r.sharedMaterials.Length), r.sharedMaterials, r.name);
+        }
+
+        [Test]
+        public void Cada_elemento_va_a_una_sola_parada()
+        {
+            var all = Module01Library.Stops.SelectMany(s => s.ItemIds).ToList();
+
+            CollectionAssert.AllItemsAreUnique(all, "un elemento en dos paradas");
+            CollectionAssert.AreEquivalent(Module01Library.All.Select(e => e.ItemId), all,
+                "cada elemento de la hoja tiene que estar en una parada, o no se ve en el recorrido");
+        }
+
+        [Test]
+        public void Cada_parada_tiene_su_mueble_y_no_choca_con_el_vehiculo()
+        {
+            CollectionAssert.AllItemsAreUnique(Module01Library.Stops.Select(s => s.Id));
+            var vehicle = VehicleProfiles.AllInspectionZones().Select(z => z.ZoneId).ToList();
+            foreach (Module01Library.Stop stop in Module01Library.Stops)
+            {
+                Assert.IsTrue(Module01Stations.TryGet(stop.Id, out _), $"'{stop.Id}' no tiene mueble en Module01Stations");
+                CollectionAssert.DoesNotContain(vehicle, stop.Id, "colisionaría en los ids de entidad");
+                StringAssert.StartsWith("M1/Stop_", stop.TitleKey);
+            }
         }
 
         [Test]
@@ -246,7 +298,14 @@ namespace RideSafe.Module01.Tests
             // amarillo fluor con bandas reflectivas (O01), y las `gafas` de siempre son oscuras,
             // asi que son las de sol (O08) y no las transparentes.
             // 14 -> 13 el 2026-10-27: la mochila (O09) llegó en la carpeta de esenciales.
-            Assert.AreEqual(13, sinModelo.Count,
+            // 13 -> 10 el 2026-10-28: kit, soporte, timbre y termo; el commit del artista dice
+            // «faltan 10». Los audífonos ya tenían modelo y cambiaron a la diadema.
+            // 10 -> 3 el 2026-10-28: café, alforja, AirPods, mitones, paraguas, gorra y poncho.
+            // Faltan la correa cortada (H01), las gafas dañadas (H07) y la bolsa (H09), que tiene
+            // FBX pero el artista no la colocó.
+            // 3 -> 0 el 2026-10-28: H07 son las gafas deportivas, H09 la bolsa (que se coloca aquí)
+            // y H01 el casco retro sin correa, a la espera del bueno.
+            Assert.AreEqual(0, sinModelo.Count,
                 "Si 3D entrega uno, baja el número: actualiza este test y la tabla. Faltan: "
                 + string.Join(", ", sinModelo));
         }

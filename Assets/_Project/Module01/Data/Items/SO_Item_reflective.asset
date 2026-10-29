@@ -23,3 +23,5 @@ MonoBehaviour:
   _hazardGroup: 
   _exclusiveBonusWith: hiviz_day
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

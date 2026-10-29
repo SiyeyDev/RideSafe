@@ -29,10 +29,34 @@ public class I2LocalizationProvider : ILocalizationProvider
     }
 
     // Forwarded, not cached: I2 clears OnLocalizeEvent when play mode exits.
+    // The I2 callback made for each listener is kept so `remove` takes out that same one:
+    // `value.Invoke` wraps the Action instance, and the `-= Refresh` of an unsubscribe brings a
+    // new instance, so removing a fresh `value.Invoke` matched nothing and every listener stayed
+    // in I2 — destroyed Module01Text included (MissingReferenceException on the next LocalizeAll).
+    private readonly Dictionary<Action, List<LocalizationManager.OnLocalizeCallback>> _forwarded =
+        new Dictionary<Action, List<LocalizationManager.OnLocalizeCallback>>();
+
     public event Action LanguageChanged
     {
-        add { LocalizationManager.OnLocalizeEvent += value.Invoke; }
-        remove { LocalizationManager.OnLocalizeEvent -= value.Invoke; }
+        add
+        {
+            if (value == null)
+                return;
+            LocalizationManager.OnLocalizeCallback callback = value.Invoke;
+            if (!_forwarded.TryGetValue(value, out List<LocalizationManager.OnLocalizeCallback> callbacks))
+                _forwarded[value] = callbacks = new List<LocalizationManager.OnLocalizeCallback>();
+            callbacks.Add(callback);
+            LocalizationManager.OnLocalizeEvent += callback;
+        }
+        remove
+        {
+            if (value == null || !_forwarded.TryGetValue(value, out List<LocalizationManager.OnLocalizeCallback> callbacks))
+                return;
+            LocalizationManager.OnLocalizeEvent -= callbacks[callbacks.Count - 1];
+            callbacks.RemoveAt(callbacks.Count - 1);
+            if (callbacks.Count == 0)
+                _forwarded.Remove(value);
+        }
     }
 
 #if UNITY_EDITOR

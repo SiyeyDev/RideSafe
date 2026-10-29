@@ -282,7 +282,17 @@ namespace RideSafe.Module01.Tests
                 }
                 // El checklist con filas ya dentro: es donde el texto largo en espanol se
                 // apretaba contra la nota al pie, y eso hay que mirarlo, no solo medirlo.
-                if (zoneId == catalogo.Zones.Last().ZoneId) yield return Capture("checklist");
+                // Abierto: la franja de cada fila tiene que envolver su nombre, también los de dos
+                // líneas (PO, 2026-10-28).
+                if (zoneId == catalogo.Zones.Last().ZoneId)
+                {
+                    _binding.PreparationList.SetCollapsed(false);
+                    yield return null; yield return null;
+                    AssertRowsHoldTheirText(_binding.Sidebar.transform);
+                    yield return Capture("checklist");
+                    _binding.PreparationList.SetCollapsed(true);
+                    yield return null;
+                }
                 // Una captura por estacion personal: desde el 2026-10-14 cada una vive en un
                 // mueble distinto del garaje, y que se vean despejadas no lo dice ningun
                 // assert -el arte llega sin colliders, asi que el raycast miente-.
@@ -464,6 +474,12 @@ namespace RideSafe.Module01.Tests
             // reconstruccion de todos los canvas y la malla de cada texto.
             AssertTextIsLegible("pantalla de video");
             DumpTexts("pantalla de video");
+            // Con sus colores, sin el azul del RawImage encima (PO, 2026-10-28).
+            if (video.isPlaying)
+            {
+                yield return new WaitForSeconds(1f);
+                yield return Capture(_director.InVehicleSection ? "video-vehiculo" : "video-epp");
+            }
 
             if (!video.isPlaying)
             {
@@ -631,12 +647,33 @@ namespace RideSafe.Module01.Tests
         /// </summary>
         private void AssertPedestalClearsPopup()
         {
-            Bounds disc = Field<GameObject>(_inspector, "_pedestal").GetComponent<Renderer>().bounds;
+            Transform disc = Field<GameObject>(_inspector, "_pedestal").transform;
             var confirm = (RectTransform)Field<GameObject>(_inspector, "_confirmRoot").transform;
             var corners = new Vector3[4];
             confirm.GetWorldCorners(corners);
-            Assert.Less(corners.Max(c => _camera.WorldToScreenPoint(c).y), Lowest(disc), string.Format(
-                "El pedestal se monta sobre el popup (disco baja a y={0:0})", Lowest(disc)));
+            float lowest = LowestRim(disc);
+            Assert.Less(corners.Max(c => _camera.WorldToScreenPoint(c).y), lowest, string.Format(
+                "El pedestal se monta sobre el popup (disco baja a y={0:0})", lowest));
+        }
+
+        /// <summary>
+        /// Lo más bajo que llega en pantalla el borde del disco. Se proyecta el canto de verdad y
+        /// no la caja del mundo: con el ancla girada a 107° (las mesas del artista, 2026-10-27) la
+        /// caja alineada con los ejes de un disco girado es mucho mayor que el disco.
+        /// </summary>
+        private float LowestRim(Transform disc)
+        {
+            float lowest = float.MaxValue;
+            for (int i = 0; i < 64; i++)
+            {
+                float a = i * Mathf.PI * 2f / 64f;
+                foreach (float y in new[] { -1f, 1f })   // el cilindro primitivo va de -1 a 1 en Y
+                {
+                    Vector3 rim = disc.TransformPoint(new Vector3(Mathf.Cos(a) * .5f, y, Mathf.Sin(a) * .5f));
+                    lowest = Mathf.Min(lowest, _camera.WorldToScreenPoint(rim).y);
+                }
+            }
+            return lowest;
         }
 
         /// <summary>
@@ -1016,10 +1053,31 @@ namespace RideSafe.Module01.Tests
             Physics.SyncTransforms();
             var collider = entity.GetComponent<Collider>();
             Vector3 p = _camera.WorldToScreenPoint(collider.bounds.center);
+            // Los EPP van donde los dejó el artista, a veces en otra pared (PO, 2026-10-27): el
+            // aprendiz gira la cabeza para verlo. Aquí se gira la cámara igual, en horizontal.
+            if (!OnScreen(p))
+            {
+                Vector3 to = collider.bounds.center - _camera.transform.position;
+                to.y = 0f;
+                _camera.transform.rotation = Quaternion.LookRotation(to, Vector3.up);
+                yield return null;
+                Physics.SyncTransforms();
+                p = _camera.WorldToScreenPoint(collider.bounds.center);
+            }
+            // Lo que está en el suelo (las Crocs, la bolsa) queda por debajo de la vista: se baja
+            // la mirada, como la bajaría el aprendiz.
+            if (!OnScreen(p))
+            {
+                _camera.transform.rotation = Quaternion.LookRotation(
+                    collider.bounds.center - _camera.transform.position, Vector3.up);
+                yield return null;
+                Physics.SyncTransforms();
+                p = _camera.WorldToScreenPoint(collider.bounds.center);
+            }
             // El mensaje lleva los numeros: "fuera de pantalla" a secas obliga a adivinar por
             // que lado se sale y desde donde se estaba mirando, y eso cuesta una vuelta entera
             // de PlayMode por cada hipotesis.
-            Assert.IsTrue(p.z > 0 && p.x > 0 && p.x < Screen.width && p.y > 0 && p.y < Screen.height,
+            Assert.IsTrue(OnScreen(p),
                 string.Format(
                     "Objeto fuera de pantalla: {0}. pantalla={1}x{2} viewport=({3:0.000}, {4:0.000}, {5:0.00}) "
                     + "mundo={6} camara={7} rot={8}",
@@ -1028,8 +1086,47 @@ namespace RideSafe.Module01.Tests
                     collider.bounds.center.ToString("F2"),
                     _camera.transform.position.ToString("F2"),
                     _camera.transform.eulerAngles.ToString("F0")));
+            // Se pulsa donde se ve: si otro objeto le tapa el centro, en uno de sus costados, como
+            // haría una persona. Son los mismos puntos con los que se eligió el punto de vista, y
+            // si no, puntos de su superficie: desde que los EPP se pulsan por su forma (2026-10-28)
+            // el centro de la caja de una espiral o de unas gafas cae en el aire.
+            foreach (Vector3 sample in StationLayout.SamplePoints(collider.bounds).Concat(SurfacePoints(entity)))
+            {
+                Vector3 s = _camera.WorldToScreenPoint(sample);
+                if (OnScreen(s) && HandlerAt(s) == entity.gameObject)
+                {
+                    p = s;
+                    break;
+                }
+            }
             yield return Dispatch(p, entity.gameObject);
+            // Y se vuelve a mirar al frente: los paneles de la parada se leen con la cabeza recta.
+            Vector3 ahead = _camera.transform.forward;
+            ahead.y = 0f;
+            _camera.transform.rotation = Quaternion.LookRotation(ahead, Vector3.up);
         }
+
+        private static IEnumerable<Vector3> SurfacePoints(WorldObjectTaskEntity entity)
+        {
+            foreach (MeshFilter mf in entity.GetComponentsInChildren<MeshFilter>())
+            {
+                if (mf.sharedMesh == null)
+                    continue;
+                Vector3[] v = mf.sharedMesh.vertices;
+                for (int i = 0; i < v.Length; i += Mathf.Max(1, v.Length / 60))
+                    yield return mf.transform.TransformPoint(v[i]);
+            }
+        }
+
+        private static GameObject HandlerAt(Vector2 point)
+        {
+            var hits = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current) { position = point }, hits);
+            return hits.Count > 0 ? ExecuteEvents.GetEventHandler<IPointerClickHandler>(hits[0].gameObject) : null;
+        }
+        private static bool OnScreen(Vector3 p) =>
+            p.z > 0 && p.x > 0 && p.x < Screen.width && p.y > 0 && p.y < Screen.height;
+
         private IEnumerator Dispatch(Vector2 point, GameObject expected)
         {
             var data = new PointerEventData(EventSystem.current) { position = point, button = PointerEventData.InputButton.Left };
@@ -1165,6 +1262,28 @@ namespace RideSafe.Module01.Tests
         /// principal, y desde que la UI vive en una camara de overlay del stack de URP eso
         /// dejaba fuera toda la interfaz: la captura mentia justo sobre lo que hay que revisar.
         /// </summary>
+        /// <summary>
+        /// La franja visible de cada fila —la fila menos el borde transparente de su sprite,
+        /// 16/3 arriba y abajo— tiene que ser al menos tan alta como su nombre.
+        /// </summary>
+        private static void AssertRowsHoldTheirText(Transform list)
+        {
+            // Las filas viven en la barra que sigue a la cabeza, no bajo la vista, que queda
+            // apagada. Sin filas no hay nada que afirmar, y eso sería un falso verde.
+            Transform[] rows = list.GetComponentsInChildren<Transform>(false).Where(t => t.name.StartsWith("Row · ")).ToArray();
+            Assert.IsNotEmpty(rows, "«Mi preparación» abierta sin filas a la vista");
+            foreach (Transform row in rows)
+            {
+                var label = (RectTransform)row.Find("Label");
+                var text = label.GetComponent<TMP_Text>();
+                float band = ((RectTransform)row).rect.height - 2f * 16f / 3f;
+                float needed = text.GetPreferredValues(text.text, label.rect.width, 0f).y;
+                Assert.GreaterOrEqual(band + .5f, needed, string.Format(
+                    "La franja de '{0}' mide {1:0.0} y su texto {2:0.0} (fila {3:0.0}, ancho {4:0.0}, letra {5:0.0})",
+                    text.text, band, needed, ((RectTransform)row).rect.height, label.rect.width, text.fontSize));
+            }
+        }
+
         private IEnumerator Capture(string name)
         {
             const string folder = "Docs/verification/module01";

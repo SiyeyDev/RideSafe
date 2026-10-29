@@ -1,0 +1,17 @@
+{
+  "characters": [
+    "Damaged",
+    "cable",
+    "lock"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.499,
+    0.929
+  ],
+  "character_end_times_seconds": [
+    0.453,
+    0.882,
+    1.3
+  ]
+}

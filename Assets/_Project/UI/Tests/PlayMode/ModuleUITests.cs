@@ -30,12 +30,21 @@ namespace RideSafe.UI.Tests
             "Assets/_Project/UI/StatusIcons/StatusMono_Ready.png",
             "Assets/_Project/UI/StatusIcons/StatusMono_Retry.png",
             "Assets/_Project/UI/StatusIcons/StatusMono_Attention.png",
+            // The video's «Repetir»: the atlas's Icon_Replay read as something else (PO, 2026-10-26;
+            // UIComposition.ReplayIcon).
+            "Assets/_Project/UI/Icons/Icon_Replay_Round.png",
             // The company mark beside the panel titles (UIBrand).
             "Assets/_Project/UI/Brand/RideSafe_Mark_Navy.png",
             "Assets/_Project/UI/Brand/RideSafe_Mark_White.png"
         };
 
         private readonly List<GameObject> _spawned = new List<GameObject>();
+
+        // These tests read English captions. I2 remembers the language in PlayerPrefs, and the
+        // Module 1 slice leaves it in Spanish: run after it, "Off" came back as "No".
+        [SetUp]
+        public void SetUp() =>
+            Cachacos.ServiceLocator.Instance.RequestService<Cachacos.ILocalizationProvider>()?.SetLanguage("en");
 
         [TearDown]
         public void TearDown()
@@ -320,29 +329,31 @@ namespace RideSafe.UI.Tests
         }
 
         [UnityTest]
-        public IEnumerator Comparison_ServesSafetyAndDiagnosticReviews()
+        public IEnumerator Comparison_IsOneListInOneColumn()
         {
+            // «Mi Elección» is a single list in a single column since 2026-10-12: the second
+            // column is still built (the binding finds it by name) but stays off.
             GameObject panel = Open("PF_Module01_UI", "Comparison");
             yield return null;
+            Assert.IsFalse(panel.transform.Find("RightColumn").gameObject.activeSelf, "the second column is off");
 
-            Assert.AreEqual(4, ActiveChildren(ComparisonRows(panel.transform)));
-            Assert.AreEqual(4, ActiveChildren(panel.transform.Find("RightColumn/Rows")));
-
-            panel.GetComponent<ComparisonView>().SetContent("What you checked", "Your pre-ride check.",
-                "Your check", new[] { new ComparisonEntry(ItemStatus.Selected, "Front brake lever") },
-                "Reference · e-bike", new[]
-                {
-                    new ComparisonEntry(ItemStatus.CoreOmitted, "Both brake levers", "Front identified, rear not"),
-                    new ComparisonEntry(ItemStatus.NotSuited, "Bag on handlebar", "Unsafe load")
-                });
+            panel.GetComponent<ComparisonView>().SetSingleList("My choice", "Your pre-ride check.", new[]
+            {
+                new ComparisonEntry(ItemStatus.Selected, "Front brake lever"),
+                new ComparisonEntry(ItemStatus.CoreOmitted, "Both brake levers", "Front identified, rear not"),
+                new ComparisonEntry(ItemStatus.NotSuited, "Bag on handlebar", "Unsafe load")
+            });
             yield return null;
 
-            Transform right = panel.transform.Find("RightColumn/Rows");
-            Assert.AreEqual("What you checked", Child<TMP_Text>(panel, "Header/Title").text);
-            Assert.AreEqual(1, ActiveChildren(ComparisonRows(panel.transform)));
-            Assert.AreEqual(2, ActiveChildren(right));
-            Assert.AreEqual("Status_Retry", right.Find("Row · Bag on handlebar/Icon").GetComponent<UnityEngine.UI.Image>().sprite.name,
-                            "NotSuited must use its own glyph, not colour alone.");
+            Transform rows = ComparisonRows(panel.transform);
+            Assert.AreEqual("My choice", Child<TMP_Text>(panel, "Header/TitleBar/Title").text);
+            Assert.AreEqual(3, ActiveChildren(rows), "every entry in the one column");
+            Assert.IsFalse(panel.transform.Find("RightColumn").gameObject.activeSelf);
+            // The white «StatusMono_» glyphs since the traffic-light tints (UIStatusIcons): the shape
+            // is what matters, so a reader who cannot tell the colours apart still can.
+            string Glyph(string title) => rows.Find("Row · " + title + "/Icon").GetComponent<UnityEngine.UI.Image>().sprite.name;
+            StringAssert.EndsWith("_Retry", Glyph("Bag on handlebar"), "NotSuited must use its own glyph, not colour alone.");
+            Assert.AreNotEqual(Glyph("Front brake lever"), Glyph("Bag on handlebar"));
         }
 
         [UnityTest]

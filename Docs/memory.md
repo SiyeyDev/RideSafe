@@ -1,7 +1,14 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-23 — `dev` traída aquí (`e75e876`): el **foco al revisar un punto
+> Última actualización: 2026-10-28 — el arte de EPP del artista en v5 a su pose exacta, 4 paradas
+> (una por mueble), 61 elementos con modelo y **0 «!»**, clic por la forma, gafas dañadas como
+> material, el bug de I2 que dejaba textos destruidos suscritos al idioma, filas de «Mi preparación»
+> a la altura de su nombre y el video sin el filtro azul (§11).
+> **Corrido aquí ese día: EditMode 706/706 (1 inconclusivo) y PlayMode 24/24, las cuatro suites juntas.**
+> Locución completa (52 audios generados ese día). Lo abierto: la pregunta de O07 (§8).
+>
+> Antes, el 2026-10-23 — `dev` traída aquí (`e75e876`): el **foco al revisar un punto
 > del vehículo** (`FocusDome`, §11) y el arreglo de `ComposeTheaterVideo`. §3 al día; la revisión
 > de ese commit dejó dos notas en el apartado técnico de §8.
 > **Corrido aquí ese día: EditMode 581/2/1 y PlayMode del M1 2 de 6.** Los 4 fallos son de
@@ -393,6 +400,13 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 
 ### Contenido
 
+- [ ] **O07 «Gafas» (+1, «evitan polvo e insectos»): ¿son las «de construcción»?** La PO dijo el
+      2026-10-28 que las gafas de seguridad de construcción, el snorkel y lo que no está dañado
+      «son de otros usos, ni bueno ni malo» (peso 0). O07 usa el modelo transparente
+      `gafdas de seguridad.fbx`, el mismo que H07 con su material rayado. Si O07 debe ser neutral,
+      falta decidir qué modelo representa a O07. P05 (snorkel), P06 (deportivas) y P08 (de
+      trabajo) ya son neutrales.
+
 - [ ] **Dónde se enseña el `_Risk` en el reporte.** Los 18 textos del «por qué» están en I2 y
       **no los lee ningún código**: `SafetyItemSO.RiskKey` solo existe como propiedad. Charlie
       aprobó que salgan **solo en los elementos que estuvieron mal** —en los aciertos no enseñan
@@ -472,7 +486,9 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
         la tabla, el montaje del «!», la reubicación en las tres mesas, I2 y audio.
       - **Los 6 tests de PlayMode del M1 van a romperse** al hacerlo: recorren la escena actual y
         esperan los elementos viejos.
-- [ ] **El nombre corto y la descripción del Excel tienen que ser dos campos distintos.**
+- [x] ~~**El nombre corto y la descripción del Excel tienen que ser dos campos distintos.**~~
+      **Resuelto:** `M1/Item_*` lleva ya el nombre breve («Casco íntegro y ajustado») y la frase
+      larga vive en `_Risk`; PlayMode del M1 6/6 el 2026-10-28. Lo de abajo es el registro de entonces.
       **Decisión de contenido para Charlie, y es lo que hoy deja PlayMode en 2 de 6.** La hoja
       trae en «Elemento» una especificación completa —«Casco certificado, íntegro, talla correcta
       y abrochado»— y eso es lo que quedó en `M1/Item_HelmetOk` como nombre, así que el título del
@@ -485,7 +501,12 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
         así que es el que revienta, pero las descripciones del Excel son largas en toda la columna.
       - Mientras no se decida, los 4 tests de PlayMode seguirán rojos **por contenido**, y conviene
         no leerlos como una regresión de código.
-- [ ] **Los audios: una voz por idioma, y faltan los de los EPP nuevos.** Hasta el 2026-10-22 el
+- [x] ~~**Los audios: una voz por idioma, y faltan los de los EPP nuevos.**~~ **Hecho el
+      2026-10-28:** 52 audios nuevos (los 24 elementos y el punto `Point_Deck` que faltaban, más
+      `Item_ClothingLoose`, que decía «Ropa o cordones sueltos» y hoy es «Bufanda suelta»), con
+      `RideSafe → Módulo 1 → Generar la locución que falta o cambió`: solo toca los nombres del
+      catálogo sin audio o cuyo `.json` ya no dice el texto de I2. `M1ItemAudioBatch.DryRunMissing`
+      deja la lista en `Temp/ridesafe-audio-plan.txt` sin llamar a ElevenLabs; hoy da 0. Hasta el 2026-10-22 el
       batch generaba los dos idiomas con **Alice**, que es una locutora **inglesa**: por eso el
       español sonaba robótico. Ahora `M1ItemAudioBatch` lleva una voz por idioma — inglés Alice
       (`Xb7hH8MSUJpSbSDYk0k2`), español **Daniela — Friendly Host** (`ajOR9IDAaubDK5qtLUqQ`)—.
@@ -506,7 +527,11 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       - **`StationLayout.FloorHeight` (0,70) planta en el suelo lo que mida más de 70 cm de alto.**
         El chaleco nuevo es más esbelto que el viejo (relación alto/ancho 1,61 frente a 1,33), así
         que con 45 cm de ancho medía 73 de alto y se iba al suelo. A 36 cm vuelve a la mesa.
-- [ ] **Faltan 14 modelos, y son estos:** mochila, soporte de móvil, timbre, botella, alforja,
+- [x] ~~**Faltan 14 modelos**~~ — **hecho el 2026-10-28:** el artista entregó los que faltaban;
+      los 61 elementos tienen modelo y no queda ningún «!». H07 (gafas rayadas) es el FBX de las
+      gafas de seguridad con material dañado (`Module01DamagedGlasses`); H01 (correa cortada) usa
+      por ahora el casco retro `df_g_helmet_01`. Lo de abajo es el registro de entonces.
+      **Eran estos:** mochila, soporte de móvil, timbre, botella, alforja,
       casco con correa cortada, poncho, gafas rayadas, mitones, tote, paraguas, vaso de café,
       gorra y AirPods. Comprobado contra los 287 FBX de la carpeta: **para esos no hay nada**.
       Mientras tanto van con el «!», que es lo que decidió Charlie el 2026-10-22.
@@ -705,6 +730,32 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
 ---
 
 ## 9. Trampas conocidas
+
+**Añadidas el 2026-10-28:**
+
+- **Dos FBX idénticos con el mismo GUID.** El artista copió `bolsa.fbx` a `MODELADOS 3d/` y a
+  `Materials/` con la misma `.meta`. Unity les da GUID nuevos a los dos y **toda escena que usaba el
+  original queda con «Missing Prefab» sin avisar en git** (Garage.unity no abría). Arreglo: devolver
+  el GUID original a la copia que se usa y commitear las dos `.meta`.
+- **Un evento que reenvía con `value.Invoke` no se puede desuscribir.** `remove` crea otro
+  delegado con otro objetivo y no quita nada. Así fue `I2LocalizationProvider.LanguageChanged`
+  hasta el 2026-10-28: los textos de escenas cerradas seguían en I2 (`MissingReferenceException`
+  en `Module01Text.Refresh`). Hay que guardar el delegado creado y quitar ese
+  (`LanguageSubscriptionTests`).
+- **`Docs/Module1_I2.csv` no es la fuente de los nombres de los EPP.** Trae los nombres cortos del
+  16-10 («Casco íntegro y ajustado»), pero el asset de I2 tiene desde la importación del Excel
+  (22-10) los largos («Casco certificado, íntegro, talla correcta y abrochado»), y eso es lo que
+  ven el popup y la locución. Para saber qué dice el juego, mirar `I2Languages.asset`.
+- **«Mi preparación» deja su `ChecklistView` inactiva.** El binding saca el `ChecklistPanel` a la
+  barra que sigue a la cabeza: lo que la vista haga en `Update`/`LateUpdate` no corre nunca, y un
+  test que busque filas bajo la vista no encuentra ninguna y pasa en verde sin medir nada. Lo que
+  deba vivir con las filas va en las filas (`ChecklistRowFit`), y las filas se buscan en
+  `Module01Binding.Sidebar`.
+- **I2 guarda el idioma en PlayerPrefs**, también entre tests. Un test que lea textos en un idioma
+  lo fija en su SetUp; si no, depende de qué suite corrió antes.
+- **Escala negativa (piezas espejadas) y colliders:** una caja en una pieza con escala −1 avisa en
+  consola en cada carga, y una `MeshCollider` con escala no uniforme no se cocina en el build
+  (malla no legible). Por eso `FitClickShapes` pone la caja en un hijo `clic` que deshace el espejo.
 
 **Añadidas el 2026-10-22:**
 
@@ -1172,6 +1223,247 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-10-28 (noche, 5) — franja de «Mi preparación» y video sin filtro azul
+
+- **La franja que resalta una fila no casaba con su texto** (PO, con captura). Las filas medían
+  40 fijos y el sprite `Checklist_Row_Selected`, troceado a 3, deja 16/3 transparentes arriba y
+  abajo: la franja visible medía ~29 y un nombre en dos líneas llenaba los 40 y rozaba la fila
+  vecina. Ahora cada fila mide lo que su nombre (`ChecklistRowFit`): la etiqueta va dentro de la
+  franja con 4 de aire, la letra se queda en 17 (sin autoajuste) y las de una línea siguen en 40.
+  - **Trampa:** el ajuste no puede vivir en `ChecklistView`. «Mi preparación» saca su
+    `ChecklistPanel` a la barra que sigue a la cabeza y deja la vista **inactiva**, así que su
+    `LateUpdate` nunca corre. Va en un componente de cada fila.
+  - Tests: `ChecklistRowFitTests` (EditMode) y en el slice `AssertRowsHoldTheirText`, que exige
+    filas a la vista para no dar un falso verde (la primera versión miraba bajo la vista apagada,
+    no encontraba filas y pasaba sin medir nada). Captura en `Docs/verification/module01/checklist.png`.
+- **Video con filtro azul:** el `RawImage` de `VideoSurface` sale del builder pintado de azul
+  marino (relleno sin video) y un RawImage multiplica su textura por ese color: cada fotograma
+  salía azul y oscuro. `ExplanationView.ShowVideo` pone la textura y el color en blanco;
+  `Module01Experience` la usa. Test `VideoSurfaceColorTests`; capturas `video-epp.png` y
+  `video-vehiculo.png`.
+
+### 2026-10-28 (noche, 4) — locución que faltaba
+
+- **52 audios con ElevenLabs** (26 por idioma, Daniela en español y Alice en inglés): los 24
+  elementos sin voz, `Point_Deck` y `Item_ClothingLoose`, que decía el nombre viejo. Nuevo modo
+  `M1ItemAudioBatch.RunMissing` (solo lo que falta o cambió) y `DryRunMissing` (la lista, sin
+  llamar al servicio). Comprobado: la pasada en seco queda en 0 y la importación es igual a la
+  de los audios anteriores. EditMode del M1 434/434.
+- **Error mío corregido:** creí que `Item_HelmetOk` decía un nombre viejo comparando contra el
+  CSV de Docs; el juego usa el nombre largo del asset de I2 y el audio coincide (§9).
+
+### 2026-10-28 (noche, 3) — pruebas completas en el editor abierto
+
+- **GUID duplicado de la bolsa:** `MODELADOS 3d/bolsa.fbx` y `Materials/bolsa.fbx` (idénticos)
+  llegaron en 6f7285c con el mismo GUID. Unity les dio GUID nuevos a los dos y Garage.unity, que
+  ya trae la bolsa del artista (c71f243, en el suelo delante de la mesa de la entrada), no abría:
+  33 tests de escena caían. `MODELADOS 3d/bolsa.fbx.meta` recupera `d1c08750…`; la de
+  `Materials/` se queda con su GUID nuevo. **Hay que commitear las dos .meta.**
+- **H09 (bolsa):** ya no la crea el código; es la del artista, y su parada es la mesa de la entrada.
+- **Piezas espejadas (escala −1, el zapato izquierdo):** su caja va en un hijo `clic` que deshace
+  el espejo; con escala negativa PhysX avisaba en consola al cargar la escena.
+- **Cartel de la parada** (`StationInstruction`) a x = −230: «Mi preparación» arriba a la derecha
+  le tapaba el extremo derecho (`AssertHudDoesNotOverlap`).
+- **Tests:** `Module01LibraryTests` cuenta aparte los peligros de la hoja (H, 12 / 255) y los
+  evidentes (P24–P30), con sus grupos compartidos. `ClickWorld` baja la mirada a lo que está en el
+  suelo y vuelve a mirar al frente después de pulsar.
+- **Resultado:** todo en verde. EditMode 703/703 (1 inconclusivo); PlayMode 24/24 con las
+  cuatro suites juntas (M0, Tutorial, UI, M1).
+- **Bug real del juego — idioma:** `I2LocalizationProvider.LanguageChanged` reenviaba con
+  `value.Invoke` y el `remove` creaba otro delegado, así que nadie se desuscribía nunca: cada
+  `Module01Text` de una escena cerrada seguía en I2 y el siguiente LocalizeAll lanzaba
+  `MissingReferenceException` (y se acumulaban). Ahora guarda el callback de cada oyente y quita
+  ese mismo. Test `LanguageSubscriptionTests` (rojo antes del arreglo, verde después).
+- **Tests viejos puestos al día (no eran fallos del juego):**
+  - `ModuleUITests.Comparison_IsOneListInOneColumn` sustituye al de dos columnas de 4: «Mi
+    Elección» es una sola columna desde el 12-10 y el flujo real usa `SetSingleList`. El glifo
+    de «no apto» se mira por forma (`*_Retry`): los iconos son los blancos `StatusMono_`.
+  - `Icon_Replay_Round.png` (decisión PO 26-10) entra en las texturas permitidas.
+  - `ModuleUITests` fija inglés en su SetUp: el slice de M1 deja I2 en español y, corridos
+    después, «Off» salía «No».
+  - `GarageTutorialSliceTests` (de 29-09): las tarjetas de idioma no llevan anillo, porque
+    tienen sus propios estados (`TargetHighlightRule`, 11-10); el recordatorio es el mando a los
+    5 s. El aviso de URP por `stereoTargetEye` sale de `Autohand.HandCanvasPointer` y se filtra.
+
+### 2026-10-28 (noche, 2) — clic por la forma, gafas dañadas = material, P06 de vuelta
+
+- **El clic va por la forma** (`Module01SceneEntities.FitClickShapes`, al final de
+  `Module01EppLayout.LayoutOpenScene`).
+  - **Por qué:** con una sola caja por EPP, el candado suelto no se podía pulsar (0 %, quedaba
+    dentro de la caja del candado de cable) y once elementos más tenían menos del 70 %
+    alcanzable desde su parada.
+  - **Cómo:** las piezas con escala uniforme llevan un `MeshCollider` no convexo con la malla
+    del FBX. Las piezas con escala no uniforme llevan una caja propia, porque las mallas no son
+    legibles y PhysX no las cocina en el build. Los pequeños (≤ 16 cm) que no tocan a nadie
+    conservan su caja.
+  - **Collider de la entidad:** el objeto que la lleva conserva siempre uno propio; si su malla
+    va en hijos, es la caja de la pieza mayor.
+  - **Resultado:** todo ≥ 61 %.
+  - El test `Desde_su_parada_el_rayo_llega_a_cada_elemento` ahora mide sobre vértices de la
+    superficie (≥ 50 %), no sobre puntos de la caja.
+- **H07 gafas dañadas:** son las gafas de seguridad de O07 con el material rayado (el artista
+  confirmó que «es un material»).
+  - `Module01DamagedGlasses` crea en `Module01/Art/GafasDanadas/` la variante de prefab, el
+    material, la textura de grietas y una copia de la malla con UV de caja (el FBX no trae UV).
+  - Solo crea lo que falta.
+  - Las coloca el código en la mesa de entrada.
+- **P06 gafas deportivas** (`gafas_deportivas.fbx`) vuelve como neutral. PO: lo que es de otro
+  uso y no está dañado (gafas de construcción, snorkel, deportivas) ni suma ni resta.
+- **Soporte de celular → mesa de entrada** (`Moves`): en la del centro lo tapaban los AirPods y
+  el candado, y no quedaba hueco. La PO autorizó repartir en otra mesa.
+
+### 2026-10-28 (noche) — sin «!», poncho y casco retro movidos por nosotros
+
+- **Ya no queda ningún «!»** (60 elementos, 60 con modelo). Los tres que faltaban sí tenían
+  modelo con otro nombre:
+  - H07 gafas dañadas → `EPPS ESCENCIALES/gafas_deportivas.fbx`. Es una deducción: las gafas
+    deportivas de P06 desaparecen como elemento propio.
+  - H01 correa cortada → `Models/df_g_helmet_01.fbx`, un casco retro sin barboquejo. Es el más
+    parecido hasta que el artista haga uno con la correa cortada.
+  - H09 bolsa → `MODELADOS 3d/bolsa.fbx`. El artista nunca la colocó en Garage; la pone
+    `PlaceLoose` en el mostrador de ropa (hay otra copia idéntica en `Materials/`, sin usar).
+- **`Module01ArtEpp.Moves`**: lista de lo que movemos nosotros sobre la pose del artista. Se aplica
+  después de copiar y antes de etiquetar.
+  - El poncho va al suelo, en la esquina entre la mesa del fondo y el mostrador
+    (3.55, 0.04, −3.64), para que deje de tapar los elementos de la mesa del fondo.
+  - `df_g_helmet_01` va al mostrador de ropa (`cabinetmid 1`), en un hueco libre junto a (0.75, −4.45).
+  - El test de pose exacta deja fuera los movidos.
+- Hecho en modo por lotes. Solo queda un aviso de oculto: el pantalón ajustado de table_entrance
+  queda tras los pantalones de pie del artista.
+
+### 2026-10-28 (tarde) — entregas «mas cosas», «falta un solo epp» y «listo» del artista
+
+- **Modelos nuevos y a qué elemento van** (por nombre, carpeta y sitio en `Garage.unity`):
+  `Crocs` (par, en el suelo delante de `mesa`) → H04, la referencia de la hoja es una Crocs; las
+  `Slippers` de antes pasan a P30 «Chanclas de baño», peligro del mismo grupo. `guante
+  voluminoso` (par) → H08. `sombrilla` → H10. `Cafe` → H11. `poncho h` (cuelga delante de
+  `mesa nueva`) → H06. `gorra_` (estante sobre `mesa`) → H12. `audifonos ipod` → H13. `alforja`
+  (suelo, delante de `otra mesa`) → O19. `herramienta` → O13 (la `Tool_Tajima` vuelve al banco).
+  `soporte botella bici` rodea al `termo`: es pieza de O18 (`Entry.ExtraModels`). La gorra y el
+  poncho están en `Models/CITY/Materials/` (`Module01Library.ArtMaterials`).
+- **`bolsa.fbx` (H09) existe pero no está colocada en Garage:** sigue con «!». Quedan 3 «!»:
+  correa cortada (H01), gafas dañadas (H07) y bolsa (H09).
+- **Fuera la mesa de herramientas como parada:** el kit y la multiherramienta se fueron a la
+  mesa del centro; en el banco solo quedan herramientas. `cartuchera_low` y `Tool_Tajima` dejan
+  de ser EPP. Fuera `SO_Item_pouch`, `SO_Zone_workbench` y su ancla.
+- **El contenedor `epps` de la copia anterior se borra siempre** al traer el arte: si un modelo
+  deja de ser EPP, el contenedor ya no estaba «hecho solo de EPP» y se quedaba duplicado.
+- **Hecho en modo por lotes** (RideSafe cerrado; el editor abierto era otro proyecto): Unity
+  6000.4.9 con `-batchmode -executeMethod`, con un método temporal ya borrado.
+- **Aviso del arte:** desde la mesa del fondo, el poncho tapa la luz delantera, el teléfono, las
+  gafas de trabajo, la luz roja y los audífonos viejos. Hay que pedir al artista que lo mueva; el
+  test `Desde_su_parada_el_rayo_llega_a_cada_elemento` lo marcará.
+
+### 2026-10-28 — entrega «faltan 10» del artista, reglas de vehículo y gorra, Excel a Docs
+
+- **Qué trajo el artista (`bf1dc80`, «faltan 10»):** cinco modelos en `EPPS ESCENCIALES`, todos
+  sobre `otra mesa` en `Garage.unity`: `kit compacto` → O12 (sustituye a `cartuchera_low`),
+  `soporte celular` → O14, `timbre bici` → O15, `termo` → O18, `diadema` → H03 (audífonos de
+  diadema; sustituye a `audifonos`; **supuesto mío por la forma**, confirmar con el artista).
+  Quedan 10 «!», como dice su commit. `cartuchera_low` y `audifonos` pasan a `DecorationModels`.
+- **Gorra (H12, «Peligrosa condicional»):** `SafetyItemSO.SubstitutesFor = helmet_ok`. Elegida
+  junto al casco va a la lista de opcionales del reporte: no resta y sale «No necesario».
+- **Por vehículo (PO: solo los de la lista):** `SafetyItemSO.OnlyForVehicle`. Alforja y kit de
+  pinchazos solo `ebike`; mochila solo `escooter` (la hoja: «e-scooter o bici sin
+  portaequipajes», y la e-bike lleva alforja); timbre con los dos (ninguno trae timbre modelado).
+  El director arma la vuelta con `ZoneSO.ForVehicle` y apaga en el garaje lo que no aplica, así
+  recorrido, nota y reporte cuadran sin tocar nada más.
+- **Excel y su zip movidos a `Docs/`** (estaban en `Assets/` e Unity los importaba).
+- Tests nuevos `SheetRulesTests`; actualizados los de biblioteca y escena. No ejecutados (los
+  corre la PO).
+- **Tras su prueba: «todos los que ha hecho el artista son interactuables»** (PO). Lo que el
+  Excel no evalúa pasa a ser **neutral** (peso 0, «No necesario», como N01) y los peligros
+  evidentes restan (PO): bufanda, pañuelo, pantalón ancho (doblado y de pie) y tenis con cordones
+  sueltos, −15 en un grupo `loose_clothing` (peso propuesto por mí); los audífonos viejos, −20 en
+  `auditory_occlusion` como H03. Son `P03`–`P29`. Fuera `DecorationModels` y `RetiredItemIds`
+  (quedaban vacías). Las botas rojas viven dentro del prefab de decoración: `TagArt` las encuentra
+  por su malla. El casco viejo (`df_g_helmet_01`) no se ve desde ninguna parada y no se tocó.
+- **Coderas que no se pulsaban:** el collider se calculaba con la caja del mundo de cada pieza;
+  girada (rodilleras a 285°) salía mucho mayor y tapaba lo de detrás. Ahora usa la caja de la
+  malla. Test de escena: desde su ancla el rayo llega a cada elemento.
+- **«M1/Item_KneePads»:** faltaban los términos en el asset de I2. Están en `Module01UiTerms`
+  con los de P03–P29, y un test exige el nombre de cada elemento en I2.
+- **Panel «Mi preparación»:** arriba a la derecha (16° sobre los ojos, 28° a la derecha) y
+  plegable: plegado muestra el título con «(n) ↓»; al pulsarlo se abre la lista
+  (`ChecklistView.MakeCollapsible`).
+
+### 2026-10-27 (madrugada, 2.ª vuelta) — una parada por mueble, de frente y centrada
+
+- **Qué dijo la PO al probarlo:** las anclas «en ángulo» para ver toda una mesa del Excel
+  repartida por el garaje no sirven: cada parada debe mostrar **un mueble centrado**, y tiene que
+  haber parada donde están los pantalones. Había EPP que no se podían pulsar bien.
+- **Decisión (PO):** una parada por mueble, cinco, en orden desde la puerta: mesa de la entrada
+  (`mesa`), mesa del centro (`otra mesa`), mesa del fondo (`mesa nueva`), mostrador de la ropa
+  (`cabinet (1)` + `cabinetmid 1`, el de los pantalones) y mesa de herramientas (`metal table`,
+  propia). Las zonas del catálogo son ahora `Module01Library.Stops`; `Entry.Table` (la mesa del
+  Excel) queda solo como trazabilidad. Títulos nuevos `M1/Stop_*` (I2 + CSV).
+- **Qué va en cada parada:** lo del artista, por el mueble donde lo dejó (test de escena
+  `Cada_EPP_del_artista_esta_en_el_mueble_de_su_parada`). Los «!»: ropa y accesorios al
+  mostrador de la ropa, trayecto y bici a la de herramientas; la correa cortada y las gafas
+  dañadas a la derecha para que cada parada tenga algo que no se debe llevar.
+- **Ancla:** `StationLayout.TryFrontView` — de frente por el lado largo del mueble, centrada, a la
+  distancia para que entre entero (FOV 91°, 10 % de aire), ≥1,90 m de cada EPP de la parada y sin
+  caer dentro de la bici. Se fue `TryViewPointAmong` (el minimax con giro de cabeza) y los muebles
+  de reserva; se borran las anclas y los `SO_Zone_*` de zonas que ya no existen.
+- **Aviso que queda (arte):** en la mesa de la entrada el pantalón de pie (`Slim_fit_pants`) tapa
+  casi entero el doblado (`Slim_fit_pants_doblado`). La mesa del centro se mira desde 2,9 m porque
+  la mochila está en el suelo delante y tiene que quedar fuera de la burbuja.
+- **Pruebas:** las corre la PO (pidió no correrlas aquí). Tests actualizados, no ejecutados.
+- **Tras su prueba («la mayoría no se pueden seleccionar»):** en la mesa del fondo y el
+  mostrador de la ropa casi todo lo que se ve es **decorado** del artista que el Excel no evalúa
+  (su decisión anterior): coderas, rodilleras, chaleco/gafas/candado viejos, guantes rojos y
+  azules, mascada, tapabocas, tenis, pantalones, la caja de herramientas… El fallo real era mío:
+  `cabinet (1)` trae el armario alto del rincón en la misma malla y los «!» flotaban delante de
+  sus puertas. `Surface` tiene ahora tramo útil (`usableFrom` −2,89, medido en la malla) y el
+  mostrador solo admite 2 signos: manoplas y bebida pasan a la mesa de herramientas.
+- **Coderas y rodilleras seleccionables (PO):** «Recomendada condicional» = bono. La hoja no las
+  tiene: `P01 elbow_pads` y `P02 knee_pads` (prefijo P = añadido por la PO), +2 como los guantes
+  (supuesto mío, a confirmar), Mesa 1 por trazabilidad, parada «Mesa del fondo» (donde las dejó
+  el artista, por pares). Salen de `RetiredItemIds` y de `DecorationModels`. Términos I2 ya
+  existían.
+- **Comparación con el Excel nuevo (`Assets/RideSafe_VR_..._2026-10-19.xlsx`, 27-10 23:38):**
+  coinciden los 31 elementos + N01, pesos, mesas, grupos y topes. El Excel se contradice: la
+  pestaña «Biblioteca» renumera los recomendados O01–O14 seguidos y «Sistema de puntuación»
+  conserva O01, O02, O04, O07… (los nuestros). Reglas de la hoja sin implementar: H12 (gorra)
+  solo es peligro si se elige en lugar del casco; aplicabilidad de los bonos por escenario y
+  vehículo (alforja solo e-bike con portaequipajes, timbre si el vehículo no tiene, mochila
+  scooter o bici sin portaequipajes…).
+
+### 2026-10-27 (madrugada) — los EPP de v5 exactamente como en `Garage.unity`
+
+- **Qué se pidió (PO):** todos los EPP de la escena del artista, con su posición, tamaño,
+  proporciones y distancias, iguales en v5; sin tocar `Garage.unity`. Ya se había pedido antes.
+- **Decisiones de la PO:** posición exacta y punto de vista recalculado por mesa (se gira la
+  cabeza: las mesas del Excel quedan repartidas por el garaje); lo que la hoja no evalúa viene
+  **de decorado**, en su sitio, sin clic (gafas, candado, chaleco y casco viejos, gafas
+  deportivas, snorkel, tenis, guaya dañada, linterna, coderas, rodilleras, bufanda, pantalones…).
+- **Herramienta nueva:** `RideSafe → Módulo 1 → Colocar los EPP como en la escena de arte`
+  (`Module01ArtEpp`). Abre Garage aditiva, le **saca** los EPP (raíz `epps` + sueltos de
+  esenciales, de la hoja o de `Module01Library.DecorationModels`) y la cierra sin guardar; quita
+  la copia anterior de v5 (lo que está hecho solo de modelos de EPP); devuelve a su sitio el
+  mobiliario que el despeje de pasillo había movido (gazón, regla, medidor) y el arte viejo apagado
+  (botas, casco). Repetible. Pide que Garage esté cerrada.
+- **El clic va sobre el objeto del artista**, reconocido por su FBX (no por nombre).
+  Varias piezas del mismo modelo (4 zapatos, 2 guantes, 2 chanclas) son un elemento: cuelgan de
+  la primera. Fuera `SceneObject`, `RetiredSceneObjects`, `Superseded`, los pares y el reparto
+  en fila (`StationLayout.Arrange/ViewPoint/OnFloor…`): código muerto con esto.
+- **Los EPP del artista se iluminan con sondas** (sin `ContributeGI`): su horneado no viaja.
+- **Mesas:** el ancla se elige con `StationLayout.TryViewPointAmong` mirando **solo** lo del
+  artista: primero que nada quede tapado (rayos a 6 puntos de cada objeto, holgura 1 cm, cuentan
+  los colliders), luego que el más lejano quede lo más cerca posible, a ≥1,90 m de todo
+  (burbuja de foco). Los «!» buscan después un hueco **a la vista de su ancla que no tape nada
+  desde ninguna ancla**: en su mueble, y si no en los de reserva (`cabinet`, `metal table`).
+  `Station` pasa a tener lista de muebles (control: `otra mesa` y `mesa`).
+- **Tests que cambiaron de contrato:** `TutorialHaloReachTests` exige alcance (≤5,5 m), ya no
+  «a la vista sin girar»; el PlayMode gira la cámara hacia el EPP antes de pulsar y pulsa un punto
+  que se vea; el test del pedestal mide el canto del disco y no su caja.
+- **Modo PC:** la cámara de escritorio no gira con el ratón. En VR se gira la cabeza; en el demo
+  de PC los EPP fuera del encuadre no se alcanzan. Pendiente de decidir con la PO.
+- **Verificado:** EditMode M0+M1+TutorialHelp 512/512 (los 13 de GarajeTest pasan con Garage
+  rehorneado en local); PlayMode M1 6/6; capturas en `Docs/verification/module01/estacion-*.png`.
+- **Rehorneado local de Garage** (6000.4.9, por CPU; por GPU reinició el portátil): solo para
+  verla aquí, **no se sube** (`scenas/Garage/`).
 
 ### 2026-10-27 (noche) — reporte final, fuera la patineta vieja, video por vehículo y Hierarchy ordenado
 

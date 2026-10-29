@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57d7efc5bfa83cd4c8c63812d89bf4d3, type: 3}
+  m_Name: SO_Item_neck_scarf
+  m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.SafetyItemSO
+  _itemId: neck_scarf
+  _nameKey: M1/Item_NeckScarf
+  _riskKey: M1/Item_NeckScarf_Risk
+  _category: 3
+  _displayPrefab: {fileID: 919132149155446097, guid: 1695f05e210363346a49fbe2de2def1f, type: 3}
+  _deteriorated: 0
+  _promptClip: {fileID: 0}
+  _weight: 15
+  _hazardGroup: loose_clothing
+  _exclusiveBonusWith: 
+  _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

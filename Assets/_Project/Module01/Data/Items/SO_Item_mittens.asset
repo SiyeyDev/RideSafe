@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_Mittens
   _riskKey: M1/Item_Mittens_Risk
   _category: 3
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: 85f8cb0b307ade748936cd1e1947b7c4, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 15
   _hazardGroup: control_access
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

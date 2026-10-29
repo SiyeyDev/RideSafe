@@ -96,8 +96,9 @@ namespace RideSafe.Module01
                     case SafetyItemCategory.Core:
                         status = ItemStatus.Selected;
                         break;
-                    case SafetyItemCategory.Inappropriate:
+                    case SafetyItemCategory.Inappropriate when Contains(report.InappropriateSelected, item.ItemId):
                         // Deteriorado y "no es lo que toca" se dicen igual: son tres estados.
+                        // Por la lista y no por la categoría: la gorra junto al casco no es peligro.
                         status = ItemStatus.NotSuited;
                         break;
                     default:

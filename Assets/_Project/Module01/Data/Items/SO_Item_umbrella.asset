@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_Umbrella
   _riskKey: M1/Item_Umbrella_Risk
   _category: 3
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: 95734bfb34706ff418c481e9c21cfbc7, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 30
   _hazardGroup: one_hand_wind
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

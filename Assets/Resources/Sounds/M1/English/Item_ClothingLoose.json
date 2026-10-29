@@ -1,20 +1,14 @@
 {
   "characters": [
     "Loose",
-    "clothing",
-    "or",
-    "shoelaces"
+    "scarf"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.372,
-    0.859,
-    1.022
+    0.337
   ],
   "character_end_times_seconds": [
-    0.325,
-    0.789,
-    0.952,
-    1.765
+    0.313,
+    0.975
   ]
 }

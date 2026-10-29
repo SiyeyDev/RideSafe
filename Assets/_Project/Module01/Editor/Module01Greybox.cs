@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Video;
@@ -38,19 +39,39 @@ namespace RideSafe.Module01.Editor
         /// comando, y no hay dos sitios que puedan discrepar.
         /// </para>
         /// </summary>
+        /// <remarks>
+        /// Desde el 2026-10-27 las zonas son las <b>paradas</b> (<see cref="Module01Library.Stops"/>),
+        /// una por mueble, y no las tres mesas del Excel: el artista repartió cada mesa por varios
+        /// muebles.
+        /// </remarks>
         private static (string ZoneId, string TitleKey, string[] ItemIds)[] Zones()
         {
-            var zones = new (string, string, string[])[Module01Library.Tables.Length];
-            for (int i = 0; i < Module01Library.Tables.Length; i++)
+            var zones = new (string, string, string[])[Module01Library.Stops.Length];
+            for (int i = 0; i < Module01Library.Stops.Length; i++)
             {
-                var table = Module01Library.Tables[i];
-                List<Module01Library.Entry> entries = Module01Library.Of(table.Id);
-                var ids = new string[entries.Count];
-                for (int j = 0; j < entries.Count; j++)
-                    ids[j] = entries[j].ItemId;
-                zones[i] = (table.Id, table.TitleKey, ids);
+                Module01Library.Stop stop = Module01Library.Stops[i];
+                zones[i] = (stop.Id, stop.TitleKey, stop.ItemIds.ToArray());
             }
             return zones;
+        }
+
+        /// <summary>
+        /// Borra las zonas personales que ya no son una parada (las tres mesas del Excel, y las
+        /// cuatro estaciones de antes). Ningún catálogo las referencia ya y, puestas en la carpeta,
+        /// parecen datos vivos.
+        /// </summary>
+        private static void RetireZonesThatAreNotStops()
+        {
+            HashSet<string> stops = new HashSet<string>(Module01Library.Stops.Select(s => $"{ZonesFolder}/SO_Zone_{s.Id}.asset"));
+            foreach (string guid in AssetDatabase.FindAssets("SO_Zone_ t:ZoneSO", new[] { ZonesFolder }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (System.IO.Path.GetFileName(path).StartsWith("SO_Zone_") && !stops.Contains(path))
+                {
+                    AssetDatabase.DeleteAsset(path);
+                    Debug.Log($"[Module01] Fuera la zona {path}: ya no es una parada.");
+                }
+            }
         }
 
         /// <summary>Puntos de inspección del e-bike: (id, clave, posición en el cubo).</summary>
@@ -75,7 +96,7 @@ namespace RideSafe.Module01.Editor
         };
 
         /// <summary>
-        /// Rehace <b>solo</b> los EPP: sus <c>SafetyItemSO</c>, las tres mesas y el catálogo,
+        /// Rehace <b>solo</b> los EPP: sus <c>SafetyItemSO</c>, las paradas y el catálogo,
         /// desde <see cref="Module01Library"/>. Es el comando que se repite cada vez que cambia
         /// el Excel del cliente.
         /// <para>
@@ -88,11 +109,11 @@ namespace RideSafe.Module01.Editor
         public static void RebuildEppCatalog()
         {
             EnsureFolders();
-            RetireItemsTheSheetDoesNotAskFor();
 
             Dictionary<string, SafetyItemSO> items = CreateItems();
             List<ZoneSO> zones = CreateZones(Zones(), items, "SO_Zone_");
             CreateCatalog(zones);
+            RetireZonesThatAreNotStops();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -102,7 +123,7 @@ namespace RideSafe.Module01.Editor
                 if (e.NeedsMarker) conMarcador++; else conModelo++;
 
             Debug.Log($"[Module01] Catálogo rehecho desde la biblioteca: {Module01Library.All.Length} "
-                      + $"elementos en {zones.Count} mesas. {conModelo} con modelo, "
+                      + $"elementos en {zones.Count} paradas. {conModelo} con modelo, "
                       + $"{conMarcador} con el signo «!» a la espera de 3D.");
         }
 
@@ -111,11 +132,11 @@ namespace RideSafe.Module01.Editor
         {
             EnsureFolders();
 
-            RetireItemsTheSheetDoesNotAskFor();
 
             Dictionary<string, SafetyItemSO> items = CreateItems();
             List<ZoneSO> personalZones = CreateZones(Zones(), items, "SO_Zone_");
             CreateCatalog(personalZones);
+            RetireZonesThatAreNotStops();
 
             RebuildVehicleData();
             Debug.Log("[Module01] Datos de la primera pasada listos en " + DataFolder);
@@ -150,29 +171,10 @@ namespace RideSafe.Module01.Editor
             }
         }
 
-        /// <summary>
-        /// Borra los <c>SafetyItemSO</c> de lo que Daniel modeló para adelantar trabajo y la
-        /// hoja no pide. Sin esto, volver a correr el comando dejaría los viejos en disco y el
-        /// montador de escena los seguiría colocando.
-        /// <para>
-        /// Solo se borra el dato del catálogo: <b>el arte se queda</b>. La bufanda y las
-        /// rodilleras siguen en la carpeta de modelos por si algún día el cliente los pide.
-        /// </para>
-        /// </summary>
-        private static void RetireItemsTheSheetDoesNotAskFor()
-        {
-            foreach (string id in Module01Library.RetiredItemIds)
-            {
-                string path = $"{ItemsFolder}/SO_Item_{id}.asset";
-                if (AssetDatabase.LoadAssetAtPath<SafetyItemSO>(path) == null)
-                    continue;
-                AssetDatabase.DeleteAsset(path);
-                Debug.Log($"[Module01] retirado {id}: no está en la biblioteca del cliente.");
-            }
-        }
-
         private static Dictionary<string, SafetyItemSO> CreateItems()
         {
+            // H07 es una variante con material propio: tiene que existir antes de cargarla.
+            Module01DamagedGlasses.Ensure();
             Dictionary<string, SafetyItemSO> map = new Dictionary<string, SafetyItemSO>();
             foreach (Module01Library.Entry entry in Module01Library.All)
             {
@@ -182,6 +184,7 @@ namespace RideSafe.Module01.Editor
                 asset.ConfigureForTests(id, entry.NameKey, entry.NameKey + "_Risk", entry.Category);
                 asset.ConfigureWeightForTests(entry.Weight, entry.HazardGroup);
                 asset.ConfigureBonusForTests(entry.ExclusiveBonusWith);
+                asset.ConfigureRulesForTests(entry.OnlyForVehicle, entry.SubstitutesFor);
 
                 // Sin modelo, el prefab de exhibición se queda VACÍO a propósito: así
                 // ItemInspector.BuildDisplay cae al glifo y el pedestal enseña el «!», igual

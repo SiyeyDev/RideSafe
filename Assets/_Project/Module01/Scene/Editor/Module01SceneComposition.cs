@@ -60,6 +60,9 @@ namespace RideSafe.Module01.Editor
 
             RectTransform sign = Find("Module01Controls/StationInstruction");
             SetVisibleSize(sign, new Vector2(640f, 98f));
+            // Left of centre: «Mi preparación» went up to the top right (2026-10-28) and at -110 its
+            // box covered the sign's right end by ~70 units (Module01SliceTests.AssertHudDoesNotOverlap).
+            sign.anchoredPosition = new Vector2(-230f, sign.anchoredPosition.y);
             RectTransform text = (RectTransform)sign.Find("Instruction");
             text.anchoredPosition = Vector2.zero;
             text.sizeDelta = new Vector2(592f, 80f);

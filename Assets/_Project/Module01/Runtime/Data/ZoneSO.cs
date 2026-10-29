@@ -19,6 +19,29 @@ namespace RideSafe.Module01
         public string TitleKey => _titleKey;
         public IReadOnlyList<SafetyItemSO> Items => _items;
 
+        /// <summary>
+        /// La zona tal como se recorre con ese vehículo: sin lo que solo aparece con otro (ver
+        /// <see cref="SafetyItemSO.AppliesTo"/>). Si todo aplica es la misma zona; si no, una copia
+        /// en memoria que quien la pide tiene que destruir.
+        /// </summary>
+        public ZoneSO ForVehicle(string vehicleContextValue)
+        {
+            bool allApply = true;
+            foreach (SafetyItemSO item in _items)
+                allApply &= item == null || item.AppliesTo(vehicleContextValue);
+            if (allApply)
+                return this;
+
+            ZoneSO view = CreateInstance<ZoneSO>();
+            view.name = name + " (" + vehicleContextValue + ")";
+            view._zoneId = _zoneId;
+            view._titleKey = _titleKey;
+            foreach (SafetyItemSO item in _items)
+                if (item != null && item.AppliesTo(vehicleContextValue))
+                    view._items.Add(item);
+            return view;
+        }
+
         /// <summary>Solo para tests.</summary>
         public void ConfigureForTests(string zoneId, string titleKey, IEnumerable<SafetyItemSO> items)
         {

@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_Poncho
   _riskKey: M1/Item_Poncho_Risk
   _category: 3
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: cbcd5169cbb931745b4ccba103f0f309, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 20
   _hazardGroup: loose_rainwear
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

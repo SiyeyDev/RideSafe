@@ -1,0 +1,14 @@
+{
+  "characters": [
+    "Face",
+    "mask"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.418
+  ],
+  "character_end_times_seconds": [
+    0.36,
+    1.115
+  ]
+}

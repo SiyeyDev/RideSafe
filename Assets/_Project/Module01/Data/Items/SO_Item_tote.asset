@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_Tote
   _riskKey: M1/Item_Tote_Risk
   _category: 3
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: d1c087502bd8c434699158db4786b87f, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 15
   _hazardGroup: unstable_carry
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 
