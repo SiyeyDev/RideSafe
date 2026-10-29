@@ -30,9 +30,18 @@ namespace RideSafe.UI.Tests
             "Assets/_Project/UI/StatusIcons/StatusMono_Ready.png",
             "Assets/_Project/UI/StatusIcons/StatusMono_Retry.png",
             "Assets/_Project/UI/StatusIcons/StatusMono_Attention.png",
+            // X and dash drawn for the report's three states (PO, 2026-10-29; UIStatusIcons.Drawn).
+            "Assets/_Project/UI/StatusIcons/StatusMono_Wrong.png",
+            "Assets/_Project/UI/StatusIcons/StatusMono_NotNeeded.png",
             // The video's «Repetir»: the atlas's Icon_Replay read as something else (PO, 2026-10-26;
             // UIComposition.ReplayIcon).
             "Assets/_Project/UI/Icons/Icon_Replay_Round.png",
+            // White chevrons for the icon-only module 0 Back / Continue (PO, 2026-10-29; UIStatusIcons.Navigation).
+            "Assets/_Project/UI/Icons/IconMono_Back.png",
+            "Assets/_Project/UI/Icons/IconMono_Continue.png",
+            // The location cards' flags (PO, 2026-10-29; UIComposition.LocationFlags).
+            "Assets/_Project/UI/Icons/Flag_USA.png",
+            "Assets/_Project/UI/Icons/Flag_LatAm.png",
             // The company mark beside the panel titles (UIBrand).
             "Assets/_Project/UI/Brand/RideSafe_Mark_Navy.png",
             "Assets/_Project/UI/Brand/RideSafe_Mark_White.png"
@@ -352,7 +361,7 @@ namespace RideSafe.UI.Tests
             // The white «StatusMono_» glyphs since the traffic-light tints (UIStatusIcons): the shape
             // is what matters, so a reader who cannot tell the colours apart still can.
             string Glyph(string title) => rows.Find("Row · " + title + "/Icon").GetComponent<UnityEngine.UI.Image>().sprite.name;
-            StringAssert.EndsWith("_Retry", Glyph("Bag on handlebar"), "NotSuited must use its own glyph, not colour alone.");
+            StringAssert.EndsWith("_Wrong", Glyph("Bag on handlebar"), "NotSuited must use its own glyph, not colour alone.");
             Assert.AreNotEqual(Glyph("Front brake lever"), Glyph("Bag on handlebar"));
         }
 

@@ -20,6 +20,8 @@ namespace RideSafe.UI
         [SerializeField] private TMP_Text _label;
         [SerializeField] private Color _labelColor = Color.white;
         [SerializeField] private Color _disabledLabelColor = new Color(0.43f, 0.51f, 0.59f, 1f);
+        [Tooltip("Optional glyph that takes the label's colour in every state: the icon-only Back / Continue (2026-10-29).")]
+        [SerializeField] private UnityEngine.UI.Graphic _icon;
 
         [Header("Toggle ON look (optional)")]
         [SerializeField] private UnityEngine.UI.Image _background;
@@ -101,7 +103,14 @@ namespace RideSafe.UI
             if (_lastInteractable == interactable)
                 return;
             _lastInteractable = interactable;
-            _label.color = interactable ? CurrentLabelColor() : _disabledLabelColor;
+            SetLabelColor(interactable ? CurrentLabelColor() : _disabledLabelColor);
+        }
+
+        private void SetLabelColor(Color color)
+        {
+            _label.color = color;
+            if (_icon != null)
+                _icon.color = color;
         }
 
         private Color CurrentLabelColor() => _toggle != null && _toggle.isOn ? _onLabelColor : _labelColor;
@@ -113,7 +122,7 @@ namespace RideSafe.UI
             if (_swapSpriteState)
                 _toggle.spriteState = isOn ? _onSpriteState : _offSpriteState;
             if (_label != null && _selectable.IsInteractable())
-                _label.color = CurrentLabelColor();
+                SetLabelColor(CurrentLabelColor());
 
             if (_caption != null)
             {

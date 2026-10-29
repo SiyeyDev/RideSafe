@@ -298,6 +298,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: RideSafe.UI::RideSafe.UI.TitleMark
   _title: {fileID: 1625079308}
   _offsetX: 0
+  _inline: 1
+  _gap: 10
 --- !u!114 &27099280
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -698,7 +700,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.counter_clothes.work_vest
+    _value: module01.table_back.work_vest
   _availableOnStart: 1
   _itemId: work_vest
 --- !u!65 &59720090
@@ -720,7 +722,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.45485377, y: 0.6035507, z: 0.3035531}
+  m_Size: {x: 0.45485395, y: 0.6035507, z: 0.30355272}
   m_Center: {x: 0, y: 0, z: 0.0027172565}
 --- !u!1 &79577054
 GameObject:
@@ -1264,7 +1266,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: fc592820628e3b646b525d5c0de24feb, type: 2}
     - target: {fileID: 919132149155446097, guid: 1e293ef45a03b4f4880fe9b597a4946d, type: 3}
       propertyPath: m_Name
-      value: O02_reflective gris
+      value: P32_vest_grey
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 1e293ef45a03b4f4880fe9b597a4946d, type: 3}
       propertyPath: m_IsActive
@@ -1310,8 +1312,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.6976284, y: 1.1270024, z: 0.5214077}
-  m_Center: {x: 0.00000011920929, y: 0.5491865, z: 0.0013111234}
+  m_Size: {x: 0.4185768, y: 0.6762014, z: 0.3128448}
+  m_Center: {x: 0.000000059604645, y: 0.3295119, z: 0.0007867813}
 --- !u!114 &105401186
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1325,9 +1327,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_back.reflective
+    _value: module01.table_tools.vest_grey
   _availableOnStart: 1
-  _itemId: reflective
+  _itemId: vest_grey
 --- !u!1001 &153648466
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1429,7 +1431,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_entrance.gloves
+    _value: module01.table_back.gloves
   _availableOnStart: 1
   _itemId: gloves
 --- !u!65 &153648471
@@ -1451,8 +1453,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.2612586, y: 0.060302615, z: 0.17797348}
-  m_Center: {x: 0.0072191954, y: 0.009676993, z: -0.03695181}
+  m_Size: {x: 0.2612583, y: 0.060302615, z: 0.17797324}
+  m_Center: {x: 0.007219188, y: 0.009676993, z: -0.036951765}
 --- !u!1001 &157763209
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1581,7 +1583,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.22403526, y: 0.38230023, z: 0.102381706}
+  m_Size: {x: 0.22403525, y: 0.38230023, z: 0.102382004}
   m_Center: {x: 0, y: 0.19063608, z: 0}
 --- !u!1 &158170270
 GameObject:
@@ -1809,8 +1811,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.07347852, y: 0.14700031, z: 0.06}
-  m_Center: {x: 0, y: -0.00000010430813, z: 0.00003796816}
+  m_Size: {x: 0.07347852, y: 0.1470001, z: 0.06}
+  m_Center: {x: 0, y: 0, z: 0.00003796816}
 --- !u!1001 &171865132
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7090,8 +7092,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.7499999, y: 0.59000266, z: 0.39999998}
-  m_Center: {x: -0.000000029802322, y: 0, z: 0}
+  m_Size: {x: 0.11249999, y: 0.08850022, z: 0.06}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &214621651
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7198,7 +7200,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_back.cable_lock
+    _value: module01.table_entrance.cable_lock
   _availableOnStart: 1
   _itemId: cable_lock
 --- !u!65 &214621656
@@ -7220,8 +7222,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.30153435, y: 0.04, z: 0.30315977}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.30153418, y: 0.04, z: 0.30315992}
+  m_Center: {x: -0.00000008940697, y: 0, z: 0.000000074505806}
 --- !u!1 &215322949
 GameObject:
   m_ObjectHideFlags: 0
@@ -7625,8 +7627,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.1885004, y: 0.21928525, z: 0.23653495}
-  m_Center: {x: 0.0004119873, y: 0.0005239248, z: 0.0027506948}
+  m_Size: {x: 0.18850046, y: 0.21928526, z: 0.23653504}
+  m_Center: {x: 0.0004119575, y: 0.0005239621, z: 0.0027506202}
 --- !u!1 &229895657
 GameObject:
   m_ObjectHideFlags: 0
@@ -12611,8 +12613,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.046221755, y: 0.03, z: 0.09065089}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.092443585, y: 0.06, z: 0.18130183}
+  m_Center: {x: 0, y: 0, z: -0.00000008195639}
 --- !u!1 &250726839
 GameObject:
   m_ObjectHideFlags: 0
@@ -12746,7 +12748,7 @@ Transform:
   m_GameObject: {fileID: 251941612}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: -0.9213805, y: 1.45, z: -1.451833}
+  m_LocalPosition: {x: 0.46, y: 1.45, z: -1.45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -13193,8 +13195,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.26125816, y: 0.060302615, z: 0.17797354}
-  m_Center: {x: 0.007219188, y: 0.009676993, z: 0.036951877}
+  m_Size: {x: 0.26125816, y: 0.060302615, z: 0.1779733}
+  m_Center: {x: 0.007219188, y: 0.009676993, z: 0.036951996}
 --- !u!1 &283241163
 GameObject:
   m_ObjectHideFlags: 0
@@ -18191,10 +18193,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 1771057109171911229, guid: 2d0412345b5434f4097d56f5468ffe78, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 741900170}
+    m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2d0412345b5434f4097d56f5468ffe78, type: 3}
       insertIndex: -1
@@ -18202,6 +18201,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2d0412345b5434f4097d56f5468ffe78, type: 3}
       insertIndex: -1
       addedObject: {fileID: 310751312}
+    - targetCorrespondingSourceObject: {fileID: -8782655439828690491, guid: 2d0412345b5434f4097d56f5468ffe78, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 864964188}
     - targetCorrespondingSourceObject: {fileID: 5155547158685979251, guid: 2d0412345b5434f4097d56f5468ffe78, type: 3}
       insertIndex: -1
       addedObject: {fileID: 310751311}
@@ -18217,11 +18219,6 @@ Transform:
 --- !u!1 &310751308 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5155547158685979251, guid: 2d0412345b5434f4097d56f5468ffe78, type: 3}
-  m_PrefabInstance: {fileID: 310751306}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &310751309 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1771057109171911229, guid: 2d0412345b5434f4097d56f5468ffe78, type: 3}
   m_PrefabInstance: {fileID: 310751306}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &310751310 stripped
@@ -18264,7 +18261,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_back.flat_kit
+    _value: module01.table_tools.flat_kit
   _availableOnStart: 1
   _itemId: flat_kit
 --- !u!65 &310751313
@@ -18286,8 +18283,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.21045685, y: 0.12, z: 0.22159815}
-  m_Center: {x: 0.2322998, y: -0.0029773712, z: -0.001906395}
+  m_Size: {x: 0.1052282, y: 0.06, z: 0.110799104}
+  m_Center: {x: 0.1097, y: -0.016499996, z: -0.017200023}
 --- !u!65 &310751314
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -18307,8 +18304,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.21423852, y: 0.19601281, z: 0.42326868}
-  m_Center: {x: 0.00000014156103, y: 0.0000000060535967, z: 0}
+  m_Size: {x: 0.06557894, y: 0.06, z: 0.12956381}
+  m_Center: {x: -0.000000059604645, y: 0.0000000037252903, z: 0.00000011920929}
 --- !u!1 &320992169
 GameObject:
   m_ObjectHideFlags: 0
@@ -23285,8 +23282,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.29582655, y: 0.04, z: 0.3333186}
-  m_Center: {x: 0.0027901828, y: 0, z: 0.015079409}
+  m_Size: {x: 0.29582655, y: 0.04, z: 0.3333187}
+  m_Center: {x: 0.0027900934, y: 0, z: 0.015079439}
 --- !u!1001 &341612535
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28844,7 +28841,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -28876,7 +28873,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 50.965504, y: 0, z: 0, w: 0}
+  m_margin: {x: 50.96552, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -29790,6 +29787,7 @@ MonoBehaviour:
   _label: {fileID: 1949896197}
   _labelColor: {r: 1, g: 1, b: 1, a: 1}
   _disabledLabelColor: {r: 0.43137255, g: 0.5058824, b: 0.5882353, a: 1}
+  _icon: {fileID: 0}
   _background: {fileID: 0}
   _offSprite: {fileID: 0}
   _onSprite: {fileID: 0}
@@ -30153,7 +30151,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -30269,7 +30267,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 917f296790ac8c843be602b99a51371a, type: 2}
     - target: {fileID: 919132149155446097, guid: 424c0332dd29c0a44b7292e71a704ad6, type: 3}
       propertyPath: m_Name
-      value: E01_helmet_NO
+      value: P31_helmet_cracked
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 424c0332dd29c0a44b7292e71a704ad6, type: 3}
       propertyPath: m_IsActive
@@ -30309,9 +30307,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_entrance.helmet_ok
+    _value: module01.counter_clothes.helmet_cracked
   _availableOnStart: 1
-  _itemId: helmet_ok
+  _itemId: helmet_cracked
 --- !u!65 &448749678
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30331,8 +30329,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.79066277, y: 1.1226248, z: 1.0208364}
-  m_Center: {x: 0.000000029802322, y: 0.00034958124, z: 0}
+  m_Size: {x: 0.25301218, y: 0.35923994, z: 0.3266678}
+  m_Center: {x: 0, y: 0.00011187792, z: 0}
 --- !u!1001 &454951182
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -30403,7 +30401,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 1e293ef45a03b4f4880fe9b597a4946d, type: 3}
       propertyPath: m_Name
-      value: O02_reflective (1)
+      value: P36_reflective_spare
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 1e293ef45a03b4f4880fe9b597a4946d, type: 3}
       propertyPath: m_IsActive
@@ -30449,8 +30447,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.6976284, y: 1.1270024, z: 0.5214077}
-  m_Center: {x: 0.00000011920929, y: 0.5491865, z: 0.0013111234}
+  m_Size: {x: 0.4185768, y: 0.6762014, z: 0.3128448}
+  m_Center: {x: 0.000000059604645, y: 0.3295119, z: 0.0007867813}
 --- !u!114 &454951186
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30464,9 +30462,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_back.reflective
+    _value: module01.table_tools.reflective_spare
   _availableOnStart: 1
-  _itemId: reflective
+  _itemId: reflective_spare
 --- !u!1001 &464471638
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -30529,7 +30527,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0e379a0fddaf249409d790544c5bf2bf, type: 3}
       propertyPath: m_Name
-      value: O04_gloves (2)
+      value: P34_gloves_spare_2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -30574,8 +30572,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.2612586, y: 0.060302615, z: 0.17797348}
-  m_Center: {x: 0.0072191954, y: 0.009676993, z: -0.03695181}
+  m_Size: {x: 0.2612586, y: 0.060302615, z: 0.17797327}
+  m_Center: {x: 0.0072191954, y: 0.009676993, z: -0.036951914}
 --- !u!114 &464471642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30589,9 +30587,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_entrance.gloves
+    _value: module01.counter_clothes.gloves_spare_2
   _availableOnStart: 1
-  _itemId: gloves
+  _itemId: gloves_spare_2
 --- !u!1 &473208208
 GameObject:
   m_ObjectHideFlags: 0
@@ -33244,7 +33242,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0e379a0fddaf249409d790544c5bf2bf, type: 3}
       propertyPath: m_Name
-      value: O04_gloves (1)
+      value: P33_gloves_spare
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -33289,8 +33287,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.2612586, y: 0.060302615, z: 0.17797348}
-  m_Center: {x: 0.0072191954, y: 0.009676993, z: -0.03695181}
+  m_Size: {x: 0.2612583, y: 0.060302615, z: 0.17797324}
+  m_Center: {x: 0.007219024, y: 0.0096770525, z: -0.03695187}
 --- !u!114 &493099819
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33304,9 +33302,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_entrance.gloves
+    _value: module01.table_tools.gloves_spare
   _availableOnStart: 1
-  _itemId: gloves
+  _itemId: gloves_spare
 --- !u!1 &496895087
 GameObject:
   m_ObjectHideFlags: 0
@@ -33344,7 +33342,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 324.6984, y: -154.71507}
+  m_AnchoredPosition: {x: 324.6984, y: -166.71507}
   m_SizeDelta: {x: 238.38095, y: 67.04762}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &496895089
@@ -33363,6 +33361,7 @@ MonoBehaviour:
   _label: {fileID: 597435148}
   _labelColor: {r: 0.02745098, g: 0.2, b: 0.37254903, a: 1}
   _disabledLabelColor: {r: 0.9098039, g: 0.9254902, b: 0.94509804, a: 1}
+  _icon: {fileID: 0}
   _background: {fileID: 0}
   _offSprite: {fileID: 0}
   _onSprite: {fileID: 0}
@@ -33608,8 +33607,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.9999995, y: 15.757836, z: 11.077217}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 2.9999995, y: 15.757836, z: 11.077213}
+  m_Center: {x: -0.00000011920929, y: 0, z: 0}
 --- !u!1001 &510820571
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -38720,7 +38719,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 74.69841, y: -154.71507}
+  m_AnchoredPosition: {x: 74.69841, y: -166.71507}
   m_SizeDelta: {x: 238.38095, y: 67.04762}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &531610084
@@ -38739,6 +38738,7 @@ MonoBehaviour:
   _label: {fileID: 1006528903}
   _labelColor: {r: 1, g: 1, b: 1, a: 1}
   _disabledLabelColor: {r: 0.43137255, g: 0.5058824, b: 0.5882353, a: 1}
+  _icon: {fileID: 0}
   _background: {fileID: 0}
   _offSprite: {fileID: 0}
   _onSprite: {fileID: 0}
@@ -43930,7 +43930,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_tools.old_headphones
+    _value: module01.table_back.old_headphones
   _availableOnStart: 1
   _itemId: old_headphones
 --- !u!65 &546420864
@@ -43952,8 +43952,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.11296704, y: 0.13426912, z: 0.13288069}
-  m_Center: {x: -0.000000033527613, y: 0.06713456, z: 0.00029428303}
+  m_Size: {x: 0.112967156, y: 0.13426912, z: 0.13288069}
+  m_Center: {x: 0.000000026077032, y: 0.06713456, z: 0.00029428303}
 --- !u!1 &555973464
 GameObject:
   m_ObjectHideFlags: 0
@@ -44455,8 +44455,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 70}
-  m_SizeDelta: {x: 540, y: 64}
+  m_AnchoredPosition: {x: 0, y: 66}
+  m_SizeDelta: {x: 540, y: 84}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &589359789
 MonoBehaviour:
@@ -44509,7 +44509,7 @@ MonoBehaviour:
   m_fontSizeBase: 29.333334
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 21.333334
+  m_fontSizeMin: 26.666668
   m_fontSizeMax: 29.333334
   m_fontStyle: 0
   m_HorizontalAlignment: 2
@@ -54785,7 +54785,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_middle.flashlight
+    _value: module01.table_back.flashlight
   _availableOnStart: 1
   _itemId: flashlight
 --- !u!65 &634109710
@@ -54807,8 +54807,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.1659219, y: 0.5891013, z: 0.33820882}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.23318458, y: 0.11782026, z: 0.06764203}
+  m_Center: {x: -0.000000074505806, y: 0, z: 0}
 --- !u!1001 &639381185
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -54911,7 +54911,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_back.clothing_loose
+    _value: module01.table_middle.clothing_loose
   _availableOnStart: 1
   _itemId: clothing_loose
 --- !u!65 &639381190
@@ -54933,7 +54933,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.21075726, y: 0.41890633, z: 0.3574083}
+  m_Size: {x: 0.21075714, y: 0.41890645, z: 0.35740846}
   m_Center: {x: 0, y: -0.000000059604645, z: 0}
 --- !u!1001 &658039986
 PrefabInstance:
@@ -55301,8 +55301,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.22280148, y: 0.08366334, z: 0.32645053}
-  m_Center: {x: 0.0005332455, y: 0.0001938995, z: 0.0010985732}
+  m_Size: {x: 0.2228021, y: 0.11470995, z: 0.3264511}
+  m_Center: {x: 0.00053307414, y: 0.00019389205, z: 0.0010986477}
 --- !u!1 &684290361
 GameObject:
   m_ObjectHideFlags: 0
@@ -55440,7 +55440,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_entrance.elbow_pads
+    _value: module01.table_middle.elbow_pads
   _availableOnStart: 1
   _itemId: elbow_pads
 --- !u!65 &687483477
@@ -55462,7 +55462,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.14487268, y: 0.17121184, z: 0.21447906}
+  m_Size: {x: 0.14487244, y: 0.17121184, z: 0.21447906}
   m_Center: {x: -0.0051906854, y: -0.0006458163, z: -0.00076295435}
 --- !u!1001 &694105549
 PrefabInstance:
@@ -55677,6 +55677,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7680436805015501290, guid: 969fe918ce3b7fc4995ef68898c14904, type: 3}
       insertIndex: -1
       addedObject: {fileID: 704290052}
+    - targetCorrespondingSourceObject: {fileID: 7680436805015501290, guid: 969fe918ce3b7fc4995ef68898c14904, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 704290054}
   m_SourcePrefab: {fileID: 100100000, guid: 969fe918ce3b7fc4995ef68898c14904, type: 3}
 --- !u!4 &704290050 stripped
 Transform:
@@ -55705,7 +55708,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -55723,9 +55726,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_back.glasses_damaged
+    _value: module01.counter_clothes.glasses_damaged
   _availableOnStart: 1
   _itemId: glasses_damaged
+--- !u!65 &704290054
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 704290051}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.71956205, y: 0.3052734, z: 0.6482533}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &719674864
 GameObject:
   m_ObjectHideFlags: 0
@@ -56148,61 +56172,13 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.69922155, y: 0.23112759, z: 0.45123845}
-  m_Center: {x: -0.000000059604645, y: 0, z: 0.000000044703484}
---- !u!1 &741900169
+  m_Size: {x: 0.69922155, y: 0.23112759, z: 0.4512384}
+  m_Center: {x: 0.000000059604645, y: 0, z: -0.000000029802322}
+--- !u!1 &742410554 stripped
 GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: -8782655439828690491, guid: 2d0412345b5434f4097d56f5468ffe78, type: 3}
+  m_PrefabInstance: {fileID: 310751306}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 741900170}
-  - component: {fileID: 741900171}
-  m_Layer: 0
-  m_Name: clic
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &741900170
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 741900169}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: -1, z: -1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 310751309}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &741900171
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 741900169}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.21045685, y: 0.12, z: 0.21218634}
-  m_Center: {x: 0.00007869303, y: 0.045561053, z: -0.10609314}
 --- !u!1 &747811808
 GameObject:
   m_ObjectHideFlags: 0
@@ -56497,6 +56473,7 @@ MonoBehaviour:
   _label: {fileID: 345048210}
   _labelColor: {r: 1, g: 1, b: 1, a: 1}
   _disabledLabelColor: {r: 0.5176471, g: 0.5882353, b: 0.6666667, a: 1}
+  _icon: {fileID: 0}
   _background: {fileID: 0}
   _offSprite: {fileID: 0}
   _onSprite: {fileID: 0}
@@ -66903,8 +66880,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -307.26935}
-  m_SizeDelta: {x: 637.7778, y: 261.77777}
+  m_AnchoredPosition: {x: 0, y: -313.26935}
+  m_SizeDelta: {x: 637.7778, y: 273.77777}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &809078749
 MonoBehaviour:
@@ -67192,7 +67169,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_entrance.sneakers
+    _value: module01.counter_clothes.sneakers
   _availableOnStart: 1
   _itemId: sneakers
 --- !u!65 &821771151
@@ -67214,8 +67191,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.23985639, y: 0.09914011, z: 0.22890657}
-  m_Center: {x: -0.000000074505806, y: 0.05015388, z: 0.02003774}
+  m_Size: {x: 0.23985642, y: 0.09914011, z: 0.22890657}
+  m_Center: {x: 0, y: 0.05015388, z: 0.02003774}
 --- !u!1 &822118689
 GameObject:
   m_ObjectHideFlags: 0
@@ -67765,6 +67742,27 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 0e379a0fddaf249409d790544c5bf2bf, type: 3}
   m_PrefabInstance: {fileID: 855453517}
   m_PrefabAsset: {fileID: 0}
+--- !u!65 &864964188
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 742410554}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.10522798, y: 0.06, z: 0.10609361}
+  m_Center: {x: 0.00003926456, y: 0.022780485, z: -0.053046573}
 --- !u!1001 &868269715
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -67867,7 +67865,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_entrance.bell
+    _value: module01.table_back.bell
   _availableOnStart: 1
   _itemId: bell
 --- !u!65 &868269719
@@ -67889,8 +67887,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.7058823, y: 1.0080829, z: 0.8125193}
-  m_Center: {x: 0, y: 0.48593283, z: 0}
+  m_Size: {x: 0.10388166, y: 0.1814549, z: 0.14625287}
+  m_Center: {x: 0, y: 0.08746779, z: 0.000000029802322}
 --- !u!21 &878504931
 Material:
   serializedVersion: 8
@@ -68091,8 +68089,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.05908699, y: 0.013437939, z: 0.06696358}
-  m_Center: {x: -0.0024887081, y: 0, z: -0.0018604733}
+  m_Size: {x: 0.05908709, y: 0.01594663, z: 0.06696364}
+  m_Center: {x: -0.0024887063, y: 0, z: -0.0018604621}
 --- !u!1 &886921550
 GameObject:
   m_ObjectHideFlags: 0
@@ -68441,8 +68439,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.07410815, y: 0.17696774, z: 0.100805886}
-  m_Center: {x: 0, y: 0.000000007450581, z: 0}
+  m_Size: {x: 0.07410818, y: 0.17696771, z: 0.10080592}
+  m_Center: {x: -0.000000007450581, y: 0, z: 0}
 --- !u!1 &911789257
 GameObject:
   m_ObjectHideFlags: 0
@@ -68650,8 +68648,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.5864947, y: 6.8037276, z: 3.0073066}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 3.5864837, y: 6.8037276, z: 3.0073087}
+  m_Center: {x: 0, y: 0, z: 0.0000010728836}
 --- !u!1 &925018691
 GameObject:
   m_ObjectHideFlags: 0
@@ -73987,7 +73985,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_entrance.headphones
+    _value: module01.table_back.headphones
   _availableOnStart: 1
   _itemId: headphones
 --- !u!65 &961484041
@@ -74009,7 +74007,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.8029809, y: 4.275938, z: 4.064406}
+  m_Size: {x: 1.8029772, y: 4.275938, z: 4.0644026}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &968640080
 GameObject:
@@ -74943,8 +74941,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.22280173, y: 0.08366334, z: 0.3264503}
-  m_Center: {x: -0.000533171, y: 0.0001938995, z: 0.0010985136}
+  m_Size: {x: 0.2228019, y: 0.11470995, z: 0.32645077}
+  m_Center: {x: -0.00053317845, y: 0.00019389205, z: 0.0010983646}
 --- !u!1001 &1022856344
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -75061,8 +75059,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.79066277, y: 1.1226248, z: 1.0208364}
-  m_Center: {x: 0.000000029802322, y: 0.00034958124, z: 0}
+  m_Size: {x: 0.25301218, y: 0.35923994, z: 0.3266678}
+  m_Center: {x: 0, y: 0.00011187792, z: 0}
 --- !u!114 &1022856349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -75076,7 +75074,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_entrance.helmet_ok
+    _value: module01.counter_clothes.helmet_ok
   _availableOnStart: 1
   _itemId: helmet_ok
 --- !u!1001 &1031389149
@@ -75356,7 +75354,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_back.shower_slippers
+    _value: module01.counter_clothes.shower_slippers
   _availableOnStart: 1
   _itemId: shower_slippers
 --- !u!65 &1062182703
@@ -75378,8 +75376,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.43202496, y: 0.12505604, z: 0.17447473}
-  m_Center: {x: -0.0010666847, y: 0.04055463, z: -0.0099610165}
+  m_Size: {x: 0.36722094, y: 0.10629761, z: 0.14830315}
+  m_Center: {x: -0.00090672076, y: 0.034471452, z: -0.008466721}
 --- !u!1 &1064280255
 GameObject:
   m_ObjectHideFlags: 0
@@ -75601,6 +75599,7 @@ MonoBehaviour:
   _label: {fileID: 1637456513}
   _labelColor: {r: 0.02745098, g: 0.2, b: 0.37254903, a: 1}
   _disabledLabelColor: {r: 0.9098039, g: 0.9254902, b: 0.94509804, a: 1}
+  _icon: {fileID: 0}
   _background: {fileID: 0}
   _offSprite: {fileID: 0}
   _onSprite: {fileID: 0}
@@ -76268,7 +76267,7 @@ Transform:
   m_GameObject: {fileID: 1132880389}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 2.031548, y: 1.45, z: 0.76400006}
+  m_LocalPosition: {x: 1.9315479, y: 1.45, z: 0.76400006}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -81164,7 +81163,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_middle.phone_mount
+    _value: module01.table_back.phone_mount
   _availableOnStart: 1
   _itemId: phone_mount
 --- !u!65 &1149090770
@@ -81186,8 +81185,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.66905403, y: 0.9995117, z: 0.6032715}
-  m_Center: {x: -0.036919594, y: 0.4885254, z: -0.08459473}
+  m_Size: {x: 0.16726351, y: 0.24987793, z: 0.15081763}
+  m_Center: {x: -0.009229854, y: 0.12213135, z: -0.021148592}
 --- !u!1 &1151630786
 GameObject:
   m_ObjectHideFlags: 0
@@ -81304,8 +81303,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.9153253, y: 0.46214175, z: 0.38586754}
-  m_Center: {x: -0.00013005733, y: 0.2413613, z: -0.019013911}
+  m_Size: {x: 1.0983905, y: 0.5545699, z: 0.46304116}
+  m_Center: {x: -0.00015580654, y: 0.2896336, z: -0.022816584}
 --- !u!1 &1160334711
 GameObject:
   m_ObjectHideFlags: 0
@@ -81721,7 +81720,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.25579077, y: 0.29712564, z: 0.06}
-  m_Center: {x: -0.0003465563, y: -0.022427142, z: -0.0044497177}
+  m_Center: {x: -0.0003465712, y: -0.022427142, z: -0.0044497177}
 --- !u!1001 &1204202192
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -82094,7 +82093,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_tools.light_rear
+    _value: module01.table_back.light_rear
   _availableOnStart: 1
   _itemId: light_rear
 --- !u!65 &1212999829
@@ -82116,8 +82115,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.97963965, y: 0.4088056, z: 0.743577}
-  m_Center: {x: -0.000086039305, y: -0.044562608, z: 0.29556116}
+  m_Size: {x: 0.14694567, y: 0.06132078, z: 0.11153665}
+  m_Center: {x: -0.000012911856, y: -0.0066844225, z: 0.044334274}
 --- !u!1 &1219174499
 GameObject:
   m_ObjectHideFlags: 0
@@ -82282,7 +82281,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: M1/FinalScore_Title
+  m_text: "Puntuaci\xF3n final"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 52877748dec723d4886c83e0b94a7862, type: 2}
   m_sharedMaterial: {fileID: 3281952922167775398, guid: 52877748dec723d4886c83e0b94a7862, type: 2}
@@ -82567,7 +82566,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.1448727, y: 0.17121184, z: 0.21447904}
+  m_Size: {x: 0.14487246, y: 0.17121184, z: 0.21447904}
   m_Center: {x: -0.005190678, y: -0.0006458163, z: -0.0007629618}
 --- !u!1 &1237706372
 GameObject:
@@ -82845,6 +82844,7 @@ MonoBehaviour:
   _label: {fileID: 570240314}
   _labelColor: {r: 0.02745098, g: 0.2, b: 0.37254903, a: 1}
   _disabledLabelColor: {r: 0.9098039, g: 0.9254902, b: 0.94509804, a: 1}
+  _icon: {fileID: 0}
   _background: {fileID: 0}
   _offSprite: {fileID: 0}
   _onSprite: {fileID: 0}
@@ -83540,8 +83540,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.053702794, y: 0.026289262, z: 0.013060069}
-  m_Center: {x: 0.0000000018626451, y: 0, z: 0}
+  m_Size: {x: 0.05370279, y: 0.026289262, z: 0.013060069}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &1315167752
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -83648,7 +83648,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_middle.sunglasses
+    _value: module01.counter_clothes.sunglasses
   _availableOnStart: 1
   _itemId: sunglasses
 --- !u!65 &1315167757
@@ -83670,8 +83670,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.4582973, y: 0.50137246, z: 1.6217077}
-  m_Center: {x: 0.00000059604645, y: 0, z: 0}
+  m_Size: {x: 0.17499545, y: 0.06016469, z: 0.19460487}
+  m_Center: {x: 0, y: 0, z: 0.00000022351742}
 --- !u!1 &1320003388
 GameObject:
   m_ObjectHideFlags: 0
@@ -83804,7 +83804,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1337623018
 SpriteRenderer:
-  serializedVersion: 3
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -83861,7 +83861,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
-  m_BlendShapeWeights: []
 --- !u!1001 &1348540076
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -83973,7 +83972,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_middle.shoes_ok
+    _value: module01.counter_clothes.shoes_ok
   _availableOnStart: 1
   _itemId: shoes_ok
 --- !u!65 &1348540081
@@ -83995,8 +83994,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.9153253, y: 0.46214175, z: 0.3858674}
-  m_Center: {x: -0.00013005733, y: 0.2413613, z: 0.019013911}
+  m_Size: {x: 1.0983891, y: 0.5545699, z: 0.4630411}
+  m_Center: {x: -0.00015580654, y: 0.2896336, z: 0.022816703}
 --- !u!1001 &1349143915
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -84106,7 +84105,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_tools.sport_glasses
+    _value: module01.counter_clothes.sport_glasses
   _availableOnStart: 1
   _itemId: sport_glasses
 --- !u!65 &1349143920
@@ -84128,7 +84127,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.5405619, y: 0.5403042, z: 1.6930001}
+  m_Size: {x: 0.17716436, y: 0.06213498, z: 0.19469501}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1364718135
 GameObject:
@@ -84181,8 +84180,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.43202496, y: 0.12505604, z: 0.17447491}
-  m_Center: {x: -0.0010667443, y: 0.04055463, z: 0.009960867}
+  m_Size: {x: 0.36722142, y: 0.10629761, z: 0.14830327}
+  m_Center: {x: -0.00090679526, y: 0.034471452, z: 0.0084667355}
 --- !u!1001 &1368695087
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -84327,8 +84326,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.046153847, y: 0.047122244, z: 0.10093807}
-  m_Center: {x: 0.0000057201833, y: -0.0102200415, z: 0.00022209436}
+  m_Size: {x: 0.06, y: 0.06, z: 0.2271108}
+  m_Center: {x: 0.000012870878, y: 0.00000846386, z: 0.00049960613}
 --- !u!1001 &1382108668
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -84461,8 +84460,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.562666, y: 3.1739984, z: 0.59999996}
-  m_Center: {x: -0.0010859966, y: -0.033488274, z: 0.00000014901161}
+  m_Size: {x: 2.5626664, y: 3.1739984, z: 0.59999996}
+  m_Center: {x: -0.0010863543, y: -0.033488274, z: 0.00000014901161}
 --- !u!1001 &1398548250
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -84573,7 +84572,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_back.helmet_damaged
+    _value: module01.counter_clothes.helmet_damaged
   _availableOnStart: 1
   _itemId: helmet_damaged
 --- !u!65 &1398548255
@@ -84595,8 +84594,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.18799308, y: 0.30904806, z: 0.2429035}
-  m_Center: {x: 0, y: 0.000006273389, z: 0.000000014901161}
+  m_Size: {x: 0.22559184, y: 0.37085778, z: 0.29148382}
+  m_Center: {x: 0.000000007450581, y: 0.0000075250864, z: 0.00000008940697}
 --- !u!1 &1404026892
 GameObject:
   m_ObjectHideFlags: 0
@@ -84815,7 +84814,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.26125816, y: 0.060302615, z: 0.17797354}
+  m_Size: {x: 0.26125854, y: 0.060302615, z: 0.17797324}
   m_Center: {x: 0.007219188, y: 0.009676993, z: 0.036951877}
 --- !u!1001 &1405944109
 PrefabInstance:
@@ -84949,8 +84948,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.6976284, y: 1.1270024, z: 0.5214077}
-  m_Center: {x: 0.00000011920929, y: 0.5491865, z: 0.0013111234}
+  m_Size: {x: 0.41857675, y: 0.67620146, z: 0.31284478}
+  m_Center: {x: 0, y: 0.32951194, z: 0.0007865429}
 --- !u!1 &1410121328
 GameObject:
   m_ObjectHideFlags: 0
@@ -85289,8 +85288,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.035873435, y: 0.031580154, z: 0.08424406}
-  m_Center: {x: -0.00056159124, y: 0.014477435, z: -0.000955686}
+  m_Size: {x: 0.14349377, y: 0.1263206, z: 0.33697563}
+  m_Center: {x: -0.0022463053, y: 0.057909727, z: -0.0038228035}
 --- !u!114 &1420091498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85435,8 +85434,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.9153253, y: 0.46214175, z: 0.38586754}
-  m_Center: {x: -0.00013005733, y: 0.2413613, z: -0.019013911}
+  m_Size: {x: 1.0983901, y: 0.5545701, z: 0.46304095}
+  m_Center: {x: -0.00015574694, y: 0.2896337, z: -0.022816658}
 --- !u!1 &1433274922
 GameObject:
   m_ObjectHideFlags: 0
@@ -85794,7 +85793,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_middle.cargo_secured
+    _value: module01.table_tools.cargo_secured
   _availableOnStart: 1
   _itemId: cargo_secured
 --- !u!65 &1434187747
@@ -85816,8 +85815,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.19999999, y: 1.9697845, z: 1.026117}
-  m_Center: {x: 0.000000022351742, y: 0.009108424, z: 0.0136600435}
+  m_Size: {x: 0.06, y: 0.59093547, z: 0.3078351}
+  m_Center: {x: 0.000000014901161, y: 0.0027326047, z: 0.0040979087}
 --- !u!65 &1434187748
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -85837,8 +85836,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.19999994, y: 0.32231218, z: 0.19999993}
-  m_Center: {x: -0.000000007450581, y: -0.001827091, z: 0}
+  m_Size: {x: 0.05999999, y: 0.09669357, z: 0.05999999}
+  m_Center: {x: -0.0000000037252903, y: -0.0005482435, z: 0}
 --- !u!65 &1434187749
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -85858,8 +85857,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.3869395, y: 0.9695437, z: 0.2233168}
-  m_Center: {x: 0.000000074505806, y: 0.47870633, z: 0.00000008195639}
+  m_Size: {x: 0.11608213, y: 0.29086328, z: 0.066995025}
+  m_Center: {x: 0.000000007450581, y: 0.14361188, z: 0.000000052154064}
 --- !u!1001 &1438256777
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -86052,7 +86051,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_back.neck_scarf
+    _value: module01.table_middle.neck_scarf
   _availableOnStart: 1
   _itemId: neck_scarf
 --- !u!65 &1450471399
@@ -86074,7 +86073,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.23115253, y: 0.2751944, z: 0.27879643}
+  m_Size: {x: 0.23115276, y: 0.2751945, z: 0.2787966}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &1452777564
 PrefabInstance:
@@ -91787,8 +91786,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.000268, y: 0.49749434, z: 1.2599363}
-  m_Center: {x: -0.024656355, y: 0.036941156, z: 1.2995293}
+  m_Size: {x: 1.0002682, y: 0.49749452, z: 1.2599359}
+  m_Center: {x: -0.024656355, y: 0.036941245, z: 1.2995291}
 --- !u!1 &1531282096
 GameObject:
   m_ObjectHideFlags: 0
@@ -92152,6 +92151,7 @@ MonoBehaviour:
   _label: {fileID: 766043602}
   _labelColor: {r: 0.02745098, g: 0.2, b: 0.37254903, a: 1}
   _disabledLabelColor: {r: 0.9098039, g: 0.9254902, b: 0.94509804, a: 1}
+  _icon: {fileID: 0}
   _background: {fileID: 0}
   _offSprite: {fileID: 0}
   _onSprite: {fileID: 0}
@@ -92291,8 +92291,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 10}
-  m_SizeDelta: {x: 580, y: 44}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 580, y: 36}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1575568759
 MonoBehaviour:
@@ -92324,7 +92324,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColor: {r: 1, g: 0.3764706, b: 0.25882354, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -92341,8 +92341,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 22.666668
-  m_fontSizeBase: 22.666668
+  m_fontSize: 20.533333
+  m_fontSizeBase: 20.533333
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -92504,6 +92504,7 @@ MonoBehaviour:
   _label: {fileID: 886921553}
   _labelColor: {r: 0.02745098, g: 0.2, b: 0.37254903, a: 1}
   _disabledLabelColor: {r: 0.9098039, g: 0.9254902, b: 0.94509804, a: 1}
+  _icon: {fileID: 0}
   _background: {fileID: 0}
   _offSprite: {fileID: 0}
   _onSprite: {fileID: 0}
@@ -98159,7 +98160,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 50.96552, y: 0, z: 50.96552, w: 0}
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -108218,7 +108219,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.010668498, y: 0.015368772, z: 0.016356904}
+  m_Size: {x: 0.010668499, y: 0.015368772, z: 0.016356904}
   m_Center: {x: 0, y: 0.0030737235, z: 0.00082835834}
 --- !u!1 &1681385290
 GameObject:
@@ -108599,8 +108600,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.7404947, y: 0.9763481, z: 0.7465209}
-  m_Center: {x: 0, y: 0.48817405, z: 0}
+  m_Size: {x: 0.44429702, y: 0.585809, z: 0.44791287}
+  m_Center: {x: -0.000000029802322, y: 0.29290444, z: -0.00000008940697}
 --- !u!1001 &1717515421
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -108735,8 +108736,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.5405581, y: 0.5403042, z: 1.6930014}
-  m_Center: {x: 0.0000009536743, y: 0, z: 0.000000059604645}
+  m_Size: {x: 0.17716423, y: 0.06213498, z: 0.19469503}
+  m_Center: {x: 0, y: 0.000000026077032, z: -0.000000044703484}
 --- !u!21 &1724081025
 Material:
   serializedVersion: 8
@@ -109316,11 +109317,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 227287488755215330, guid: 9fe1b67e864c5dc4696676e7c944a11e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 287.935
+      value: 501
       objectReference: {fileID: 0}
     - target: {fileID: 227287488755215330, guid: 9fe1b67e864c5dc4696676e7c944a11e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -505.53
+      value: -527
       objectReference: {fileID: 0}
     - target: {fileID: 233152766623240329, guid: 9fe1b67e864c5dc4696676e7c944a11e, type: 3}
       propertyPath: m_fontColor32.rgba
@@ -110140,6 +110141,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 765339127823157915, guid: 9fe1b67e864c5dc4696676e7c944a11e, type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 765339127823157915, guid: 9fe1b67e864c5dc4696676e7c944a11e, type: 3}
+      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 771504409240361299, guid: 9fe1b67e864c5dc4696676e7c944a11e, type: 3}
@@ -111148,7 +111153,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1448353258745931132, guid: 9fe1b67e864c5dc4696676e7c944a11e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000091552734
+      value: 11.999954
       objectReference: {fileID: 0}
     - target: {fileID: 1449857241166671279, guid: 9fe1b67e864c5dc4696676e7c944a11e, type: 3}
       propertyPath: m_AnchorMax.y
@@ -124405,8 +124410,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.26125816, y: 0.060302615, z: 0.17797354}
-  m_Center: {x: 0.007219188, y: 0.009676993, z: 0.036951877}
+  m_Size: {x: 0.26125863, y: 0.060302615, z: 0.17797323}
+  m_Center: {x: 0.0072191805, y: 0.0096770525, z: 0.036951892}
 --- !u!1 &1785451651
 GameObject:
   m_ObjectHideFlags: 0
@@ -124637,7 +124642,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -210.00003, y: 151.34692}
   m_SizeDelta: {x: 40.96552, y: 22.5}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1796298301
@@ -124653,7 +124658,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.UI::RideSafe.UI.TitleMark
   _title: {fileID: 374463736}
-  _offsetX: -0.000015258789
+  _offsetX: 0
+  _inline: 1
+  _gap: 10
 --- !u!114 &1796298302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -125041,7 +125048,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.71956, y: 0.30527353, z: 0.6482538}
+  m_Size: {x: 0.7195609, y: 0.3052739, z: 0.6482534}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1840918566
 GameObject:
@@ -125259,8 +125266,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.035873435, y: 0.031580154, z: 0.084243946}
-  m_Center: {x: 0.00056158006, y: 0.014477435, z: -0.0009556748}
+  m_Size: {x: 0.14349382, y: 0.1263206, z: 0.33697563}
+  m_Center: {x: 0.0022463128, y: 0.057909727, z: -0.0038226545}
 --- !u!1 &1882318787
 GameObject:
   m_ObjectHideFlags: 0
@@ -125312,8 +125319,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.0741082, y: 0.1769676, z: 0.10080607}
-  m_Center: {x: -0.000000018626451, y: 0.000000022351742, z: -0.000000011175871}
+  m_Size: {x: 0.07410818, y: 0.17696765, z: 0.10080595}
+  m_Center: {x: -0.000000014901161, y: 0.000000029802322, z: 0.000000014901161}
 --- !u!1 &1897487658
 GameObject:
   m_ObjectHideFlags: 0
@@ -125792,7 +125799,7 @@ Transform:
   m_GameObject: {fileID: 1936344383}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 2.107503, y: 1.45, z: -1.914}
+  m_LocalPosition: {x: 2.007503, y: 1.45, z: -1.914}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -126006,7 +126013,7 @@ Transform:
   m_GameObject: {fileID: 1951436410}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 1.6034324, y: 1.45, z: 4.157}
+  m_LocalPosition: {x: 1.6326034, y: 1.45, z: 4.157}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -126111,7 +126118,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 7c3c35b1481a0c046b9bf132378041d2, type: 3}
       propertyPath: m_Name
-      value: E04_shoes_ok (1)
+      value: P35_shoes_spare
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -126162,8 +126169,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.9153253, y: 0.46214175, z: 0.3858674}
-  m_Center: {x: -0.00013005733, y: 0.2413613, z: 0.019013911}
+  m_Size: {x: 1.0983901, y: 0.5545701, z: 0.463041}
+  m_Center: {x: -0.00015568733, y: 0.2896337, z: 0.022816658}
 --- !u!114 &1962036374
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126177,9 +126184,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_middle.shoes_ok
+    _value: module01.table_tools.shoes_spare
   _availableOnStart: 1
-  _itemId: shoes_ok
+  _itemId: shoes_spare
 --- !u!1001 &1965133197
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -126314,7 +126321,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_entrance.umbrella
+    _value: module01.table_middle.umbrella
   _availableOnStart: 1
   _itemId: umbrella
 --- !u!65 &1965133202
@@ -126336,8 +126343,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.3114934, y: 0.9132768, z: 1.1800234}
-  m_Center: {x: 0.016689867, y: -0.18742228, z: 0.28257293}
+  m_Size: {x: 0.31149328, y: 0.91327643, z: 1.180023}
+  m_Center: {x: 0.016689777, y: -0.18742216, z: 0.28257284}
 --- !u!1 &1974666763
 GameObject:
   m_ObjectHideFlags: 0
@@ -126755,7 +126762,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_middle.snorkel
+    _value: module01.counter_clothes.snorkel
   _availableOnStart: 1
   _itemId: snorkel
 --- !u!65 &1980263312
@@ -126777,8 +126784,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.083048984, y: 0.046893027, z: 0.10983512}
-  m_Center: {x: -0.000000007450581, y: 0, z: 0}
+  m_Size: {x: 0.08304904, y: 0.046893, z: 0.10983495}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1986713867
 GameObject:
   m_ObjectHideFlags: 0
@@ -126939,8 +126946,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.8833016, y: 0.99951166, z: 0.5122069}
-  m_Center: {x: 0.00000011920929, y: 0.49975583, z: 0}
+  m_Size: {x: 0.3974859, y: 0.44978023, z: 0.23049337}
+  m_Center: {x: 0, y: 0.22489011, z: 0}
 --- !u!1 &2012853571
 GameObject:
   m_ObjectHideFlags: 0
@@ -126997,6 +127004,7 @@ MonoBehaviour:
   _label: {fileID: 476362807}
   _labelColor: {r: 0.02745098, g: 0.2, b: 0.37254903, a: 1}
   _disabledLabelColor: {r: 0.9098039, g: 0.9254902, b: 0.94509804, a: 1}
+  _icon: {fileID: 0}
   _background: {fileID: 0}
   _offSprite: {fileID: 0}
   _onSprite: {fileID: 0}
@@ -127113,6 +127121,7 @@ GameObject:
   - component: {fileID: 2020761732}
   - component: {fileID: 2020761734}
   - component: {fileID: 2020761733}
+  - component: {fileID: 2020761735}
   m_Layer: 5
   m_Name: StationInstruction
   m_TagString: Untagged
@@ -127179,6 +127188,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2020761731}
   m_CullTransparentMesh: 1
+--- !u!114 &2020761735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2020761731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e69ba97070592d46b614091d4d45edb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RideSafe.UI::RideSafe.UI.HugText
+  _text: {fileID: 1625079308}
+  _box: {fileID: 2020761732}
+  _maxWidth: 520
+  _firstLineIndent: 50.96552
+  _boxPadding: {x: 32.666668, y: 18.666666}
+  _hugHeight: 1
 --- !u!1 &2025101906
 GameObject:
   m_ObjectHideFlags: 0
@@ -127613,7 +127640,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.27131504, y: 0.2766745, z: 0.06}
+  m_Size: {x: 0.2713151, y: 0.2766745, z: 0.06}
   m_Center: {x: 0.005068302, y: -0.016990453, z: -0.0063831657}
 --- !u!1 &2063833821
 GameObject:
@@ -128364,8 +128391,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.17400698, y: 0.07666993, z: 0.14563325}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.1740073, y: 0.07666986, z: 0.14563298}
+  m_Center: {x: -0.000000014901161, y: 0, z: 0}
 --- !u!1 &2116908316
 GameObject:
   m_ObjectHideFlags: 0
@@ -133540,7 +133567,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.counter_clothes.rain_jacket
+    _value: module01.table_entrance.rain_jacket
   _availableOnStart: 1
   _itemId: rain_jacket
 --- !u!65 &2139623976
@@ -133562,8 +133589,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.05370279, y: 0.029444875, z: 0.013915215}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1.3425701, y: 0.73612195, z: 0.34788036}
+  m_Center: {x: 0, y: 0.37000003, z: 0}
 --- !u!1001 &2140334141
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -133751,7 +133778,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.WorldObjectTaskEntity
   _entityId:
-    _value: module01.table_tools.drink
+    _value: module01.table_middle.drink
   _availableOnStart: 1
   _itemId: drink
 --- !u!65 &2147206781
@@ -133773,7 +133800,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.023605539, y: 0.037167646, z: 0.022929192}
+  m_Size: {x: 0.023605442, y: 0.037167646, z: 0.02292924}
   m_Center: {x: 0, y: 0.018583823, z: 0}
 --- !u!1001 &6819375185363106112
 PrefabInstance:

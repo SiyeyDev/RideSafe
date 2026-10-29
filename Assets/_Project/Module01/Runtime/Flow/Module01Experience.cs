@@ -40,6 +40,8 @@ namespace RideSafe.Module01
 
         [Tooltip("Panel de la nota final: las dos secciones, su promedio y el veredicto.")]
         [SerializeField] private GameObject _finalScorePanel;
+        // El panel aparte de la nota final y sus textos: desde el 2026-10-29 la nota va dentro de
+        // «Mi Elección» (ScoreNote) y el panel solo se apaga. Siguen cableados por el constructor.
         [SerializeField] private TMP_Text _finalAverageText;
         [SerializeField] private TMP_Text _finalSectionsText;
         [SerializeField] private TMP_Text _finalVerdictText;
@@ -60,6 +62,8 @@ namespace RideSafe.Module01
         /// <summary>Lo que el módulo 0 dejó decidido. Es lo que leen los requisitos de secuencia.</summary>
         public Module01Context Context { get; } = new Module01Context();
         private ILocalizationProvider _localization;
+        /// <summary>The language the module 0 screens open in (PO, 2026-10-29).</summary>
+        public const string DefaultLanguage = "en";
         private bool _started;
         private bool _videoComplete;
         private bool _readinessCorrect;
@@ -135,6 +139,9 @@ namespace RideSafe.Module01
                 language.onBack.AddListener(() => _onboarding.Show("Welcome"));
                 _onboarding.Get<ChoicePanel>("Jurisdiction").onBack.AddListener(() => _onboarding.Show("Language"));
                 Bind(_onboarding.Get<RectTransform>("Comfort"), "BackButton", () => _onboarding.Show("Vehicle"));
+                // Every session opens in English (PO, 2026-10-29), whatever the device's language or
+                // the one chosen last time (I2 remembers it); the learner picks theirs on the next screen.
+                SetLanguage(DefaultLanguage);
             }
         }
         /// <summary>Begin: con parámetros de prueba asignados entra al módulo 1; si no, al onboarding.</summary>
@@ -362,21 +369,13 @@ namespace RideSafe.Module01
         /// duplicaba doce renglones en una pantalla que ya iba justa.
         /// </para>
         /// </summary>
-        private void ShowReport(List<ComparisonEntry> entries, string verdict = null)
+        private void ShowReport(List<ComparisonEntry> entries)
         {
             Phase = "Report";
             _binding.Module.Show("Comparison");
-            // El veredicto de la decision va aqui, en la nota del panel, y no en un rotulo
-            // flotante sobre el HUD: medido en PlayMode, aquel se cruzaba con "Ver explicacion".
-            string note = UIText.Resolve("M1/MyChoice_Note");
-            // Separador de punto medio, el mismo que usa el titulo dos lineas mas abajo. Antes
-            // eran tres espacios y en la captura se leia como un hueco raro, no como dos frases.
-            if (!string.IsNullOrEmpty(verdict))
-                note += "  ·  " + verdict;
-            _binding.Comparison.SetSingleList(
-                UIText.Resolve("M1/MyChoice_Title"),
-                note,
-                entries);
+            // Sin nota bajo la lista (PO, 2026-10-29: «quitar ese texto inferior»): la lista y el
+            // botón de la explicación, nada más.
+            _binding.Comparison.SetSingleList(UIText.Resolve("M1/MyChoice_Title"), string.Empty, entries);
         }
 
         /// <summary>
@@ -384,15 +383,19 @@ namespace RideSafe.Module01
         /// aparte no cabía —medido: por debajo de la leyenda quedan unos 80 de los 556 del
         /// marco— y además partía en dos lo que la reunión pidió unificar.
         /// </summary>
-        private void ShowVerdict(List<ComparisonEntry> entries, PerformanceRank rank, int percent)
+        /// <para>
+        /// La nota final ya no es una frase al pie: es la puntuación, dentro del mismo panel y bajo
+        /// la lista (PO, 2026-10-29: «se ve todo muy pegado y feo, el texto de puntuación se puede
+        /// poner en ese mismo panel»). Antes iba en un panel aparte montado encima de la lista.
+        /// El porcentaje sale del título: lo dice la puntuación, en grande.
+        /// </para>
+        private void ShowVerdict(List<ComparisonEntry> entries, PerformanceRank rank, FinalScore final)
         {
             Phase = "Report";
             _binding.Module.Show("Comparison");
             _binding.Comparison.SetSingleList(
-                UIText.Resolve("M1/MyChoice_Title") + "  ·  "
-                    + UIText.Resolve(rank.TitleKey()) + "  ·  " + percent + "%",
-                UIText.Resolve(rank.FeedbackKey()) + "  ·  "
-                    + UIText.Resolve(_readinessCorrect ? "M1/Final_Complete" : "M1/Decision_Review"),
+                UIText.Resolve("M1/MyChoice_Title") + "  ·  " + UIText.Resolve(rank.TitleKey()),
+                ScoreNote(final),
                 entries);
         }
         private void PlayVideo()
@@ -534,11 +537,11 @@ namespace RideSafe.Module01
             // Combine (suma de pesos) y el panel del promedio de Average: dos números
             // distintos para la misma nota, uno encima del otro.
             FinalScore final = _director.ModuleScore;
-            ShowVerdict(entries, final.Rank, final.Percent);
+            ShowVerdict(entries, final.Rank, final);
             Phase = "Finished";
             Find<Button>(_binding.Comparison.transform, "ExplainButton").gameObject.SetActive(false);
-
-            ShowFinalScorePanel();
+            // La puntuación va dentro de «Mi Elección»; el panel aparte ya no se enseña.
+            if (_finalScorePanel != null) _finalScorePanel.SetActive(false);
 
             if (_result != null) _result.SetActive(true);
             // Solo el aprobado abre el modulo 2. Los demas rangos dejan repetir, y nada mas:
@@ -549,33 +552,27 @@ namespace RideSafe.Module01
         }
 
         /// <summary>
-        /// Rellena el panel de la nota final: el promedio en grande, de dónde sale, y si pasa o
-        /// repite el módulo entero.
+        /// La nota final, para la caja bajo la lista de «Mi Elección»: el título, el promedio en
+        /// grande, de dónde sale, y si pasa o repite el módulo entero.
         /// <para>
         /// El veredicto se escribe con palabras y no solo con el número: «59 de 100» no le dice
-        /// a nadie si puede seguir. Los textos salen de I2, nunca literales.
+        /// a nadie si puede seguir. Los textos salen de I2, nunca literales. Los tamaños son
+        /// relativos al cuerpo de la nota (15): el número, a 46 como en el panel de antes.
         /// </para>
         /// </summary>
-        private void ShowFinalScorePanel()
+        private string ScoreNote(FinalScore final)
         {
-            if (_finalScorePanel == null || _director == null)
-                return;
-
-            FinalScore final = _director.ModuleScore;
-            _finalScorePanel.SetActive(true);
-
-            if (_finalAverageText != null)
-                _finalAverageText.text = final.Percent + " / 100";
-
-            if (_finalSectionsText != null)
-                _finalSectionsText.text = string.Format("{0} {1}   ·   {2} {3}",
-                    Traducir("M1/FinalScore_Gear"), Mathf.RoundToInt(final.Epp.SafetyScore),
-                    Traducir("M1/FinalScore_Vehicle"), Mathf.RoundToInt(final.Vehicle.SafetyScore));
-
-            if (_finalVerdictText != null)
-                _finalVerdictText.text = Traducir(final.MustRepeatModule
-                    ? "M1/FinalScore_MustRepeat"
-                    : "M1/FinalScore_CanContinue");
+            string sections = string.Format("{0} {1}   ·   {2} {3}",
+                Traducir("M1/FinalScore_Gear"), Mathf.RoundToInt(final.Epp.SafetyScore),
+                Traducir("M1/FinalScore_Vehicle"), Mathf.RoundToInt(final.Vehicle.SafetyScore));
+            string verdict = Traducir(final.MustRepeatModule ? "M1/FinalScore_MustRepeat" : "M1/FinalScore_CanContinue");
+            // La única frase de la nota de antes que se queda: si se equivocó en «¿circular o no?».
+            if (!_readinessCorrect)
+                verdict += "\n" + Traducir("M1/Decision_Review");
+            return "<size=120%><b>" + Traducir("M1/FinalScore_Title") + "</b></size>\n"
+                   + "<size=300%><b>" + final.Percent + " / 100</b></size>\n"
+                   + sections + "\n"
+                   + "<color=#4A6480>" + verdict + "</color>";
         }
 
         /// <summary>Texto de I2; si falta el término se ve la clave, que delata la falta.</summary>

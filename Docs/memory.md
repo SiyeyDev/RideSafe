@@ -1224,6 +1224,80 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 
 ## 11. Bitácora
 
+### 2026-10-29 (noche) — iconos del reporte y jerarquía del popup
+
+- **Iconos de estado (PO):** correcto = ✓ verde, incorrecto = X roja (omisión, peligro o
+  deteriorado), no necesario = «–» amarillo. La X y el guion no existen en el atlas: los dibuja
+  `UIStatusIcons.DrawGlyphs` con el estilo del ✓ (disco relleno, signo recortado, trazo 20 px).
+  En las filas pasan de 28 a 34 (`UIElements.StatusIconSize`).
+- **Popup del elemento:** el nombre (H1, 22) se encogía a ~17 en dos líneas para caber en 64 y
+  quedaba igual que la pregunta. Caja del nombre a 84 (dos líneas a 22, mínimo 20) y la pregunta
+  a 22 × 0,7 ≈ 15,4 en naranja (Coral `#FF6042`). Popup 244 → 256.
+- **Todo centrado (PO, «todo unificado»):** títulos y subtítulos de «Revisa tus elecciones», de
+  las barras «Mi preparación»/«Mi revisión» y de la decisión, centrados; los botones «Seguir
+  eligiendo»/«Enviar elecciones» centrados en su caja (`UIComposition.CenterIn`). La decisión deja
+  de ir a la izquierda (lo era desde el 21-10). Se quedan como están, a propósito: la barra de
+  confirmación del vehículo (diseño original) y los controles del video.
+- **Módulo 0 (PO, con captura):** el título de las cuatro pantallas sube encima de la puerta, en
+  la pared (`UIComposition.TitleAboveDoor`, caja de −36 a 48; la puerta empieza en ~72) y sin
+  subtítulo («no son relevantes»). Atrás/Continuar son iconos ‹ › (`NavIcon`, 88 × 56), copias
+  blancas de `Icon_Back`/`Icon_Continue` del atlas en `UI/Icons` que `SelectableStyle._icon` pinta
+  como el texto (navy, blanco sobre coral, gris deshabilitado). «Iniciar Módulo 1» conserva el
+  texto. Idioma por defecto inglés: `Module01Experience` lo fija al arrancar e I2 ignora el idioma
+  del sistema. Pasto y flores: los hace el artista.
+- **Pantalla de ubicación (PO, con captura):** título «Elige tu ubicación / Choose your location»;
+  las tarjetas se llaman «EE. UU.» y «Latinoamérica» (ids `florida`/`bogota` intactos) y llevan una
+  insignia circular con bandera en lugar de la frase del paquete de normas
+  (`UIComposition.LocationFlags`, `UI/Icons/Flag_USA.png` y `Flag_LatAm.png`). Banderas de
+  flagcdn.com (Wikimedia, dominio público) compuestas a mano: EE. UU. con el cantón a la vista;
+  Latinoamérica, collage de las 12 de Sudamérica con Colombia al centro. La referencia de la PO era
+  una imagen de Shutterstock con marca de agua: no se usó.
+- **Peso visual de las cajas (PO: «deja mucho espacio en las casillas… no tiene buena distribución
+  de pesos»):** el logo iba pegado al borde izquierdo y el título centrado reservaba el mismo
+  margen a la derecha: izquierda cargada, derecha vacía. Ahora todo título centrado lleva el logo
+  **en línea**, a 10 de su primera letra (`TitleMark.ConfigureInline`, `UIBrand.PlaceInline`), y
+  logo + título se centran como un bloque. El cartel de la parada y las cajas de título del M0 se
+  ajustan a su texto (`UI/Runtime/HugText`): el cartel pasa de 640 a ~568 con 34 a cada lado y la
+  sangría solo en el encabezado (`<line-indent>`); «Elige tu idioma» pasa de 549 a 359. Medido en
+  el editor simulando el runtime, ES y EN. Trampa: HugText tiene que volver a maquetar el texto a su
+  ancho final, o el logo lee las líneas del ancho máximo y cae encima del título.
+- **Notas al pie y pantalla final (PO, con capturas):** fuera «Al confirmar se evaluará esta
+  sección» de «Revisa tus elecciones» (los botones suben 72 a su sitio y la caja encoge lo mismo) y
+  la nota «Los elementos opcionales no penalizan…» bajo la lista de «Mi Elección». Sin nota, su caja
+  se apaga (`ComparisonView.ShowNote`). En el reporte final esa caja **es la puntuación**
+  (`Module01Experience.ScoreNote`: título, «31 / 100» grande, Equipo · Vehículo, veredicto y, si
+  falló el «¿circular?», «Revisa tu decisión antes de circular»); el panel aparte `FinalScore`, que
+  se montaba sobre la lista, ya no se enseña. El título final pierde el «· 31 %» (lo dice la nota).
+  Los botones finales siguen a la caja (`Comparison/Frame`), así que bajan con la puntuación.
+
+### 2026-10-29 (tarde) — las paradas siguen el reparto del artista en v5
+
+- **Síntoma (PO):** «no todos los elementos son clickeables» tras los commits «luces» y «epps» del
+  artista, que **editó v5 directamente** y repartió los EPP por las mesas. Una parada solo deja
+  pulsar lo de su lista (`ZoneRunner` busca `module01.{parada}.{elemento}`), y 33 elementos
+  estaban en otro mueble. Además duplicó objetos que ya llevaban entidad: con el mismo id, el
+  registro rechaza la copia (`DUPLICATE EntityId`).
+- **Arreglo:** `Module01Library.Stops` = la mesa donde está cada elemento hoy. El mostrador suma
+  `cabinet` (la esquina derecha, x 1,35..4,57) en `Module01Stations`. Ancla del mostrador centrada
+  en sus elementos a (0,46; −1,45): la automática quedaba a 5 m por encajar los 8 m del mueble.
+- **Variantes del artista (decisión PO):** P31 casco certificado agrietado = peligro 30 como H02
+  (`helmet_integrity`); P32 chaleco gris = neutro; P33–P36 copias idénticas (guantes ×2, zapatos,
+  chaleco) = neutras, con el nombre y la voz del original (`Entry.SameNameAs`) y explicación propia
+  (`Entry.RiskKey`). 63 elementos.
+- **Ya no se cumple** «un esencial por parada»: entrada, centro y herramientas no tienen; el fondo
+  tiene las dos luces y el mostrador casco, calzado y pantalón. `Module01DataTests` lo va a marcar.
+- **Dos bugs del montador corregidos:** (1) lo instanciado bajo `Module01_Spawned` que cambiaba de
+  parada se borraba y se recreaba en un sitio por defecto (perdió la pose de H07):
+  `CambiarDeParadaSinBorrar` cambia el id en su sitio. (2) Con dos piezas del mismo nombre, una
+  dentro de la otra (las Crocs), la semilla podía ser la de dentro y el par quedaba al revés:
+  `Semilla` prefiere la de más fuera. `TagArt` ya no recoge por FBX lo que lleva la entidad de
+  otro elemento (`EsDeOtroElemento`), que es lo que mantiene separadas las variantes.
+- **No correr** «Colocar los EPP como en la escena de arte»: trae la pose de `Garage.unity` y
+  pisaría el reparto que el artista hizo en v5. Tampoco «Colocar los signos y el punto de vista»
+  sin mirar: recoloca EPP.
+- Pendiente: locución de P31/P32 y de las explicaciones de P31–P36 (ElevenLabs).
+  P22, P13 y H01 siguen apagados en la escena desde antes (commit fcb9843) y están en su parada.
+
 ### 2026-10-28 (noche, 5) — franja de «Mi preparación» y video sin filtro azul
 
 - **La franja que resalta una fila no casaba con su texto** (PO, con captura). Las filas medían

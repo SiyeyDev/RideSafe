@@ -25,17 +25,28 @@ namespace RideSafe.Module01.Editor
     {
         // 216 left the answers 21 units off the bottom edge (PO: too tight); +12 for the two-line name.
         // 274 (a full 22-pt second line) put «Sí»/«No» against the bottom of the PC view.
-        private const float PopupHeight = 244f;
+        // 256 (2026-10-29): the name's box grew 20 so two lines keep the 22 heading, the smaller
+        // question gave back 8.
+        private const float PopupHeight = 256f;
         /// <summary>
         /// The item's name: the sheet's «Elemento» column, up to «Casco agrietado, aplastado, talla
         /// evidentemente incorrecta o de novedad». On one line it shrank to 15 and still touched the edges
         /// (PO, 2026-10-26), so it wraps to two lines inside a 40-unit margin on each side. A one-line name
-        /// keeps the 22 heading (40.6 units); two lines fit 64 at about 17, the question's size.
+        /// keeps the 22 heading (40.6 units). Two lines used to fit 64 only at about 17, the question's
+        /// size, and the PO could not tell heading from question (2026-10-29): 84 holds two lines at 22.
         /// </summary>
         private const float PopupNameWidth = 540f;
-        private const float PopupNameHeight = 64f;
-        private const float PopupQuestionHeight = 44f;
+        private const float PopupNameHeight = 84f;
+        private const float PopupQuestionHeight = 36f;
+
+        /// <summary>The name is the popup's heading; the question is 30 % smaller (PO, 2026-10-29).</summary>
+        private const float PopupNameSize = 22f;
+        private const float PopupQuestionSize = PopupNameSize * 0.7f;
         private const float MarkerFontSize = 82f;
+
+        /// <summary>The station sign: where its instruction wraps, and its box's edge to the text.</summary>
+        private const float SignTextWidth = 520f;
+        private static readonly Vector2 SignPadding = new Vector2(26f, 12f);
 
         [MenuItem("RideSafe/Módulo 1/Componer paneles de la escena (popup, cartel, decisión)")]
         public static void ApplyToOpenScene()
@@ -64,11 +75,22 @@ namespace RideSafe.Module01.Editor
             // box covered the sign's right end by ~70 units (Module01SliceTests.AssertHudDoesNotOverlap).
             sign.anchoredPosition = new Vector2(-230f, sign.anchoredPosition.y);
             RectTransform text = (RectTransform)sign.Find("Instruction");
+            text.anchorMin = text.anchorMax = text.pivot = new Vector2(0.5f, 0.5f);
             text.anchoredPosition = Vector2.zero;
             text.sizeDelta = new Vector2(592f, 80f);
             EditorUtility.SetDirty(text);
-            // The company mark on its first line, the station's name (white: the sign is dark).
-            UIBrand.Place(kit, text.GetComponent<TMP_Text>(), text, 0f, true);
+            // The company mark right before the station's name (white: the sign is dark), and the sign
+            // as wide and tall as what it says (PO, 2026-10-29: «deja mucho espacio en las casillas …
+            // no tiene buena distribución de pesos»). At a fixed 640 with the mark at its left edge, a
+            // short heading left the right third empty. The instruction under it wraps at 520.
+            TMP_Text instruction = text.GetComponent<TMP_Text>();
+            UIBrand.PlaceInline(kit, instruction, true, true);
+            RideSafe.UI.HugText hug = sign.GetComponent<RideSafe.UI.HugText>();
+            if (hug == null)
+                hug = sign.gameObject.AddComponent<RideSafe.UI.HugText>();
+            hug.Configure(instruction, sign, SignTextWidth, UIBrand.Room(kit, true),
+                          new Vector2(SignPadding.x + PadOf(sign), SignPadding.y + PadOf(sign)), true);
+            EditorUtility.SetDirty(hug);
 
             ComposeDecision(kit, Find("Module01Controls/ReadinessDecision"));
             ComposeTheaterVideo();
@@ -246,16 +268,17 @@ namespace RideSafe.Module01.Editor
         private static void ComposeDecision(UIBuilderKit kit, RectTransform decision)
         {
             SetVisibleSize(decision, new Vector2(480f, 376f));
-            // The question reads like «Revisa tus elecciones»: left-aligned beside the company mark,
-            // with the hint under it on the same left edge as the answers. Centred, its two lines sat
-            // off-balance next to the mark, and in 56 of height the second ran into the hint (PO, 2026-10-21).
+            // The question and its hint are centred, like every panel title (PO, 2026-10-29: «todo
+            // unificado»); the mark stays at the left and the title gives up the same on the right.
+            // Left-aligned since 2026-10-21 because, centred in 56 of height, its second line ran into
+            // the hint: the box is 68 now, two lines at 26.
             RectTransform title = (RectTransform)decision.Find("Title");
             title.anchoredPosition = new Vector2(0f, 134f);
             title.sizeDelta = new Vector2(420f, 68f);
             TMP_Text titleText = title.GetComponent<TMP_Text>();
             titleText.fontSize = 26f;
             titleText.textWrappingMode = TextWrappingModes.Normal;
-            titleText.alignment = TextAlignmentOptions.Left;
+            titleText.alignment = TextAlignmentOptions.Center;
             EditorUtility.SetDirty(titleText);
 
             Transform existing = decision.Find("Hint");
@@ -265,7 +288,7 @@ namespace RideSafe.Module01.Editor
             hint.anchorMin = hint.anchorMax = hint.pivot = new Vector2(0.5f, 0.5f);
             hint.anchoredPosition = new Vector2(0f, 82f);
             hint.sizeDelta = new Vector2(420f, 22f);
-            kit.AddText(hint.gameObject, "M1/Decision_Hint", kit.Sub.With(16f), TextAlignmentOptions.Left);
+            kit.AddText(hint.gameObject, "M1/Decision_Hint", kit.Sub.With(16f), TextAlignmentOptions.Center);
             Module01Text localized = hint.GetComponent<Module01Text>();
             if (localized == null)
                 localized = hint.gameObject.AddComponent<Module01Text>();
@@ -332,13 +355,13 @@ namespace RideSafe.Module01.Editor
             name.anchoredPosition = new Vector2(0f, PopupHeight * 0.5f - 20f - PopupNameHeight * 0.5f);
             name.sizeDelta = new Vector2(PopupNameWidth, PopupNameHeight);
             TMP_Text title = name.GetComponent<TMP_Text>();
-            UIBuilderKit.ApplyStyle(title, kit.H2.With(22f * px, Color.white));
+            UIBuilderKit.ApplyStyle(title, kit.H2.With(PopupNameSize * px, Color.white));
             title.alignment = TextAlignmentOptions.Center;
             title.textWrappingMode = TextWrappingModes.Normal;
             title.overflowMode = TextOverflowModes.Overflow;
             title.enableAutoSizing = true;
-            title.fontSizeMin = 16f * px;
-            title.fontSizeMax = 22f * px;
+            title.fontSizeMin = 20f * px;
+            title.fontSizeMax = PopupNameSize * px;
             EditorUtility.SetDirty(title);
 
             RectTransform question = (RectTransform)confirm.Find("Question");
@@ -347,7 +370,8 @@ namespace RideSafe.Module01.Editor
             question.anchoredPosition = new Vector2(0f, nameBottom - 6f - PopupQuestionHeight * 0.5f);
             question.sizeDelta = new Vector2(580f, PopupQuestionHeight);
             TMP_Text questionText = question.GetComponent<TMP_Text>();
-            UIBuilderKit.ApplyStyle(questionText, kit.BodyOnDark.With(17f * px));
+            // Orange, the brand accent, so the question reads apart from the name (PO, 2026-10-29).
+            UIBuilderKit.ApplyStyle(questionText, kit.BodyOnDark.With(PopupQuestionSize * px, UIBuilderKit.Coral));
             EditorUtility.SetDirty(questionText);
 
             float answersY = question.anchoredPosition.y - PopupQuestionHeight * 0.5f - 23.35f - 22f;

@@ -61,14 +61,61 @@ namespace RideSafe.UI.EditorTools
         public static TitleMark Place(UIBuilderKit kit, TMP_Text title, RectTransform alignTo, float inset, bool onDark,
                                       params TMP_Text[] alsoClear)
         {
+            // A centred title takes its mark inline: at the box's edge the mark weighed on the left and
+            // the room mirrored for it left the right empty (PO, 2026-10-29: «no tiene buena
+            // distribución de pesos»). A mark on a tag line over another text keeps the old placement.
+            if (alsoClear.Length == 0 && title.horizontalAlignment == HorizontalAlignmentOptions.Center)
+                return PlaceInline(kit, title, onDark, false);
+
             RectTransform titleRect = title.rectTransform;
             Vector3 contentLeft = alignTo.TransformPoint(new Vector3(alignTo.rect.xMin + PadOf(alignTo) + inset, 0f, 0f));
             float offset = titleRect.InverseTransformPoint(contentLeft).x - titleRect.rect.xMin;
 
+            TitleMark mark = CreateMark(kit, title, onDark, out float width);
+            mark.Configure(title, offset);
+
+            KeepClear(title, contentLeft, width + MarkGap);
+            foreach (TMP_Text text in alsoClear)
+                KeepClear(text, contentLeft, width + MarkGap);
+            mark.Refresh();
+            EditorUtility.SetDirty(mark);
+            return mark;
+        }
+
+        /// <summary>
+        /// The mark right before the title's first letter, the two centred as one. The room for it is
+        /// a left margin on the title, or with <paramref name="firstLineOnly"/> none here: the text's
+        /// <see cref="HugText"/> indents its first paragraph, so the lines under the heading stay centred.
+        /// </summary>
+        public static TitleMark PlaceInline(UIBuilderKit kit, TMP_Text title, bool onDark, bool firstLineOnly)
+        {
+            TitleMark mark = CreateMark(kit, title, onDark, out float width);
+            mark.ConfigureInline(title, MarkGap);
+            Vector4 margin = title.margin;
+            margin.x = firstLineOnly ? 0f : width + MarkGap;
+            margin.z = 0f;
+            title.margin = margin;
+            title.ForceMeshUpdate();
+            mark.Refresh();
+            EditorUtility.SetDirty(title);
+            EditorUtility.SetDirty(mark);
+            return mark;
+        }
+
+        /// <summary>What the mark and its gap take beside a title, in kit units.</summary>
+        public static float Room(UIBuilderKit kit, bool onDark)
+        {
+            Sprite sprite = kit.S(onDark ? WhiteMark : NavyMark);
+            return (sprite != null ? MarkHeight * sprite.rect.width / sprite.rect.height : MarkHeight * 1.82f) + MarkGap;
+        }
+
+        /// <summary>The mark object beside <paramref name="title"/>, made or reused, not yet placed.</summary>
+        private static TitleMark CreateMark(UIBuilderKit kit, TMP_Text title, bool onDark, out float width)
+        {
+            RectTransform titleRect = title.rectTransform;
             Sprite sprite = kit.S(onDark ? WhiteMark : NavyMark);
             float height = MarkHeight;
-            float width = sprite != null ? height * sprite.rect.width / sprite.rect.height : height * 1.82f;
-            float gap = MarkGap;
+            width = sprite != null ? height * sprite.rect.width / sprite.rect.height : height * 1.82f;
 
             Transform parent = titleRect.parent;
             Transform existing = parent.Find(ObjectName);
@@ -105,15 +152,7 @@ namespace RideSafe.UI.EditorTools
             TitleMark mark = go.GetComponent<TitleMark>();
             if (mark == null)
                 mark = go.AddComponent<TitleMark>();
-            mark.Configure(title, offset);
-
-            KeepClear(title, contentLeft, width + gap);
-            foreach (TMP_Text text in alsoClear)
-                KeepClear(text, contentLeft, width + gap);
-            mark.Refresh();
-
             EditorUtility.SetDirty(image);
-            EditorUtility.SetDirty(mark);
             EditorUtility.SetDirty(rect);
             return mark;
         }

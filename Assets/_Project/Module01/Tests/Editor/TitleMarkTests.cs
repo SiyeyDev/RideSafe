@@ -95,5 +95,24 @@ namespace RideSafe.Module01.Tests
             float left = _title.transform.InverseTransformPoint(corners[0]).x;
             Assert.AreEqual(_title.rectTransform.rect.xMin - 12f, left, 0.01f);
         }
+
+        /// <summary>
+        /// Inline (2026-10-29), a centred title and its mark centre as one: the mark ends a gap before
+        /// the first letter, wherever centring put it, instead of weighing on the box's left edge.
+        /// </summary>
+        [Test]
+        public void Inline_TheMarkEndsAGapBeforeTheFirstLetter()
+        {
+            _title.margin = new Vector4(54f, 0f, 0f, 0f);
+            _titleMark.ConfigureInline(_title, 10f);
+            _titleMark.Refresh();
+            _title.ForceMeshUpdate();
+            float firstLetter = _title.textInfo.characterInfo[_title.textInfo.lineInfo[0].firstVisibleCharacterIndex].origin;
+            Vector3[] corners = new Vector3[4];
+            _mark.GetWorldCorners(corners);
+            float right = _title.transform.InverseTransformPoint(corners[2]).x;
+            Assert.AreEqual(firstLetter - 10f, right, 0.01f);
+            AssertOnFirstLine();
+        }
     }
 }

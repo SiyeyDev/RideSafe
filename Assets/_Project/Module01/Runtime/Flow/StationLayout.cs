@@ -153,8 +153,10 @@ namespace RideSafe.Module01
             // Estaba declarado en -2,89 y eso tiraba **0,56 m** de mostrador bueno —casi un
             // octavo del total de la parada—, que es el hueco vacío que la PO señaló en la
             // captura. El dato viejo venía de las manillas de las puertas, no de la tapa.
+            // «cabinet» es el tramo de la esquina derecha (x 1,35..4,57): el artista puso ahí los
+            // cascos, la gorra y unos guantes el 2026-10-29. Misma cota que el resto del mostrador.
             new Station("counter_clothes", new Surface("cabinet (1)", 1.08f, usableFrom: -3.45f),
-                        new Surface("cabinetmid 1", 1.08f)),
+                        new Surface("cabinetmid 1", 1.08f), new Surface("cabinet", 1.08f)),
             // La mesa de herramientas vuelve a ser parada (PO, 2026-10-29): con 61 elementos en
             // cuatro muebles la mesa del fondo iba al 94 % de su tapa, y esta estaba vacía. No
             // lleva alacena encima ni panel detrás, al contrario que las otras, cuya caja sube

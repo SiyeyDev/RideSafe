@@ -194,7 +194,7 @@ namespace RideSafe.UI.EditorTools
             Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
             List<string> paths = new List<string> { k_AtlasA, k_AtlasB };
             // The white status glyphs for the traffic-light tints (UIStatusIcons).
-            foreach (string source in UIStatusIcons.Sources)
+            foreach (string source in UIStatusIcons.All)
                 paths.Add(UIStatusIcons.Folder + "/" + UIStatusIcons.MonoName(source) + ".png");
             // Icons drawn for the project where the atlas's fell short (UIComposition.ReplayIcon).
             foreach (string icon in AssetDatabase.FindAssets("t:Texture2D", new[] { UIComposition.IconsFolder }))

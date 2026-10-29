@@ -49,6 +49,14 @@ public static class Module01UiTerms
             Set(data, es, en, "M1/Item_" + key, es_, en_);
             Set(data, es, en, "M1/Item_" + key + "_Risk", riskEs, riskEn);
         }
+        foreach (string key in NeutralCopies)
+            Set(data, es, en, "M1/Item_" + key + "_Risk", "No cambia el resultado.", "It does not change the result.");
+
+        // Module 0 location screen (PO, 2026-10-29): a location to pick, not a rule pack to read; the
+        // cards name the region over its flag. The keys keep their ids (florida / bogota).
+        Set(data, es, en, "M0/Location_Title", "Elige tu ubicación", "Choose your location");
+        Set(data, es, en, "M0/Location_Florida", "EE. UU.", "United States");
+        Set(data, es, en, "M0/Location_Bogota", "Latinoamérica", "Latin America");
 
         // Narratives §4.8.2: the scooter also checks its deck and fasteners; the e-bike has none.
         Set(data, es, en, "M1/Zone_Deck", "Plataforma", "Deck");
@@ -156,7 +164,18 @@ public static class Module01UiTerms
          "Un cordón suelto se enreda en la cadena o en el pedal.", "A loose lace tangles in the chain or the pedal."),
         ("OldHeadphones", "Audífonos de casco", "On-ear headphones",
          "Tapan los dos oídos: no oyes el tráfico.", "They cover both ears: you cannot hear the traffic."),
+        // Variants the artist placed in v5 on 2026-10-29 (PO decided how each one scores).
+        ("HelmetCracked", "Casco certificado agrietado", "Cracked certified helmet",
+         "Un casco agrietado ya no absorbe el siguiente golpe.", "A cracked helmet no longer absorbs the next impact."),
+        ("VestGrey", "Chaleco gris", "Grey vest",
+         "No es reflectivo: no cambia el resultado.", "It is not reflective: it does not change the result."),
     };
+
+    /// <summary>
+    /// Identical copies of an item on another table (PO, 2026-10-29): they keep the original's
+    /// name and voice-over, but are neutral, so their explanation is their own.
+    /// </summary>
+    private static readonly string[] NeutralCopies = { "GlovesSpare", "GlovesSpare2", "ShoesSpare", "ReflectiveSpare" };
 
     private static void Set(LanguageSourceData data, int es, int en, string key, string spanish, string english)
     {

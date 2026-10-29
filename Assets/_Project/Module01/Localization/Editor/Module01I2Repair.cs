@@ -177,7 +177,7 @@ public static class Module01I2Repair
         foreach (var e in RideSafe.Module01.Editor.Module01Library.All)
         {
             Check(e.NameKey);
-            Check(e.NameKey + "_Risk");
+            Check(e.RiskKey);
         }
         foreach (var t in RideSafe.Module01.Editor.Module01Library.Tables)
             Check(t.TitleKey);

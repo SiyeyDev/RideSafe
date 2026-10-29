@@ -33,10 +33,45 @@ namespace RideSafe.Module01.Editor
         {
             TagArt();
             ReplaceOutdatedSpawned();
+            CambiarDeParadaSinBorrar();
             FillMissingEntities();
             RemoveOrphanSpawned();
             RemoveStaleEntitiesOnArt();
             UnSoloPulsablePorElemento();
+        }
+
+        /// <summary>
+        /// Pone al día el id de las entidades cuyo elemento cambió de parada, <b>sin moverlas</b>.
+        /// <para>
+        /// El id lleva la parada (<c>module01.{parada}.{elemento}</c>). Lo del arte lo vuelve a
+        /// etiquetar <see cref="TagArt"/>, pero lo instanciado bajo <c>Module01_Spawned</c> no:
+        /// se quedaba con el id viejo, <see cref="FillMissingEntities"/> creaba otro en un sitio
+        /// por defecto y <see cref="RemoveOrphanSpawned"/> borraba el bueno. Así se perdió la
+        /// colocación de las gafas dañadas (H07) que el artista había puesto en el mostrador
+        /// (2026-10-29).
+        /// </para>
+        /// </summary>
+        private static void CambiarDeParadaSinBorrar()
+        {
+            var quiero = new Dictionary<string, string>();
+            foreach (ZoneSO zone in AllZones())
+                foreach (SafetyItemSO item in zone.Items)
+                    if (item != null)
+                        quiero[item.ItemId] = $"module01.{zone.ZoneId}.{item.ItemId}";
+
+            foreach (WorldObjectTaskEntity e in
+                     Object.FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (string.IsNullOrEmpty(e.ItemId) || !quiero.TryGetValue(e.ItemId, out string id) || e.Id.Value == id)
+                    continue;
+                Debug.Log($"[Module01] '{e.name}' cambia de parada: {e.Id.Value} → {id}.");
+                GameObject go = e.gameObject;
+                bool wasActive = go.activeSelf;
+                go.SetActive(false);
+                Undo.RecordObject(e, "Cambiar de parada");
+                e.Configure(new EntityId(id), e.ItemId);
+                go.SetActive(wasActive);
+            }
         }
 
         /// <summary>
@@ -258,7 +293,8 @@ namespace RideSafe.Module01.Editor
             {
                 if (e.NeedsMarker)
                     continue;
-                List<GameObject> pieces = art.FindAll(g => Module01ArtEpp.SourceOf(g) == e.Model);
+                List<GameObject> pieces = art.FindAll(g => Module01ArtEpp.SourceOf(g) == e.Model
+                                                           && !EsDeOtroElemento(g, e.ItemId));
                 if (pieces.Count == 0)
                     pieces = MeshOwners(e.Model, spawned);
                 if (pieces.Count == 0)
@@ -313,6 +349,26 @@ namespace RideSafe.Module01.Editor
                 RemoveSpawnedCopy(spawned, id);
                 Tag(host, id, e.ItemId);
             }
+        }
+
+        /// <summary>
+        /// Si el objeto ya es <b>otro</b> elemento del catálogo: lleva la entidad de un id que la
+        /// biblioteca conoce y no es <paramref name="itemId"/>.
+        /// <para>
+        /// Las variantes que el artista hizo con el mismo FBX —el casco agrietado, el chaleco gris,
+        /// los guantes repartidos por tres mesas (PO, 2026-10-29)— son elementos propios. Sin
+        /// esto, el elemento original las recogería por su FBX y les quitaría la entidad.
+        /// </para>
+        /// </summary>
+        private static bool EsDeOtroElemento(GameObject go, string itemId)
+        {
+            WorldObjectTaskEntity entity = go.GetComponent<WorldObjectTaskEntity>();
+            if (entity == null || string.IsNullOrEmpty(entity.ItemId) || entity.ItemId == itemId)
+                return false;
+            foreach (Module01Library.Entry e in Module01Library.All)
+                if (e.ItemId == entity.ItemId)
+                    return true;
+            return false;
         }
 
         /// <summary>
@@ -402,8 +458,12 @@ namespace RideSafe.Module01.Editor
         /// </summary>
         private static GameObject Semilla(List<GameObject> pieces, Module01Library.Entry e)
         {
+            // Primero las de más fuera: si dos piezas comparten nombre y una cuelga de la otra —las
+            // Crocs, las dos «H04_sandals» (2026-10-29)—, sembrar por la de dentro daba la vuelta al
+            // par: la entidad acababa en la Croc espejada y la otra se quedaba sin clic.
+            List<GameObject> fuera = pieces.Where(g => !pieces.Exists(o => o != g && g.transform.IsChildOf(o.transform))).ToList();
             string nombre = e.LibraryId + "_" + e.ItemId;
-            foreach (GameObject g in pieces)
+            foreach (GameObject g in fuera.Concat(pieces))
                 if (g.name == nombre)
                     return g;
             foreach (GameObject g in pieces)

@@ -33,6 +33,8 @@ namespace RideSafe.UI.EditorTools
         [MenuItem("RideSafe/UI/Componer paneles en sitio (títulos dentro de la caja)")]
         public static void ApplyInPlace()
         {
+            foreach (string flag in LocationFlags.Values)
+                UIStatusIcons.Configure(IconsFolder + "/" + flag + ".png");
             UIBuilderKit kit = RideSafeUIPrefabBuilder.CreateKit();
             Edit(Module00Path, root => ComposeModule00(root, kit));
             Edit(Module01Path, root => ComposeModule01(root, kit));
@@ -92,18 +94,18 @@ namespace RideSafe.UI.EditorTools
                 SetVisibleY(begin, 339f, 52f);
 
                 // Language and rules laid out like the vehicle screen (PO, 2026-10-21): see Choice.
-                Transform vehicleScreen = Find(root, "Vehicle");
                 Transform language = Find(root, "Language");
-                Choice(language, kit, 110f, false, 480f, vehicleScreen);
+                Choice(language, kit, 110f, false, 480f);
                 Transform rules = Find(root, "Jurisdiction");
                 // Its question is the longest: the box grows to it, the font shrinks the rest (28–34 pt).
-                Choice(rules, kit, 130f, true, 700f, vehicleScreen);
+                Choice(rules, kit, 142f, true, 700f);
 
                 // Vehicle stays as it was designed (PO, 2026-10-16): the confirmation at the bottom and
                 // the name cards over their vehicles. Only its title gets a box (2026-10-21): navy on the
                 // garage siding, «Elige tu vehículo» got lost.
                 Transform vehicle = Find(root, "Vehicle");
                 Header(vehicle, VehicleHeaderWidth);
+                TitleAboveDoor(vehicle);
                 Transform firstPass = vehicle.Find(FrameName); // its header box was named "Frame" for a day
                 if (firstPass != null)
                     Object.DestroyImmediate(firstPass.gameObject);
@@ -122,16 +124,19 @@ namespace RideSafe.UI.EditorTools
 
                 Transform comfort = Find(root, "Comfort");
                 Header(comfort, 776f);
-                SameHeight(comfort, vehicle);
+                TitleAboveDoor(comfort);
                 RectTransform settings = Find(comfort, "SettingsPanel");
                 // The settings sit straight on their box, not in a box in a box.
                 settings.GetComponent<UnityEngine.UI.Image>().enabled = false;
                 // «Izquierda» did not fit its pill; it grows leftward, «Derecha» keeps its place.
                 SetVisibleWidthKeepRight(Find(comfort, "SettingsPanel/HandGroup/LeftOption"), 105f);
-                float settingsTop = HeaderBox(comfort, kit) + BoxGap + Margin.y;
-                settings.anchoredPosition = new Vector2(settings.anchoredPosition.x, -settingsTop);
+                // The settings stay on the door where they were (top 170) now that the title went up.
+                HeaderBox(comfort, kit);
+                settings.anchoredPosition = new Vector2(settings.anchoredPosition.x, -ComfortSettingsTop);
                 Enclose box = ContentBox(comfort, kit, new[] { settings });
-                ButtonsUnder(box, Find(comfort, "BackButton"), Find(comfort, "StartButton"), 150f, 220f);
+                ButtonsUnder(box, Find(comfort, "BackButton"), Find(comfort, "StartButton"), NavButtonWidth, 220f);
+                // «Iniciar Módulo 1» keeps its words: it starts the module, it is not a step back or forth.
+                NavIcon(Find(comfort, "BackButton"), kit, "Icon_Back");
 
                 LabelsNeverWrap(root);
             });
@@ -162,13 +167,42 @@ namespace RideSafe.UI.EditorTools
                 welcome.enableAutoSizing = true;
                 EditorUtility.SetDirty(welcome);
                 UIBrand.Place(kit, Find(box, "ModuleTag").GetComponent<TMP_Text>(), Find(box, "Body"), 0f, false, welcome);
-                // «Revisa tus elecciones»: its title is left-aligned, so it moves over for the mark.
+                // «Revisa tus elecciones»: title, subtitle and the two buttons centred in the box, like
+                // every other panel (PO, 2026-10-29: «todo unificado»). The mark stays at the left of the
+                // content and the centred title gives up the same on the right (UIBrand.KeepClear).
                 RectTransform review = Find(root, "ReviewChoices/Modal");
+                foreach (string text in new[] { "Title", "Subtitle" })
+                {
+                    CenterIn(review, Find(review, text));
+                    Align(Find(review, text), HorizontalAlignmentOptions.Center);
+                }
+                CenterIn(review, Find(review, "KeepChoosingButton"), Find(review, "ConfirmButton"));
+                // «Al confirmar se evaluará esta sección» goes (PO, 2026-10-29): the buttons move up
+                // into its place and the box shrinks by the same, so no hole is left. Once only.
+                RectTransform lockNotice = Find(review, "LockNotice");
+                if (lockNotice.gameObject.activeSelf)
+                {
+                    RectTransform keep = Find(review, "KeepChoosingButton"), confirm = Find(review, "ConfirmButton");
+                    float lift = lockNotice.anchoredPosition.y - keep.anchoredPosition.y;
+                    foreach (RectTransform button in new[] { keep, confirm })
+                    {
+                        button.anchoredPosition += new Vector2(0f, lift);
+                        EditorUtility.SetDirty(button);
+                    }
+                    review.sizeDelta -= new Vector2(0f, lift);
+                    EditorUtility.SetDirty(review);
+                    lockNotice.gameObject.SetActive(false);
+                    Find(review, "LockNoticeText").gameObject.SetActive(false);
+                }
                 UIBrand.Place(kit, Find(review, "Title").GetComponent<TMP_Text>(), Find(review, "Subtitle"), 0f, false);
                 // The sidebars («Mi preparación») share the view with the station sign, which carries
-                // the mark: one logo in view, by the title.
-                foreach (string side in new[] { "Preparation/ChecklistPanel/Title", "Diagnostic/ChecklistPanel/Title" })
-                    UIBrand.Remove(Find(root, side).GetComponent<TMP_Text>());
+                // the mark: one logo in view, by the title. Their title and subtitle are centred too.
+                foreach (string side in new[] { "Preparation/ChecklistPanel", "Diagnostic/ChecklistPanel" })
+                {
+                    UIBrand.Remove(Find(root, side + "/Title").GetComponent<TMP_Text>());
+                    Align(Find(root, side + "/Title"), HorizontalAlignmentOptions.Center);
+                    Align(Find(root, side + "/Subtitle"), HorizontalAlignmentOptions.Center);
+                }
 
                 // «Mi Elección» read like «Revisa tus elecciones» (PO, 2026-10-16): title, the list in
                 // its own box, the note under the list like the lock notice there, and the button free
@@ -224,7 +258,17 @@ namespace RideSafe.UI.EditorTools
                 // Traffic-light status icons in the report and the explanation (PO, 2026-10-20).
                 foreach (Object view in new Object[] { comparison.GetComponent<ComparisonView>(),
                                                         Find(root, "Explanation").GetComponent<ExplanationView>() })
+                {
                     Semaphore(view, kit);
+                    // A bit larger than the 28 they were built at (PO, 2026-10-29).
+                    foreach (Transform icon in ((Component)view).GetComponentsInChildren<Transform>(true))
+                        if (icon.name == "Icon" && icon.parent.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>() != null
+                            && icon.TryGetComponent(out UnityEngine.UI.LayoutElement size))
+                        {
+                            size.minWidth = size.preferredWidth = size.minHeight = size.preferredHeight = UIElements.StatusIconSize;
+                            EditorUtility.SetDirty(size);
+                        }
+                }
 
                 // The «Reproduciendo» tag is not needed (PO, 2026-10-16): off, and the view no longer drives it.
                 RectTransform playing = Find(root, "Explanation/VideoCard/PlayingTag");
@@ -254,14 +298,19 @@ namespace RideSafe.UI.EditorTools
         /// ConditionDependent, NotSuited, AtRisk, NoEffect): green for correct, yellow for
         /// conditional or no effect, red for an omission, a hazard or damaged gear.
         /// </summary>
+        /// <remarks>
+        /// One shape per reading since 2026-10-29 (PO): check = correct, X = incorrect (an omission, a
+        /// hazard or damaged gear), dash = not needed. The ringed check for «not needed» read as a
+        /// second «correct», and the red ring with a bar as a «!».
+        /// </remarks>
         public static readonly (string Glyph, Color Tint)[] StatusSemaphore =
         {
             ("Status_Independent", UIBuilderKit.SemaphoreGreen),
-            ("Status_Supported", UIBuilderKit.SemaphoreRed),
-            ("Status_Ready", UIBuilderKit.SemaphoreYellow),
-            ("Status_Retry", UIBuilderKit.SemaphoreRed),
-            ("Status_Attention", UIBuilderKit.SemaphoreRed),
-            ("Status_Ready", UIBuilderKit.SemaphoreYellow)
+            ("Status_Wrong", UIBuilderKit.SemaphoreRed),
+            ("Status_NotNeeded", UIBuilderKit.SemaphoreYellow),
+            ("Status_Wrong", UIBuilderKit.SemaphoreRed),
+            ("Status_Wrong", UIBuilderKit.SemaphoreRed),
+            ("Status_NotNeeded", UIBuilderKit.SemaphoreYellow)
         };
 
         private static void Semaphore(Object view, UIBuilderKit kit)
@@ -330,7 +379,9 @@ namespace RideSafe.UI.EditorTools
         {
             RectTransform title = Find(panel, "Header/Title");
             RectTransform body = Find(panel, "Header/Body");
-            Enclose box = Frame(panel, kit, new[] { title, body }, HeaderMargin, HeaderFrameName, TitleBoxSprite);
+            // The box wraps what shows: the module 0 subtitles are off since 2026-10-29.
+            RectTransform[] pieces = body.gameObject.activeSelf ? new[] { title, body } : new[] { title };
+            Enclose box = Frame(panel, kit, pieces, HeaderMargin, HeaderFrameName, TitleBoxSprite);
             // Light on the blue, like the sign's text.
             TMP_Text titleText = title.GetComponent<TMP_Text>();
             titleText.color = Color.white;
@@ -339,6 +390,14 @@ namespace RideSafe.UI.EditorTools
             bodyText.color = UIBuilderKit.OnDark;
             EditorUtility.SetDirty(bodyText);
             UIBrand.Place(kit, titleText, (RectTransform)box.transform, HeaderMargin.x, true);
+            // The box as wide as the title and its mark, not a fixed width with the rest empty
+            // (PO, 2026-10-29). The width the builder gave the title is the most it may take.
+            HugText hug = title.GetComponent<HugText>();
+            if (hug == null)
+                hug = title.gameObject.AddComponent<HugText>();
+            float widest = title.sizeDelta.x - titleText.margin.x - titleText.margin.z;
+            hug.Configure(titleText, null, widest, 0f, Vector2.zero, false);
+            EditorUtility.SetDirty(hug);
             RectTransform frame = (RectTransform)box.transform;
             return -frame.anchoredPosition.y + frame.sizeDelta.y - PadOf(frame);
         }
@@ -382,15 +441,15 @@ namespace RideSafe.UI.EditorTools
 
         /// <summary>
         /// A choice screen laid out like the vehicle screen: the question in a blue box only as wide as
-        /// it needs, at the vehicle title's height so it does not jump between screens; the two cards
+        /// it needs, above the garage door like every module 0 title (TitleAboveDoor); the two cards
         /// either side of the door's mark, each card's content centred (the name sat in the bottom-left
         /// corner of an empty card); Back under the left card and Continue under the right one, in the
         /// band between the door's mark and its wordmark.
         /// </summary>
-        private static void Choice(Transform panel, UIBuilderKit kit, float cardHeight, bool described, float headerWidth, Transform reference)
+        private static void Choice(Transform panel, UIBuilderKit kit, float cardHeight, bool flagged, float headerWidth)
         {
             Header(panel, headerWidth);
-            SameHeight(panel, reference);
+            TitleAboveDoor(panel);
             // One line beside the mark: «¿Qué normas aplican a tus recorridos?» shrinks a little
             // instead of wrapping onto the subtitle.
             TMP_Text question = Find(panel, "Header/Title").GetComponent<TMP_Text>();
@@ -414,11 +473,13 @@ namespace RideSafe.UI.EditorTools
                 SetVisibleY(card, OptionsTop, cardHeight);
                 lefts[i] = centre - w * 0.5f;
                 rights[i] = centre + w * 0.5f;
-                if (described)
+                if (flagged)
                 {
+                    // The region's name over its flag: the rule-pack sentence read as fine print (PO, 2026-10-29).
                     InCard(card, "StateCaption", 60f, 12f, w - 60f, 26f);
-                    InCard(card, "Title", 24f, 32f, w - 24f, 62f);
-                    InCard(card, "Description", 24f, 66f, w - 24f, cardHeight - 14f);
+                    InCard(card, "Title", 24f, 28f, w - 24f, 58f);
+                    Find(card, "Description").gameObject.SetActive(false);
+                    Flag(card, kit, LocationFlags[card.name], w * 0.5f, 64f);
                 }
                 else
                 {
@@ -436,19 +497,98 @@ namespace RideSafe.UI.EditorTools
             Transform optionsBox = panel.Find(FrameName);
             if (optionsBox != null)
                 Object.DestroyImmediate(optionsBox.gameObject);
-            ButtonsUnder(lefts[0], rights[1], OptionsTop + cardHeight + ButtonsGap, Find(panel, "BackButton"), Find(panel, "ContinueButton"));
+            ButtonsUnder(lefts[0], rights[1], OptionsTop + cardHeight + ButtonsGap, Find(panel, "BackButton"), Find(panel, "ContinueButton"),
+                         NavButtonWidth, NavButtonWidth);
+            NavIcon(Find(panel, "BackButton"), kit, "Icon_Back");
+            NavIcon(Find(panel, "ContinueButton"), kit, "Icon_Continue");
         }
 
-        /// <summary>The title and subtitle at the same height as on <paramref name="reference"/>'s screen.</summary>
-        private static void SameHeight(Transform panel, Transform reference)
+        /// <summary>
+        /// The flag of each location card (PO, 2026-10-29): the United States, and South America as one
+        /// collage for Latin America. Drawn from flagcdn.com's public-domain flags (Wikimedia) into
+        /// circular badges, 256 px, in <c>UI/Icons</c>.
+        /// </summary>
+        private static readonly Dictionary<string, string> LocationFlags = new Dictionary<string, string>
         {
-            foreach (string name in new[] { "Header/Title", "Header/Body" })
-            {
-                RectTransform rect = Find(panel, name), model = Find(reference, name);
-                rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, model.anchoredPosition.y);
-                rect.sizeDelta = new Vector2(rect.sizeDelta.x, model.sizeDelta.y);
-            }
+            { "Option_florida", "Flag_USA" },
+            { "Option_bogota", "Flag_LatAm" },
+        };
+
+        /// <summary>A location card's flag badge, <see cref="FlagSize"/> across, centred under its name.</summary>
+        private const float FlagSize = 64f;
+
+        private static void Flag(RectTransform card, UIBuilderKit kit, string sprite, float centreX, float top)
+        {
+            Transform existing = card.Find("Flag");
+            GameObject flag = existing != null ? existing.gameObject : UIBuilderKit.NewUi("Flag", card);
+            InCard(card, "Flag", centreX - FlagSize * 0.5f, top, centreX + FlagSize * 0.5f, top + FlagSize);
+            UnityEngine.UI.Image image = flag.GetComponent<UnityEngine.UI.Image>();
+            if (image == null)
+                image = flag.AddComponent<UnityEngine.UI.Image>();
+            image.sprite = kit.S(sprite);
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            image.color = Color.white;
+            EditorUtility.SetDirty(image);
         }
+
+        /// <summary>
+        /// The question's top on every module 0 screen: its blue box above the garage door, on the
+        /// siding (PO, 2026-10-29), not over the door's top. Measured on the prefab: with the title
+        /// alone the box's visible bottom lands at 48, and the door's white frame starts at about 72.
+        /// </summary>
+        private const float TitleTop = -32f;
+
+        /// <summary>Where the comfort settings stood before the title moved up: they stay on the door.</summary>
+        private const float ComfortSettingsTop = 170f;
+
+        /// <summary>
+        /// Back and Continue as icons, not words (PO, 2026-10-29). A chevron is universal for a step
+        /// back or forth; the pill stays 88 x 56 so the target is as easy to hit with the ray as before.
+        /// </summary>
+        private const float NavButtonWidth = 88f;
+
+        /// <summary>The title at <see cref="TitleTop"/> and the subtitle off: «no son relevantes» (PO, 2026-10-29).</summary>
+        private static void TitleAboveDoor(Transform panel)
+        {
+            RectTransform title = Find(panel, "Header/Title");
+            title.anchoredPosition = new Vector2(title.anchoredPosition.x, -TitleTop);
+            EditorUtility.SetDirty(title);
+            Find(panel, "Header/Body").gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// A free Back / Continue pill showing a white chevron instead of its label. The label stays
+        /// (hidden) for <c>SelectableStyle</c>, which now paints the chevron with the label's colour:
+        /// navy on the light Back, white on the coral Continue, grey while it is disabled.
+        /// </summary>
+        private static void NavIcon(RectTransform button, UIBuilderKit kit, string source)
+        {
+            TMP_Text label = button.Find("Label").GetComponent<TMP_Text>();
+            label.gameObject.SetActive(false);
+            Transform existing = button.Find("Icon");
+            GameObject icon = existing != null ? existing.gameObject : UIBuilderKit.NewUi("Icon", button);
+            RectTransform rect = (RectTransform)icon.transform;
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(30f, 30f);
+            UnityEngine.UI.Image image = icon.GetComponent<UnityEngine.UI.Image>();
+            if (image == null)
+                image = icon.AddComponent<UnityEngine.UI.Image>();
+            image.sprite = kit.S(UIStatusIcons.NavigationName(source));
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            image.color = label.color;
+            SelectableStyle style = button.GetComponentInChildren<SelectableStyle>(true);
+            if (style != null)
+            {
+                UIWire.Ref(style, "_icon", image);
+                EditorUtility.SetDirty(style);
+            }
+            EditorUtility.SetDirty(image);
+            EditorUtility.SetDirty(label);
+        }
+
 
         private static void Require(bool condition, string message)
         {
@@ -609,6 +749,37 @@ namespace RideSafe.UI.EditorTools
                 foreach (GameObject panel in off)
                     panel.SetActive(false);
             }
+        }
+
+        /// <summary>
+        /// Slides <paramref name="pieces"/> sideways, together, so the group sits centred in
+        /// <paramref name="panel"/> (their direct parent). Only x moves. Idempotent.
+        /// </summary>
+        private static void CenterIn(RectTransform panel, params RectTransform[] pieces)
+        {
+            float min = float.MaxValue, max = float.MinValue;
+            Vector3[] corners = new Vector3[4];
+            foreach (RectTransform piece in pieces)
+            {
+                piece.GetWorldCorners(corners);
+                min = Mathf.Min(min, panel.InverseTransformPoint(corners[0]).x);
+                max = Mathf.Max(max, panel.InverseTransformPoint(corners[2]).x);
+            }
+            float shift = panel.rect.center.x - (min + max) * 0.5f;
+            if (Mathf.Abs(shift) < 0.01f)
+                return;
+            foreach (RectTransform piece in pieces)
+            {
+                piece.anchoredPosition += new Vector2(shift, 0f);
+                EditorUtility.SetDirty(piece);
+            }
+        }
+
+        private static void Align(RectTransform text, HorizontalAlignmentOptions alignment)
+        {
+            TMP_Text tmp = text.GetComponent<TMP_Text>();
+            tmp.horizontalAlignment = alignment;
+            EditorUtility.SetDirty(tmp);
         }
 
         private static RectTransform Find(GameObject root, string path) => Find(root.transform, path);

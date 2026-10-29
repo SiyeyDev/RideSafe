@@ -1218,11 +1218,24 @@ namespace RideSafe.Module01.Tests
                     "[" + momento + "] el nombre invade la columna de estado: " + row.name);
             }
 
-            // The note's top edge right under the list's visible bottom.
-            float listBottom = Bottom(list, panel), noteTop = Top(note, panel);
-            Assert.GreaterOrEqual(listBottom - noteTop, -.5f, "[" + momento + "] la nota se monta sobre la lista");
-            Assert.LessOrEqual(listBottom - noteTop, ColumnComposition.Gap * 2f,
-                "[" + momento + "] hueco entre la lista y la nota: " + (listBottom - noteTop));
+            // Since 2026-10-29 the section reports carry no note (PO: «quitar ese texto inferior»);
+            // only the final one does, and it is the score.
+            bool final = momento == "reporte final";
+            Assert.AreEqual(final, note.gameObject.activeInHierarchy,
+                "[" + momento + "] " + (final ? "la puntuación va bajo la lista" : "sin nota bajo la lista"));
+            float listBottom = Bottom(list, panel);
+            if (final)
+            {
+                // The note's top edge right under the list's visible bottom.
+                float noteTop = Top(note, panel);
+                Assert.GreaterOrEqual(listBottom - noteTop, -.5f, "[" + momento + "] la nota se monta sobre la lista");
+                Assert.LessOrEqual(listBottom - noteTop, ColumnComposition.Gap * 2f,
+                    "[" + momento + "] hueco entre la lista y la nota: " + (listBottom - noteTop));
+                StringAssert.Contains("/ 100", note.GetComponentInChildren<TMP_Text>().text, "[" + momento + "] la nota es la puntuación");
+                Assert.IsFalse(Object.FindObjectsByType<RectTransform>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                        .Any(r => r.name == "FinalScore" && r.gameObject.activeInHierarchy),
+                    "[" + momento + "] el panel aparte de la nota ya no se enseña: se montaba sobre la lista");
+            }
             GameObject empty = list.Find("EmptyState")?.gameObject;
             if (empty != null && empty.activeInHierarchy)
                 Assert.GreaterOrEqual(Bottom((RectTransform)empty.transform, panel), listBottom - .5f,

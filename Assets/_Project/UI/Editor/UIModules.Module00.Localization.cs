@@ -38,11 +38,11 @@ namespace RideSafe.UI.EditorTools
             { "Choose your language", "M0/Language_Title" },
             { "You can change this later.", "M0/Language_Subtitle" },
 
-            { "Which rules apply to your riding?", "M0/Location_Title" },
+            { "Choose your location", "M0/Location_Title" },
             { "This sets the rule pack the whole session is judged against.", "M0/Location_Subtitle" },
-            { "Florida", "M0/Location_Florida" },
+            { "United States", "M0/Location_Florida" },
             { "United States · state e-bike and scooter rule pack", "M0/Location_Florida_Description" },
-            { "Bogotá", "M0/Location_Bogota" },
+            { "Latin America", "M0/Location_Bogota" },
             { "Colombia · city cycling and micromobility rule pack", "M0/Location_Bogota_Description" },
 
             { "Choose your vehicle", "M0/Vehicle_Title" },

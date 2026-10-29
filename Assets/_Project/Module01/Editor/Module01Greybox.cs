@@ -181,7 +181,7 @@ namespace RideSafe.Module01.Editor
                 string id = entry.ItemId;
                 SafetyItemSO asset = LoadOrCreate<SafetyItemSO>($"{ItemsFolder}/SO_Item_{id}.asset");
 
-                asset.ConfigureForTests(id, entry.NameKey, entry.NameKey + "_Risk", entry.Category);
+                asset.ConfigureForTests(id, entry.NameKey, entry.RiskKey, entry.Category);
                 asset.ConfigureWeightForTests(entry.Weight, entry.HazardGroup);
                 asset.ConfigureBonusForTests(entry.ExclusiveBonusWith);
                 asset.ConfigureRulesForTests(entry.OnlyForVehicle, entry.SubstitutesFor);

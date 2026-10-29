@@ -20,7 +20,7 @@ namespace RideSafe.Module01
     public class Module00SettingsSO : ScriptableObject
     {
         [Tooltip("Código que recibe I2. Acepta regional ('es-CO') o corto ('es', 'en').")]
-        [SerializeField] private string _language = "es-CO";
+        [SerializeField] private string _language = "en";
         [Tooltip("Id de tarjeta del panel Jurisdiction: bogota, florida.")]
         [SerializeField] private string _jurisdiction = "bogota";
         [Tooltip("Id de tarjeta del panel Vehicle: ebike, escooter. Decide qué secuencias corren.")]

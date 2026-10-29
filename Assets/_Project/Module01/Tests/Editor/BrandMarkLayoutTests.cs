@@ -41,9 +41,23 @@ namespace RideSafe.Module01.Tests
             // The same size on every panel, 4.5 cm: one that grew with each title read as a different logo.
             Assert.AreEqual(22.5f, ((RectTransform)mark.transform).sizeDelta.y, 0.01f, title.parent.name + "/" + title.name);
 
-            float offset = new SerializedObject(mark).FindProperty("_offsetX").floatValue;
+            SerializedObject serialized = new SerializedObject(mark);
+            float offset = serialized.FindProperty("_offsetX").floatValue;
             float width = ((RectTransform)mark.transform).sizeDelta.x;
             TMP_Text text = title.GetComponent<TMP_Text>();
+            if (serialized.FindProperty("_inline").boolValue)
+            {
+                // Since 2026-10-29 a centred title and its mark centre as one (PO: «distribución de
+                // pesos»): room for the mark before the first letter, none mirrored on the right.
+                // The room is a left margin, or (the station sign) its HugText's indent of the heading only.
+                HugText hug = title.GetComponentInParent<HugText>();
+                float room = text.margin.x;
+                if (hug != null)
+                    room = Mathf.Max(room, new SerializedObject(hug).FindProperty("_firstLineIndent").floatValue);
+                Assert.GreaterOrEqual(room, width, title.parent.name + "/" + title.name + " makes room for the mark");
+                Assert.AreEqual(0f, text.margin.z, 0.01f, title.parent.name + "/" + title.name + ": no empty strip on the right");
+                return image;
+            }
             Assert.GreaterOrEqual(text.margin.x, offset + width, title.parent.name + "/" + title.name + " starts after the mark");
             if (text.horizontalAlignment == HorizontalAlignmentOptions.Center)
                 Assert.AreEqual(text.margin.x, text.margin.z, 0.01f, "a centred title stays centred in its box");
@@ -80,9 +94,9 @@ namespace RideSafe.Module01.Tests
             Transform frame = TitleBox(prefab, "Vehicle");
             Assert.IsNotNull(frame, "the title got lost against the garage door");
             SerializedProperty pieces = new SerializedObject(frame.GetComponent<Enclose>()).FindProperty("_pieces");
-            Assert.AreEqual(2, pieces.arraySize, "the box holds the title and its subtitle, not the vehicles");
+            // The module 0 subtitles are off since 2026-10-29 (PO: «no son relevantes»).
+            Assert.AreEqual(1, pieces.arraySize, "the box holds the title only, not the vehicles");
             Assert.AreEqual("Title", pieces.GetArrayElementAtIndex(0).objectReferenceValue.name);
-            Assert.AreEqual("Body", pieces.GetArrayElementAtIndex(1).objectReferenceValue.name);
         }
 
         /// <summary>Visible bottom of a kit box, top-down: its rect carries the atlas padding around the art.</summary>
@@ -94,7 +108,7 @@ namespace RideSafe.Module01.Tests
             RectTransform header = (RectTransform)prefab.transform.Find(screen + "/HeaderFrame");
             Assert.IsNotNull(header, screen + " has no box for its title");
             SerializedProperty pieces = new SerializedObject(header.GetComponent<Enclose>()).FindProperty("_pieces");
-            Assert.AreEqual(2, pieces.arraySize, screen + ": the box holds the title and its subtitle");
+            Assert.AreEqual(1, pieces.arraySize, screen + ": the box holds the title (no subtitle since 2026-10-29)");
             // The blue of the station sign, with white text and the white mark (PO, 2026-10-21).
             Assert.AreEqual("Panel_Modal_Dark", header.GetComponent<Image>().sprite.name, screen);
             Transform title = prefab.transform.Find(screen + "/Header/Title");
@@ -185,8 +199,8 @@ namespace RideSafe.Module01.Tests
                 Assert.IsNull(popupTitle.parent.Find("BrandMark"), "the popup opens under the station's sign, which carries it");
                 Assert.AreEqual(White, AssertMarked(sign).sprite.name, "the station sign is dark");
                 Assert.AreEqual(Navy, AssertMarked(decision).sprite.name, "the decision box is light");
-                Assert.AreEqual(HorizontalAlignmentOptions.Left, decision.GetComponent<TMP_Text>().horizontalAlignment,
-                                "two centred lines beside the mark sat off-balance");
+                // Centred like every panel title since 2026-10-29 (PO: «todo unificado»), its mark inline.
+                Assert.AreEqual(HorizontalAlignmentOptions.Center, decision.GetComponent<TMP_Text>().horizontalAlignment);
             }
             finally
             {

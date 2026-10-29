@@ -236,6 +236,20 @@ namespace RideSafe.UI
             LayoutRebuilder.ForceRebuildLayoutImmediate(_below);
         }
 
+        /// <summary>
+        /// Sin nota, su caja se apaga y no ocupa sitio: el marco del panel (Enclose) y los botones que
+        /// lo siguen suben con ella. Desde el 2026-10-29 solo la usa la nota final (PO: el texto
+        /// bajo la lista de cada sección sobraba).
+        /// </summary>
+        private void ShowNote(bool on)
+        {
+            if (_subtitle == null)
+                return;
+            GameObject box = _below != null && _subtitle.transform.IsChildOf(_below) ? _below.gameObject : _subtitle.gameObject;
+            if (box.activeSelf != on)
+                box.SetActive(on);
+        }
+
         /// <summary>Baja lo que sigue a la lista hasta justo debajo de ella.</summary>
         public void ArrangeBelow()
         {
@@ -315,6 +329,7 @@ namespace RideSafe.UI
         {
             if (_title != null) _title.text = title;
             if (_subtitle != null) _subtitle.text = subtitle;
+            ShowNote(!string.IsNullOrEmpty(subtitle));
             FitNoteBox();
             if (_leftHeading != null) { _leftHeading.text = leftHeading; _leftHeading.gameObject.SetActive(true); }
             if (_rightHeading != null) { _rightHeading.text = rightHeading; _rightHeading.gameObject.SetActive(true); }
@@ -341,6 +356,7 @@ namespace RideSafe.UI
         {
             if (_title != null) _title.text = title;
             if (_subtitle != null) _subtitle.text = note;
+            ShowNote(!string.IsNullOrEmpty(note));
             FitNoteBox();
             if (_leftHeading != null) _leftHeading.gameObject.SetActive(false);
             if (_rightHeading != null) _rightHeading.gameObject.SetActive(false);

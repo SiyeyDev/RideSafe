@@ -146,7 +146,7 @@ namespace RideSafe.Tutorial.Tests
             yield return ExpectStep("location.choose");
             Assert.AreEqual("Jurisdiction", _module.Current);
             Assert.AreEqual(Translate("Tutorial/ChooseLocation"), _instruction.text);
-            AssertPanelTitle("Jurisdiction", "M0/Location_Title", "Which rules apply to your riding?");
+            AssertPanelTitle("Jurisdiction", "M0/Location_Title", "Choose your location");
             _module.Get<ChoicePanel>("Jurisdiction").Select("bogota");
             yield return ExpectStep("location.continue");
             yield return Click("onboarding.location.continue");

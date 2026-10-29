@@ -315,6 +315,9 @@ namespace RideSafe.UI.EditorTools
         /// caben las doce que puede llegar a tener.
         /// </para>
         /// </summary>
+        /// <summary>The status icon of a row: 28 until the PO asked for them a bit larger (2026-10-29).</summary>
+        public const float StatusIconSize = 34f;
+
         public RectTransform StatusRowTemplate(Transform container)
         {
             GameObject row = UIBuilderKit.NewUi("RowTemplate", container);
@@ -331,7 +334,7 @@ namespace RideSafe.UI.EditorTools
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             UnityEngine.UI.LayoutElement iconLayout = iconGo.AddComponent<UnityEngine.UI.LayoutElement>();
-            iconLayout.minWidth = iconLayout.preferredWidth = iconLayout.minHeight = iconLayout.preferredHeight = 28f;
+            iconLayout.minWidth = iconLayout.preferredWidth = iconLayout.minHeight = iconLayout.preferredHeight = StatusIconSize;
 
             GameObject column = UIBuilderKit.NewUi("Text", row.transform);
             UnityEngine.UI.VerticalLayoutGroup stack = column.AddComponent<UnityEngine.UI.VerticalLayoutGroup>();

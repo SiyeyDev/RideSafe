@@ -122,28 +122,37 @@ namespace RideSafe.Module01.Editor
         /// </summary>
         public static readonly Stop[] Stops =
         {
-            // mesa: la de la pared derecha junto a la puerta. Esencial: el casco.
+            // Desde el 2026-10-29 (commit «epps») cada elemento va en la parada del mueble donde
+            // el artista lo dejó en RideSafe_Garaje_v5: él repartió los EPP por las mesas en la
+            // escena de trabajo, y una parada solo deja pulsar lo de su lista, así que 33
+            // elementos que cambiaron de mesa no respondían (PO: «no todos los elementos son
+            // clickeables»). El reparto de antes —un esencial por parada— ya no se cumple: la
+            // entrada, el centro y las herramientas no tienen esencial, el fondo tiene las dos
+            // luces y el mostrador el casco, el calzado y el pantalón.
+            // mesa: la de la pared derecha junto a la puerta.
             new Stop("table_entrance", "M1/Stop_Entrance",
-                     "helmet_ok", "poncho", "umbrella", "backpack", "pannier", "gloves", "elbow_pads",
-                     "sneakers", "headphones", "glasses", "work_goggles", "bell"),
-            // otra mesa: la del centro. Esencial: el calzado.
+                     "poncho", "backpack", "pannier", "glasses", "work_goggles", "cable_lock", "rain_jacket"),
+            // otra mesa: la del centro.
             new Stop("table_middle", "M1/Stop_Middle",
-                     "shoes_ok", "cargo_secured", "mittens", "knee_pads", "tote", "face_mask", "snorkel",
-                     "flashlight", "sunglasses", "phone_mount"),
-            // mesa nueva: la del fondo. Esencial: la luz delantera.
+                     "umbrella", "elbow_pads", "mittens", "knee_pads", "tote", "face_mask",
+                     "clothing_loose", "neck_scarf", "drink"),
+            // mesa nueva: la del fondo. Esenciales: las dos luces.
             new Stop("table_back", "M1/Stop_Back",
-                     "light_front", "reflective", "cable_lock", "helmet_damaged", "flat_kit",
-                     "shower_slippers", "glasses_damaged", "cargo_handheld", "spare_red_light",
-                     "airpods", "clothing_loose", "neck_scarf", "boots"),
-            // cabinet (1) + cabinetmid 1: el mostrador de la ropa. Esencial: la ropa ceñida.
+                     "light_front", "light_rear", "gloves", "headphones", "bell", "flashlight", "phone_mount",
+                     "reflective", "cargo_handheld", "spare_red_light", "airpods", "boots", "work_vest",
+                     "old_headphones"),
+            // cabinet (1) + cabinetmid 1 + cabinet: el mostrador del fondo, de punta a punta.
+            // Esenciales: el casco, el calzado y el pantalón ceñido.
             new Stop("counter_clothes", "M1/Stop_Clothes",
-                     "trousers_fitted", "sandals", "cap", "hiviz_day", "rain_jacket", "work_vest",
-                     "loose_laces", "trousers_loose", "folded_jeans", "trousers_tech"),
-            // metal table: el banco bajo el logo. Esencial: la luz trasera.
+                     "helmet_ok", "shoes_ok", "trousers_fitted", "helmet_damaged", "helmet_cracked", "cap",
+                     "gloves_spare_2", "sneakers", "snorkel", "sunglasses", "shower_slippers", "glasses_damaged",
+                     "sandals", "hiviz_day", "loose_laces", "trousers_loose", "folded_jeans", "trousers_tech",
+                     "sport_glasses"),
+            // metal table: el banco bajo el logo.
             new Stop("table_tools", "M1/Stop_Tools",
-                     "light_rear", "sport_glasses", "damaged_cable_lock", "fabric_gloves", "latex_gloves",
-                     "loose_padlock", "work_gloves", "helmet_strap", "multitool", "old_headphones",
-                     "drink", "bottle"),
+                     "cargo_secured", "flat_kit", "damaged_cable_lock", "fabric_gloves", "latex_gloves",
+                     "loose_padlock", "work_gloves", "helmet_strap", "multitool", "bottle",
+                     "gloves_spare", "shoes_spare", "reflective_spare", "vest_grey"),
         };
 
         /// <summary>La parada de un elemento, o <c>null</c> si no está en ninguna.</summary>
@@ -182,8 +191,10 @@ namespace RideSafe.Module01.Editor
                          string model = null, string hazardGroup = null,
                          string exclusiveBonusWith = null, float targetWidth = 0f,
                          string onlyForVehicle = null, string substitutesFor = null,
-                         string[] extraModels = null, string inspectModel = null)
+                         string[] extraModels = null, string inspectModel = null,
+                         string sameNameAs = null)
             {
+                SameNameAs = sameNameAs;
                 ExtraModels = extraModels ?? new string[0];
                 InspectModel = inspectModel;
                 LibraryId = libraryId;
@@ -282,7 +293,16 @@ namespace RideSafe.Module01.Editor
             /// <summary>Todavía no hay modelo: va con el signo «!».</summary>
             public bool NeedsMarker => string.IsNullOrEmpty(Model);
 
-            public string NameKey => "M1/Item_" + ToPascal(ItemId);
+            /// <summary>
+            /// Id del elemento cuyo nombre (y locución) lleva este: las copias idénticas que el
+            /// artista repartió por otras mesas se llaman como su original (PO, 2026-10-29).
+            /// </summary>
+            public string SameNameAs { get; }
+
+            public string NameKey => "M1/Item_" + ToPascal(SameNameAs ?? ItemId);
+
+            /// <summary>La explicación es siempre la propia: una copia neutral no vale lo que su original.</summary>
+            public string RiskKey => "M1/Item_" + ToPascal(ItemId) + "_Risk";
 
             private static string ToPascal(string id)
             {
@@ -540,6 +560,26 @@ namespace RideSafe.Module01.Editor
             // Las chanclas de antes: H04 pasó a las Crocs (2026-10-28). Mismo peligro y mismo grupo,
             // así que llevarse las dos descuenta una vez.
             new Entry("P30", "shower_slippers", Opt, 0f, Mesa1, model: Models + "Slippers.fbx"),
+
+            // ---- Variantes que el artista puso en v5 (2026-10-29, commit «epps») -----------
+            // Mismo FBX que un elemento del Excel, colocadas a propósito en otra mesa o con otro
+            // material. La PO decidió cómo cuenta cada una. Las reconoce
+            // `Module01SceneEntities` por la entidad que ya llevan, no por el FBX, que comparten.
+            // El casco certificado con el material agrietado: peligro, como el casco dañado (H02).
+            new Entry("P31", "helmet_cracked", Bad, 30f, Mesa1,
+                      model: Essentials + "Casco certificado.fbx", hazardGroup: "helmet_integrity"),
+            // El chaleco con material gris: parece un chaleco pero no refleja. Neutral.
+            new Entry("P32", "vest_grey", Opt, 0f, Mesa2, model: Essentials + "chaleco reflectivo.fbx"),
+            // Copias idénticas a su original (mismo material): neutrales. Llevan el nombre y la
+            // locución del original porque se ven igual; solo la explicación es suya.
+            new Entry("P33", "gloves_spare", Opt, 0f, Mesa1,
+                      model: Essentials + "gloves.fbx", sameNameAs: "gloves"),
+            new Entry("P34", "gloves_spare_2", Opt, 0f, Mesa1,
+                      model: Essentials + "gloves.fbx", sameNameAs: "gloves"),
+            new Entry("P35", "shoes_spare", Opt, 0f, Mesa1,
+                      model: Essentials + "zapatos de seguridad.fbx", sameNameAs: "shoes_ok"),
+            new Entry("P36", "reflective_spare", Opt, 0f, Mesa2,
+                      model: Essentials + "chaleco reflectivo.fbx", sameNameAs: "reflective"),
         };
     }
 }

@@ -14,10 +14,10 @@ namespace RideSafe.UI.EditorTools
             Choice(Panel("Language"), "Choose your language", "You can change this later.", 77f, 118f,
                 new[] { ("en", "English", "", 183f, 236f, 487f, 398f),
                         ("es", "Español", "", 514f, 236f, 819f, 398f) });
-            Choice(Panel("Jurisdiction"), "Which rules apply to your riding?",
+            Choice(Panel("Jurisdiction"), "Choose your location",
                 "This sets the rule pack the whole session is judged against.", 75f, 113f,
-                new[] { ("florida", "Florida", "United States · state e-bike and scooter rule pack", 186f, 206f, 487f, 418f),
-                        ("bogota", "Bogotá", "Colombia · city cycling and micromobility rule pack", 516f, 206f, 814f, 418f) });
+                new[] { ("florida", "United States", "United States · state e-bike and scooter rule pack", 186f, 206f, 487f, 418f),
+                        ("bogota", "Latin America", "Colombia · city cycling and micromobility rule pack", 516f, 206f, 814f, 418f) });
             Vehicle(Panel("Vehicle"));
             Comfort(Panel("Comfort"));
             LocalizeModule00(_module);

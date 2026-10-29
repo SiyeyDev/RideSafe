@@ -536,8 +536,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - "Bogot\xE1"
-      - "Bogot\xE1"
+      - Latin America
+      - "Latinoam\xE9rica"
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Location_Bogota_Description
@@ -552,8 +552,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Florida
-      - Florida
+      - United States
+      - EE. UU.
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Location_Florida_Description
@@ -576,8 +576,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Which rules apply to your riding?
-      - "\xBFQu\xE9 normas aplican a tus recorridos?"
+      - Choose your location
+      - "Elige tu ubicaci\xF3n"
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Switch_Off
@@ -2269,6 +2269,110 @@ MonoBehaviour:
       - "Tapan los dos o\xEDdos: no oyes el tr\xE1fico."
       Flags: 0000
       Languages_Touch: []
+    - Term: M1/Item_HelmetCracked
+      TermType: 0
+      Description: 
+      Languages:
+      - Cracked certified helmet
+      - Casco certificado agrietado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_HelmetCracked_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - A cracked helmet no longer absorbs the next impact.
+      - Un casco agrietado ya no absorbe el siguiente golpe.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_VestGrey
+      TermType: 0
+      Description: 
+      Languages:
+      - Grey vest
+      - Chaleco gris
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_VestGrey_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - 'It is not reflective: it does not change the result.'
+      - 'No es reflectivo: no cambia el resultado.'
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_GlovesSpare_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_GlovesSpare2_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_ShoesSpare_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_ReflectiveSpare_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/FinalScore_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Final score
+      - "Puntuaci\xF3n final"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/FinalScore_Gear
+      TermType: 0
+      Description: 
+      Languages:
+      - Gear
+      - Equipo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/FinalScore_Vehicle
+      TermType: 0
+      Description: 
+      Languages:
+      - Vehicle
+      - "Veh\xEDculo"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/FinalScore_CanContinue
+      TermType: 0
+      Description: 
+      Languages:
+      - You can continue to Module 2.
+      - "Puedes continuar al M\xF3dulo 2."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/FinalScore_MustRepeat
+      TermType: 0
+      Description: 
+      Languages:
+      - You need more than 70 to continue. Repeat the module.
+      - "Necesitas m\xE1s de 70 para continuar. Repite el m\xF3dulo."
+      Flags: 0000
+      Languages_Touch: []
     CaseInsensitiveTerms: 0
     OnMissingTranslation: 1
     mTerm_AppName: 
@@ -2279,7 +2383,7 @@ MonoBehaviour:
     - Name: "Espa\xF1ol"
       Code: es-CO
       Flags: 0
-    IgnoreDeviceLanguage: 0
+    IgnoreDeviceLanguage: 1
     _AllowUnloadingLanguages: 0
     Google_WebServiceURL: https://script.google.com/macros/s/AKfycbwzabmjo36njUhCbXt9eyJw8DqnIQ__GolCEUawki_SREXpyZvYcJkfu-WY4Gaoc45EVg/exec
     Google_SpreadsheetKey: 1x6Rra_gjfZ7ekycOZrI_UtUaWF0g63huKrL3Xy95nt0
