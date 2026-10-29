@@ -16,12 +16,12 @@ LightingSettings:
   m_IndirectOutputScale: 1
   m_UsingShadowmask: 1
   m_BakeBackend: 2
-  m_LightmapMaxSize: 2048
+  m_LightmapMaxSize: 1024
   m_LightmapSizeFixed: 0
   m_UseMipmapLimits: 1
-  m_BakeResolution: 16
+  m_BakeResolution: 8
   m_Padding: 2
-  m_LightmapCompression: 3
+  m_LightmapCompression: 2
   m_LightmapPackingMode: 0
   m_LightmapPackingMethod: 1
   m_XAtlasPackingAttempts: 16384
@@ -49,7 +49,7 @@ LightingSettings:
   m_PVRSampleCount: 512
   m_PVREnvironmentSampleCount: 4
   m_PVREnvironmentReferencePointCount: 2048
-  m_LightProbeSampleCountMultiplier: 8
+  m_LightProbeSampleCountMultiplier: 16
   m_PVRBounces: 4
   m_PVRMinBounces: 2
   m_PVREnvironmentImportanceSampling: 1
