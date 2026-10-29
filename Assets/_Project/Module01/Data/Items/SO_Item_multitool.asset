@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_Multitool
   _riskKey: M1/Item_Multitool_Risk
   _category: 2
-  _displayPrefab: {fileID: 919132149155446097, guid: d15432c79e5101743ab599b2b1a9cdcb, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: bc83d34286cc3554095ad92ad338b67a, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 1
   _hazardGroup: 
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

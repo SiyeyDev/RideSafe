@@ -14,32 +14,80 @@ M1/Final_Complete,Module complete. Review your preparation and inspection summar
 M1/Inappropriate,Not suitable,No adecuado
 M1/Inspect_Instruction,Select each marker to check the component before riding.,Selecciona cada marcador para revisar el componente antes de salir.
 M1/Inspect_Question,Have you checked this part of the vehicle?,¿Has revisado este punto del vehículo?
+M1/Item_Boots,Red boots,Botas rojas
+M1/Item_Boots_Risk,They do not change the result.,No cambian el resultado.
+M1/Item_CableLock,Cable lock,Guaya con candado
+M1/Item_CableLock_Risk,It does not change the result.,No cambia el resultado.
 M1/Item_CargoHandheld,Handheld object,Objeto en la mano
 M1/Item_CargoHandheld_Risk,An object in your hand takes away a brake and the steering.,Un objeto en la mano te quita un freno y la dirección.
 M1/Item_CargoSecured,Secured load,Carga asegurada
 M1/Item_CargoSecured_Risk,A secured load does not shift and does not change your balance.,La carga asegurada no se desplaza y no te cambia el equilibrio.
-M1/Item_ClothingLoose,Loose clothing or laces,Ropa o cordones sueltos
-M1/Item_ClothingLoose_Risk,Loose clothing and laces reach the chain and the spokes.,La ropa y los cordones sueltos llegan a la cadena y a los rayos.
+M1/Item_ClothingLoose,Loose scarf,Bufanda suelta
+M1/Item_ClothingLoose_Risk,Loose clothing reaches the chain and the spokes.,La ropa suelta llega a la cadena y a los rayos.
+M1/Item_DamagedCableLock,Damaged cable lock,Guaya dañada
+M1/Item_DamagedCableLock_Risk,A broken cable does not secure the vehicle: it does not change the result.,Una guaya rota no asegura el vehículo: no cambia el resultado.
 M1/Item_ElbowPads,Elbow pads,Coderas
 M1/Item_ElbowPads_Risk,Elbow pads cushion the first point of contact in a fall.,Las coderas amortiguan el primer punto de contacto en una caída.
+M1/Item_FabricGloves,Fabric gloves,Guantes de tela
+M1/Item_FabricGloves_Risk,They do not change the result.,No cambian el resultado.
+M1/Item_FaceMask,Face mask,Tapabocas
+M1/Item_FaceMask_Risk,It does not change the result.,No cambia el resultado.
+M1/Item_Flashlight,Hand torch,Linterna de mano
+M1/Item_Flashlight_Risk,A torch in your hand is no substitute for the vehicle's light.,Una linterna en la mano no sustituye a la luz del vehículo.
+M1/Item_FoldedJeans,Folded fitted jeans,Jean ajustado doblado
+M1/Item_FoldedJeans_Risk,It does not change the result.,No cambia el resultado.
 M1/Item_Glasses,Glasses,Gafas
 M1/Item_Glasses_Risk,Glasses keep dust and insects from blinding you in traffic.,Las gafas evitan que el polvo y los insectos te cieguen en el tráfico.
 M1/Item_HelmetDamaged,Damaged helmet,Casco deteriorado
 M1/Item_HelmetDamaged_Risk,A helmet that has taken a blow no longer absorbs the next one.,Un casco que ya recibió un golpe no absorbe el siguiente.
 M1/Item_HelmetOk,"Intact, fitted helmet",Casco íntegro y ajustado
 M1/Item_HelmetOk_Risk,"An intact, fitted helmet is the only protection for the head.",Un casco íntegro y ajustado es la única protección de la cabeza.
+M1/Item_Jeans,Fitted jeans,Jean ajustado
+M1/Item_Jeans_Risk,It does not change the result.,No cambia el resultado.
 M1/Item_KneePads,Knee pads,Rodilleras
 M1/Item_KneePads_Risk,Knee pads protect the joint against the ground and the frame.,Las rodilleras protegen la articulación contra el suelo y el marco.
+M1/Item_LatexGloves,Latex gloves,Guantes de látex
+M1/Item_LatexGloves_Risk,They give no protection in a fall: they do not change the result.,No protegen en una caída: no cambian el resultado.
+M1/Item_LooseLaces,Trainers with loose laces,Tenis con cordones sueltos
+M1/Item_LooseLaces_Risk,A loose lace tangles in the chain or the pedal.,Un cordón suelto se enreda en la cadena o en el pedal.
+M1/Item_LoosePadlock,Loose padlock,Candado suelto
+M1/Item_LoosePadlock_Risk,Without a mount there is nowhere safe to carry it: it does not change the result.,Sin soporte no hay dónde llevarlo seguro: no cambia el resultado.
+M1/Item_LowRiseTrousers,Low-rise trousers,Pantalón de tiro bajo
+M1/Item_LowRiseTrousers_Risk,It does not change the result.,No cambia el resultado.
+M1/Item_NeckScarf,Loose neckerchief,Pañuelo suelto
+M1/Item_NeckScarf_Risk,A loose neckerchief can catch in the chain or the wheel.,Un pañuelo suelto se puede enganchar en la cadena o en la rueda.
+M1/Item_OldHeadphones,On-ear headphones,Audífonos de casco
+M1/Item_OldHeadphones_Risk,They cover both ears: you cannot hear the traffic.,Tapan los dos oídos: no oyes el tráfico.
 M1/Item_Reflective,Reflective vest,Chaleco reflectivo
 M1/Item_Reflective_Risk,A reflective vest is what makes you visible at dusk and in the rain.,El chaleco reflectivo es lo que te hace visible al atardecer y con lluvia.
 M1/Item_ShoesOk,Closed-toe shoes,Calzado cerrado
 M1/Item_ShoesOk_Risk,Closed-toe shoes hold the foot on the pedal and shield the toes.,El calzado cerrado sujeta el pie en el pedal y protege los dedos.
+M1/Item_ShowerSlippers,Shower slippers,Chanclas de baño
+M1/Item_ShowerSlippers_Risk,"With no heel or strap, the foot slips off the pedal.","Sin talón ni sujeción, el pie se sale del pedal."
+M1/Item_Sneakers,Sports trainers,Tenis deportivos
+M1/Item_Sneakers_Risk,They do not change the result.,No cambian el resultado.
+M1/Item_Snorkel,Snorkel mask,Máscara de snorkel
+M1/Item_Snorkel_Risk,It is not riding gear: it does not change the result.,No es equipo para circular: no cambia el resultado.
+M1/Item_SpareRedLight,Spare red light,Luz roja de repuesto
+M1/Item_SpareRedLight_Risk,A spare light on the table does not light the vehicle.,Una luz de repuesto en la mesa no ilumina el vehículo.
+M1/Item_SportGlasses,Sport glasses,Gafas deportivas
+M1/Item_SportGlasses_Risk,They do not change the result.,No cambian el resultado.
 M1/Item_TrousersFitted,Fitted trousers,Pantalón ajustado
 M1/Item_TrousersFitted_Risk,Fitted trousers keep the leg clear of the chain and the wheel.,El pantalón ajustado mantiene la pierna lejos de la cadena y de la rueda.
 M1/Item_TrousersLoose,Loose trousers,Pantalón ancho
 M1/Item_TrousersLoose_Risk,A wide leg can catch in the chain or the wheel and lock it.,La pernera ancha se puede enganchar en la cadena o en la rueda y bloquearla.
+M1/Item_TrousersStanding,Fitted trousers,Pantalón ajustado
+M1/Item_TrousersStanding_Risk,It does not change the result.,No cambia el resultado.
 M1/Item_TrousersTech,Sport trousers,Pantalón deportivo
 M1/Item_TrousersTech_Risk,"Sport trousers do not catch, but they do not protect the skin in a fall.","El pantalón deportivo no se engancha, pero no protege la piel en una caída."
+M1/Item_WideTrousers,Very wide trousers,Pantalón muy ancho
+M1/Item_WideTrousers_Risk,A wide leg can catch in the chain or the wheel and lock it.,La pernera ancha se puede enganchar en la cadena o en la rueda y bloquearla.
+M1/Item_WorkGloves,Work gloves,Guantes de trabajo
+M1/Item_WorkGloves_Risk,They do not change the result.,No cambian el resultado.
+M1/Item_WorkGoggles,Work goggles,Gafas de trabajo
+M1/Item_WorkGoggles_Risk,They do not change the result.,No cambian el resultado.
+M1/Item_WorkVest,Work vest,Chaleco de trabajo
+M1/Item_WorkVest_Risk,It does not change the result.,No cambia el resultado.
 M1/KeepChoosing,Keep choosing,Seguir eligiendo
 M1/Legend_AtRisk,At risk,En riesgo
 M1/Legend_Correct,Correct,Correcto
@@ -61,6 +109,8 @@ M1/Orientation_Title,Prepare before riding,Prepárate antes de rodar
 M1/Pause,Pause / resume,Pausar / seguir
 M1/Point_Brakes,Brakes,Frenos
 M1/Point_Brakes_Risk,Brakes are what decide the distance at which you stop.,Los frenos son lo que decide la distancia en la que te detienes.
+M1/Point_Deck,Deck and fasteners,Plataforma y fijaciones
+M1/Point_Deck_Risk,A cracked deck or loose bolts can give way under your weight.,Una plataforma agrietada o con tornillos flojos puede ceder bajo tu peso.
 M1/Point_Electrics,Electrical system and controls,Estado eléctrico y controles
 M1/Point_Electrics_Risk,A loose battery or throttle can cut out or surge while riding.,Una batería o un acelerador flojos se pueden cortar o acelerar solos en marcha.
 M1/Point_Lights,Lights and reflectors,Luces y reflectivos
@@ -95,12 +145,17 @@ M1/Sidebar_Empty,No items added yet.,Todavía no has añadido elementos.
 M1/Sidebar_Note,Added is not correct. Click a row to remove it.,Añadido no es acierto. Pulsa una fila para quitarla.
 M1/Sidebar_Title,My preparation,Mi preparación
 M1/Start,Start,Comenzar
+M1/Stop_Back,Back table,Mesa del fondo
+M1/Stop_Clothes,Clothing counter,Mostrador de la ropa
+M1/Stop_Entrance,Entrance table,Mesa de la entrada
+M1/Stop_Middle,Middle table,Mesa del centro
 M1/VideoPlaceholder,Placeholder video. Final educational content is pending.,Video provisional. El contenido educativo final está pendiente.
 M1/WatchVideo,Watch explanation,Ver explicación
 M1/Yes,Yes,Sí
 M1/Zone_Clothing,Clothing and footwear,Ropa y calzado
 M1/Zone_Cockpit,"Steering, brakes and controls","Dirección, frenos y controles"
 M1/Zone_Control,Visibility and control,Visibilidad y control
+M1/Zone_Deck,Deck,Plataforma
 M1/Zone_Head,Head protection,Cabeza y protección
 M1/Zone_Load,Load and free hands,Carga y manos libres
 M1/Zone_Protection,Personal protection,Protección personal

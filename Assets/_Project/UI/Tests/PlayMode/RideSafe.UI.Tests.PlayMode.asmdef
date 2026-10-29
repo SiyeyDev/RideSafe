@@ -5,6 +5,7 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "RideSafe.UI",
+        "Cachacos",
         "Unity.TextMeshPro",
         "UnityEngine.UI"
     ],

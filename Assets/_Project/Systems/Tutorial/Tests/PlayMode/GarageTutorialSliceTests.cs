@@ -127,8 +127,11 @@ namespace RideSafe.Tutorial.Tests
             yield return ExpectStep("language.choose");
             Assert.IsFalse(_hint.IsVisible, "no re-teaching of a learned control");
             Assert.IsFalse(_highlight.activeSelf);
+            // The language cards have their own hover/selected states, so they get no ring, not
+            // even past the 2.75 s highlight delay (TargetHighlightRule, 2026-10-11): it would only
+            // repeat what the card already shows. The reminder here is the controller.
             yield return new WaitForSeconds(3.1f);
-            Assert.IsTrue(_highlight.activeSelf, "reminder highlight after ~2.75 s");
+            Assert.IsFalse(_highlight.activeSelf, "no ring around a card that highlights itself");
             Assert.IsFalse(_hint.IsVisible);
             yield return new WaitForSeconds(2.2f);
             Assert.IsTrue(_hint.IsVisible, "controller reminder after ~5 s");
@@ -262,6 +265,10 @@ namespace RideSafe.Tutorial.Tests
         private void CollectModuleProblems(string message, string stackTrace, LogType type)
         {
             if (type == LogType.Log)
+                return;
+            // AutoHand's canvas pointer sets Camera.stereoTargetEye, which URP warns about. It is
+            // AutoHand's (never altered here), only called from our UI setup: not a module problem.
+            if (stackTrace.Contains("Autohand.HandCanvasPointer"))
                 return;
             if (message.Contains("[Tutorial]") || message.Contains("[TaskSequence]") || message.Contains("[Services]") ||
                 message.Contains("[RideSafe.UI]") ||

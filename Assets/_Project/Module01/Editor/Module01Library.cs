@@ -4,7 +4,7 @@ namespace RideSafe.Module01.Editor
     /// <summary>
     /// La biblioteca de EPP del cliente, transcrita.
     /// <para>
-    /// Fuente: <c>RideSafe_VR_equipment_image_reference_library_2026-10-19.xlsx</c>, pestañas
+    /// Fuente: <c>Docs/RideSafe_VR_equipment_image_reference_library_2026-10-19.xlsx</c>, pestañas
     /// «Biblioteca» y «Sistema de puntuación». <b>Esa hoja manda</b> (Charlie, 2026-10-22): lo
     /// que no esté aquí no va a la escena, por mucho que exista el modelo.
     /// </para>
@@ -26,9 +26,9 @@ namespace RideSafe.Module01.Editor
     public static class Module01Library
     {
         /// <summary>
-        /// Las tres mesas de exhibición de la hoja (columna «Mesa / grupo»). Son también los
-        /// <c>zoneId</c> del catálogo, así que entran en el id de cada entidad
-        /// (<c>module01.{zona}.{elemento}</c>).
+        /// Las tres mesas de exhibición de la hoja (columna «Mesa / grupo»). Desde el 2026-10-27
+        /// son solo trazabilidad con el cliente: las zonas del catálogo son las paradas
+        /// (<see cref="Stops"/>), una por mueble.
         /// <para>
         /// <b>La Mesa 2 se llama <c>control</c> y no <c>visibility</c> a propósito:</b> la zona
         /// de «Luces y visibilidad» del vehículo ya ocupa ese id, y dos zonas con el mismo
@@ -48,6 +48,87 @@ namespace RideSafe.Module01.Editor
             (Mesa3, "M1/Zone_Readiness",  "Mesa 3 — Preparación del trayecto"),
         };
 
+        /// <summary>
+        /// Una parada del recorrido: un mueble del garaje, mirado de frente, con lo que hay encima.
+        /// </summary>
+        public readonly struct Stop
+        {
+            public Stop(string id, string titleKey, params string[] itemIds)
+            {
+                Id = id;
+                TitleKey = titleKey;
+                ItemIds = itemIds;
+            }
+
+            /// <summary>El <c>zoneId</c> del catálogo y el nombre de su ancla (<c>anchor_{id}</c>).</summary>
+            public string Id { get; }
+
+            public string TitleKey { get; }
+
+            public System.Collections.Generic.IReadOnlyList<string> ItemIds { get; }
+        }
+
+        /// <summary>
+        /// Las paradas, en el orden del recorrido desde la puerta: una por mueble (PO, 2026-10-27).
+        /// <para>
+        /// <b>Por qué no son las tres mesas de la hoja.</b> Los EPP van donde los dejó el artista,
+        /// y él no los agrupó por las mesas del Excel: «Protección personal» quedaba repartida en
+        /// tres muebles, y el aprendiz miraba en diagonal media pared sin ver bien nada. Cada
+        /// parada es ahora un mueble mirado de frente. La mesa del Excel se conserva en
+        /// <see cref="Entry.Table"/> para la trazabilidad con el cliente.
+        /// </para>
+        /// <para>
+        /// Lo que tiene modelo va a la parada del mueble donde lo puso el artista (lo comprueba
+        /// un test contra la escena). Los signos «!» de lo que aún no tiene modelo van a la
+        /// parada con hueco más afín: la gorra y los AirPods al mostrador de la ropa —no cabe más:
+        /// el artista lo llenó de prendas—, y lo demás a la mesa de herramientas, la única con
+        /// sitio de sobra. Dos van a la derecha a propósito —la
+        /// correa cortada junto al casco certificado y las gafas dañadas junto a las buenas—:
+        /// así cada parada tiene algo que no se debe llevar, o sería decorado
+        /// (<c>Module01DataTests</c>).
+        /// </para>
+        /// </summary>
+        public static readonly Stop[] Stops =
+        {
+            // mesa: la de la pared derecha junto a la puerta.
+            new Stop("table_entrance", "M1/Stop_Entrance",
+                     "helmet_ok", "shoes_ok", "gloves", "reflective", "trousers_fitted", "light_rear", "rain_jacket",
+                     "flashlight", "trousers_standing",
+                     "sandals", "cap",    // las Crocs en el suelo, delante; la gorra en el estante de arriba
+                     "glasses_damaged",   // las coloca el código: la mesa del centro ya va llena
+                     "phone_mount",       // movido aquí: en la del centro lo tapaban los AirPods y el candado
+                     "tote"),             // la bolsa: el artista la dejó en el suelo, delante de esta mesa
+            // otra mesa: la del centro de la pared derecha. La mochila y la alforja están en el
+            // suelo, delante. Casi todo lo que entregó el artista el 27 y el 28-10 está aquí.
+            new Stop("table_middle", "M1/Stop_Middle",
+                     "glasses", "sunglasses", "cargo_secured", "backpack",
+                     "flat_kit", "bell", "bottle", "headphones", "snorkel", "sport_glasses",
+                     "multitool", "pannier", "umbrella", "mittens", "drink", "airpods"),
+            // mesa nueva: la del fondo de la pared derecha. El poncho cuelga delante.
+            new Stop("table_back", "M1/Stop_Back",
+                     "helmet_damaged", "light_front", "hiviz_day", "cargo_handheld",
+                     "elbow_pads", "knee_pads", "work_vest", "work_goggles", "spare_red_light",
+                     "loose_padlock", "cable_lock", "damaged_cable_lock", "old_headphones", "poncho"),
+            // cabinet (1) + cabinetmid 1: el mostrador del fondo, el de los pantalones.
+            new Stop("counter_clothes", "M1/Stop_Clothes",
+                     "shower_slippers", "helmet_strap",
+                     "work_gloves", "latex_gloves", "fabric_gloves", "face_mask", "sneakers", "boots",
+                     "folded_jeans", "trousers_tech", "jeans", "low_rise_trousers",
+                     "clothing_loose", "neck_scarf", "trousers_loose", "wide_trousers", "loose_laces"),
+            // La mesa de herramientas (`metal table`) dejó de ser parada el 2026-10-28: el kit y la
+            // multiherramienta se fueron a la mesa del centro y en el banco solo quedan herramientas.
+        };
+
+        /// <summary>La parada de un elemento, o <c>null</c> si no está en ninguna.</summary>
+        public static string StopOf(string itemId)
+        {
+            foreach (Stop stop in Stops)
+                foreach (string id in stop.ItemIds)
+                    if (id == itemId)
+                        return stop.Id;
+            return null;
+        }
+
         /// <summary>Los elementos de una mesa, en el orden de la hoja.</summary>
         public static System.Collections.Generic.List<Entry> Of(string table)
         {
@@ -64,14 +145,19 @@ namespace RideSafe.Module01.Editor
         /// <summary>La carpeta que Daniel entregó con los esenciales buenos.</summary>
         public const string Essentials = Models + "EPPS ESCENCIALES/";
 
+        /// <summary>Donde el artista dejó la gorra y el poncho (2026-10-28), junto a las texturas.</summary>
+        public const string ArtMaterials = "Assets/_Project/Models/CITY/Materials/";
+
         public readonly struct Entry
         {
             public Entry(string libraryId, string itemId, SafetyItemCategory category,
                          float weight, string table,
                          string model = null, string hazardGroup = null,
-                         string exclusiveBonusWith = null, string sceneObject = null,
-                         float targetWidth = 0f)
+                         string exclusiveBonusWith = null, float targetWidth = 0f,
+                         string onlyForVehicle = null, string substitutesFor = null,
+                         string[] extraModels = null)
             {
+                ExtraModels = extraModels ?? new string[0];
                 LibraryId = libraryId;
                 ItemId = itemId;
                 Category = category;
@@ -80,11 +166,30 @@ namespace RideSafe.Module01.Editor
                 Model = model;
                 HazardGroup = hazardGroup;
                 ExclusiveBonusWith = exclusiveBonusWith;
-                SceneObject = sceneObject;
                 TargetWidth = targetWidth;
+                OnlyForVehicle = onlyForVehicle;
+                SubstitutesFor = substitutesFor;
             }
 
-            /// <summary>El ID de la hoja: E01, O04, H13… Es la trazabilidad con el cliente.</summary>
+            /// <summary>
+            /// Valor de contexto del único vehículo con el que aparece (<c>ebike</c>,
+            /// <c>escooter</c>), o <c>null</c> si aparece con todos. Columna «Aplicabilidad».
+            /// </summary>
+            public string OnlyForVehicle { get; }
+
+            /// <summary>Id del elemento al que sustituye: solo es peligro si se elige en su lugar.</summary>
+            public string SubstitutesFor { get; }
+
+            /// <summary>
+            /// Otros FBX que son parte del mismo elemento: el portabotella que el artista puso
+            /// rodeando el termo. Se pulsan como una sola cosa con el modelo principal.
+            /// </summary>
+            public string[] ExtraModels { get; }
+
+            /// <summary>
+            /// El ID de la hoja: E01, O04, H13… Es la trazabilidad con el cliente. Lo que añadió la PO
+            /// y la hoja no tiene lleva P (P01, P02).
+            /// </summary>
             public string LibraryId { get; }
 
             /// <summary>El id del catálogo, que es también la clave de I2 y el nombre del mp3.</summary>
@@ -108,15 +213,14 @@ namespace RideSafe.Module01.Editor
             public string ExclusiveBonusWith { get; }
 
             /// <summary>
-            /// Nombre del objeto que el arte dejó en la escena, si lo hay. Cuando es
-            /// <c>null</c> el elemento se monta como marcador: el signo «!», igual que los
-            /// puntos del vehículo que no tienen pieza propia.
-            /// </summary>
-            public string SceneObject { get; }
-
-            /// <summary>
             /// Cuánto debe medir el objeto <b>de ancho, en metros de mundo</b>: su dimensión
             /// horizontal mayor. 0 = dejarlo como venga.
+            /// <para>
+            /// <b>Solo para lo que el artista no colocó.</b> Desde el 2026-10-27 un elemento que
+            /// el artista dejó en <c>Garage.unity</c> se pulsa sobre ese mismo objeto, con su
+            /// tamaño (PO: «exactamente igual»; ver <see cref="Module01ArtEpp"/>). Este ancho
+            /// queda para el que haya que instanciar desde el FBX porque el arte no lo trae.
+            /// </para>
             /// <para>
             /// <b>Por qué existe.</b> Los modelos de la carpeta de esenciales llegan a escalas
             /// disparatadas: el casco mide 1,02 m de ancho, el kit de pinchazos 2,06 y la
@@ -163,7 +267,7 @@ namespace RideSafe.Module01.Editor
         private const SafetyItemCategory Bad = SafetyItemCategory.Inappropriate;
 
         /// <summary>
-        /// Los 32 elementos de la hoja. El orden es el del documento, para poder cotejarlos
+        /// Los 32 elementos de la hoja, más los dos que añadió la PO (P01, P02). El orden es el del documento, para poder cotejarlos
         /// de un vistazo.
         /// <para>
         /// <b>E02 y E03 entran como recomendados, no como esenciales, y es literal de la
@@ -216,9 +320,7 @@ namespace RideSafe.Module01.Editor
                       model: Essentials + "chaleco reflectivo.fbx",
                       exclusiveBonusWith: "hiviz_day",
                       targetWidth: 0.36f),  // el chaleco nuevo es mas esbelto que el viejo (relacion alto/ancho
-                      // 1,61 frente a 1,33), asi que con 0,45 de ancho media 0,73 de alto y
-                      // StationLayout.FloorHeight (0,70) lo plantaba en el suelo. Con 0,36
-                      // mide 0,58 y vuelve a la mesa, que es donde estaba el viejo.
+                      // 1,61 frente a 1,33): con 0,36 de ancho mide 0,58 de alto, lo del viejo.
             new Entry("O04", "gloves", Opt, 2f, Mesa1,
                       model: Essentials + "gloves.fbx",
                       targetWidth: 0.26f),  // ya llega bien
@@ -232,9 +334,12 @@ namespace RideSafe.Module01.Editor
                       // de aquellas (0,17). Las transparentes siguen siendo O07 (PO: las
                       // `gafas_deportivas` no la reemplazan).
             new Entry("O09", "backpack", Opt, 2f, Mesa3,
-                      model: Essentials + "mochila.fbx", targetWidth: 0.32f),
+                      model: Essentials + "mochila.fbx", targetWidth: 0.32f,
+                      onlyForVehicle: "escooter"),
                       // Mochila de diario real, ~32 cm de ancho. La textura trae un logo que arte
                       // cambia después (PO, 2026-10-26): no afecta al modelo.
+                      // Solo con el scooter: la hoja la da para «E-scooter o bicicleta sin
+                      // portaequipajes», y nuestra e-bike lleva la alforja, o sea portaequipajes.
             new Entry("O11", "cargo_secured", Opt, 2f, Mesa3,
                       model: Essentials + "candado.fbx", targetWidth: 0.22f),
                       // La hoja pide «Candado con soporte o ubicación de transporte segura»:
@@ -244,108 +349,152 @@ namespace RideSafe.Module01.Editor
                       // textura de la carpeta de esenciales, al ancho que tenía el viejo de la
                       // escena (0,22), que se apaga.
             new Entry("O12", "flat_kit", Opt, 2f, Mesa3,
-                      model: Models + "cartuchera_low.fbx",
-                      targetWidth: 0.20f),
-                      // `cartuchera_low` es un estuche con cremallera -visto renderizado-, que
-                      // lee como «kit compacto» mucho mejor que `parch`, una lamina suelta.
+                      model: Essentials + "kit compacto.fbx", targetWidth: 0.18f,
+                      onlyForVehicle: "ebike"),
+                      // El kit que el artista entregó el 2026-10-27 («faltan 10»): estuche con los
+                      // parches a la vista, que es lo que pide la hoja («contenido identificable»).
+                      // Sustituye a `cartuchera_low`, que queda de decorado. Solo con la e-bike:
+                      // «E-bike propia; trayectos largos o con poca asistencia».
             new Entry("O13", "multitool", Opt, 1f, Mesa3,
-                      model: Models + "Tool_Tajima_lowpoly_02.fbx",
-                      targetWidth: 0.12f),  // multiherramienta cerrada; hoy mide 1,82
-            new Entry("O14", "phone_mount", Opt, 1f, Mesa2),
-            new Entry("O15", "bell", Opt, 2f, Mesa2),
+                      model: Essentials + "herramienta.fbx", targetWidth: 0.18f),
+                      // La multiherramienta que entregó el artista el 2026-10-28, junto al kit. La
+                      // `Tool_Tajima` de antes se queda en el banco de herramientas, como las pinzas.
+            new Entry("O14", "phone_mount", Opt, 1f, Mesa2,
+                      model: Essentials + "soporte celular.fbx", targetWidth: 0.17f),
+            new Entry("O15", "bell", Opt, 2f, Mesa2,
+                      model: Essentials + "timbre bici.fbx", targetWidth: 0.14f),
+                      // Con los dos vehículos: la hoja lo premia si el vehículo no tiene timbre, y
+                      // ni la e-bike ni el scooter traen uno modelado.
             new Entry("O16", "rain_jacket", Opt, 2f, Mesa3,
                       model: Essentials + "rompe vientos_capucha.fbx",
                       targetWidth: 0.40f),  // chaqueta doblada; hoy mide 0,05, es la unica demasiado PEQUENA
-            new Entry("O18", "bottle", Opt, 1f, Mesa3),
-            new Entry("O19", "pannier", Opt, 3f, Mesa3),
+            new Entry("O18", "bottle", Opt, 1f, Mesa3,
+                      model: Essentials + "termo.fbx", targetWidth: 0.09f,
+                      extraModels: new[] { Essentials + "soporte botella bici.fbx" }),
+                      // Termo de bici con tapa, en su portabotella (2026-10-28): lo que pide la
+                      // hoja, «botella sellada en portabotella compatible».
+            new Entry("O19", "pannier", Opt, 3f, Mesa3,
+                      model: Essentials + "alforja.fbx", targetWidth: 0.71f,
+                      onlyForVehicle: "ebike"),
+                      // «Solo se muestra para e-bike con portaequipajes compatible».
 
             // ---- Peligrosos ------------------------------------------------------------
             new Entry("H01", "helmet_strap", Bad, 30f, Mesa1,
-                      hazardGroup: "helmet_integrity"),
+                      model: Models + "df_g_helmet_01.fbx", hazardGroup: "helmet_integrity",
+                      targetWidth: 0.29f),
+                      // No hay casco con la correa cortada. El más parecido es este casco retro, que
+                      // no trae correa de barbilla: «correa ... faltante», dice la hoja. Vive en el
+                      // decorado del garaje, fuera de toda parada; Module01ArtEpp.Moves lo trae al
+                      // mostrador de la ropa (2026-10-28). Pendiente de que el artista haga el bueno.
             new Entry("H02", "helmet_damaged", Bad, 30f, Mesa1,
-                      model: Models + "casco 1.fbx", hazardGroup: "helmet_integrity",
-                      sceneObject: "casco 1"),
+                      model: Models + "casco 1.fbx", hazardGroup: "helmet_integrity"),
             new Entry("H03", "headphones", Bad, 20f, Mesa2,
-                      model: Models + "audifonos.fbx", hazardGroup: "auditory_occlusion",
-                      targetWidth: 0.18f),  // auriculares de diadema; hoy mide 0,13
+                      model: Essentials + "diadema.fbx", hazardGroup: "auditory_occlusion",
+                      targetWidth: 0.24f),
+                      // Los audífonos de diadema que el artista entregó el 2026-10-27, tipo AirPods
+                      // Max como pide la hoja. Los `audifonos` de antes quedan de decorado.
             new Entry("H13", "airpods", Bad, 20f, Mesa2,
-                      hazardGroup: "auditory_occlusion"),
+                      model: Essentials + "audifonos ipod.fbx", hazardGroup: "auditory_occlusion",
+                      targetWidth: 0.11f),
             new Entry("H04", "sandals", Bad, 15f, Mesa1,
-                      model: Models + "Slippers.fbx", hazardGroup: "footwear_control",
-                      targetWidth: 0.30f),  // par de chanclas; hoy mide 0,43
+                      model: Essentials + "Crocs.fbx", hazardGroup: "footwear_control",
+                      targetWidth: 0.34f),
+                      // Las Crocs que entregó el artista el 2026-10-28: la referencia de la hoja es
+                      // una Crocs Mellow Slide. Las `Slippers` de antes son P30, en el mismo grupo.
             new Entry("H06", "poncho", Bad, 20f, Mesa3,
-                      hazardGroup: "loose_rainwear"),
+                      model: ArtMaterials + "poncho h.fbx", hazardGroup: "loose_rainwear",
+                      targetWidth: 1.00f),
             new Entry("H07", "glasses_damaged", Bad, 20f, Mesa1,
-                      hazardGroup: "visual_obstruction"),
+                      model: Module01DamagedGlasses.PrefabPath, hazardGroup: "visual_obstruction",
+                      targetWidth: 0.17f),  // el ancho de las de O07
+                      // Las gafas de seguridad de O07 con el material rayado (artista, 2026-10-28:
+                      // «es un material»). El artista no las colocó: van a un hueco libre de su mesa.
             new Entry("H08", "mittens", Bad, 15f, Mesa2,
-                      hazardGroup: "control_access"),
+                      model: Essentials + "guante voluminoso.fbx", hazardGroup: "control_access",
+                      targetWidth: 0.35f),
             new Entry("H09", "tote", Bad, 15f, Mesa3,
-                      hazardGroup: "unstable_carry"),
+                      model: Models + "bolsa.fbx", hazardGroup: "unstable_carry", targetWidth: 0.22f),
+                      // El artista la dejó el 2026-10-28 (c71f243) en el suelo delante de la mesa
+                      // de la entrada, que es su parada. Hay otra copia idéntica en Materials/; se
+                      // usa la de MODELADOS 3d, que es la que conserva el GUID que usa Garage.
             new Entry("H10", "umbrella", Bad, 30f, Mesa3,
-                      hazardGroup: "one_hand_wind"),
+                      model: Models + "sombrilla.fbx", hazardGroup: "one_hand_wind",
+                      targetWidth: 0.67f),
             new Entry("H11", "drink", Bad, 20f, Mesa2,
-                      hazardGroup: "one_hand_drink"),
+                      model: Models + "Cafe.fbx", hazardGroup: "one_hand_drink",
+                      targetWidth: 0.09f),
             new Entry("H12", "cap", Bad, 20f, Mesa1,
-                      hazardGroup: "helmet_substitution"),
+                      model: ArtMaterials + "gorra_.fbx", targetWidth: 0.30f,
+                      hazardGroup: "helmet_substitution", substitutesFor: "helmet_ok"),
+                      // «Peligrosa condicional»: «si se elige en lugar del casco». Junto al casco
+                      // no resta.
 
             // ---- Neutral ---------------------------------------------------------------
             new Entry("N01", "cargo_handheld", Opt, 0f, Mesa2,
-                      model: Models + "MobilePhone_01.fbx", sceneObject: "MobilePhone_01"),
-        };
+                      model: Models + "MobilePhone_01.fbx"),
 
-        /// <summary>
-        /// Lo que Daniel modeló para adelantar trabajo y la hoja <b>no</b> pide. Se quedan en
-        /// disco —no se borra arte— pero salen del catálogo y de la escena.
-        /// <para>
-        /// Está escrito y no solo borrado para que la próxima vez que alguien vea la bufanda en
-        /// la carpeta sepa que su ausencia es una decisión y no un olvido.
-        /// </para>
-        /// </summary>
-        public static readonly string[] RetiredItemIds =
-        {
-            "clothing_loose",   // bufanda 01
-            "trousers_loose",   // jean ancho doblado
-            "trousers_tech",    // pantalon deportivo doblado
-            "elbow_pads",       // codera (par)
-            "knee_pads",        // rodillera (par)
-        };
+            // ---- Añadidos por la PO: no están en la hoja ----------------------------------
+            // Prefijo P y no O: un O inventado se leería como una fila del Excel del cliente.
+            // «Recomendada condicional» como los O de la hoja: bono si se eligen, nunca restan.
+            // El peso lo puse yo, igual que los guantes (O04, +2): protección de un punto de
+            // contacto en una caída. Pendiente de que el cliente lo confirme.
+            new Entry("P01", "elbow_pads", Opt, 2f, Mesa1,
+                      model: Models + "codera.fbx"),
+            new Entry("P02", "knee_pads", Opt, 2f, Mesa1,
+                      model: Models + "rodillera.fbx"),
 
-        /// <summary>
-        /// Objetos de arte que <b>salen del ejercicio</b> y hay que apagar en la escena: o su
-        /// elemento se retiró, o el elemento sigue pero ahora usa otro modelo.
-        /// <para>
-        /// Apagarlos no es cosmético. Los EPP nuevos se colocan sobre las mismas tapas —la
-        /// `mesa` pasó de llevar tres pantalones a llevar los once de «Preparación del
-        /// trayecto»— así que dejar el arte viejo encima significa objetos superpuestos: el
-        /// aprendiz ve dos pantalones y solo uno responde al clic. Ya pasó con los pantalones de
-        /// pie del v9.
-        /// </para>
-        /// <para>
-        /// <b>Se apagan, no se borran.</b> Son modelos del equipo de arte y cada entrega del
-        /// garaje los vuelve a traer; apagarlos es reversible con un clic y repetir el comando
-        /// los deja apagados otra vez.
-        /// </para>
-        /// <para>
-        /// No están aquí <c>casco 1</c>, <c>guaya candado</c> ni <c>MobilePhone_01</c>: esos
-        /// tres siguen siendo el modelo de su elemento y se declaran en
-        /// <see cref="Entry.SceneObject"/>.
-        /// </para>
-        /// </summary>
-        public static readonly string[] RetiredSceneObjects =
-        {
-            // Siguen en el catálogo, pero con el modelo bueno de la carpeta de esenciales.
-            "df_g_helmet_01",               // helmet_ok -> Casco certificado
-            "botas",                        // shoes_ok  -> zapatos de seguridad
-            "chaleco refectivo",            // reflective -> chaleco reflectivo (sin la errata)
-            "jean_ajustado_doblado",        // trousers_fitted -> Slim_fit_pants_doblado
-            "gafas",                        // sunglasses -> gafas de sol (2026-10-26)
-            "candado",                      // cargo_secured -> candado con textura (2026-10-27)
-            // Retirados: la hoja no los pide.
-            "bufanda 01",
-            "jean ancho doblado",
-            "pantalon deportivo doblado",
-            "coderas",
-            "rodilleras",
+            // ---- Lo demás que modeló el artista (PO, 2026-10-28) --------------------------
+            // «Todos los que ha hecho el artista son interactuables». Lo que la hoja no evalúa
+            // es NEUTRAL, como el teléfono (N01): se examina y se elige, pero no suma ni resta y
+            // en el reporte sale «No necesario». No se inventa una nota que el cliente no puso.
+            new Entry("P03", "flashlight", Opt, 0f, Mesa2, model: Essentials + "lintarna.fbx"),
+            new Entry("P04", "trousers_standing", Opt, 0f, Mesa3, model: Essentials + "Slim_fit_pants.fbx"),
+            new Entry("P05", "snorkel", Opt, 0f, Mesa1, model: Models + "snorquel.fbx"),
+            new Entry("P06", "sport_glasses", Opt, 0f, Mesa1, model: Essentials + "gafas_deportivas.fbx"),
+            new Entry("P07", "work_vest", Opt, 0f, Mesa2, model: Models + "chaleco refectivo.fbx"),
+            new Entry("P08", "work_goggles", Opt, 0f, Mesa1, model: Models + "gafas.fbx"),
+            new Entry("P09", "spare_red_light", Opt, 0f, Mesa2, model: Models + "luz roja 1.fbx"),
+            new Entry("P10", "loose_padlock", Opt, 0f, Mesa3, model: Models + "candado.fbx"),
+            new Entry("P11", "cable_lock", Opt, 0f, Mesa3, model: Models + "guaya candado.fbx"),
+            new Entry("P12", "damaged_cable_lock", Opt, 0f, Mesa3, model: Models + "guayya dañado.fbx"),
+            new Entry("P13", "work_gloves", Opt, 0f, Mesa1, model: Models + "guante.fbx"),
+            new Entry("P14", "latex_gloves", Opt, 0f, Mesa1,
+                      model: Models + "Robbers_T3ANI210_LatexGloves_Abdilla.fbx"),
+            new Entry("P15", "fabric_gloves", Opt, 0f, Mesa1, model: Models + "bloves 02.fbx"),
+            new Entry("P16", "face_mask", Opt, 0f, Mesa1, model: Models + "tapabocas.fbx"),
+            new Entry("P17", "folded_jeans", Opt, 0f, Mesa3, model: Models + "jean_ajustado_doblado 1.fbx"),
+            new Entry("P18", "trousers_tech", Opt, 0f, Mesa3, model: Models + "pantalon deportivo doblado.fbx"),
+            new Entry("P19", "jeans", Opt, 0f, Mesa3, model: Models + "jean ajustado.fbx"),
+            new Entry("P20", "low_rise_trousers", Opt, 0f, Mesa3, model: Models + "pant low.fbx"),
+            new Entry("P21", "sneakers", Opt, 0f, Mesa1, model: Models + "tenis_deportivos.fbx"),
+            new Entry("P22", "boots", Opt, 0f, Mesa1, model: Models + "botas.fbx"),
+                      // Vienen dentro del prefab de decoración del garaje, no sueltas: se
+                      // reconocen por su malla (Module01SceneEntities).
+            // P23 era el estuche (`cartuchera_low`): desde que el artista trajo el kit compacto y la
+            // multiherramienta a la mesa del centro (2026-10-28), el estuche y la Tool_Tajima son
+            // del banco de herramientas, como las pinzas, y no se traen.
+
+            // Los peligros evidentes (PO): ropa suelta que se engancha en la cadena o la rueda.
+            // −15 y un solo grupo, así que llevarse varias prendas sueltas descuenta una vez, como
+            // los grupos de la hoja. El peso lo propuse yo: el mismo que las chanclas (H04).
+            new Entry("P24", "clothing_loose", Bad, 15f, Mesa1, model: Models + "bufanda 01.fbx",
+                      hazardGroup: "loose_clothing"),
+            new Entry("P25", "neck_scarf", Bad, 15f, Mesa1, model: Models + "mascada.fbx",
+                      hazardGroup: "loose_clothing"),
+            new Entry("P26", "trousers_loose", Bad, 15f, Mesa3, model: Models + "jean ancho doblado.fbx",
+                      hazardGroup: "loose_clothing"),
+            new Entry("P27", "wide_trousers", Bad, 15f, Mesa3, model: Models + "pantalon ancho.fbx",
+                      hazardGroup: "loose_clothing"),
+            new Entry("P28", "loose_laces", Bad, 15f, Mesa1, model: Models + "tenis_cordones_sueltos.fbx",
+                      hazardGroup: "loose_clothing"),
+            // Los audífonos de antes son lo mismo que H03: peligro en su mismo grupo, que descuenta
+            // una sola vez aunque se lleve los dos. Neutrales enseñarían que se puede rodar con ellos.
+            new Entry("P29", "old_headphones", Bad, 20f, Mesa2, model: Models + "audifonos.fbx",
+                      hazardGroup: "auditory_occlusion"),
+            // Las chanclas de antes: H04 pasó a las Crocs (2026-10-28). Mismo peligro y mismo grupo,
+            // así que llevarse las dos descuenta una vez.
+            new Entry("P30", "shower_slippers", Bad, 15f, Mesa1, model: Models + "Slippers.fbx",
+                      hazardGroup: "footwear_control"),
         };
     }
 }

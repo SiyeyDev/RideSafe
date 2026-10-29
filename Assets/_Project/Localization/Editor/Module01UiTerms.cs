@@ -31,6 +31,22 @@ public static class Module01UiTerms
         Set(data, es, en, "M1/Zone_Control", "Visibilidad y control", "Visibility and control");
         Set(data, es, en, "M1/Zone_Readiness", "Preparación del trayecto", "Trip readiness");
 
+        // The stops, one per piece of furniture (PO, 2026-10-27): the artist spread each table of
+        // the sheet over several, so a stop is what is on one of them, seen from the front.
+        Set(data, es, en, "M1/Stop_Entrance", "Mesa de la entrada", "Entrance table");
+        Set(data, es, en, "M1/Stop_Middle", "Mesa del centro", "Middle table");
+        Set(data, es, en, "M1/Stop_Back", "Mesa del fondo", "Back table");
+        Set(data, es, en, "M1/Stop_Clothes", "Mostrador de la ropa", "Clothing counter");
+
+        // Everything the artist modelled can be chosen (PO, 2026-10-28). The pads came back as
+        // «recommended conditional»; the rest is neutral, or a hazard when it obviously is one.
+        // Their names were missing from I2, so the popup read «M1/Item_KneePads».
+        foreach (var (key, es_, en_, riskEs, riskEn) in Items)
+        {
+            Set(data, es, en, "M1/Item_" + key, es_, en_);
+            Set(data, es, en, "M1/Item_" + key + "_Risk", riskEs, riskEn);
+        }
+
         // Narratives §4.8.2: the scooter also checks its deck and fasteners; the e-bike has none.
         Set(data, es, en, "M1/Zone_Deck", "Plataforma", "Deck");
         Set(data, es, en, "M1/Point_Deck", "Plataforma y fijaciones", "Deck and fasteners");
@@ -58,9 +74,75 @@ public static class Module01UiTerms
         Set(data, es, en, "M1/RepeatModule", "Repetir Módulo", "Repeat module");
         // The video's «Reproduciendo» tag was dropped (PO, 2026-10-16): its term goes too.
         data.RemoveTerm("M1/Video_Playing");
+        // The tool bench stopped being a stop and the pouch an item (2026-10-28).
+        foreach (string gone in new[] { "M1/Stop_Tools", "M1/Item_Pouch", "M1/Item_Pouch_Risk" })
+            data.RemoveTerm(gone);
         EditorUtility.SetDirty(asset);
         AssetDatabase.SaveAssets();
     }
+
+    /// <summary>(key after «M1/Item_», name es, name en, why es, why en).</summary>
+    private static readonly (string Key, string Es, string En, string RiskEs, string RiskEn)[] Items =
+    {
+        ("ElbowPads", "Coderas", "Elbow pads",
+         "Las coderas amortiguan el primer punto de contacto en una caída.", "Elbow pads cushion the first point of contact in a fall."),
+        ("KneePads", "Rodilleras", "Knee pads",
+         "Las rodilleras protegen la articulación contra el suelo y el marco.", "Knee pads protect the joint against the ground and the frame."),
+        ("Flashlight", "Linterna de mano", "Hand torch",
+         "Una linterna en la mano no sustituye a la luz del vehículo.", "A torch in your hand is no substitute for the vehicle's light."),
+        ("TrousersStanding", "Pantalón ajustado", "Fitted trousers",
+         "No cambia el resultado.", "It does not change the result."),
+        ("Snorkel", "Máscara de snorkel", "Snorkel mask",
+         "No es equipo para circular: no cambia el resultado.", "It is not riding gear: it does not change the result."),
+        ("SportGlasses", "Gafas deportivas", "Sport glasses",
+         "No cambian el resultado.", "They do not change the result."),
+        ("WorkVest", "Chaleco de trabajo", "Work vest",
+         "No cambia el resultado.", "It does not change the result."),
+        ("WorkGoggles", "Gafas de trabajo", "Work goggles",
+         "No cambian el resultado.", "They do not change the result."),
+        ("SpareRedLight", "Luz roja de repuesto", "Spare red light",
+         "Una luz de repuesto en la mesa no ilumina el vehículo.", "A spare light on the table does not light the vehicle."),
+        ("LoosePadlock", "Candado suelto", "Loose padlock",
+         "Sin soporte no hay dónde llevarlo seguro: no cambia el resultado.", "Without a mount there is nowhere safe to carry it: it does not change the result."),
+        ("CableLock", "Guaya con candado", "Cable lock",
+         "No cambia el resultado.", "It does not change the result."),
+        ("DamagedCableLock", "Guaya dañada", "Damaged cable lock",
+         "Una guaya rota no asegura el vehículo: no cambia el resultado.", "A broken cable does not secure the vehicle: it does not change the result."),
+        ("WorkGloves", "Guantes de trabajo", "Work gloves",
+         "No cambian el resultado.", "They do not change the result."),
+        ("LatexGloves", "Guantes de látex", "Latex gloves",
+         "No protegen en una caída: no cambian el resultado.", "They give no protection in a fall: they do not change the result."),
+        ("FabricGloves", "Guantes de tela", "Fabric gloves",
+         "No cambian el resultado.", "They do not change the result."),
+        ("FaceMask", "Tapabocas", "Face mask",
+         "No cambia el resultado.", "It does not change the result."),
+        ("FoldedJeans", "Jean ajustado doblado", "Folded fitted jeans",
+         "No cambia el resultado.", "It does not change the result."),
+        ("TrousersTech", "Pantalón deportivo", "Sport trousers",
+         "El pantalón deportivo no se engancha, pero no protege la piel en una caída.", "Sport trousers do not catch, but they do not protect the skin in a fall."),
+        ("Jeans", "Jean ajustado", "Fitted jeans",
+         "No cambia el resultado.", "It does not change the result."),
+        ("LowRiseTrousers", "Pantalón de tiro bajo", "Low-rise trousers",
+         "No cambia el resultado.", "It does not change the result."),
+        ("Sneakers", "Tenis deportivos", "Sports trainers",
+         "No cambian el resultado.", "They do not change the result."),
+        ("Boots", "Botas rojas", "Red boots",
+         "No cambian el resultado.", "They do not change the result."),
+        ("ShowerSlippers", "Chanclas de baño", "Shower slippers",
+         "Sin talón ni sujeción, el pie se sale del pedal.", "With no heel or strap, the foot slips off the pedal."),
+        ("ClothingLoose", "Bufanda suelta", "Loose scarf",
+         "La ropa suelta llega a la cadena y a los rayos.", "Loose clothing reaches the chain and the spokes."),
+        ("NeckScarf", "Pañuelo suelto", "Loose neckerchief",
+         "Un pañuelo suelto se puede enganchar en la cadena o en la rueda.", "A loose neckerchief can catch in the chain or the wheel."),
+        ("TrousersLoose", "Pantalón ancho", "Loose trousers",
+         "La pernera ancha se puede enganchar en la cadena o en la rueda y bloquearla.", "A wide leg can catch in the chain or the wheel and lock it."),
+        ("WideTrousers", "Pantalón muy ancho", "Very wide trousers",
+         "La pernera ancha se puede enganchar en la cadena o en la rueda y bloquearla.", "A wide leg can catch in the chain or the wheel and lock it."),
+        ("LooseLaces", "Tenis con cordones sueltos", "Trainers with loose laces",
+         "Un cordón suelto se enreda en la cadena o en el pedal.", "A loose lace tangles in the chain or the pedal."),
+        ("OldHeadphones", "Audífonos de casco", "On-ear headphones",
+         "Tapan los dos oídos: no oyes el tráfico.", "They cover both ears: you cannot hear the traffic."),
+    };
 
     private static void Set(LanguageSourceData data, int es, int en, string key, string spanish, string english)
     {

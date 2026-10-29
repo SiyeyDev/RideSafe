@@ -1,0 +1,17 @@
+{
+  "characters": [
+    "Jean",
+    "ajustado",
+    "doblado"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.418,
+    0.975
+  ],
+  "character_end_times_seconds": [
+    0.337,
+    0.929,
+    1.672
+  ]
+}

@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_Bell
   _riskKey: M1/Item_Bell_Risk
   _category: 2
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: 33f42975c73d0b9408767714fcfc372c, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 2
   _hazardGroup: 
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

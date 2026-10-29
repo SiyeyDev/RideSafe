@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_Bottle
   _riskKey: M1/Item_Bottle_Risk
   _category: 2
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: bfc9881a6aab8f94ea0af254b9557023, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 1
   _hazardGroup: 
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

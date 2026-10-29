@@ -401,7 +401,7 @@ namespace RideSafe.Module01
             if (_theater != null) _theater.SetOn(true);
             // La pantalla toma la textura del reproductor en runtime: así no depende de un override
             // guardado en la escena, que es justo lo que se perdía y dejaba el video en negro.
-            if (_binding.Explanation.VideoSurface != null) _binding.Explanation.VideoSurface.texture = _video.targetTexture;
+            _binding.Explanation.ShowVideo(_video.targetTexture);
             // Demo media can be replaced independently for the personal and vehicle reviews.
             // Cada vehículo trae el suyo: la revisión de la bici no es la de la patineta.
             _video.clip = _director.InVehicleSection ? _director.SelectedVehicle.ExplanationVideo : _personalVideo;

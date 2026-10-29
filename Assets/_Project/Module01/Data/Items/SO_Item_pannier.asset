@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_Pannier
   _riskKey: M1/Item_Pannier_Risk
   _category: 2
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: 8d7235eb8d22d1b40945fedffeaf7739, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 3
   _hazardGroup: 
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: ebike
+  _substitutesFor: 

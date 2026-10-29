@@ -27,5 +27,27 @@ namespace RideSafe.Module01.Editor
             T existing = go.GetComponent<T>();
             return existing == null ? go.AddComponent<T>() : existing;
         }
+
+        /// <summary>
+        /// Quita <c>Batching Static</c> al objeto y a sus hijos, y dice a cuáles se lo quitó.
+        /// <para>
+        /// Lo que se inspecciona viaja al pedestal y se delinea, y una malla agrupada estática
+        /// no se mueve ni se puede repintar sola. El arte llega casi siempre marcado estático.
+        /// </para>
+        /// </summary>
+        public static System.Collections.Generic.List<string> ClearBatchingStatic(GameObject root)
+        {
+            var changed = new System.Collections.Generic.List<string>();
+            foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
+            {
+                UnityEditor.StaticEditorFlags flags = UnityEditor.GameObjectUtility.GetStaticEditorFlags(t.gameObject);
+                if ((flags & UnityEditor.StaticEditorFlags.BatchingStatic) == 0)
+                    continue;
+                UnityEditor.GameObjectUtility.SetStaticEditorFlags(
+                    t.gameObject, flags & ~UnityEditor.StaticEditorFlags.BatchingStatic);
+                changed.Add(t.name);
+            }
+            return changed;
+        }
     }
 }

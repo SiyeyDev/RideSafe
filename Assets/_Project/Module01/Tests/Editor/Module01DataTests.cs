@@ -32,7 +32,7 @@ namespace RideSafe.Module01.Tests
             // el cliente mueva un elemento, y a la vez no deja que el catalogo se desvie.
             Assert.AreEqual(Module01Library.All.Length,
                             new List<SafetyItemSO>(catalog.AllItems).Count);
-            Assert.AreEqual(Module01Library.Tables.Length, catalog.Zones.Count);
+            Assert.AreEqual(Module01Library.Stops.Length, catalog.Zones.Count);
         }
 
         /// <summary>

@@ -1,20 +1,14 @@
 {
   "characters": [
-    "Ropa",
-    "o",
-    "cordones",
-    "sueltos"
+    "Bufanda",
+    "suelta"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.464,
-    0.569,
-    1.022
+    0.731
   ],
   "character_end_times_seconds": [
-    0.383,
-    0.522,
-    0.998,
+    0.673,
     1.625
   ]
 }

@@ -43,6 +43,14 @@ namespace RideSafe.Module01
                  "Vacío = siempre aplicable. Columna «Aplicabilidad» de la biblioteca.")]
         [SerializeField] private string _bonusCondition;
 
+        [Tooltip("Valor de contexto del único vehículo con el que aparece —«ebike», «escooter»—. " +
+                 "Vacío = con todos. Columna «Aplicabilidad» de la biblioteca.")]
+        [SerializeField] private string _onlyForVehicle;
+
+        [Tooltip("Id del elemento al que sustituye: solo es peligro si se elige en lugar de ese. " +
+                 "La gorra (H12, «Peligrosa condicional») sustituye al casco. Vacío = siempre cuenta.")]
+        [SerializeField] private string _substitutesFor;
+
         public string ItemId => string.IsNullOrWhiteSpace(_itemId) ? string.Empty : _itemId.Trim();
         public string NameKey => _nameKey;
         public string RiskKey => _riskKey;
@@ -162,6 +170,33 @@ namespace RideSafe.Module01
         {
             _exclusiveBonusWith = exclusiveWith;
             _bonusCondition = condition;
+        }
+
+        /// <summary>
+        /// El único vehículo con el que aparece, o vacío si aparece con todos. La hoja lo pide
+        /// para cuatro recomendados: la alforja y el kit de pinchazos solo con la e-bike, la mochila
+        /// solo con el scooter (PO, 2026-10-28).
+        /// </summary>
+        public string OnlyForVehicle =>
+            string.IsNullOrWhiteSpace(_onlyForVehicle) ? string.Empty : _onlyForVehicle.Trim().ToLowerInvariant();
+
+        /// <summary>¿Aparece con este vehículo? Sin vehículo elegido, aparece todo.</summary>
+        public bool AppliesTo(string vehicleContextValue) =>
+            OnlyForVehicle.Length == 0 || string.IsNullOrWhiteSpace(vehicleContextValue)
+            || OnlyForVehicle == vehicleContextValue.Trim().ToLowerInvariant();
+
+        /// <summary>
+        /// El elemento al que sustituye, o vacío. Uno que sustituye a otro solo es peligro si se
+        /// elige <b>en lugar</b> de él: la gorra junto al casco no resta (hoja, H12).
+        /// </summary>
+        public string SubstitutesFor =>
+            string.IsNullOrWhiteSpace(_substitutesFor) ? string.Empty : _substitutesFor.Trim();
+
+        /// <summary>Solo para tests y para el generador: con qué vehículo aparece y a qué sustituye.</summary>
+        public void ConfigureRulesForTests(string onlyForVehicle = null, string substitutesFor = null)
+        {
+            _onlyForVehicle = onlyForVehicle;
+            _substitutesFor = substitutesFor;
         }
     }
 }

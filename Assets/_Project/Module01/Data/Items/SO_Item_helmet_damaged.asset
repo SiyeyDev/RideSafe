@@ -23,3 +23,5 @@ MonoBehaviour:
   _hazardGroup: helmet_integrity
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

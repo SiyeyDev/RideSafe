@@ -10,8 +10,8 @@ namespace RideSafe.Module01.Tests
 {
     /// <summary>
     /// Los EPP que llegaron con modelo nuevo el 26 y el 27-10 están en v5 con ese modelo: lo que
-    /// el aprendiz pulsa es el FBX de esenciales, no el signo «!» ni el arte viejo, y el arte
-    /// viejo está apagado para que no haya dos en la mesa.
+    /// el aprendiz pulsa es el FBX de esenciales, no el signo «!» ni el arte viejo. El arte viejo
+    /// queda de decorado en el sitio que le dio el artista (ArtEppPlacementSceneTests).
     /// </summary>
     public class EppModelsSceneTests
     {
@@ -56,6 +56,17 @@ namespace RideSafe.Module01.Tests
         [TestCase("sunglasses", "gafas de sol.fbx")]
         [TestCase("backpack", "mochila.fbx")]
         [TestCase("cargo_secured", "candado.fbx")]
+        [TestCase("flat_kit", "kit compacto.fbx")]
+        [TestCase("phone_mount", "soporte celular.fbx")]
+        [TestCase("bell", "timbre bici.fbx")]
+        [TestCase("bottle", "termo.fbx")]
+        [TestCase("headphones", "diadema.fbx")]
+        [TestCase("multitool", "herramienta.fbx")]
+        [TestCase("pannier", "alforja.fbx")]
+        [TestCase("sandals", "Crocs.fbx")]
+        [TestCase("mittens", "guante voluminoso.fbx")]
+        [TestCase("airpods", "audifonos ipod.fbx")]
+        [TestCase("sport_glasses", "gafas_deportivas.fbx")]
         public void El_elemento_se_pulsa_sobre_su_modelo_nuevo(string itemId, string file)
         {
             List<Seen> entities = Collect(g =>
@@ -67,14 +78,16 @@ namespace RideSafe.Module01.Tests
             Assert.IsTrue(entities[0].Active, $"{itemId} tiene que verse.");
         }
 
-        [TestCase("gafas")]
-        [TestCase("candado")]
-        public void El_arte_viejo_queda_apagado(string sceneObject)
+        /// <summary>Las gafas dañadas no las colocó el artista: son la variante rayada de las de seguridad.</summary>
+        [Test]
+        public void Las_gafas_danadas_se_pulsan_sobre_la_variante_rayada()
         {
-            List<Seen> found = Collect(g => g.name == sceneObject);
+            List<Seen> entities = Collect(g =>
+                g.TryGetComponent(out WorldObjectTaskEntity e) && e.ItemId == "glasses_damaged");
 
-            Assert.IsTrue(found.All(s => !s.Active),
-                $"'{sceneObject}' sigue encendido: el aprendiz veria dos en la mesa.");
+            Assert.AreEqual(1, entities.Count);
+            Assert.AreEqual(RideSafe.Module01.Editor.Module01DamagedGlasses.PrefabPath, entities[0].Source);
+            Assert.IsTrue(entities[0].Active);
         }
     }
 }

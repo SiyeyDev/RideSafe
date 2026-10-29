@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_Sandals
   _riskKey: M1/Item_Sandals_Risk
   _category: 3
-  _displayPrefab: {fileID: 919132149155446097, guid: 6a080ecd81840c94a8c3dcb3262ed274, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: fa1d4f7414b0b0743922368babd77399, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 15
   _hazardGroup: footwear_control
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

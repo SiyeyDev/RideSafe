@@ -1,0 +1,20 @@
+{
+  "characters": [
+    "Trainers",
+    "with",
+    "loose",
+    "laces"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.522,
+    0.743,
+    1.057
+  ],
+  "character_end_times_seconds": [
+    0.476,
+    0.673,
+    0.998,
+    1.579
+  ]
+}

@@ -60,6 +60,17 @@ namespace RideSafe.Module01.Tests
         }
 
         [Test]
+        public void Solo_quedan_las_carpetas_declaradas()
+        {
+            HashSet<string> declared = new HashSet<string>(SceneHierarchyLayout.Folders.Select(f => f.Name));
+            string[] extra = _scene.GetRootGameObjects()
+                .SelectMany(r => r.GetComponentsInChildren<SceneFolder>(true))
+                .Select(f => f.name).Where(n => !declared.Contains(n)).ToArray();
+
+            CollectionAssert.IsEmpty(extra, "Carpetas que ya no se usan: " + string.Join(", ", extra));
+        }
+
+        [Test]
         public void Las_carpetas_no_mueven_lo_que_guardan()
         {
             foreach (SceneFolder folder in _scene.GetRootGameObjects()

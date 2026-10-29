@@ -46,10 +46,8 @@ namespace RideSafe.Module01.Editor
             new Folder("--- ILUMINACION ---", null, "luces", "Directional Light", "FX"),
             new Folder("--- JUGADOR ---", null, "XRPlayer", "DesktopMode", "Camera", "Main Camera"),
             new Folder("--- VEHICULOS ---", null, "ebike", "E_Scooter", "Module00 Vehicle Showroom"),
+            // 'epps' trae los del artista, en su sitio (Module01ArtEpp); 'Module01_Spawned', los «!».
             new Folder("--- EPP ---", null, "epps", "Module01_Spawned"),
-            // Los EPP que salieron del ejercicio: apagados, no borrados (ver Module01Library).
-            new Folder("Retirados (apagados)", "--- EPP ---",
-                       "rodilleras", "coderas", "pantalon deportivo doblado", "jean ancho doblado"),
             new Folder("--- UI ---", null, "PF_VideoScreen", "PF_Subtitles", "TutorialHelp"),
             new Folder("--- LOGICA ---", null, "Module01", "Module01_Anchors", "Narration"),
         };
@@ -81,6 +79,8 @@ namespace RideSafe.Module01.Editor
                             Undo.SetTransformParent(go.transform, holder, "Ordenar el Hierarchy");
             }
 
+            RemoveRetiredFolders(scene);
+
             string[] loose = scene.GetRootGameObjects()
                 .Where(r => r.GetComponent<SceneFolder>() == null)
                 .Select(r => r.name).ToArray();
@@ -89,6 +89,20 @@ namespace RideSafe.Module01.Editor
                                  "raíz: " + string.Join(", ", loose));
             else
                 Debug.Log($"[Escena] Hierarchy de {scene.name} ordenado en {Folders.Length} carpetas.");
+        }
+
+        /// <summary>
+        /// Borra las carpetas que ya no están en <see cref="Folders"/> y se quedaron vacías, como
+        /// «Retirados (apagados)» cuando los EPP retirados pasaron a ser decorado. Una con algo
+        /// dentro no se toca: lo suyo se avisa como suelto.
+        /// </summary>
+        private static void RemoveRetiredFolders(Scene scene)
+        {
+            HashSet<string> declared = new HashSet<string>(Folders.Select(f => f.Name));
+            foreach (SceneFolder folder in scene.GetRootGameObjects()
+                         .SelectMany(r => r.GetComponentsInChildren<SceneFolder>(true)).ToList())
+                if (!declared.Contains(folder.name) && folder.transform.childCount == 0)
+                    Undo.DestroyObjectImmediate(folder.gameObject);
         }
 
         private static Transform EnsureFolder(Scene scene, string name, Transform parent)

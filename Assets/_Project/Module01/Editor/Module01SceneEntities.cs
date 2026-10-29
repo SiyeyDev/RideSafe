@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -18,72 +19,7 @@ namespace RideSafe.Module01.Editor
     /// </summary>
     public static class Module01SceneEntities
     {
-        /// <summary>
-        /// (nombre del objeto en la escena, zona, id del elemento del catálogo), para los pocos
-        /// elementos cuyo modelo <b>ya está colocado</b> por el paquete de arte.
-        /// <para>
-        /// Sale de <see cref="Module01Library"/>: solo las filas que declaran
-        /// <see cref="Module01Library.Entry.SceneObject"/>. Todo lo demás lo instancia
-        /// <see cref="FillMissingEntities"/> desde el <c>DisplayPrefab</c> del catálogo —o con
-        /// el signo «!» si todavía no hay modelo—, que es lo que permite que la escena salga
-        /// entera del documento del cliente y no de lo que el garaje traiga encima.
-        /// </para>
-        /// <para>
-        /// Esta lista estaba escrita a mano y ataba el ejercicio a los nombres que Daniel puso
-        /// a sus modelos. De ahí venían la bufanda, el jean ancho, el pantalón deportivo y los
-        /// dos pares, que el cliente nunca pidió.
-        /// </para>
-        /// </summary>
-        private static IEnumerable<(string Obj, string Zone, string Item)> Entities()
-        {
-            foreach (Module01Library.Entry e in Module01Library.All)
-                if (!string.IsNullOrEmpty(e.SceneObject))
-                    yield return (e.SceneObject, e.Table, e.ItemId);
-        }
-
-        /// <summary>
-        /// Los EPP que el arte entrega <b>por pares</b>: (nombre del grupo, zona, piezas).
-        /// <para>
-        /// Una rodillera suelta no es un elemento del catalogo; el par si. Se agrupan bajo un
-        /// padre y la entidad va en el padre, de modo que el clic, el contorno y el reporte
-        /// tratan el par como una sola cosa. Si no, la segunda pieza se queda sin entidad y
-        /// aparece como decorado suelto encima de la mesa.
-        /// </para>
-        /// </summary>
-        /// <remarks>
-        /// Vacía desde el 2026-10-22: los dos pares que había —coderas y rodilleras— no están
-        /// en la biblioteca del cliente y salieron del catálogo. El mecanismo se queda montado
-        /// porque la hoja sí trae elementos que el arte podría entregar por pares (los guantes,
-        /// los mitones), y volver a escribirlo costaría más que dejar la tabla vacía.
-        /// </remarks>
-        private static readonly (string Group, string Zone, string[] Parts)[] Pairs =
-            System.Array.Empty<(string, string, string[])>();
-
-        /// <summary>Hueco entre las dos piezas de un par, a lo ancho de la tapa.</summary>
-        private const float PairGap = .03f;
-
-        /// <summary>
-        /// Arte que una entrega posterior ha <b>sustituido</b>: (objeto viejo, quien lo sustituye).
-        /// <para>
-        /// El v9 trae los tres pantalones doblados, y los de pie se quedan en la escena sin
-        /// entidad, duplicando el ejercicio: el aprendiz ve dos pantalones anchos y solo uno se
-        /// puede pulsar. Encima, al no pertenecer ya a ninguna estacion, nadie los coloca y el
-        /// despeje de pasillo los arrincona donde pueda —el ajustado acabo en (-4.49, 0.57,
-        /// -4.47), contra la pared del fondo—.
-        /// </para>
-        /// <para>
-        /// <b>Se apagan, no se borran.</b> Son modelos del equipo de arte y el cambio de mundo
-        /// los vuelve a traer en cada entrega; apagarlos es reversible con un clic y volver a
-        /// correr este comando los deja apagados otra vez.
-        /// </para>
-        /// </summary>
-        private static readonly (string Viejo, string Sustituto)[] Superseded =
-        {
-            ("jean ajustado",  "jean_ajustado_doblado"),
-            ("pantalon ancho", "jean ancho doblado"),
-            ("pant low",       "pantalon deportivo doblado")
-        };
-
+        private const string SpawnedRoot = "Module01_Spawned";
 
         [MenuItem("RideSafe/Módulo 1/Etiquetar entidades en la escena abierta")]
         public static void ApplyToOpenScene()
@@ -95,10 +31,7 @@ namespace RideSafe.Module01.Editor
         /// <summary>Idempotente: reutiliza las entidades que ya estén puestas.</summary>
         public static void Apply()
         {
-            RetireArtThatLeftTheExercise();
-            HideSuperseded();
-            GroupPairs();
-            TagEntities();
+            TagArt();
             ReplaceOutdatedSpawned();
             FillMissingEntities();
             RemoveOrphanSpawned();
@@ -150,38 +83,6 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>
-        /// Apaga el arte que salió del ejercicio y le quita su entidad, para que no quede un
-        /// objeto clicable que el catálogo ya no conoce.
-        /// <para>
-        /// Va <b>antes</b> de colocar: los EPP nuevos caen sobre las mismas tapas que ocupaba el
-        /// arte viejo, así que si no se apaga primero quedan objetos superpuestos.
-        /// </para>
-        /// </summary>
-        private static void RetireArtThatLeftTheExercise()
-        {
-            int apagados = 0;
-            foreach (string nombre in Module01Library.RetiredSceneObjects)
-            {
-                GameObject go = Find(nombre);
-                if (go == null)
-                    continue;
-
-                foreach (WorldObjectTaskEntity entity in go.GetComponentsInChildren<WorldObjectTaskEntity>(true))
-                    Undo.DestroyObjectImmediate(entity);
-
-                if (go.activeSelf)
-                {
-                    Undo.RecordObject(go, "Retirar arte del ejercicio");
-                    go.SetActive(false);
-                    apagados++;
-                }
-            }
-
-            if (apagados > 0)
-                Debug.Log($"[Module01] Arte apagado por salir del ejercicio: {apagados}.");
-        }
-
-        /// <summary>
         /// Quita las entidades que quedaron sobre objetos de arte con un id que el catálogo ya
         /// no conoce —por ejemplo <c>module01.head.helmet_ok</c> cuando la zona <c>head</c> pasó
         /// a ser <c>protection</c>—.
@@ -199,7 +100,7 @@ namespace RideSafe.Module01.Editor
                     if (item != null)
                         wanted.Add($"module01.{zone.ZoneId}.{item.ItemId}");
 
-            GameObject spawned = Find("Module01_Spawned");
+            GameObject spawned = Find(SpawnedRoot);
             int quitadas = 0;
 
             foreach (WorldObjectTaskEntity entity in
@@ -222,36 +123,116 @@ namespace RideSafe.Module01.Editor
                 Debug.Log($"[Module01] Entidades obsoletas quitadas del arte: {quitadas}.");
         }
 
-        /// <summary>Pone la entidad de tarea sobre cada objeto de EPP ya colocado por arte.</summary>
-        private static void TagEntities()
+        /// <summary>
+        /// Pone la entidad de cada elemento sobre el objeto que el artista colocó con su modelo
+        /// (ver <see cref="Module01ArtEpp"/>), y quita la copia instanciada si la había.
+        /// <para>
+        /// El objeto se reconoce por su <b>FBX</b>, no por su nombre: el nombre lo pone el artista y
+        /// cambia de una entrega a otra (<c>"jean_ajustado_doblado "</c> llegó con un espacio al
+        /// final), el modelo es el que declara la hoja.
+        /// </para>
+        /// <para>
+        /// Si el artista puso varias piezas del mismo modelo —los cuatro zapatos, los dos
+        /// guantes, las dos chanclas— son <b>un</b> elemento: las demás cuelgan de la primera, sin
+        /// moverse, y el clic, el contorno y el reporte las tratan como una sola cosa.
+        /// </para>
+        /// </summary>
+        private static void TagArt()
         {
-            foreach ((string objName, string zone, string item) in Entities())
+            GameObject spawned = Find(SpawnedRoot);
+            List<GameObject> art = new List<GameObject>();
+            foreach (GameObject go in Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (PrefabUtility.IsAnyPrefabInstanceRoot(go) && (spawned == null || !go.transform.IsChildOf(spawned.transform)))
+                    art.Add(go);
+
+            foreach (Module01Library.Entry e in Module01Library.All)
             {
-                GameObject go = Find(objName);
-                if (go == null)
-                {
-                    Debug.LogWarning($"[Module01] No encuentro '{objName}' en la escena; {zone}.{item} queda sin entidad.");
+                if (e.NeedsMarker)
                     continue;
+                List<GameObject> pieces = art.FindAll(g => Module01ArtEpp.SourceOf(g) == e.Model);
+                if (pieces.Count == 0)
+                    pieces = MeshOwners(e.Model, spawned);
+                if (pieces.Count == 0)
+                    continue;
+                pieces.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+                // Lo de otro FBX que es parte del mismo elemento —el portabotella del termo— va
+                // detrás: la entidad la lleva siempre una pieza del modelo principal.
+                foreach (string extra in e.ExtraModels)
+                    pieces.AddRange(art.FindAll(g => Module01ArtEpp.SourceOf(g) == extra));
+
+                GameObject host = pieces[0];
+                for (int i = 1; i < pieces.Count; i++)
+                {
+                    foreach (WorldObjectTaskEntity stale in pieces[i].GetComponentsInChildren<WorldObjectTaskEntity>(true))
+                        Undo.DestroyObjectImmediate(stale);
+                    if (pieces[i].transform.parent != host.transform)
+                        Undo.SetTransformParent(pieces[i].transform, host.transform, "Piezas de un EPP");
                 }
 
-                // El collider se reajusta SIEMPRE, no solo cuando falta: al recibir un garaje
-                // nuevo el objeto cambia de escala y de sitio, y un collider heredado del
-                // garaje anterior deja el clic desplazado respecto a lo que se ve.
-                BoxCollider box = Module01EditorComponents.Ensure<BoxCollider>(go);
-                FitCollider(go, box);
-
-                // Los colliders de los hijos se apagan: con dos volúmenes solapados gana el
-                // que el raycast toque primero, que no siempre es el que lleva la entidad.
-                foreach (Collider other in go.GetComponentsInChildren<Collider>(true))
-                    if (other != box)
-                        other.enabled = false;
-
-                bool wasActive = go.activeSelf;
-                go.SetActive(false);
-                WorldObjectTaskEntity entity = Module01EditorComponents.Ensure<WorldObjectTaskEntity>(go);
-                entity.Configure(new EntityId($"module01.{zone}.{item}"), item);
-                go.SetActive(wasActive);
+                string id = $"module01.{Module01Library.StopOf(e.ItemId)}.{e.ItemId}";
+                RemoveSpawnedCopy(spawned, id);
+                Tag(host, id, e.ItemId);
             }
+        }
+
+        /// <summary>
+        /// Los objetos que llevan una malla de <paramref name="model"/> sin ser una instancia
+        /// suelta de ese FBX: las botas rojas vienen <b>dentro</b> del prefab de decoración del
+        /// garaje. Solo los de más arriba, para no contar dos veces un objeto y su hijo.
+        /// </summary>
+        private static List<GameObject> MeshOwners(string model, GameObject spawned)
+        {
+            var owners = new List<GameObject>();
+            foreach (MeshFilter mf in Object.FindObjectsByType<MeshFilter>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (mf.sharedMesh != null && AssetDatabase.GetAssetPath(mf.sharedMesh) == model
+                    && (spawned == null || !mf.transform.IsChildOf(spawned.transform)))
+                    owners.Add(mf.gameObject);
+            owners.RemoveAll(g => owners.Exists(o => o != g && g.transform.IsChildOf(o.transform)));
+            return owners;
+        }
+
+        private static void RemoveSpawnedCopy(GameObject spawned, string id)
+        {
+            if (spawned == null)
+                return;
+            foreach (WorldObjectTaskEntity copy in spawned.GetComponentsInChildren<WorldObjectTaskEntity>(true))
+                if (copy.Id.Value == id)
+                {
+                    Debug.Log($"[Module01] '{id}' se pulsa ya sobre el objeto del artista; fuera la copia instanciada.");
+                    Undo.DestroyObjectImmediate(copy.gameObject);
+                }
+        }
+
+        private static void Tag(GameObject go, string id, string itemId)
+        {
+            // El collider se reajusta SIEMPRE, no solo cuando falta: al recibir un garaje
+            // nuevo el objeto cambia de escala y de sitio, y un collider heredado del
+            // garaje anterior deja el clic desplazado respecto a lo que se ve.
+            BoxCollider box = Module01EditorComponents.Ensure<BoxCollider>(go);
+            FitCollider(go, box);
+
+            // Los colliders de los hijos se apagan: con dos volúmenes solapados gana el
+            // que el raycast toque primero, que no siempre es el que lleva la entidad. Los que
+            // traiga el propio objeto se quitan: apagados seguirían siendo «su» collider para
+            // GetComponent, con una caja vacía (le pasaba al casco retro del decorado).
+            foreach (Collider other in go.GetComponentsInChildren<Collider>(true))
+            {
+                if (other == box)
+                    continue;
+                if (other.gameObject == go)
+                    Undo.DestroyObjectImmediate(other);
+                else
+                    other.enabled = false;
+            }
+
+            // Lo que se inspecciona viaja al pedestal y se delinea: agrupado estático no puede.
+            Module01EditorComponents.ClearBatchingStatic(go);
+
+            bool wasActive = go.activeSelf;
+            go.SetActive(false);
+            WorldObjectTaskEntity entity = Module01EditorComponents.Ensure<WorldObjectTaskEntity>(go);
+            entity.Configure(new EntityId(id), itemId);
+            go.SetActive(wasActive);
         }
 
         /// <summary>
@@ -266,7 +247,7 @@ namespace RideSafe.Module01.Editor
         /// </summary>
         private static void ReplaceOutdatedSpawned()
         {
-            GameObject spawned = Find("Module01_Spawned");
+            GameObject spawned = Find(SpawnedRoot);
             if (spawned == null)
                 return;
 
@@ -312,7 +293,7 @@ namespace RideSafe.Module01.Editor
                          FindObjectsInactive.Include, FindObjectsSortMode.None))
                 present.Add(e.Id.Value);
 
-            GameObject spare = Find("Module01_Spawned") ?? new GameObject("Module01_Spawned");
+            GameObject spare = Find(SpawnedRoot) ?? new GameObject(SpawnedRoot);
             GameObject bike = Find("ebike");
             int created = 0;
 
@@ -393,6 +374,185 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>
+        /// Lo más grande, en metros de mundo, que sigue pulsándose por su caja. La caja de un
+        /// objeto pequeño es casi el objeto, y con su engorde (<see cref="MinClickThickness"/>)
+        /// las gafas, el cable o un cordón se atinan; en uno grande la caja abarca aire.
+        /// </summary>
+        private const float SmallItem = .16f;
+
+        /// <summary>
+        /// Cada EPP se pulsa por su <b>forma</b> y no por su caja, salvo los pequeños que no
+        /// tocan a nadie (PO, 2026-10-28).
+        /// <para>
+        /// La caja de un objeto abierto abarca aire: la del candado de cable envolvía el candado
+        /// suelto que el artista dejó dentro de la espiral, que no había forma de pulsar, y la
+        /// chaqueta, los pantalones de pie o las rodilleras se comían el clic de lo de detrás.
+        /// Medido desde cada parada: doce elementos con menos del 70 % alcanzable.
+        /// </para>
+        /// <para>
+        /// La forma son <c>MeshCollider</c> no convexos en cada pieza, con la malla del FBX: sin
+        /// mallas nuevas. Esas mallas no son legibles, y PhysX solo las cocina en el build si el
+        /// collider tiene escala uniforme y opciones por defecto; una pieza con escala no uniforme
+        /// o negativa lleva una caja ajustada solo a ella. El objeto que lleva la entidad conserva
+        /// siempre un collider propio (lo exige la entidad y lo leen la ayuda y los tests): si su
+        /// malla va en hijos, su caja se ajusta a la pieza mayor.
+        /// </para>
+        /// <para>
+        /// Se recalcula desde cero en cada pasada —primero todos con caja— porque los vecinos de
+        /// un elemento cambian cuando el artista o la colocación lo mueven.
+        /// </para>
+        /// </summary>
+        public static void FitClickShapes()
+        {
+            var entities = new List<WorldObjectTaskEntity>();
+            foreach (WorldObjectTaskEntity e in Object.FindObjectsByType<WorldObjectTaskEntity>(
+                         FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (e.Id.Value.StartsWith("module01.") && !e.ItemId.StartsWith("point_")
+                    && e.GetComponentInChildren<MeshFilter>(true) != null)
+                    entities.Add(e);
+
+            var boxes = new Dictionary<WorldObjectTaskEntity, BoxCollider>();
+            foreach (WorldObjectTaskEntity e in entities)
+            {
+                BoxCollider box = Module01EditorComponents.Ensure<BoxCollider>(e.gameObject);
+                box.enabled = true;
+                FitCollider(e.gameObject, box);
+                foreach (Collider other in e.GetComponentsInChildren<Collider>(true))
+                    if (other != box)
+                        other.enabled = false;
+                boxes[e] = box;
+            }
+            Physics.SyncTransforms();
+
+            // Se decide con todas las cajas puestas y luego se cambia: quitar la caja de uno a
+            // mitad de la pasada dejaría a sus vecinos comparándose con una caja destruida.
+            var needShape = new List<WorldObjectTaskEntity>();
+            foreach (WorldObjectTaskEntity e in entities)
+            {
+                Vector3 size = boxes[e].bounds.size;
+                bool small = Mathf.Max(size.x, size.y, size.z) <= SmallItem;
+                if (!small || entities.Exists(o => o != e && Overlap(boxes[e], boxes[o])))
+                    needShape.Add(e);
+            }
+
+            int meshes = 0, pieceBoxes = 0;
+            foreach (WorldObjectTaskEntity e in needShape)
+            {
+                BoxCollider box = boxes[e];
+                List<MeshFilter> pieces = new List<MeshFilter>();
+                foreach (MeshFilter mf in e.GetComponentsInChildren<MeshFilter>(false))
+                    if (mf.sharedMesh != null && mf.TryGetComponent(out Renderer r) && r.enabled)
+                        pieces.Add(mf);
+                if (pieces.Count == 0)
+                    continue;
+
+                // La pieza que lleva el collider de la entidad: la del propio objeto, o si su
+                // malla va en hijos —el candado, el kit— la mayor, con la caja del objeto
+                // ajustada solo a ella.
+                MeshFilter hostPiece = pieces.Find(mf => mf.gameObject == e.gameObject)
+                    ?? pieces.OrderByDescending(mf => Volume(mf.GetComponent<Renderer>().bounds)).First();
+
+                foreach (MeshFilter mf in pieces)
+                {
+                    if (mf == hostPiece)
+                        continue;
+                    if (UniformScale(mf.transform)) { Shape(mf); meshes++; }
+                    else { PieceBox(mf); pieceBoxes++; }
+                }
+
+                if (hostPiece.gameObject == e.gameObject && UniformScale(hostPiece.transform))
+                {
+                    Shape(hostPiece);
+                    meshes++;
+                    // Después de la forma: la entidad exige un collider y no deja quitar el
+                    // único. Sin la caja, el del objeto es el que devuelve GetComponent<Collider>().
+                    Undo.DestroyObjectImmediate(box);
+                }
+                else
+                {
+                    FitCollider(e.gameObject, box, new[] { hostPiece.GetComponent<Renderer>() });
+                    pieceBoxes++;
+                }
+            }
+
+            Debug.Log($"[Module01] Clic por la forma: {needShape.Count} EPP ({meshes} piezas por su malla, "
+                      + $"{pieceBoxes} por su propia caja); {entities.Count - needShape.Count} pequeños y sueltos con su caja.");
+        }
+
+        /// <summary>La malla misma, para las piezas con escala uniforme (ver <see cref="FitClickShapes"/>).</summary>
+        private static void Shape(MeshFilter piece)
+        {
+            MeshCollider shape = Module01EditorComponents.Ensure<MeshCollider>(piece.gameObject);
+            shape.sharedMesh = piece.sharedMesh;
+            shape.convex = false;
+            // Las opciones por defecto: con otras, PhysX ya no cocina la malla no legible en el build.
+            shape.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation
+                                   | MeshColliderCookingOptions.EnableMeshCleaning
+                                   | MeshColliderCookingOptions.WeldColocatedVertices
+                                   | MeshColliderCookingOptions.UseFastMidphase;
+            shape.enabled = true;
+        }
+
+        /// <summary>
+        /// Una caja ajustada a la pieza sola, girada con ella: con escala no uniforme la malla no
+        /// se cocina en el build, pero la caja de un zapato sigue siendo casi el zapato.
+        /// </summary>
+        private static void PieceBox(MeshFilter piece)
+        {
+            BoxCollider box = Module01EditorComponents.Ensure<BoxCollider>(PositiveHolder(piece.transform));
+            box.enabled = true;
+            FitCollider(box.gameObject, box, new[] { piece.GetComponent<Renderer>() });
+        }
+
+        private const string MirrorHolder = "clic";
+
+        /// <summary>
+        /// Dónde va la caja de una pieza: en ella, o si el artista la espejó (el zapato izquierdo,
+        /// escala −1) en un hijo que deshace el espejo. Una caja con escala negativa funciona, pero
+        /// PhysX avisa en la consola cada vez que se carga la escena.
+        /// </summary>
+        private static GameObject PositiveHolder(Transform piece)
+        {
+            Vector3 s = piece.lossyScale;
+            Transform holder = piece.Find(MirrorHolder);
+            if (s.x > 0f && s.y > 0f && s.z > 0f)
+            {
+                if (holder != null)
+                    Undo.DestroyObjectImmediate(holder.gameObject);
+                return piece.gameObject;
+            }
+            if (holder == null)
+            {
+                holder = new GameObject(MirrorHolder).transform;
+                Undo.RegisterCreatedObjectUndo(holder.gameObject, "Caja de la pieza espejada");
+                holder.SetParent(piece, false);
+            }
+            holder.localPosition = Vector3.zero;
+            holder.localRotation = Quaternion.identity;
+            holder.localScale = new Vector3(Mathf.Sign(s.x), Mathf.Sign(s.y), Mathf.Sign(s.z));
+            // La caja vieja de la propia pieza, la de antes de esto, fuera.
+            if (piece.TryGetComponent(out BoxCollider old))
+                Undo.DestroyObjectImmediate(old);
+            return holder.gameObject;
+        }
+
+        private static float Volume(Bounds b) => b.size.x * b.size.y * b.size.z;
+
+        private static bool Overlap(BoxCollider a, BoxCollider b) =>
+            a.bounds.Intersects(b.bounds)
+            && Physics.ComputePenetration(a, a.transform.position, a.transform.rotation,
+                                          b, b.transform.position, b.transform.rotation, out _, out float depth)
+            && depth > .005f;
+
+        private static bool UniformScale(Transform t)
+        {
+            Vector3 s = t.lossyScale;
+            if (s.x <= 0f || s.y <= 0f || s.z <= 0f)
+                return false;
+            return Mathf.Abs(s.x - s.y) <= s.x * .01f && Mathf.Abs(s.y - s.z) <= s.y * .01f;
+        }
+
+        /// <summary>
         /// Grosor mínimo de un lado del collider, en metros de mundo. La guaya y el teléfono
         /// son láminas de 2 cm: de canto no se ven y el clic falla por un par de milímetros,
         /// que es la mitad del «se hace clic en la nada». Un objeto plano sigue viéndose
@@ -409,9 +569,11 @@ namespace RideSafe.Module01.Editor
         /// los objetos que coloca el equipo de arte la tienen casi siempre.
         /// </para>
         /// </summary>
-        private static void FitCollider(GameObject go, BoxCollider box)
+        private static void FitCollider(GameObject go, BoxCollider box) =>
+            FitCollider(go, box, go.GetComponentsInChildren<Renderer>(true));
+
+        private static void FitCollider(GameObject go, BoxCollider box, Renderer[] renderers)
         {
-            Renderer[] renderers = go.GetComponentsInChildren<Renderer>(true);
             if (renderers.Length == 0)
                 return;
 
@@ -419,14 +581,18 @@ namespace RideSafe.Module01.Editor
             bool first = true;
             foreach (Renderer r in renderers)
             {
-                Bounds b = r.bounds;
+                // La caja de la propia malla, en su espacio, y no la del mundo: la del mundo de
+                // una pieza girada es mucho mayor que la pieza, y el collider que sale de ella
+                // tapaba lo de detrás. Medido: las rodilleras, giradas 285°, se comían el clic de
+                // las coderas (PO, 2026-10-28).
+                Bounds b = MeshBounds(r);
                 for (int k = 0; k < 8; k++)
                 {
                     Vector3 corner = b.center + Vector3.Scale(b.extents, new Vector3(
                         (k & 1) == 0 ? -1 : 1,
                         (k & 2) == 0 ? -1 : 1,
                         (k & 4) == 0 ? -1 : 1));
-                    Vector3 p = go.transform.InverseTransformPoint(corner);
+                    Vector3 p = go.transform.InverseTransformPoint(r.transform.TransformPoint(corner));
                     if (first) { local = new Bounds(p, Vector3.zero); first = false; }
                     else local.Encapsulate(p);
                 }
@@ -446,6 +612,19 @@ namespace RideSafe.Module01.Editor
             box.size = size;
         }
 
+        /// <summary>La caja de la malla en el espacio del renderer; sin malla, la del mundo pasada a él.</summary>
+        private static Bounds MeshBounds(Renderer r)
+        {
+            if (r is SkinnedMeshRenderer skinned)
+                return skinned.localBounds;
+            MeshFilter filter = r.GetComponent<MeshFilter>();
+            if (filter != null && filter.sharedMesh != null)
+                return filter.sharedMesh.bounds;
+            Bounds world = r.bounds;
+            return new Bounds(r.transform.InverseTransformPoint(world.center),
+                              r.transform.InverseTransformVector(world.size));
+        }
+
         /// <summary>
         /// Borra las entidades que este script creó para elementos que ya no están en
         /// ninguna zona. Si no, apagar un elemento del catálogo deja su cubo gris en el
@@ -453,7 +632,7 @@ namespace RideSafe.Module01.Editor
         /// </summary>
         private static void RemoveOrphanSpawned()
         {
-            GameObject spawned = Find("Module01_Spawned");
+            GameObject spawned = Find(SpawnedRoot);
             if (spawned == null)
                 return;
 
@@ -489,156 +668,6 @@ namespace RideSafe.Module01.Editor
 
             foreach (ZoneSO zone in VehicleProfiles.AllInspectionZones())
                 yield return zone;
-        }
-
-        /// <summary>Nombre del primer objeto de arte de la zona, para colocar su ancla.</summary>
-        public static string FirstObjectNameOfZone(string zone)
-        {
-            foreach ((string objName, string z, string _) in Entities())
-                if (z == zone)
-                    return objName;
-            return null;
-        }
-
-        /// <summary>
-        /// Apaga el arte que otra entrega ha sustituido, y solo si el sustituto esta en la
-        /// escena: si el nuevo no ha llegado, mas vale ver el viejo que no ver nada.
-        /// </summary>
-        private static void HideSuperseded()
-        {
-            foreach ((string viejo, string sustituto) in Superseded)
-            {
-                GameObject nuevo = Find(sustituto);
-                if (nuevo == null)
-                {
-                    Debug.LogWarning(
-                        $"[Module01] '{viejo}' deberia sustituirlo '{sustituto}', que no esta en " +
-                        "la escena; lo dejo encendido para no quedarnos sin el elemento.");
-                    continue;
-                }
-
-                GameObject old = Find(viejo);
-                if (old == null || !old.activeSelf)
-                    continue;
-
-                Undo.RecordObject(old, "Apagar arte sustituido");
-                old.SetActive(false);
-                Debug.Log($"[Module01] '{viejo}' apagado: lo sustituye '{sustituto}'.");
-            }
-        }
-
-        /// <summary>
-        /// Mete las dos piezas de cada par bajo un padre y las deja <b>a lo ancho</b> de la tapa.
-        /// <para>
-        /// A lo ancho y no a lo largo porque la fila de la estacion se reparte por el eje largo
-        /// del mueble: un par puesto en fila gasta el doble del sitio que hace falta, y la mesa
-        /// de ropa va justa —2.62 m para ocho elementos—. La mesa tiene 0.88 m de fondo y un par
-        /// ocupa 0.32, asi que a lo ancho sobra sitio y a lo largo no.
-        /// </para>
-        /// <para>Idempotente: si el grupo ya esta montado, solo recoloca las piezas.</para>
-        /// </summary>
-        private static void GroupPairs()
-        {
-            foreach ((string group, string zoneId, string[] parts) in Pairs)
-            {
-                List<GameObject> pieces = new List<GameObject>();
-                foreach (string part in parts)
-                {
-                    GameObject piece = Find(part);
-                    if (piece != null && !pieces.Contains(piece))
-                        pieces.Add(piece);
-                }
-
-                if (pieces.Count == 0)
-                {
-                    Debug.LogWarning(
-                        $"[Module01] No encuentro ninguna pieza del par '{group}' " +
-                        $"({string.Join(", ", parts)}); ese EPP se queda sin entidad.");
-                    continue;
-                }
-
-                if (!Module01Stations.TryGet(zoneId, out Station station))
-                {
-                    Debug.LogWarning(
-                        $"[Module01] El par '{group}' dice ser de la zona '{zoneId}', que no " +
-                        "tiene estacion declarada; lo agrupo pero no lo recoloco.");
-                }
-
-                GameObject parent = Find(group);
-                if (parent == null)
-                {
-                    parent = new GameObject(group);
-                    parent.transform.position = pieces[0].transform.position;
-                    Undo.RegisterCreatedObjectUndo(parent, "Agrupar par de EPP");
-                }
-
-                foreach (GameObject piece in pieces)
-                {
-                    if (piece.transform.parent == parent.transform)
-                        continue;
-                    Undo.RecordObject(piece.transform, "Agrupar par de EPP");
-                    piece.transform.SetParent(parent.transform, true);
-                }
-
-                bool rowAlongX = station.Axis == StationAxis.X;
-
-                List<Bounds> boxes = new List<Bounds>();
-                foreach (GameObject piece in pieces)
-                    boxes.Add(VisibleBounds(piece));
-
-                float total = 0f;
-                for (int i = 0; i < boxes.Count; i++)
-                {
-                    total += rowAlongX ? boxes[i].size.z : boxes[i].size.x;
-                    if (i < boxes.Count - 1)
-                        total += PairGap;
-                }
-
-                // Centrado donde ya estaba la primera pieza: el grupo no viaja, que de eso se
-                // encarga despues el reparto de estaciones.
-                float cursor = (rowAlongX ? boxes[0].center.z : boxes[0].center.x) - total * .5f;
-                for (int i = 0; i < pieces.Count; i++)
-                {
-                    float half = (rowAlongX ? boxes[i].size.z : boxes[i].size.x) * .5f;
-                    float at = cursor + half;
-
-                    // A lo ancho cada pieza a su hueco, y a lo largo TODAS a la misma linea:
-                    // si no, el par sigue pisando dos huecos de la fila y no se gana nada.
-                    Vector3 delta = Vector3.zero;
-                    if (rowAlongX)
-                    {
-                        delta.z = at - boxes[i].center.z;
-                        delta.x = boxes[0].center.x - boxes[i].center.x;
-                    }
-                    else
-                    {
-                        delta.x = at - boxes[i].center.x;
-                        delta.z = boxes[0].center.z - boxes[i].center.z;
-                    }
-
-                    Undo.RecordObject(pieces[i].transform, "Colocar par de EPP");
-                    pieces[i].transform.position += delta;
-
-                    cursor = at + half + PairGap;
-                }
-
-                Debug.Log(
-                    $"[Module01] Par '{group}': {pieces.Count} piezas agrupadas, " +
-                    $"{total:F2} m a lo ancho de la tapa.");
-            }
-        }
-
-        /// <summary>Caja de lo que se ve de un objeto, con sus hijos. Vacia si no tiene malla.</summary>
-        private static Bounds VisibleBounds(GameObject go)
-        {
-            Renderer[] renderers = go.GetComponentsInChildren<Renderer>(true);
-            if (renderers.Length == 0)
-                return new Bounds(go.transform.position, Vector3.zero);
-
-            Bounds b = renderers[0].bounds;
-            for (int i = 1; i < renderers.Length; i++)
-                b.Encapsulate(renderers[i].bounds);
-            return b;
         }
 
         /// <summary>

@@ -93,10 +93,18 @@ namespace RideSafe.Module01
                 GazeFollower follower = Sidebar.GetComponent<GazeFollower>();
                 if (follower == null)
                     follower = Sidebar.AddComponent<GazeFollower>();
-                // 1.6 m de distancia, 10° por debajo de la linea de ojos y 24° a la derecha.
-                // Sin el desplazamiento lateral el componente deja el checklist justo delante
-                // del objeto a inspeccionar, que es lo contrario de lo que se pidio.
-                follower.Configure(1.6f, 10f, 24f);
+                // 1.6 m de distancia, arriba a la derecha: el borde de arriba 16° por encima de
+                // la linea de ojos y 28° a la derecha. Desde que cada parada mira un mueble de
+                // frente (2026-10-27), 10° por debajo caia justo sobre la tapa y tapaba EPP; arriba
+                // estan los armarios, donde no hay nada que elegir (PO, 2026-10-28).
+                follower.Configure(1.6f, -16f, 28f);
+
+                // Y plegado, como un desplegable: el titulo con cuantos hay; la lista al pulsarlo.
+                // Con la lista abierta siempre, cada EPP elegido lo alargaba hacia los muebles.
+                var parts = new System.Collections.Generic.List<GameObject>();
+                Transform divider = list.Find("Divider");
+                if (divider != null) parts.Add(divider.gameObject);
+                _preparationList.MakeCollapsible(list.Find("Title").GetComponent<TMPro.TMP_Text>(), parts);
             }
             Localize(OrientationPanel, "ModuleTag", "Orientation_Tag");
             Localize(OrientationPanel, "Title", "Orientation_Title");

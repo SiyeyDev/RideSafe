@@ -1,0 +1,20 @@
+{
+  "characters": [
+    "Pantalón",
+    "de",
+    "tiro",
+    "bajo"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.592,
+    0.72,
+    0.998
+  ],
+  "character_end_times_seconds": [
+    0.546,
+    0.662,
+    0.952,
+    1.579
+  ]
+}

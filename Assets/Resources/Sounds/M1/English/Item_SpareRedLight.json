@@ -1,0 +1,17 @@
+{
+  "characters": [
+    "Spare",
+    "red",
+    "light"
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.557,
+    0.882
+  ],
+  "character_end_times_seconds": [
+    0.476,
+    0.789,
+    1.44
+  ]
+}

@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_HelmetStrap
   _riskKey: M1/Item_HelmetStrap_Risk
   _category: 3
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: 77fb396a896536145844fa18b70cee0a, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 30
   _hazardGroup: helmet_integrity
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

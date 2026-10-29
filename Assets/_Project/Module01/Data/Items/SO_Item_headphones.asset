@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_Headphones
   _riskKey: M1/Item_Headphones_Risk
   _category: 3
-  _displayPrefab: {fileID: 919132149155446097, guid: d09e3a8ff9adc3e4a91be90ea5648a0f, type: 3}
+  _displayPrefab: {fileID: 919132149155446097, guid: 041966f50fc7a2940afae39485e97984, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 20
   _hazardGroup: auditory_occlusion
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_PhoneMount
   _riskKey: M1/Item_PhoneMount_Risk
   _category: 2
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 919132149155446097, guid: b99ffc54b3ff5a046bfa2d2e06406351, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 1
   _hazardGroup: 
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 

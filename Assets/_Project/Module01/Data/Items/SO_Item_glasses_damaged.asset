@@ -16,10 +16,12 @@ MonoBehaviour:
   _nameKey: M1/Item_GlassesDamaged
   _riskKey: M1/Item_GlassesDamaged_Risk
   _category: 3
-  _displayPrefab: {fileID: 0}
+  _displayPrefab: {fileID: 7680436805015501290, guid: 969fe918ce3b7fc4995ef68898c14904, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
   _weight: 20
   _hazardGroup: visual_obstruction
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 
