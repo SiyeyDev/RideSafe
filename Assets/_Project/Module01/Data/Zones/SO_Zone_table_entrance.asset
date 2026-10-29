@@ -16,16 +16,14 @@ MonoBehaviour:
   _titleKey: M1/Stop_Entrance
   _items:
   - {fileID: 11400000, guid: ed7defb43116e4847adcb74a961ce8a5, type: 2}
-  - {fileID: 11400000, guid: d3108f6561eae7448887d4ac77d3b677, type: 2}
+  - {fileID: 11400000, guid: e5f082f52be56c049b1cf6cd238abe79, type: 2}
+  - {fileID: 11400000, guid: f90605e8de6028a48a8219e6b26c9993, type: 2}
+  - {fileID: 11400000, guid: 9329f89939506ea4c8c38555e63590c7, type: 2}
+  - {fileID: 11400000, guid: 3a39b01bb0e7c2a45a5158e87dd5fef7, type: 2}
   - {fileID: 11400000, guid: 91cb89fc2a93e4d4ca78f423d0bd7490, type: 2}
-  - {fileID: 11400000, guid: 463d0dcf67e2f7140a39f2eb6adfcabc, type: 2}
-  - {fileID: 11400000, guid: 22bb9602e45309f438ef7938b57505d7, type: 2}
-  - {fileID: 11400000, guid: cbd3484e60f95ae41ad1b9915790835d, type: 2}
-  - {fileID: 11400000, guid: 42ab169f9c1e11342a972271eac6b9eb, type: 2}
-  - {fileID: 11400000, guid: 8e2d20b7220efe14ab38b84e4d0896ab, type: 2}
-  - {fileID: 11400000, guid: 844111abcca9594408ee2f3bf8b44569, type: 2}
-  - {fileID: 11400000, guid: 7c5e2184274e71e449d3a86883075499, type: 2}
-  - {fileID: 11400000, guid: b4c744cced22cf540938ee7bbfe4c0a9, type: 2}
-  - {fileID: 11400000, guid: 18c234c72005a4849af841604e179f06, type: 2}
-  - {fileID: 11400000, guid: 643105d3d91aea64da6ffe3ee4ca7d61, type: 2}
-  - {fileID: 11400000, guid: 945a67a3701bbad498a99073147db4fa, type: 2}
+  - {fileID: 11400000, guid: a6478568077c4d647b4a555ee6fa1788, type: 2}
+  - {fileID: 11400000, guid: 9d627ddcdec838346ab9d1f41ddd3735, type: 2}
+  - {fileID: 11400000, guid: de7bfcef59bd21644944273240efe253, type: 2}
+  - {fileID: 11400000, guid: 6d4cf43718bc31948aa8da4e8b1a3453, type: 2}
+  - {fileID: 11400000, guid: cd611a2756ad56849902adbc480628b9, type: 2}
+  - {fileID: 11400000, guid: 05961505f1f215742ada9d3927bf25a0, type: 2}

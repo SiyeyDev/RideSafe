@@ -15,20 +15,13 @@ MonoBehaviour:
   _zoneId: counter_clothes
   _titleKey: M1/Stop_Clothes
   _items:
-  - {fileID: 11400000, guid: da94ae8f82a17e7408ffc2d74a54fb5a, type: 2}
-  - {fileID: 11400000, guid: da46d9c38adc5064fa90e8e8f22c8e95, type: 2}
-  - {fileID: 11400000, guid: 4fefe3f19a87dce43a90c4adc97c37f0, type: 2}
-  - {fileID: 11400000, guid: 7a6a8a0c4626d4c458457a4ba47718fb, type: 2}
-  - {fileID: 11400000, guid: a80e3ba813143d24e9893e907c0d7bcb, type: 2}
-  - {fileID: 11400000, guid: 07d631ddf27f94f45bbe3d29f547f204, type: 2}
-  - {fileID: 11400000, guid: 9d627ddcdec838346ab9d1f41ddd3735, type: 2}
-  - {fileID: 11400000, guid: 15c612763c60b8e40be61ed7df1be161, type: 2}
+  - {fileID: 11400000, guid: 22bb9602e45309f438ef7938b57505d7, type: 2}
+  - {fileID: 11400000, guid: 7c5e2184274e71e449d3a86883075499, type: 2}
+  - {fileID: 11400000, guid: b4c744cced22cf540938ee7bbfe4c0a9, type: 2}
+  - {fileID: 11400000, guid: fad7afd8073738a4396e9f40946d9afa, type: 2}
+  - {fileID: 11400000, guid: 42ab169f9c1e11342a972271eac6b9eb, type: 2}
+  - {fileID: 11400000, guid: 6daaee0c872c37e42b68c374510fcd39, type: 2}
+  - {fileID: 11400000, guid: f3be7d6017554ba4293f570399f3baaf, type: 2}
+  - {fileID: 11400000, guid: 08af7a06fc8c87d4c801da5e313d54ef, type: 2}
   - {fileID: 11400000, guid: f701cdd1c9cc03040ab719da48fe44e8, type: 2}
   - {fileID: 11400000, guid: 0b30f520f547d1e4cafef3b8768589b3, type: 2}
-  - {fileID: 11400000, guid: ec4f1402a1aa6b44d939c1c0469b2d10, type: 2}
-  - {fileID: 11400000, guid: b15d217ad93220e4c8ece4cfffc11c05, type: 2}
-  - {fileID: 11400000, guid: 72273d60de27edc4e8278db126132ade, type: 2}
-  - {fileID: 11400000, guid: d7a0fa8c0d9704e4e9b9802b3b8e552e, type: 2}
-  - {fileID: 11400000, guid: 08af7a06fc8c87d4c801da5e313d54ef, type: 2}
-  - {fileID: 11400000, guid: ba7cc398af6aa6a43a38df2c870597e8, type: 2}
-  - {fileID: 11400000, guid: f3be7d6017554ba4293f570399f3baaf, type: 2}

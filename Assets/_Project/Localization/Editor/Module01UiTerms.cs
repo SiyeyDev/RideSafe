@@ -37,6 +37,9 @@ public static class Module01UiTerms
         Set(data, es, en, "M1/Stop_Middle", "Mesa del centro", "Middle table");
         Set(data, es, en, "M1/Stop_Back", "Mesa del fondo", "Back table");
         Set(data, es, en, "M1/Stop_Clothes", "Mostrador de la ropa", "Clothing counter");
+        // The tool bench is a stop again (PO, 2026-10-29): the other four held 61 items and the
+        // back table was at 94 % of its worktop while this one stood empty.
+        Set(data, es, en, "M1/Stop_Tools", "Mesa de herramientas", "Tool bench");
 
         // Everything the artist modelled can be chosen (PO, 2026-10-28). The pads came back as
         // «recommended conditional»; the rest is neutral, or a hazard when it obviously is one.
@@ -72,10 +75,21 @@ public static class Module01UiTerms
         Set(data, es, en, "M1/Rank_Inexperienced", "Casi nada de lo imprescindible quedó cubierto. Repite el módulo y revisa cada estación con calma.", "Almost none of the essentials were covered. Repeat the module and go through each station calmly.");
         Set(data, es, en, "M1/ContinueModule2", "Continuar al Módulo 2", "Continue to Module 2");
         Set(data, es, en, "M1/RepeatModule", "Repetir Módulo", "Repeat module");
+
+        // Panel de la nota final (PO, 2026-10-29): el promedio de las dos secciones y si pasa.
+        Set(data, es, en, "M1/FinalScore_Title", "Puntuación final", "Final score");
+        Set(data, es, en, "M1/FinalScore_Gear", "Equipo", "Gear");
+        Set(data, es, en, "M1/FinalScore_Vehicle", "Vehículo", "Vehicle");
+        Set(data, es, en, "M1/FinalScore_CanContinue",
+            "Puedes continuar al Módulo 2.", "You can continue to Module 2.");
+        Set(data, es, en, "M1/FinalScore_MustRepeat",
+            "Necesitas más de 70 para continuar. Repite el módulo.",
+            "You need more than 70 to continue. Repeat the module.");
         // The video's «Reproduciendo» tag was dropped (PO, 2026-10-16): its term goes too.
         data.RemoveTerm("M1/Video_Playing");
-        // The tool bench stopped being a stop and the pouch an item (2026-10-28).
-        foreach (string gone in new[] { "M1/Stop_Tools", "M1/Item_Pouch", "M1/Item_Pouch_Risk" })
+        // The pouch stopped being an item (2026-10-28). «M1/Stop_Tools» was dropped with it and
+        // is set again above: the bench came back as a stop on 2026-10-29.
+        foreach (string gone in new[] { "M1/Item_Pouch", "M1/Item_Pouch_Risk" })
             data.RemoveTerm(gone);
         EditorUtility.SetDirty(asset);
         AssetDatabase.SaveAssets();

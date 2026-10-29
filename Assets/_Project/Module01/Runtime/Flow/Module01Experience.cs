@@ -37,6 +37,12 @@ namespace RideSafe.Module01
         [SerializeField] private FocusDome _focus;
         [Tooltip("Barra de salida del reporte final: «Continuar al Módulo 2» y «Repetir Módulo».")]
         [SerializeField] private GameObject _result;
+
+        [Tooltip("Panel de la nota final: las dos secciones, su promedio y el veredicto.")]
+        [SerializeField] private GameObject _finalScorePanel;
+        [SerializeField] private TMP_Text _finalAverageText;
+        [SerializeField] private TMP_Text _finalSectionsText;
+        [SerializeField] private TMP_Text _finalVerdictText;
         [Tooltip("Con un asset aquí, Begin salta las pantallas del módulo 0 y usa estos valores. Vacío corre el onboarding completo.")]
         [SerializeField] private Module00SettingsSO _quickStart;
         public UnityEvent onOrientation = new UnityEvent();
@@ -378,14 +384,14 @@ namespace RideSafe.Module01
         /// aparte no cabía —medido: por debajo de la leyenda quedan unos 80 de los 556 del
         /// marco— y además partía en dos lo que la reunión pidió unificar.
         /// </summary>
-        private void ShowVerdict(List<ComparisonEntry> entries, SelectionScore score)
+        private void ShowVerdict(List<ComparisonEntry> entries, PerformanceRank rank, int percent)
         {
             Phase = "Report";
             _binding.Module.Show("Comparison");
             _binding.Comparison.SetSingleList(
                 UIText.Resolve("M1/MyChoice_Title") + "  ·  "
-                    + UIText.Resolve(score.Rank.TitleKey()) + "  ·  " + score.Percent + "%",
-                UIText.Resolve(score.Rank.FeedbackKey()) + "  ·  "
+                    + UIText.Resolve(rank.TitleKey()) + "  ·  " + percent + "%",
+                UIText.Resolve(rank.FeedbackKey()) + "  ·  "
                     + UIText.Resolve(_readinessCorrect ? "M1/Final_Complete" : "M1/Decision_Review"),
                 entries);
         }
@@ -524,17 +530,59 @@ namespace RideSafe.Module01
         private void ShowFinalReport()
         {
             var entries = new List<ComparisonEntry>(_personalEntries); entries.AddRange(_vehicleEntries);
-            SelectionScore score = _director.FinalScore;
-            ShowVerdict(entries, score);
+            // Una sola cifra manda en toda la pantalla. Antes la barra de rango salía de
+            // Combine (suma de pesos) y el panel del promedio de Average: dos números
+            // distintos para la misma nota, uno encima del otro.
+            FinalScore final = _director.ModuleScore;
+            ShowVerdict(entries, final.Rank, final.Percent);
             Phase = "Finished";
             Find<Button>(_binding.Comparison.transform, "ExplainButton").gameObject.SetActive(false);
+
+            ShowFinalScorePanel();
 
             if (_result != null) _result.SetActive(true);
             // Solo el aprobado abre el modulo 2. Los demas rangos dejan repetir, y nada mas:
             // el boton de continuar se apaga en vez de desaparecer para que se vea que existe
             // y que hay algo que conseguir.
-            SetInteractable(_result, "ContinueModule2Button", score.UnlocksNextModule);
+            SetInteractable(_result, "ContinueModule2Button", final.CanContinue);
             SetInteractable(_result, "RepeatModuleButton", true);
+        }
+
+        /// <summary>
+        /// Rellena el panel de la nota final: el promedio en grande, de dónde sale, y si pasa o
+        /// repite el módulo entero.
+        /// <para>
+        /// El veredicto se escribe con palabras y no solo con el número: «59 de 100» no le dice
+        /// a nadie si puede seguir. Los textos salen de I2, nunca literales.
+        /// </para>
+        /// </summary>
+        private void ShowFinalScorePanel()
+        {
+            if (_finalScorePanel == null || _director == null)
+                return;
+
+            FinalScore final = _director.ModuleScore;
+            _finalScorePanel.SetActive(true);
+
+            if (_finalAverageText != null)
+                _finalAverageText.text = final.Percent + " / 100";
+
+            if (_finalSectionsText != null)
+                _finalSectionsText.text = string.Format("{0} {1}   ·   {2} {3}",
+                    Traducir("M1/FinalScore_Gear"), Mathf.RoundToInt(final.Epp.SafetyScore),
+                    Traducir("M1/FinalScore_Vehicle"), Mathf.RoundToInt(final.Vehicle.SafetyScore));
+
+            if (_finalVerdictText != null)
+                _finalVerdictText.text = Traducir(final.MustRepeatModule
+                    ? "M1/FinalScore_MustRepeat"
+                    : "M1/FinalScore_CanContinue");
+        }
+
+        /// <summary>Texto de I2; si falta el término se ve la clave, que delata la falta.</summary>
+        private string Traducir(string key)
+        {
+            string texto = _localization != null ? _localization.GetTranslation(key) : null;
+            return string.IsNullOrEmpty(texto) ? key : texto;
         }
 
         private static void SetInteractable(GameObject root, string name, bool value)

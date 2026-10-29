@@ -4,8 +4,12 @@ using RideSafe.UI;
 namespace RideSafe.Module01.Tests
 {
     /// <summary>
-    /// La nota y su rango, con los cortes que fijó la reunión: ≥75 aprueba y abre el módulo 2;
-    /// por debajo solo se puede repetir.
+    /// La nota de una sección y su rango. El bloque esencial vale 100 y los peligros muerden de
+    /// ahí (PO, 2026-10-29); el corte de ≥75 que fijó la reunión sigue decidiendo el rango.
+    /// <para>
+    /// La nota del <b>módulo</b> no se mide aquí sino en <c>FinalScoreTests</c>: es el promedio
+    /// de las dos secciones y tiene su propio corte, el 70.
+    /// </para>
     /// </summary>
     public class SelectionScoreTests : CatalogFixture
     {
@@ -62,39 +66,40 @@ namespace RideSafe.Module01.Tests
             return all.ToArray();
         }
 
-        // ------------------------------------------------ los dos bloques: 70 esencial + 30 riesgo
+        // ------------------------------------ el bloque esencial vale 100 y el peligro resta
 
         [Test]
         public void Todo_lo_esencial_y_ningun_peligro_es_el_cien_por_cien()
         {
             SelectionScore score = Score(Biblioteca(), Casco, Calzado, Ropa);
 
-            Assert.AreEqual(70f, score.EssentialScore, Tol);
-            Assert.AreEqual(30f, score.HazardScore, Tol);
+            Assert.AreEqual(100f, score.EssentialScore, Tol);
+            Assert.AreEqual(0f, score.HazardScore, Tol, "Sin peligros no hay mordida.");
             Assert.AreEqual(100f, score.SafetyScore, Tol);
             Assert.AreEqual(PerformanceRank.Knowledgeable, score.Rank);
             Assert.IsTrue(score.CanAdvance);
         }
 
         [Test]
-        public void No_tocar_nada_deja_los_30_del_riesgo_pero_no_deja_avanzar()
+        public void No_tocar_nada_es_un_cero_y_tampoco_deja_avanzar()
         {
-            // La hoja no da 0 aquí: no caer en ninguna trampa vale sus 30 puntos. Lo que para al
-            // que se queda quieto es el contador de esenciales, no la nota.
+            // Con los dos bloques de la hoja quedarse quieto daba 30 —los puntos de no caer en
+            // ninguna trampa—, que es premiar la inacción. Ahora la nota sale solo de lo que te
+            // llevas: cero. Y además el contador de esenciales lo manda a repetir.
             SelectionScore score = Score(Biblioteca());
 
             Assert.AreEqual(0f, score.EssentialScore, Tol);
-            Assert.AreEqual(30f, score.HazardScore, Tol);
-            Assert.AreEqual(30f, score.SafetyScore, Tol);
+            Assert.AreEqual(0f, score.HazardScore, Tol);
+            Assert.AreEqual(0f, score.SafetyScore, Tol);
             Assert.AreEqual(3, score.EssentialsMissing);
             Assert.IsFalse(score.CanAdvance, "3 esenciales olvidados: repetir la selección.");
             Assert.IsFalse(score.UnlocksNextModule);
         }
 
-        [TestCase("H04_chanclas", 15f, 85f, TestName = "Chanclas (15) dejan el riesgo en 15")]
-        [TestCase("H03_audifonos", 10f, 80f, TestName = "Audífonos (20) dejan el riesgo en 10")]
-        [TestCase("H02_agrietado", 0f, 70f, TestName = "Casco agrietado (30) se lleva el bloque entero")]
-        public void Cada_peligro_descuenta_sus_puntos_de_los_30(string peligro, float riesgo, float total)
+        [TestCase("H04_chanclas", -15f, 85f, TestName = "Chanclas (15) dejan la nota en 85")]
+        [TestCase("H03_audifonos", -20f, 80f, TestName = "Audífonos (20) dejan la nota en 80")]
+        [TestCase("H02_agrietado", -30f, 70f, TestName = "Casco agrietado (30) deja la nota en 70")]
+        public void Cada_peligro_muerde_su_peso_de_la_nota(string peligro, float riesgo, float total)
         {
             SelectionScore score = Score(Biblioteca(), Casco, Calzado, Ropa, peligro);
 
@@ -103,14 +108,17 @@ namespace RideSafe.Module01.Tests
         }
 
         [Test]
-        public void El_riesgo_nunca_baja_de_cero_por_mucho_que_se_acumule()
+        public void La_nota_nunca_baja_de_cero_por_mucho_que_se_acumule()
         {
-            // «MAX(0; 30 − deducción)». Con los 11 peligros la deducción por grupos es 185.
+            // Con los 11 peligros la deducción por grupos es 185: muerde más que los 100 que
+            // hay. El suelo es 0, no −85, porque una nota negativa no significa nada y además
+            // arrastraría a la otra sección al promediar el módulo.
             SelectionScore score = Score(Biblioteca(), Mas(TodosLosPeligros, Casco, Calzado, Ropa));
 
-            Assert.AreEqual(185f, score.HazardDeduction, Tol);
-            Assert.AreEqual(0f, score.HazardScore, Tol);
-            Assert.AreEqual(70f, score.SafetyScore, Tol, "Lo esencial sigue valiendo sus 70.");
+            Assert.AreEqual(185f, score.HazardDeduction, Tol, "La deducción cruda se conserva.");
+            Assert.AreEqual(100f, score.EssentialScore, Tol, "Se llevó todo lo esencial...");
+            Assert.AreEqual(-100f, score.HazardScore, Tol, "...y los peligros se lo comieron.");
+            Assert.AreEqual(0f, score.SafetyScore, Tol);
             Assert.AreEqual(11, score.HazardsTaken);
         }
 
@@ -147,11 +155,12 @@ namespace RideSafe.Module01.Tests
         public void Dos_peligros_de_grupos_distintos_si_suman()
         {
             // Audífonos (auditory_occlusion, 20) y chanclas (footwear_control, 15) son dos
-            // errores distintos: 35 de deducción, el riesgo se va a 0.
+            // errores distintos: 35 de deducción, no el máximo de los dos.
             SelectionScore score = Score(Biblioteca(), Casco, Calzado, Ropa, "H03_audifonos", "H04_chanclas");
 
             Assert.AreEqual(35f, score.HazardDeduction, Tol);
-            Assert.AreEqual(0f, score.HazardScore, Tol);
+            Assert.AreEqual(-35f, score.HazardScore, Tol);
+            Assert.AreEqual(65f, score.SafetyScore, Tol);
         }
 
         [Test]
@@ -167,9 +176,9 @@ namespace RideSafe.Module01.Tests
 
         // ---------------------------------------------------- el pool esencial y sus proporciones
 
-        [TestCase(Casco, 26.9f, 56.9f, TestName = "Sin el casco (25 de 65) la nota cae a 56,9")]
-        [TestCase(Calzado, 48.5f, 78.5f, TestName = "Sin el calzado (45 de 65), 78,5")]
-        [TestCase(Ropa, 64.6f, 94.6f, TestName = "Sin la ropa ceñida (60 de 65), 94,6")]
+        [TestCase(Casco, 38.5f, 38.5f, TestName = "Sin el casco (25 de 65) la nota cae a 38,5")]
+        [TestCase(Calzado, 69.2f, 69.2f, TestName = "Sin el calzado (45 de 65), 69,2")]
+        [TestCase(Ropa, 92.3f, 92.3f, TestName = "Sin la ropa ceñida (60 de 65), 92,3")]
         public void Omitir_un_esencial_cuesta_en_proporcion_a_su_peso(string omitido, float esencial, float total)
         {
             System.Collections.Generic.List<string> elegidos =
@@ -201,17 +210,17 @@ namespace RideSafe.Module01.Tests
                 Grade(noche, Calzado, Ropa, "E02_luz_del", "E03_luz_tras"));
 
             Assert.AreEqual(95f, sinCasco.EssentialApplicable, Tol);
-            Assert.AreEqual(40.5f, sinCasco.EssentialScore, Tol, "70 × 55/95 = 40,526 → 40,5.");
-            Assert.AreEqual(70.5f, sinCasco.SafetyScore, Tol);
+            Assert.AreEqual(57.9f, sinCasco.EssentialScore, Tol, "100 × 55/95 = 57,894 → 57,9.");
+            Assert.AreEqual(57.9f, sinCasco.SafetyScore, Tol);
         }
 
         [Test]
         public void El_puntaje_esencial_se_redondea_a_un_decimal()
         {
-            // REDONDEAR(70 × seleccionado / aplicable; 1).
+            // REDONDEAR(100 × seleccionado / aplicable; 1).
             SelectionScore score = Score(Biblioteca(), Calzado, Ropa);
 
-            Assert.AreEqual(26.9f, score.EssentialScore, 0.001f, "26,923 redondeado a un decimal.");
+            Assert.AreEqual(38.5f, score.EssentialScore, 0.001f, "38,4615 redondeado a un decimal.");
         }
 
         // -------------------------------------------------------------------- lo opcional
@@ -281,7 +290,7 @@ namespace RideSafe.Module01.Tests
 
             SelectionScore score = SelectionScore.Of(catalog, Grade(catalog, "a"));
 
-            Assert.AreEqual(93f, score.SafetyScore, Tol, "63 de esencial más los 30 de riesgo.");
+            Assert.AreEqual(90f, score.SafetyScore, Tol, "90 de 100 de pool y ningún peligro.");
             Assert.AreEqual(PerformanceRank.Knowledgeable, score.Rank, "La nota sola aprobaría.");
             Assert.AreEqual(2, score.EssentialsMissing);
             Assert.IsTrue(score.MustRepeatSelection, "Pero el contador manda sobre la nota.");
@@ -290,8 +299,9 @@ namespace RideSafe.Module01.Tests
         [Test]
         public void La_nota_y_la_decision_de_avanzar_pueden_discrepar_y_es_a_proposito()
         {
-            // Un solo casco roto: la nota se cae a 70 y suspende el corte de 75, pero es UN
-            // peligro, así que la hoja manda avanzar con feedback. Son dos medidas distintas.
+            // Un solo casco roto: 100 de esencial menos los 30 del grupo helmet_integrity deja
+            // la nota en 70 y suspende el corte de 75, pero es UN peligro, así que la hoja manda
+            // avanzar con feedback. Son dos medidas distintas.
             SelectionScore score = Score(Biblioteca(), Casco, Calzado, Ropa, "H02_agrietado");
 
             Assert.AreEqual(70f, score.SafetyScore, Tol);
@@ -310,7 +320,7 @@ namespace RideSafe.Module01.Tests
 
             SelectionScore score = SelectionScore.Of(catalog, Grade(catalog, "nucleo", "trampa"));
 
-            Assert.AreEqual(75f, score.SafetyScore, Tol, "70 de esencial más 5 de riesgo.");
+            Assert.AreEqual(75f, score.SafetyScore, Tol, "100 de esencial menos 25 de peligro.");
             Assert.AreEqual(PerformanceRank.Knowledgeable, score.Rank);
             Assert.IsTrue(score.UnlocksNextModule);
         }
@@ -389,10 +399,12 @@ namespace RideSafe.Module01.Tests
         // --------------------------------------------------------------- las dos secciones
 
         [Test]
-        public void La_nota_final_suma_los_pesos_de_las_dos_secciones_en_vez_de_promediar()
+        public void Combinar_suma_los_pesos_de_las_dos_secciones_en_vez_de_promediar()
         {
             // Protección perfecta (65 de 65) y vehículo a medias (1 punto de 5): 66 de 70 del
-            // pool, que son 66 puntos de esencial. Promediando porcentajes saldría (100+20)/2.
+            // pool. Promediando saldría (100+20)/2 = 60, que es la nota que SÍ usa el módulo
+            // desde el 2026-10-29. Combine se mide aparte porque responde a otra pregunta:
+            // cuánto sabes si las dos secciones fuesen un único examen por peso.
             Module01CatalogSO personal = Catalog(Zone("p",
                 Item(Casco, SafetyItemCategory.Core, 40f),
                 Item(Calzado, SafetyItemCategory.Core, 20f),
@@ -409,7 +421,7 @@ namespace RideSafe.Module01.Tests
 
             Assert.AreEqual(70f, total.EssentialApplicable, Tol);
             Assert.AreEqual(66f, total.EssentialEarned, Tol);
-            Assert.AreEqual(96f, total.SafetyScore, Tol);
+            Assert.AreEqual(94.3f, total.SafetyScore, Tol, "100 × 66/70 = 94,285 → 94,3.");
             Assert.AreEqual(4, total.EssentialsMissing);
             Assert.IsTrue(total.MustRepeatSelection, "4 puntos del vehículo sin revisar.");
         }
@@ -431,9 +443,9 @@ namespace RideSafe.Module01.Tests
             Assert.AreEqual(1, total.EssentialsMissing);
             Assert.AreEqual(1, total.HazardsTaken);
             Assert.AreEqual(20f, total.HazardDeduction, Tol);
-            Assert.AreEqual(35f, total.EssentialScore, Tol, "70 × 10/20.");
-            Assert.AreEqual(10f, total.HazardScore, Tol, "30 − 20.");
-            Assert.AreEqual(45f, total.SafetyScore, Tol);
+            Assert.AreEqual(50f, total.EssentialScore, Tol, "100 × 10/20.");
+            Assert.AreEqual(-20f, total.HazardScore, Tol, "El peligro de la sección personal.");
+            Assert.AreEqual(30f, total.SafetyScore, Tol);
         }
 
         // ------------------------------------------------------- el bono de preparación

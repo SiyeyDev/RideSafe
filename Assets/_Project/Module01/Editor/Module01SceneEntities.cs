@@ -36,7 +36,90 @@ namespace RideSafe.Module01.Editor
             FillMissingEntities();
             RemoveOrphanSpawned();
             RemoveStaleEntitiesOnArt();
+            UnSoloPulsablePorElemento();
         }
+
+        /// <summary>
+        /// Deja <b>una sola</b> entidad por elemento del Excel y apaga las copias.
+        /// <para>
+        /// El caso real (PO, 2026-10-29): el artista dejó dos «Casco certificado» del mismo FBX
+        /// en la mesa de la entrada, a 1,09 m uno del otro. <see cref="TagArt"/> agrupa las
+        /// piezas del mismo modelo que están en el mismo montón —medio metro— y éstas estaban
+        /// más lejos, así que las tomó por dos cosas distintas y etiquetó las dos. Resultado:
+        /// dos objetos pulsables para E01, uno sin <c>EntityId</c>, y el reporte contando la
+        /// misma elección dos veces según cuál se pulsara.
+        /// </para>
+        /// <para>
+        /// Se queda la copia <b>más cerca del ancla de su parada</b>, que es la que el jugador
+        /// mira de frente, y no la primera que aparezca: el orden de la jerarquía es alfabético
+        /// y elegiría al azar. La otra pierde la entidad y se apaga, porque la PO cerró que
+        /// sobre las mesas solo esté encendido lo del Excel.
+        /// </para>
+        /// </summary>
+        private static void UnSoloPulsablePorElemento()
+        {
+            var porElemento = new Dictionary<string, List<WorldObjectTaskEntity>>();
+            foreach (WorldObjectTaskEntity e in
+                     Object.FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (string.IsNullOrEmpty(e.ItemId))
+                    continue;
+                if (!porElemento.TryGetValue(e.ItemId, out List<WorldObjectTaskEntity> l))
+                    porElemento[e.ItemId] = l = new List<WorldObjectTaskEntity>();
+                l.Add(e);
+            }
+
+            int apagadas = 0;
+            foreach (KeyValuePair<string, List<WorldObjectTaskEntity>> par in porElemento)
+            {
+                if (par.Value.Count < 2)
+                    continue;
+
+                WorldObjectTaskEntity sequeda = MasCercaDeSuParada(par.Key, par.Value);
+                foreach (WorldObjectTaskEntity e in par.Value)
+                {
+                    if (e == sequeda)
+                        continue;
+                    GameObject go = e.gameObject;
+                    Debug.LogWarning($"[Module01] '{par.Key}' estaba pulsable en {par.Value.Count} objetos. "
+                                   + $"Se queda '{sequeda.name}' en {sequeda.transform.position.ToString("0.00")}; "
+                                   + $"se apaga la copia en {go.transform.position.ToString("0.00")}.");
+                    Undo.DestroyObjectImmediate(e);
+                    Undo.RecordObject(go, "apagar copia");
+                    go.SetActive(false);
+                    apagadas++;
+                }
+            }
+
+            if (apagadas > 0)
+                Debug.Log($"[Module01] Copias apagadas para que cada elemento se pulse una sola vez: {apagadas}.");
+        }
+
+        /// <summary>
+        /// De varias copias del mismo elemento, la que está más cerca del ancla de su parada. Si
+        /// la parada no tiene ancla todavía se queda la primera, que al menos es determinista.
+        /// </summary>
+        private static WorldObjectTaskEntity MasCercaDeSuParada(string itemId,
+                                                                List<WorldObjectTaskEntity> copias)
+        {
+            string stopId = Module01Library.StopOf(itemId);
+            Transform ancla = stopId == null ? null : Find("anchor_" + stopId)?.transform;
+            if (ancla == null)
+                return copias[0];
+
+            WorldObjectTaskEntity mejor = copias[0];
+            float menor = float.MaxValue;
+            foreach (WorldObjectTaskEntity e in copias)
+            {
+                float d = Vector3.SqrMagnitude(e.transform.position - ancla.position);
+                if (d >= menor)
+                    continue;
+                menor = d;
+                mejor = e;
+            }
+            return mejor;
+        }
+
 
         /// <summary>
         /// Lleva el objeto al ancho que declara la biblioteca, si lo declara.
@@ -65,8 +148,20 @@ namespace RideSafe.Module01.Editor
             if (rs.Length == 0)
                 return;
 
+            // `Renderer.bounds` de un objeto apagado no vale: devuelve lo que hubiera la última
+            // vez que se dibujó, o cero. Y aquí llegan apagados, así que medir sin encender
+            // dejaba sin corregir todo lo del artista —las gafas deportivas se quedaron en
+            // 1,69 m y la linterna en 1,17 (PO, 2026-10-29)—. Se enciende para medir y se
+            // devuelve como estaba.
+            bool estaba = go.activeSelf;
+            if (!estaba)
+                go.SetActive(true);
+
             Bounds b = rs[0].bounds;
             foreach (Renderer r in rs) b.Encapsulate(r.bounds);
+
+            if (!estaba)
+                go.SetActive(false);
 
             float medido = Mathf.Max(b.size.x, b.size.z);
             if (medido <= 0.0001f)
@@ -80,6 +175,20 @@ namespace RideSafe.Module01.Editor
             Debug.Log($"[Module01] {itemId}: medía {medido:F2} m de ancho y la biblioteca pide "
                       + $"{objetivo:F2}; escalado x{factor:F3}. Cuando 3D lo reexporte a escala "
                       + "real este factor será 1.");
+
+            // Escalar x8 o /8 no arregla un export malo: lo disimula. El ancho queda bien y las
+            // otras dos medidas se van con él, que es como la chaqueta impermeable acabó midiendo
+            // 10 cm de fondo (PO, 2026-10-29). Esto es para pedírselo al artista, no para callarlo.
+            if (factor > 3f || factor < 1f / 3f)
+                Debug.LogWarning($"[Module01] {itemId} llega a x{factor:F1} de su tamaño real: el FBX " +
+                                 "viene a una escala equivocada y lo estamos estirando. Pedir reexport a escala real.");
+
+            Vector3 s = go.transform.lossyScale;
+            float mayor = Mathf.Max(Mathf.Abs(s.x), Mathf.Abs(s.y), Mathf.Abs(s.z));
+            float menor = Mathf.Min(Mathf.Abs(s.x), Mathf.Abs(s.y), Mathf.Abs(s.z));
+            if (menor > 0.0001f && mayor / menor > 1.1f)
+                Debug.LogWarning($"[Module01] {itemId} tiene escala NO uniforme {s:F2}: está deformado " +
+                                 "y escalarlo por el ancho mantiene la deformación. Hay que arreglar el objeto.");
         }
 
         /// <summary>
@@ -160,13 +269,44 @@ namespace RideSafe.Module01.Editor
                 foreach (string extra in e.ExtraModels)
                     pieces.AddRange(art.FindAll(g => Module01ArtEpp.SourceOf(g) == extra));
 
+                // La semilla del montón NO puede ser «la primera por nombre»: para el casco eso
+                // era `Casco certificado dañado`, la variante del artista, y el bueno se quedaba
+                // fuera y apagado (PO, 2026-10-29). Se siembra por la pieza que ya es este
+                // elemento: la que lleva su entidad, o la que ya lleva su nombre del Excel.
+                List<GameObject> todas = pieces;
+                pieces = SoloLasDelMismoMonton(pieces, Semilla(pieces, e));
                 GameObject host = pieces[0];
+
+                // Lo que se quedó pegado en una pasada anterior y ya no es del montón: se suelta.
+                // Si no, nunca se separa —deja de ser raíz solo en apariencia— y la caja de la
+                // entidad sigue abarcando las dos copias.
+                foreach (GameObject suelta in todas)
+                {
+                    if (pieces.Contains(suelta) || suelta.transform.parent != host.transform)
+                        continue;
+                    Undo.SetTransformParent(suelta.transform, host.transform.parent, "Soltar pieza lejana");
+                    if (!suelta.activeSelf)
+                    {
+                        Undo.RecordObject(suelta, "Encender pieza suelta");
+                        suelta.SetActive(true);
+                    }
+                    Debug.Log($"[Module01] '{suelta.name}' sale de '{e.ItemId}': está a más de " +
+                              $"{MismoMonton:F2} m de sus compañeras.");
+                }
+
                 for (int i = 1; i < pieces.Count; i++)
                 {
                     foreach (WorldObjectTaskEntity stale in pieces[i].GetComponentsInChildren<WorldObjectTaskEntity>(true))
                         Undo.DestroyObjectImmediate(stale);
                     if (pieces[i].transform.parent != host.transform)
                         Undo.SetTransformParent(pieces[i].transform, host.transform, "Piezas de un EPP");
+                }
+
+                // El host tiene que estar encendido: es lo que el jugador ve y pulsa.
+                if (!host.activeSelf)
+                {
+                    Undo.RecordObject(host, "Encender el elemento");
+                    host.SetActive(true);
                 }
 
                 string id = $"module01.{Module01Library.StopOf(e.ItemId)}.{e.ItemId}";
@@ -203,6 +343,96 @@ namespace RideSafe.Module01.Editor
                 }
         }
 
+        /// <summary>
+        /// De todas las piezas que comparten modelo, se queda con las que forman <b>un montón</b>:
+        /// las que están a menos de <see cref="MismoMonton"/> de alguna de sus compañeras.
+        /// <para>
+        /// Agrupar por FBX es lo que hace que las dos Crocs, las dos coderas o los cuatro zapatos
+        /// sean <b>un</b> elemento, y eso está bien: un par se elige entero. Pero agrupaba sin
+        /// mirar la distancia, y el artista hace las variantes deterioradas a partir del mismo
+        /// FBX. Resultado (PO, 2026-10-29): el <c>Casco certificado dañado</c> colgaba dentro de
+        /// <c>E01_helmet_ok</c>, las <c>gafas_deportivas dañadas</c> dentro de P06, y un segundo
+        /// chaleco <b>a 9,74 m</b> dentro de O02 —por eso su caja medía 8,84 m y bloqueaba el rayo
+        /// desde medio garaje—. Dos peligros del Excel acabaron apagados y fuera de la partida.
+        /// </para>
+        /// <para>
+        /// Un par de zapatos está a 10-15 cm; una variante del mismo modelo, en otro mueble.
+        /// Medio metro separa las dos cosas sin ambigüedad. Lo que queda fuera del montón
+        /// <b>no se toca</b>: se queda donde el artista lo puso, y si es otro elemento del
+        /// catálogo su propia entrada lo recogerá.
+        /// </para>
+        /// </summary>
+        private static List<GameObject> SoloLasDelMismoMonton(List<GameObject> pieces, GameObject semilla)
+        {
+            if (pieces.Count <= 1)
+                return pieces;
+
+            var monton = new List<GameObject> { semilla };
+            bool crecio = true;
+            while (crecio)
+            {
+                crecio = false;
+                foreach (GameObject g in pieces)
+                {
+                    if (monton.Contains(g) || !TryBox(g, out Bounds b))
+                        continue;
+                    foreach (GameObject dentro in monton)
+                    {
+                        if (!TryBox(dentro, out Bounds otra))
+                            continue;
+                        if (Vector3.Distance(b.center, otra.center) > MismoMonton)
+                            continue;
+                        monton.Add(g);
+                        crecio = true;
+                        break;
+                    }
+                }
+            }
+
+            if (monton.Count != pieces.Count)
+                Debug.Log($"[Module01] '{pieces[0].name}': {pieces.Count - monton.Count} pieza(s) del mismo " +
+                          "modelo quedan fuera por estar lejos; no son parte de este elemento.");
+            return monton;
+        }
+
+        /// <summary>
+        /// Por qué pieza empieza el montón: la que <b>ya es</b> este elemento —lleva su entidad o
+        /// su nombre del Excel— y, si no hay ninguna, la primera. Empezar por la primera por
+        /// nombre metía al casco bueno dentro de la variante dañada del artista.
+        /// </summary>
+        private static GameObject Semilla(List<GameObject> pieces, Module01Library.Entry e)
+        {
+            string nombre = e.LibraryId + "_" + e.ItemId;
+            foreach (GameObject g in pieces)
+                if (g.name == nombre)
+                    return g;
+            foreach (GameObject g in pieces)
+            {
+                WorldObjectTaskEntity ent = g.GetComponent<WorldObjectTaskEntity>();
+                if (ent != null && ent.ItemId == e.ItemId)
+                    return g;
+            }
+            return pieces[0];
+        }
+
+        /// <summary>
+        /// Lo que separa «un par» de «otra copia»: un par de zapatos está a 10-15 cm; una variante
+        /// del mismo modelo, en otro mueble.
+        /// </summary>
+        private const float MismoMonton = 0.5f;
+
+        private static bool TryBox(GameObject go, out Bounds box)
+        {
+            box = default;
+            Renderer[] rs = go.GetComponentsInChildren<Renderer>(true);
+            if (rs.Length == 0)
+                return false;
+            box = rs[0].bounds;
+            foreach (Renderer r in rs)
+                box.Encapsulate(r.bounds);
+            return true;
+        }
+
         private static void Tag(GameObject go, string id, string itemId)
         {
             // El collider se reajusta SIEMPRE, no solo cuando falta: al recibir un garaje
@@ -233,6 +463,39 @@ namespace RideSafe.Module01.Editor
             WorldObjectTaskEntity entity = Module01EditorComponents.Ensure<WorldObjectTaskEntity>(go);
             entity.Configure(new EntityId(id), itemId);
             go.SetActive(wasActive);
+
+            NombrarComoElExcel(go, itemId);
+        }
+
+        /// <summary>
+        /// Renombra el objeto de la escena con el <b>ID del Excel</b> delante:
+        /// <c>H02_helmet_damaged</c>, <c>E01_helmet_ok</c>.
+        /// <para>
+        /// Pedido por la PO el 2026-10-29: «cambiar los nombres de la escena para que sean
+        /// iguales al Excel, para que sepas cuál es cuál». En la jerarquía había
+        /// <c>casco 1</c>, <c>bufanda 01</c>, <c>guayya dañado</c> —nombres del artista, con
+        /// erratas y sin relación con la hoja—, y hacía falta abrir la biblioteca para saber qué
+        /// era cada cosa. Con el ID delante, la jerarquía se ordena sola por categoría: primero
+        /// los E, luego los H, luego los O.
+        /// </para>
+        /// <para>
+        /// El <b>nombre del FBX no se toca</b>: ése es del artista y cambiarlo rompería su
+        /// siguiente entrega. Esto renombra la instancia en la escena de trabajo, nada más.
+        /// </para>
+        /// </summary>
+        private static void NombrarComoElExcel(GameObject go, string itemId)
+        {
+            string libraryId = null;
+            foreach (Module01Library.Entry e in Module01Library.All)
+                if (e.ItemId == itemId) { libraryId = e.LibraryId; break; }
+            if (string.IsNullOrEmpty(libraryId))
+                return;
+
+            string quiero = libraryId + "_" + itemId;
+            if (go.name == quiero)
+                return;
+            Undo.RecordObject(go, "Nombrar como el Excel");
+            go.name = quiero;
         }
 
         /// <summary>
@@ -456,11 +719,11 @@ namespace RideSafe.Module01.Editor
                 {
                     if (mf == hostPiece)
                         continue;
-                    if (UniformScale(mf.transform)) { Shape(mf); meshes++; }
+                    if (PuedeSerForma(mf)) { Shape(mf); meshes++; }
                     else { PieceBox(mf); pieceBoxes++; }
                 }
 
-                if (hostPiece.gameObject == e.gameObject && UniformScale(hostPiece.transform))
+                if (hostPiece.gameObject == e.gameObject && PuedeSerForma(hostPiece))
                 {
                     Shape(hostPiece);
                     meshes++;
@@ -477,6 +740,39 @@ namespace RideSafe.Module01.Editor
 
             Debug.Log($"[Module01] Clic por la forma: {needShape.Count} EPP ({meshes} piezas por su malla, "
                       + $"{pieceBoxes} por su propia caja); {entities.Count - needShape.Count} pequeños y sueltos con su caja.");
+        }
+
+        /// <summary>
+        /// Si una pieza puede llevar el clic por su <b>forma</b>: escala uniforme —con escala no
+        /// uniforme PhysX no cocina la malla en el build— y malla <b>legible</b>.
+        /// <para>
+        /// Lo de legible faltaba, y costó la suite entera de PlayMode: un <c>MeshCollider</c> no
+        /// convexo necesita leer los vértices, y <c>Casco certificado.fbx</c> viene sin
+        /// «Read/Write Enabled». En el editor no se nota; en Play lanza
+        /// <i>«Not allowed to access vertices on mesh»</i> en el primer fotograma y se lleva por
+        /// delante el recorrido (PO, 2026-10-29: «no sirve el botón de la estación anterior» —
+        /// no era el botón, era esto).
+        /// </para>
+        /// <para>
+        /// Sin malla legible se cae a la caja de la pieza, que es peor de precisión pero
+        /// funciona. Marcar los FBX como legibles costaría el doble de memoria por malla en
+        /// Quest, así que la caja es el canje correcto mientras no haga falta más.
+        /// </para>
+        /// </summary>
+        private static bool PuedeSerForma(MeshFilter piece)
+        {
+            if (!UniformScale(piece.transform))
+                return false;
+            if (piece.sharedMesh == null)
+                return false;
+            if (!piece.sharedMesh.isReadable)
+            {
+                Debug.LogWarning($"[Module01] La malla '{piece.sharedMesh.name}' no es legible: " +
+                                 $"'{piece.name}' se pulsa por su caja. Para pulsar por la forma, " +
+                                 "marcar «Read/Write Enabled» en su FBX.");
+                return false;
+            }
+            return true;
         }
 
         /// <summary>La malla misma, para las piezas con escala uniforme (ver <see cref="FitClickShapes"/>).</summary>

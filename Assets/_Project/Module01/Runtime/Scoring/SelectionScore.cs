@@ -53,17 +53,25 @@ namespace RideSafe.Module01
     /// <c>RideSafe_VR_equipment_image_reference_library_2026-10-19.xlsx</c>, pestaña «Sistema de
     /// puntuación». Es la hoja que entregó el cliente y se sigue al pie de la letra.
     /// <list type="bullet">
-    /// <item><c>essential_score</c> = REDONDEAR(70 × peso esencial seleccionado / peso esencial
-    /// aplicable; 1), de 0 a 70;</item>
-    /// <item><c>hazard_score</c> = MAX(0; 30 − deducción por grupos de peligro), de 0 a 30;</item>
+    /// <item><c>essential_score</c> = REDONDEAR(100 × peso esencial seleccionado / peso esencial
+    /// aplicable; 1), de 0 a 100;</item>
+    /// <item><c>hazard_score</c> = −deducción por grupos de peligro, negativo o cero;</item>
     /// <item><c>safety_score</c> = los dos sumados, de 0 a 100;</item>
     /// <item><c>can_advance_to_preop</c> = faltas esenciales &lt; 2 Y peligros &lt; 2.</item>
     /// </list>
     /// <para>
+    /// <b>El bloque esencial vale 100 y los peligros muerden de ahí</b> (PO, 2026-10-29: «todos
+    /// los esenciales deberían dar 100»). La hoja los repartía en dos bloques, 70 + 30, y
+    /// llevárselo todo bien daba 100 por la suma de los dos; con 100 + deducción la cifra
+    /// perfecta es la misma pero quien no se lleva nada saca 0 en vez de los 30 que regalaba
+    /// no caer en ninguna trampa.
+    /// </para>
+    /// <para>
     /// <b>La nota y la decisión son cosas distintas, y la hoja las separa a propósito.</b> La
     /// nota es diagnóstico; quien avanza lo deciden los dos contadores. Divergen de verdad: un
     /// solo casco roto deja la nota en 70 —falla el corte de 75— pero es un único peligro, así
-    /// que la hoja manda avanzar con feedback. No es una incoherencia, es que una cosa mide
+    /// que la hoja manda avanzar con feedback. Esa divergencia sobrevive al cambio de bloques:
+    /// 100 − 30 sigue siendo 70. No es una incoherencia, es que una cosa mide
     /// cuánto sabes y la otra si hay que repetir.
     /// </para>
     /// <para>
@@ -88,18 +96,21 @@ namespace RideSafe.Module01
     public readonly struct SelectionScore
     {
         /// <summary>Lo que vale el bloque esencial cuando se lleva entero. De la hoja.</summary>
-        public const float EssentialBlock = 70f;
+        public const float EssentialBlock = 100f;
 
-        /// <summary>Lo que vale el bloque de riesgo cuando no se cae en nada. De la hoja.</summary>
+        /// <summary>
+        /// Lo que valía el bloque de riesgo en la hoja original. Ya no se suma a la nota —los
+        /// peligros restan— pero sigue siendo el techo de deducción que la hoja documenta.
+        /// </summary>
         public const float HazardBlock = 30f;
 
         /// <summary>Tope del bono de preparación. De la hoja: MIN(15; …).</summary>
         public const float BonusCap = 15f;
 
-        /// <summary><c>essential_score</c>, de 0 a 70.</summary>
+        /// <summary><c>essential_score</c>, de 0 a 100.</summary>
         public float EssentialScore { get; }
 
-        /// <summary><c>hazard_score</c>, de 0 a 30.</summary>
+        /// <summary><c>hazard_score</c>: lo que muerden los peligros. Negativo o cero.</summary>
         public float HazardScore { get; }
 
         /// <summary><c>safety_score</c>: los dos bloques sumados, de 0 a 100.</summary>
@@ -276,7 +287,7 @@ namespace RideSafe.Module01
             // Nada que juzgar es un error de datos, no un fallo del aprendiz: no ha hecho nada
             // mal, así que no se le suspende por ello. El bono sí se conserva.
             if (judged == 0)
-                return new SelectionScore(EssentialBlock, HazardBlock, 0f, 0f, 0f, bonusEarned,
+                return new SelectionScore(EssentialBlock, 0f, 0f, 0f, 0f, bonusEarned,
                                           0, 0, 0, 0, PerformanceRank.Knowledgeable);
 
             float deduction = 0f;
@@ -313,11 +324,26 @@ namespace RideSafe.Module01
         }
 
         /// <summary>
-        /// Junta las notas de las dos secciones en una sola.
+        /// La nota final del módulo: el <b>promedio</b> de la sección de EPP y la del vehículo
+        /// (PO, 2026-10-29).
         /// <para>
-        /// Se suman los <b>pesos</b> y las deducciones, no se promedian los porcentajes: las dos
-        /// secciones tienen distinto número de elementos, así que promediar le daría a cada
-        /// punto del vehículo más peso que a un EPP sin que nadie lo haya decidido.
+        /// Promedio y no suma de pesos como <see cref="Combine"/>, porque las dos secciones ya
+        /// vienen normalizadas sobre 100 y la PO las quiere valer lo mismo: el equipo que llevas
+        /// pesa tanto como el estado del vehículo. Con <c>Combine</c> los cinco puntos del
+        /// vehículo —peso 1 cada uno— quedaban enterrados bajo los 95 puntos de peso de los
+        /// esenciales.
+        /// </para>
+        /// </summary>
+        public static FinalScore Average(SelectionScore epp, SelectionScore vehiculo) =>
+            new FinalScore(epp, vehiculo);
+
+        /// <summary>
+        /// Junta las notas de las dos secciones sumando <b>pesos</b> y deducciones.
+        /// <para>
+        /// <b>Ya no es la nota del módulo</b>: ésa es <see cref="Average"/>, por decisión de la
+        /// PO del 2026-10-29. Se conserva porque sigue siendo la única forma de puntuar las dos
+        /// secciones como un único examen —cada elemento pesando lo suyo— y eso es lo que haría
+        /// falta si algún día se quiere una nota global por peso y no por sección.
         /// </para>
         /// <para>
         /// Sumar las deducciones sin volver a resolver los grupos vale porque <b>la sección del
@@ -360,16 +386,34 @@ namespace RideSafe.Module01
                 ? Round1(EssentialBlock * essentialEarned / essentialApplicable)
                 : EssentialBlock;
 
-            float hazard = HazardBlock - hazardDeduction;
-            if (hazard < 0f) hazard = 0f;
+            // Los peligros RESTAN de la nota, no ocupan un bloque propio (PO, 2026-10-29:
+            // «todos los esenciales deberían dar 100»). Antes eran dos bloques, 70 + 30, y
+            // llevárselo todo bien daba 100 por la suma; ahora los esenciales solos dan 100 y
+            // cada peligro muerde de ahí. Nunca por debajo de cero: un 0 ya es el suelo.
+            float hazard = -hazardDeduction;
+            float total = essential + hazard;
+            if (total < 0f) { total = 0f; hazard = -essential; }
 
             return new SelectionScore(essential, hazard, essentialEarned, essentialApplicable,
                                       hazardDeduction, bonusEarned, essentialsMissing, hazardsTaken,
-                                      judged, correct, RankOf(essential + hazard));
+                                      judged, correct, RankOf(total));
         }
 
-        /// <summary>REDONDEAR(x; 1) de la hoja.</summary>
-        private static float Round1(float value) => Mathf.Round(value * 10f) / 10f;
+        /// <summary>
+        /// REDONDEAR(x; 1) de la hoja, que sube el medio: REDONDEAR(59,25;1) = 59,3.
+        /// <para>
+        /// <b>No es <c>Mathf.Round</c>.</b> Ese redondea al par —59,25 le sale 59,2 y 59,35 le
+        /// sale 59,4— y la hoja no hace eso. Solo se notaría en los valores que caen justo en
+        /// el medio, pero uno de ésos es el borde del módulo: con un promedio de 70,05, al par
+        /// da 70,0 y manda repetir, y como la hoja da 70,1 y deja pasar.
+        /// </para>
+        /// </summary>
+        public static float Round1(float value)
+        {
+            float escalado = Mathf.Abs(value) * 10f;
+            float redondeado = Mathf.Floor(escalado + .5f) / 10f;
+            return value < 0f ? -redondeado : redondeado;
+        }
 
         /// <summary>
         /// El rango a partir de la nota. Se compara contra el valor <b>sin redondear a entero</b>:
@@ -392,5 +436,46 @@ namespace RideSafe.Module01
                     return true;
             return false;
         }
+    }
+
+    /// <summary>
+    /// La nota con la que se cierra el módulo: las dos secciones y su promedio.
+    /// <para>
+    /// Regla de la PO (2026-10-29): <b>con 70 o menos, repite el módulo entero</b> y no pasa al
+    /// siguiente. Es distinto de los dos checkpoints de sección —que repiten solo su parte— y es
+    /// la última puerta: aquí ya no se repite un trozo, se repite todo.
+    /// </para>
+    /// </summary>
+    public readonly struct FinalScore
+    {
+        /// <summary>Lo mínimo para pasar al módulo siguiente. «Más de 70», no «70 o más».</summary>
+        public const float PassMark = 70f;
+
+        public FinalScore(SelectionScore epp, SelectionScore vehicle)
+        {
+            Epp = epp;
+            Vehicle = vehicle;
+            Average = SelectionScore.Round1((epp.SafetyScore + vehicle.SafetyScore) * .5f);
+        }
+
+        /// <summary>La nota de la selección de EPP, sobre 100.</summary>
+        public SelectionScore Epp { get; }
+
+        /// <summary>La nota de la revisión del vehículo, sobre 100.</summary>
+        public SelectionScore Vehicle { get; }
+
+        /// <summary>El promedio de las dos, sobre 100.</summary>
+        public float Average { get; }
+
+        public int Percent => Mathf.RoundToInt(Average);
+
+        /// <summary>El rango que se enseña en el panel final.</summary>
+        public PerformanceRank Rank => SelectionScore.RankOf(Average);
+
+        /// <summary>Con 70 o menos no pasa: repite el módulo entero.</summary>
+        public bool MustRepeatModule => Average <= PassMark;
+
+        /// <summary>Lo contrario: puede seguir al módulo 2.</summary>
+        public bool CanContinue => !MustRepeatModule;
     }
 }

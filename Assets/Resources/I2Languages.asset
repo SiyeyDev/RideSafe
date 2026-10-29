@@ -842,8 +842,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Loose clothing or shoelaces
-      - Ropa o cordones sueltos
+      - Loose scarf
+      - Bufanda suelta
       Flags: 0000
       Languages_Touch: []
     - Term: M1/KeepChoosing
@@ -1199,15 +1199,15 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Loose clothing and shoelaces reach the chain and spokes.
-      - La ropa y los cordones sueltos llegan a la cadena y a los rayos.
+      - Loose clothing reaches the chain and the spokes.
+      - La ropa suelta llega a la cadena y a los rayos.
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_ElbowPads_Risk
       TermType: 0
       Description: 
       Languages:
-      - The elbow pads cushion the first point of contact in a fall.
+      - Elbow pads cushion the first point of contact in a fall.
       - "Las coderas amortiguan el primer punto de contacto en una ca\xEDda."
       Flags: 0000
       Languages_Touch: []
@@ -1215,7 +1215,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - The knee pads protect the joint against the ground and the frame.
+      - Knee pads protect the joint against the ground and the frame.
       - "Las rodilleras protegen la articulaci\xF3n contra el suelo y el marco."
       Flags: 0000
       Languages_Touch: []
@@ -1247,7 +1247,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - The wide leg strap can be hooked onto the chain or wheel and locked in place.
+      - A wide leg can catch in the chain or the wheel and lock it.
       - La pernera ancha se puede enganchar en la cadena o en la rueda y bloquearla.
       Flags: 0000
       Languages_Touch: []
@@ -1255,8 +1255,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - The tracksuit bottoms don't get caught, but they don't protect the skin in
-        a fall.
+      - Sport trousers do not catch, but they do not protect the skin in a fall.
       - "El pantal\xF3n deportivo no se engancha, pero no protege la piel en una
         ca\xEDda."
       Flags: 0000
@@ -1811,6 +1810,463 @@ MonoBehaviour:
       Languages:
       - A cracked deck or loose bolts can give way under your weight.
       - Una plataforma agrietada o con tornillos flojos puede ceder bajo tu peso.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Stop_Entrance
+      TermType: 0
+      Description: 
+      Languages:
+      - Entrance table
+      - Mesa de la entrada
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Stop_Middle
+      TermType: 0
+      Description: 
+      Languages:
+      - Middle table
+      - Mesa del centro
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Stop_Back
+      TermType: 0
+      Description: 
+      Languages:
+      - Back table
+      - Mesa del fondo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Stop_Clothes
+      TermType: 0
+      Description: 
+      Languages:
+      - Clothing counter
+      - Mostrador de la ropa
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Stop_Tools
+      TermType: 0
+      Description: 
+      Languages:
+      - Tool bench
+      - Mesa de herramientas
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_ElbowPads
+      TermType: 0
+      Description: 
+      Languages:
+      - Elbow pads
+      - Coderas
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_KneePads
+      TermType: 0
+      Description: 
+      Languages:
+      - Knee pads
+      - Rodilleras
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_Flashlight
+      TermType: 0
+      Description: 
+      Languages:
+      - Hand torch
+      - Linterna de mano
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_Flashlight_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - A torch in your hand is no substitute for the vehicle's light.
+      - "Una linterna en la mano no sustituye a la luz del veh\xEDculo."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_TrousersStanding
+      TermType: 0
+      Description: 
+      Languages:
+      - Fitted trousers
+      - "Pantal\xF3n ajustado"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_TrousersStanding_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_Snorkel
+      TermType: 0
+      Description: 
+      Languages:
+      - Snorkel mask
+      - "M\xE1scara de snorkel"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_Snorkel_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - 'It is not riding gear: it does not change the result.'
+      - 'No es equipo para circular: no cambia el resultado.'
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_SportGlasses
+      TermType: 0
+      Description: 
+      Languages:
+      - Sport glasses
+      - Gafas deportivas
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_SportGlasses_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - They do not change the result.
+      - No cambian el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_WorkVest
+      TermType: 0
+      Description: 
+      Languages:
+      - Work vest
+      - Chaleco de trabajo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_WorkVest_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_WorkGoggles
+      TermType: 0
+      Description: 
+      Languages:
+      - Work goggles
+      - Gafas de trabajo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_WorkGoggles_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - They do not change the result.
+      - No cambian el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_SpareRedLight
+      TermType: 0
+      Description: 
+      Languages:
+      - Spare red light
+      - Luz roja de repuesto
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_SpareRedLight_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - A spare light on the table does not light the vehicle.
+      - "Una luz de repuesto en la mesa no ilumina el veh\xEDculo."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_LoosePadlock
+      TermType: 0
+      Description: 
+      Languages:
+      - Loose padlock
+      - Candado suelto
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_LoosePadlock_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - 'Without a mount there is nowhere safe to carry it: it does not change the
+        result.'
+      - "Sin soporte no hay d\xF3nde llevarlo seguro: no cambia el resultado."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_CableLock
+      TermType: 0
+      Description: 
+      Languages:
+      - Cable lock
+      - Guaya con candado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_CableLock_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_DamagedCableLock
+      TermType: 0
+      Description: 
+      Languages:
+      - Damaged cable lock
+      - "Guaya da\xF1ada"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_DamagedCableLock_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - 'A broken cable does not secure the vehicle: it does not change the result.'
+      - "Una guaya rota no asegura el veh\xEDculo: no cambia el resultado."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_WorkGloves
+      TermType: 0
+      Description: 
+      Languages:
+      - Work gloves
+      - Guantes de trabajo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_WorkGloves_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - They do not change the result.
+      - No cambian el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_LatexGloves
+      TermType: 0
+      Description: 
+      Languages:
+      - Latex gloves
+      - "Guantes de l\xE1tex"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_LatexGloves_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - 'They give no protection in a fall: they do not change the result.'
+      - "No protegen en una ca\xEDda: no cambian el resultado."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_FabricGloves
+      TermType: 0
+      Description: 
+      Languages:
+      - Fabric gloves
+      - Guantes de tela
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_FabricGloves_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - They do not change the result.
+      - No cambian el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_FaceMask
+      TermType: 0
+      Description: 
+      Languages:
+      - Face mask
+      - Tapabocas
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_FaceMask_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_FoldedJeans
+      TermType: 0
+      Description: 
+      Languages:
+      - Folded fitted jeans
+      - Jean ajustado doblado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_FoldedJeans_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_TrousersTech
+      TermType: 0
+      Description: 
+      Languages:
+      - Sport trousers
+      - "Pantal\xF3n deportivo"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_Jeans
+      TermType: 0
+      Description: 
+      Languages:
+      - Fitted jeans
+      - Jean ajustado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_Jeans_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_LowRiseTrousers
+      TermType: 0
+      Description: 
+      Languages:
+      - Low-rise trousers
+      - "Pantal\xF3n de tiro bajo"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_LowRiseTrousers_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - It does not change the result.
+      - No cambia el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_Sneakers
+      TermType: 0
+      Description: 
+      Languages:
+      - Sports trainers
+      - Tenis deportivos
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_Sneakers_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - They do not change the result.
+      - No cambian el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_Boots
+      TermType: 0
+      Description: 
+      Languages:
+      - Red boots
+      - Botas rojas
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_Boots_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - They do not change the result.
+      - No cambian el resultado.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_ShowerSlippers
+      TermType: 0
+      Description: 
+      Languages:
+      - Shower slippers
+      - "Chanclas de ba\xF1o"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_ShowerSlippers_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - With no heel or strap, the foot slips off the pedal.
+      - "Sin tal\xF3n ni sujeci\xF3n, el pie se sale del pedal."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_NeckScarf
+      TermType: 0
+      Description: 
+      Languages:
+      - Loose neckerchief
+      - "Pa\xF1uelo suelto"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_NeckScarf_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - A loose neckerchief can catch in the chain or the wheel.
+      - "Un pa\xF1uelo suelto se puede enganchar en la cadena o en la rueda."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_TrousersLoose
+      TermType: 0
+      Description: 
+      Languages:
+      - Loose trousers
+      - "Pantal\xF3n ancho"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_WideTrousers
+      TermType: 0
+      Description: 
+      Languages:
+      - Very wide trousers
+      - "Pantal\xF3n muy ancho"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_WideTrousers_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - A wide leg can catch in the chain or the wheel and lock it.
+      - La pernera ancha se puede enganchar en la cadena o en la rueda y bloquearla.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_LooseLaces
+      TermType: 0
+      Description: 
+      Languages:
+      - Trainers with loose laces
+      - Tenis con cordones sueltos
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_LooseLaces_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - A loose lace tangles in the chain or the pedal.
+      - "Un cord\xF3n suelto se enreda en la cadena o en el pedal."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_OldHeadphones
+      TermType: 0
+      Description: 
+      Languages:
+      - On-ear headphones
+      - "Aud\xEDfonos de casco"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Item_OldHeadphones_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - 'They cover both ears: you cannot hear the traffic.'
+      - "Tapan los dos o\xEDdos: no oyes el tr\xE1fico."
       Flags: 0000
       Languages_Touch: []
     CaseInsensitiveTerms: 0

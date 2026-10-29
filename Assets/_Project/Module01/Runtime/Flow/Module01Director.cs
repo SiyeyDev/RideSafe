@@ -64,8 +64,11 @@ namespace RideSafe.Module01
         public SelectionScore PersonalScore { get; private set; }
         public SelectionScore VehicleScore { get; private set; }
 
-        /// <summary>La del módulo entero, sumando aciertos y juzgables de las dos secciones.</summary>
-        public SelectionScore FinalScore => SelectionScore.Combine(PersonalScore, VehicleScore);
+        /// <summary>
+        /// La nota con la que se cierra el módulo: el <b>promedio</b> de las dos secciones, cada
+        /// una sobre 100 (PO, 2026-10-29). Con 70 o menos repite el módulo entero.
+        /// </summary>
+        public FinalScore ModuleScore => SelectionScore.Average(PersonalScore, VehicleScore);
 
         private readonly List<ZoneSO> _personalZones = new List<ZoneSO>();
         private readonly List<ZoneSO> _vehicleZones = new List<ZoneSO>();

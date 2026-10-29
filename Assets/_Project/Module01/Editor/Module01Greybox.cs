@@ -198,6 +198,16 @@ namespace RideSafe.Module01.Editor
                     Debug.LogError($"[Module01] {entry.LibraryId}: no carga {entry.Model}");
 
                 SetDisplayPrefab(asset, display);
+
+                // El modelo del pedestal, cuando el de la mesa no sirve: el pantalón doblado se
+                // exhibe abierto (PO, 2026-10-29).
+                GameObject inspect = string.IsNullOrEmpty(entry.InspectModel)
+                    ? null
+                    : AssetDatabase.LoadAssetAtPath<GameObject>(entry.InspectModel);
+                if (!string.IsNullOrEmpty(entry.InspectModel) && inspect == null)
+                    Debug.LogError($"[Module01] {entry.LibraryId}: no carga el modelo de inspección {entry.InspectModel}");
+                SetInspectPrefab(asset, inspect);
+
                 EditorUtility.SetDirty(asset);
                 map[id] = asset;
             }
@@ -336,6 +346,13 @@ namespace RideSafe.Module01.Editor
         {
             SerializedObject so = new SerializedObject(item);
             so.FindProperty("_displayPrefab").objectReferenceValue = prefab;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetInspectPrefab(SafetyItemSO item, GameObject prefab)
+        {
+            SerializedObject so = new SerializedObject(item);
+            so.FindProperty("_inspectPrefab").objectReferenceValue = prefab;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 

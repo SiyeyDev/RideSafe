@@ -25,16 +25,29 @@ namespace RideSafe.Module01
         public IReadOnlyList<Surface> Surfaces { get; }
     }
 
-    /// <summary>Un mueble del garaje y la altura de su tapa.</summary>
+    /// <summary>
+    /// Un <b>nivel</b> de un mueble del garaje: su altura y el trozo de planta que de verdad es
+    /// tapa.
+    /// <para>
+    /// Un mueble puede tener varios: la mesa de la entrada tiene la tapa a 1,01 y un estante a
+    /// 1,75, y el banco de herramientas tiene la tapa a 0,89 y dos entrepaños debajo. Se declaran
+    /// como <see cref="Surface"/> distintas con el <b>mismo</b> <see cref="Name"/>: el mueble es
+    /// un único renderer sin hijos, así que no hay otro objeto al que apuntar.
+    /// </para>
+    /// </summary>
     public readonly struct Surface
     {
         public Surface(string name, float worktopHeight, float usableFrom = float.NegativeInfinity,
-                       float usableTo = float.PositiveInfinity)
+                       float usableTo = float.PositiveInfinity,
+                       float depthFrom = float.NegativeInfinity,
+                       float depthTo = float.PositiveInfinity)
         {
             Name = name;
             WorktopHeight = worktopHeight;
             UsableFrom = usableFrom;
             UsableTo = usableTo;
+            DepthFrom = depthFrom;
+            DepthTo = depthTo;
         }
 
         /// <summary>
@@ -47,15 +60,31 @@ namespace RideSafe.Module01
 
         public float UsableTo { get; }
 
-        /// <summary>La caja del mueble recortada a su tramo de tapa.</summary>
+        /// <summary>
+        /// Lo mismo para el lado <b>corto</b>, el fondo. Sin declarar, todo el fondo del mueble.
+        /// <para>
+        /// Hace falta para los estantes, que casi nunca son tan hondos como la tapa: el de la
+        /// mesa de la entrada mide 0,38 m contra los 0,75 de la tapa, y sin recortar el reparto
+        /// creía tener 0,75 y dejaba las piezas hasta 0,37 m por delante del borde, en el aire.
+        /// </para>
+        /// </summary>
+        public float DepthFrom { get; }
+
+        public float DepthTo { get; }
+
+        /// <summary>La caja del mueble recortada a la planta de ESTE nivel.</summary>
         public Bounds Clip(Bounds furniture)
         {
+            // El eje largo es el del mueble entero, no el del nivel: un estante estrecho dentro
+            // de una mesa larga sigue siendo «largo en Z», aunque su propia caja ya no lo diga.
             bool alongX = furniture.size.x >= furniture.size.z;
             float min = Mathf.Max(alongX ? furniture.min.x : furniture.min.z, UsableFrom);
             float max = Mathf.Min(alongX ? furniture.max.x : furniture.max.z, UsableTo);
+            float fondoMin = Mathf.Max(alongX ? furniture.min.z : furniture.min.x, DepthFrom);
+            float fondoMax = Mathf.Min(alongX ? furniture.max.z : furniture.max.x, DepthTo);
             Vector3 lo = furniture.min, hi = furniture.max;
-            if (alongX) { lo.x = min; hi.x = max; }
-            else { lo.z = min; hi.z = max; }
+            if (alongX) { lo.x = min; hi.x = max; lo.z = fondoMin; hi.z = fondoMax; }
+            else { lo.z = min; hi.z = max; lo.x = fondoMin; hi.x = fondoMax; }
             Bounds clipped = new Bounds();
             clipped.SetMinMax(lo, hi);
             return clipped;
@@ -105,13 +134,37 @@ namespace RideSafe.Module01
         /// </summary>
         private static readonly Station[] Table =
         {
-            new Station("table_entrance", new Surface("mesa", 1.02f)),
+            // Dos niveles, medidos el 2026-10-29 recorriendo los triángulos de la malla con
+            // «Read/Write Enabled» puesto un momento y quitado después: caras horizontales a
+            // y=1,010 (2,78 m², x[3,82..4,57], z[2,30..6,01]) y a y=1,750 (1,39 m²,
+            // x[4,19..4,57], z[2,30..6,01]). El de arriba es el estante que la PO venía usando
+            // —"ese me servía super bien"— y que el reparto nunca vio porque no estaba
+            // declarado: lo que ella puso ahí acababa bajando a la tapa.
+            // Hay dos niveles más abajo (0,850 y 0,190) que no se declaran: quedan por debajo
+            // de la cintura y el recorrido mira la mesa de frente, no desde arriba.
+            new Station("table_entrance",
+                        new Surface("mesa", 1.01f, depthFrom: 3.82f, depthTo: 4.57f),
+                        new Surface("mesa", 1.75f, depthFrom: 4.19f, depthTo: 4.57f)),
             new Station("table_middle", new Surface("otra mesa", 1.04f)),
             new Station("table_back", new Surface("mesa nueva", 1.02f)),
-            // cabinet (1) lleva el armario alto del rincón (x -4,14 a -2,89, medido en su malla: las
-            // manillas de sus dos puertas caen en -3,60 y -3,41); la tapa empieza donde acaba él.
-            new Station("counter_clothes", new Surface("cabinet (1)", 1.08f, usableFrom: -2.89f),
+            // cabinet (1) lleva el armario alto del rincón, macizo de suelo a techo. Dónde acaba
+            // se midió otra vez el 2026-10-29, recorriendo los vértices de su malla por franjas
+            // de 25 cm: solo X[-3,95 , -3,70] no tiene tapa; desde -3,45 la hay, a cota 1,02.
+            // Estaba declarado en -2,89 y eso tiraba **0,56 m** de mostrador bueno —casi un
+            // octavo del total de la parada—, que es el hueco vacío que la PO señaló en la
+            // captura. El dato viejo venía de las manillas de las puertas, no de la tapa.
+            new Station("counter_clothes", new Surface("cabinet (1)", 1.08f, usableFrom: -3.45f),
                         new Surface("cabinetmid 1", 1.08f)),
+            // La mesa de herramientas vuelve a ser parada (PO, 2026-10-29): con 61 elementos en
+            // cuatro muebles la mesa del fondo iba al 94 % de su tapa, y esta estaba vacía. No
+            // lleva alacena encima ni panel detrás, al contrario que las otras, cuya caja sube
+            // hasta 2,43.
+            // La tapa estaba declarada en 0,93, que es la cota más ALTA de su caja; midiendo las
+            // caras horizontales sale 0,890 (2,75 m², x[-4,83..-3,96], z[0,77..3,91]), o sea que
+            // todo lo de esta mesa flotaba 4 cm. Tiene además dos entrepaños, a 0,570 y a 0,320,
+            // que de momento no se declaran: en el de abajo están las tres reglas que mueve
+            // `Module01ArtEpp.Moves` a y=0,30 y chocarían.
+            new Station("table_tools", new Surface("metal table", 0.89f)),
         };
 
         /// <summary>Todas las estaciones, en el orden del recorrido.</summary>

@@ -25,3 +25,4 @@ MonoBehaviour:
   _bonusCondition: 
   _onlyForVehicle: escooter
   _substitutesFor: 
+  _inspectPrefab: {fileID: 0}

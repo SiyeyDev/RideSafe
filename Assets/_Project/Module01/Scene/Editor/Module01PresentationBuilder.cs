@@ -221,6 +221,29 @@ namespace RideSafe.Module01.Editor
             //
             // Comprobado el angulo: el borde inferior de la barra cae a 23.6 grados por debajo
             // del centro, dentro de los 30 que da el campo visual.
+            // Panel de la NOTA FINAL (PO, 2026-10-29). Enseña las dos secciones, su promedio y
+            // el veredicto: continuar o repetir el módulo entero. Va encima de la barra de
+            // botones y con el mismo kit del atlas que el resto —`Panel_Modal_Light`, H1 para el
+            // número grande, Body para las dos líneas de detalle—, porque un panel plano con la
+            // fuente por defecto se nota a la legua al lado de los demás.
+            // −196 y no −246: a −246 el borde de abajo del panel bajaba hasta y=0,749 en mundo
+            // y el techo de ContinueModule2Button llega a 0,789, asi que el panel se comia el
+            // clic del boton y la pantalla final parecia colgada. Lo mide
+            // FinalScorePanelSceneTests.El_panel_no_tapa_los_botones_de_continuar_y_repetir.
+            var score=Panel("FinalScore",hud.transform,new Vector2(0,-196),new Vector2(660,196),"Panel_Modal_Light",2.4f);
+            Text("Title",score,new Vector2(0,72),new Vector2(600,40),"M1/FinalScore_Title",_kit.H2.With(22f));
+            // El promedio, en grande: es el número que decide si pasa o repite.
+            Set(exp,"_finalAverageText",
+                Text("Average",score,new Vector2(0,20),new Vector2(600,64),"",_kit.H1.With(46f)));
+            // Las dos secciones, para que se vea de dónde sale el promedio.
+            Set(exp,"_finalSectionsText",
+                Text("Sections",score,new Vector2(0,-30),new Vector2(600,34),"",_kit.Body.With(17f)));
+            // El veredicto en palabras, no solo el número.
+            Set(exp,"_finalVerdictText",
+                Text("Verdict",score,new Vector2(0,-68),new Vector2(600,40),"",_kit.Sub.With(18f)));
+            Set(exp,"_finalScorePanel",score.gameObject);
+            score.gameObject.SetActive(false);
+
             var result=Panel("FinalResult",hud.transform,new Vector2(0,-358),new Vector2(660,72),"Panel_Modal_Light",2.4f);
             Button("ContinueModule2Button",result,new Vector2(-165,0),new Vector2(300,48),"M1/ContinueModule2",true,16f);
             Button("RepeatModuleButton",result,new Vector2(170,0),new Vector2(280,48),"M1/RepeatModule",false,16f);

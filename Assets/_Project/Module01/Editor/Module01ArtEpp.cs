@@ -52,7 +52,7 @@ namespace RideSafe.Module01.Editor
             var epp = new List<GameObject>();
             foreach (GameObject root in art.GetRootGameObjects())
             {
-                if (root.name == EppRoot && !PrefabUtility.IsAnyPrefabInstanceRoot(root))
+                if (IsEppContainer(root, models))
                 {
                     foreach (Transform child in root.transform)
                         epp.Add(child.gameObject);
@@ -63,6 +63,41 @@ namespace RideSafe.Module01.Editor
                     epp.Add(root);
             }
             return epp;
+        }
+
+        /// <summary>
+        /// Si un objeto raíz de la escena de arte es una <b>caja de EPP</b>: un contenedor cuyos
+        /// hijos son, en su mayoría, modelos que declara la biblioteca.
+        /// <para>
+        /// Hasta el 2026-10-29 esto era «se llama <c>epps</c>», y por eso nos dejábamos cuarenta
+        /// objetos del artista. Él reorganizó su escena por la categoría del Excel —
+        /// <c>EPPS_Esencial</c>, <c>EPPS_Recomendada condicional</c>, <c>Peligrosa visible</c>— y
+        /// esos grupos no se llaman <c>epps</c>. El síntoma que lo delató: las chanclas y las
+        /// Crocs salían <b>desparejadas</b>. Él puso los dos pies; nosotros no recogíamos
+        /// ninguno y caíamos a instanciar una sola copia del FBX (PO, con captura).
+        /// </para>
+        /// <para>
+        /// La regla es por contenido y no por nombre, para que el próximo grupo que se invente
+        /// entre solo. Se exige mayoría para no tragarse <c>interior garage</c> ni
+        /// <c>enviroment_decoration</c>, que son mobiliario y decorado con algún EPP suelto
+        /// dentro; de ésos se sigue sacando pieza a pieza por su malla.
+        /// </para>
+        /// </summary>
+        private static bool IsEppContainer(GameObject root, HashSet<string> models)
+        {
+            if (PrefabUtility.IsAnyPrefabInstanceRoot(root) || root.transform.childCount == 0)
+                return false;
+            if (root.GetComponent<Renderer>() != null)
+                return false;   // tiene malla propia: es un objeto, no una caja
+
+            int declarados = 0;
+            foreach (Transform child in root.transform)
+            {
+                string source = SourceOf(child.gameObject);
+                if (models.Contains(source) || source.StartsWith(Module01Library.Essentials))
+                    declarados++;
+            }
+            return declarados * 2 > root.transform.childCount;
         }
 
         [MenuItem("RideSafe/Módulo 1/Colocar los EPP como en la escena de arte")]
@@ -106,6 +141,7 @@ namespace RideSafe.Module01.Editor
             SceneManager.SetActiveScene(work);
             ApplyMoves(work);
             Module01SceneEntities.Apply();
+            RetireAndClean(work);
             Module01EppLayout.LayoutOpenScene();
             SceneHierarchyLayout.Apply(work);
             EditorSceneManager.MarkSceneDirty(work);
@@ -133,7 +169,77 @@ namespace RideSafe.Module01.Editor
             ("epps/poncho h", null, new Vector3(3.55f, 0.035f, -3.64f)),
             ("enviroment_decoration/df_g_helmet_01", "cabinetmid 1", new Vector3(0.75f, 1.08f, -4.45f)),
             ("epps/soporte celular", "mesa", new Vector3(4.38f, 1.02f, 4.82f)),
+            // La mesa del centro es la única parada con decorado encima, y era la más apretada del
+            // garaje: 16 % de tapa libre (medido el 2026-10-29). La culpa es de tres reglas del
+            // artista, planas sobre la tapa, que entre las tres cubren 1,38 m² de los 1,27 que
+            // mide. Las otras 26 herramientas de su grupo **cuelgan del panel** y no estorban:
+            // moverlas también las dejaba flotando delante del logo de la pared del fondo.
+            // Van al entrepaño bajo del banco de herramientas, que no es tapa de parada.
+            ("enviroment_decoration/tools herramientas/regla", null, new Vector3(-4.40f, 0.30f, 1.40f)),
+            ("enviroment_decoration/tools herramientas/medidor1", null, new Vector3(-4.42f, 0.30f, 2.30f)),
+            ("enviroment_decoration/tools herramientas/regla_l", null, new Vector3(-4.45f, 0.30f, 3.00f)),
         };
+
+        /// <summary>
+        /// Modelos del artista que <b>se apagan</b> en la escena de trabajo: están en el garaje
+        /// pero ya no son nada.
+        /// <para>
+        /// Los cuatro pantalones de pie dejaron de ser elementos el 2026-10-29: cada uno es ahora
+        /// el modelo de pedestal de su doblado (<c>Entry.InspectModel</c>). Si se dejan puestos,
+        /// se quedan de decorado ocupando el suelo del garaje, y el cliente no quiere nada en el
+        /// suelo salvo los vehículos.
+        /// </para>
+        /// </summary>
+        public static readonly string[] Retired =
+        {
+            Module01Library.Essentials + "Slim_fit_pants.fbx",
+            Module01Library.Models + "jean ajustado.fbx",
+            Module01Library.Models + "pant low.fbx",
+            Module01Library.Models + "pantalon ancho.fbx",
+        };
+
+        /// <summary>
+        /// Apaga lo retirado y borra lo que quedó instanciado sin ser nada: el prefab de las
+        /// gafas dañadas aparecía duplicado bajo <c>Module01_Spawned</c>, sin entidad, tirado en
+        /// el suelo del centro del garaje (PO, 2026-10-29). Sin entidad no se pulsa ni cuenta:
+        /// es basura que solo se ve.
+        /// </summary>
+        private static void RetireAndClean(Scene work)
+        {
+            var retired = new HashSet<string>(Retired);
+            int apagados = 0, borrados = 0;
+            foreach (GameObject go in work.GetRootGameObjects()
+                         .SelectMany(r => r.GetComponentsInChildren<Transform>(true))
+                         .Select(t => t.gameObject).ToList())
+            {
+                if (go == null)
+                    continue;
+                if (retired.Contains(SourceOf(go)) && go.activeSelf)
+                {
+                    Undo.RecordObject(go, "Retirar del garaje");
+                    go.SetActive(false);
+                    apagados++;
+                }
+            }
+
+            // A cualquier profundidad: `SceneHierarchyLayout` mete `Module01_Spawned` dentro de
+            // una carpeta de la jerarquía, así que buscarlo solo entre los objetos raíz no lo
+            // encontraba y el huérfano de las gafas seguía tirado en el suelo (PO, 2026-10-29).
+            GameObject spawned = work.GetRootGameObjects()
+                .SelectMany(r => r.GetComponentsInChildren<Transform>(true))
+                .FirstOrDefault(t => t.name == SpawnedRoot)?.gameObject;
+            if (spawned != null)
+                foreach (Transform child in spawned.transform.Cast<Transform>().ToList())
+                    if (child.GetComponentInChildren<WorldObjectTaskEntity>(true) == null)
+                    {
+                        Debug.Log($"[Module01] Fuera '{child.name}': instanciado y sin entidad.");
+                        Undo.DestroyObjectImmediate(child.gameObject);
+                        borrados++;
+                    }
+
+            if (apagados > 0 || borrados > 0)
+                Debug.Log($"[Module01] {apagados} modelos retirados del garaje y {borrados} huérfanos borrados.");
+        }
 
         private static void ApplyMoves(Scene work)
         {

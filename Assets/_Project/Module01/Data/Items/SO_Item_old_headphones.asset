@@ -15,13 +15,14 @@ MonoBehaviour:
   _itemId: old_headphones
   _nameKey: M1/Item_OldHeadphones
   _riskKey: M1/Item_OldHeadphones_Risk
-  _category: 3
+  _category: 2
   _displayPrefab: {fileID: 919132149155446097, guid: d09e3a8ff9adc3e4a91be90ea5648a0f, type: 3}
   _deteriorated: 0
   _promptClip: {fileID: 0}
-  _weight: 20
-  _hazardGroup: auditory_occlusion
+  _weight: 0
+  _hazardGroup: 
   _exclusiveBonusWith: 
   _bonusCondition: 
   _onlyForVehicle: 
   _substitutesFor: 
+  _inspectPrefab: {fileID: 0}

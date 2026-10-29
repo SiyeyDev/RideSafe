@@ -25,3 +25,4 @@ MonoBehaviour:
   _bonusCondition: 
   _onlyForVehicle: 
   _substitutesFor: helmet_ok
+  _inspectPrefab: {fileID: 0}

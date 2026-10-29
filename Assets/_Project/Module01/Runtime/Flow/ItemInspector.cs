@@ -226,6 +226,13 @@ namespace RideSafe.Module01
         /// </summary>
         private GameObject BuildDisplay(SafetyItemSO item, Func<GameObject> copyOfScene)
         {
+            // Antes que nada, el modelo de inspección si lo hay: es el caso del pantalón, que en
+            // la mesa va doblado y en el pedestal se abre (PO, 2026-10-29). Es la única forma de
+            // que el aprendiz lea si es ceñido o ancho, que es justo lo que se evalúa, sin tener
+            // la prenda de pie ocupando el suelo del garaje.
+            if (item != null && item.InspectPrefab != null)
+                return Instantiate(item.InspectPrefab, _instance.transform);
+
             GameObject copy = copyOfScene();
             if (copy != null)
                 return copy;

@@ -51,11 +51,25 @@ namespace RideSafe.Module01
                  "La gorra (H12, «Peligrosa condicional») sustituye al casco. Vacío = siempre cuenta.")]
         [SerializeField] private string _substitutesFor;
 
+        [Tooltip("Lo que se enseña en el pedestal al pulsarlo, si es distinto de lo que hay en la " +
+                 "mesa. Los pantalones van doblados sobre el mueble —así caben y se ven ordenados— " +
+                 "y se exhiben abiertos, que es como se lee si son ceñidos o anchos. Vacío = se " +
+                 "copia lo de la mesa.")]
+        [SerializeField] private GameObject _inspectPrefab;
+
         public string ItemId => string.IsNullOrWhiteSpace(_itemId) ? string.Empty : _itemId.Trim();
         public string NameKey => _nameKey;
         public string RiskKey => _riskKey;
         public SafetyItemCategory Category => _category;
         public GameObject DisplayPrefab => _displayPrefab;
+
+        /// <summary>
+        /// El modelo para el pedestal cuando no vale el de la mesa (PO, 2026-10-29). Hasta
+        /// ahora el garaje tenía el pantalón doblado <b>y</b> el mismo pantalón de pie como dos
+        /// elementos distintos: el doblado valía 5 puntos y el de pie, cero. Era la misma prenda
+        /// contada dos veces, y los de pie ocupaban el suelo, que el cliente no quiere.
+        /// </summary>
+        public GameObject InspectPrefab => _inspectPrefab;
 
         /// <summary>
         /// La columna «Peso / puntos» de

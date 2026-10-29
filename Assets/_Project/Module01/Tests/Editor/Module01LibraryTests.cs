@@ -27,16 +27,31 @@ namespace RideSafe.Module01.Tests
         }
 
         [Test]
-        public void El_pool_esencial_de_dia_claro_son_los_65_de_la_hoja()
+        public void El_pool_esencial_son_los_95_de_la_columna_D()
         {
-            // Casco 40 + calzado 20 + ropa ceñida 5. Las dos luces NO entran: son «esencial
-            // condicional» y de día claro la hoja las paga como bono de 1.
+            // Casco 40 + calzado 20 + ropa ceñida 5 + las dos luces a 15. Las luces entraron el
+            // 2026-10-29: la hoja las llama «esencial condicional» y pagaba 1 de bono en día
+            // claro, pero la PO cerró que la nota sea la columna D tal cual.
             float total = 0f;
             int n = 0;
             foreach (var e in Of(SafetyItemCategory.Core)) { total += e.Weight; n++; }
 
-            Assert.AreEqual(3, n, "De día claro solo hay tres esenciales.");
-            Assert.AreEqual(65f, total, 0.01f);
+            Assert.AreEqual(5, n, "E01, E02, E03, E04 y E05.");
+            Assert.AreEqual(95f, total, 0.01f);
+        }
+
+        [Test]
+        public void Ningun_esencial_puede_pesar_cero_o_el_pool_lo_regalaria()
+        {
+            // «Todos los esenciales deberían dar 100» (PO, 2026-10-29) solo se cumple si cada
+            // uno aporta algo: un esencial de peso 0 se podría olvidar sin bajar la nota y sin
+            // embargo contaría como falta para el checkpoint. Las dos reglas dirían cosas
+            // distintas del mismo olvido, que es justo lo que pasaba con las luces a peso 1.
+            foreach (var e in Of(SafetyItemCategory.Core))
+                Assert.Greater(e.Weight, 0f, e.LibraryId + " es esencial y no pesa nada.");
+
+            Assert.AreEqual(100f, SelectionScore.EssentialBlock, 0.01f,
+                "Y el bloque que se reparte entre ellos es 100, no los 70 de la hoja.");
         }
 
         [Test]
@@ -53,12 +68,33 @@ namespace RideSafe.Module01.Tests
         }
 
         [Test]
-        public void Los_peligros_evidentes_comparten_grupo_con_el_peligro_que_repiten()
+        public void Los_unicos_peligros_son_los_doce_H_del_Excel()
         {
-            // Ropa suelta, los audífonos y las chanclas de antes: llevarse varios descuenta una vez.
-            string[] evident = Of(SafetyItemCategory.Inappropriate)
+            // «Los incorrectos sean los mismos que el Excel» (PO, 2026-10-29). Los siete P que
+            // habíamos declarado peligro por cuenta propia —ropa suelta, mascada, jean ancho,
+            // cordones sueltos, audífonos viejos, chanclas de baño— volvieron a neutros. Este
+            // test es la red: cualquier P que vuelva a declararse peligro sale aquí con nombre.
+            string[] noSonDeLaHoja = Of(SafetyItemCategory.Inappropriate)
                 .Where(e => !e.LibraryId.StartsWith("H")).Select(e => e.LibraryId).ToArray();
-            CollectionAssert.AreEquivalent(new[] { "P24", "P25", "P26", "P27", "P28", "P29", "P30" }, evident);
+
+            CollectionAssert.IsEmpty(noSonDeLaHoja,
+                "Solo los H de la hoja pueden puntuar como peligro.");
+        }
+
+        [Test]
+        public void Los_siete_que_dejaron_de_ser_peligro_siguen_en_la_mesa_sin_puntuar()
+        {
+            // No se borraron: se examinan, se eligen y salen en el reporte como «No necesario»,
+            // igual que el teléfono. Borrarlos habría vaciado media mesa de la ropa.
+            string[] neutralizados = { "P24", "P25", "P26", "P28", "P29", "P30" };
+
+            foreach (string id in neutralizados)
+            {
+                Module01Library.Entry e = Module01Library.All.First(x => x.LibraryId == id);
+                Assert.AreEqual(SafetyItemCategory.Optional, e.Category, id + " debería ser neutral.");
+                Assert.AreEqual(0f, e.Weight, 0.01f, id + " neutral no puede pesar.");
+                Assert.IsNull(e.HazardGroup, id + " ya no es peligro: no puede traer grupo.");
+            }
         }
 
         [Test]
@@ -86,14 +122,16 @@ namespace RideSafe.Module01.Tests
 
             CollectionAssert.AreEquivalent(new[] { "H01", "H02" }, byGroup["helmet_integrity"],
                 "Los dos cascos rotos descuentan una sola vez.");
-            CollectionAssert.AreEquivalent(new[] { "H03", "H13", "P29" }, byGroup["auditory_occlusion"],
-                "Audífonos, AirPods y los audífonos de antes son el mismo error.");
-            CollectionAssert.AreEquivalent(new[] { "H04", "P30" }, byGroup["footwear_control"],
-                "Las Crocs y las chanclas de antes son el mismo error.");
-            CollectionAssert.AreEquivalent(new[] { "P24", "P25", "P26", "P27", "P28" }, byGroup["loose_clothing"],
-                "Toda la ropa suelta descuenta una sola vez.");
+            CollectionAssert.AreEquivalent(new[] { "H03", "H13" }, byGroup["auditory_occlusion"],
+                "Audífonos y AirPods son el mismo error: descuentan una vez.");
 
-            string[] shared = { "helmet_integrity", "auditory_occlusion", "footwear_control", "loose_clothing" };
+            // footwear_control y loose_clothing eran grupos de dos y de cinco porque los P
+            // repetían el peligro de un H. Al volver neutros los P, H04 se quedó solo en su
+            // grupo y loose_clothing desapareció: ya no hay ninguna prenda suelta que puntúe.
+            CollectionAssert.AreEquivalent(new[] { "H04" }, byGroup["footwear_control"]);
+            CollectionAssert.DoesNotContain(byGroup.Keys, "loose_clothing");
+
+            string[] shared = { "helmet_integrity", "auditory_occlusion" };
             foreach (var kv in byGroup)
                 if (!shared.Contains(kv.Key))
                     Assert.AreEqual(1, kv.Value.Count, $"El grupo {kv.Key} debería ser de uno solo.");

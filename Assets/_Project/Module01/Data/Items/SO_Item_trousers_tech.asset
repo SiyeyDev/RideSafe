@@ -25,3 +25,4 @@ MonoBehaviour:
   _bonusCondition: 
   _onlyForVehicle: 
   _substitutesFor: 
+  _inspectPrefab: {fileID: 919132149155446097, guid: 445c4da49b1d24f4dac1c753566ae757, type: 3}
