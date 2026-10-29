@@ -1,7 +1,11 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-28 — el arte de EPP del artista en v5 a su pose exacta, 4 paradas
+> Última actualización: 2026-10-29 — luces de la v5 rehorneadas en 6000.4.9f1 (CPU), paradas según
+> las mesas y variantes P31–P36, iconos X / – / ✓, H2 al 70 % de H1, todo centrado, Módulo 0 con
+> título sobre la puerta, iconos de navegación, inglés por defecto y ubicación con banderas,
+> cajas ajustadas al texto y la puntuación final dentro de «Mi Elección» (§11).
+> Antes, 2026-10-28 — el arte de EPP del artista en v5 a su pose exacta, 4 paradas
 > (una por mueble), 61 elementos con modelo y **0 «!»**, clic por la forma, gafas dañadas como
 > material, el bug de I2 que dejaba textos destruidos suscritos al idioma, filas de «Mi preparación»
 > a la altura de su nombre y el video sin el filtro azul (§11).
@@ -681,8 +685,9 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       Es una aserción de una línea (`lossyScale` del renderer), no un fallo de hoy.
 - [ ] **Una sola versión de Unity para el equipo.** El horneado de la v5 hecho en 6000.5.4f1
       **no carga** en 6000.4.9f1 y la escena sale negra (§9). Se rehízo en 6000.4.9f1 el
-      2026-10-16 (4 lightmaps, 3 sondas); si alguien vuelve a hornear en la otra versión, se
-      repite el problema. Hasta decidirlo, el horneado no se commitea.
+      2026-10-16 (4 lightmaps, 3 sondas) y otra vez el 2026-10-29 (5 lightmaps, 3 sondas, en
+      **CPU**: el baker por GPU tumbó el portátil); si alguien vuelve a hornear en la otra
+      versión, se repite el problema. Hasta decidirlo, el horneado no se commitea.
 - [x] ~~`df_g_helmet_01` no tiene collider~~ — **falso, corregido el 2026-10-16**: el collider
       de su raíz está desactivado, pero tiene otro activo en un hijo y el rayo lo alcanza. La
       sonda solo miraba el primero (§9). Con la búsqueda por física el tutorial ya lo cuenta.
@@ -1297,6 +1302,17 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
   sin mirar: recoloca EPP.
 - Pendiente: locución de P31/P32 y de las explicaciones de P31–P36 (ElevenLabs).
   P22, P13 y H01 siguen apagados en la escena desde antes (commit fcb9843) y están en su parada.
+
+### 2026-10-29 — luces de la v5 rehorneadas y qué no se sube
+
+- **Luces:** el horneado de la v5 que trajo `dev` venía de 6000.5.4f1 y en 6000.4.9f1 la escena
+  salía mal. Rehorneado en local con el Progressive **CPU** (el de GPU ya había colgado el
+  portátil): 5 lightmaps y 3 sondas de reflexión en `Scene/RideSafe_Garaje_v5/`. **No se suben.**
+- **Al hacer commit desde 6000.4.9f1, quedan fuera:** `Scene/RideSafe_Garaje_v5/` (horneado),
+  `UI/Fonts/*.asset` (atlas dinámicos), `ProjectSettings/*` y `Packages/packages-lock.json`
+  (bajan los paquetes a 6000.4: collections 6.4, render-pipelines 17.4…),
+  `XR/Settings/OpenXRPackageSettings.asset` (solo reordena ids) y `Assets/_Recovery/`
+  (copias de un cierre inesperado, se pueden borrar).
 
 ### 2026-10-28 (noche, 5) — franja de «Mi preparación» y video sin filtro azul
 
