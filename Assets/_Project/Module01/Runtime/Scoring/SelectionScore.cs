@@ -166,6 +166,27 @@ namespace RideSafe.Module01
         /// </summary>
         public bool MustRepeatSelection => !CanAdvance;
 
+        /// <summary>Lo mínimo para dar una sección por buena. «Inferior al 70 %» reprueba.</summary>
+        public const float ExamPassMark = 70f;
+
+        /// <summary>A partir de cuántas omisiones se repite, aunque la nota dé.</summary>
+        public const int MaxOmissions = 2;
+
+        /// <summary>
+        /// La regla del examen por sección (documento del equipo, 2026-11-04): se repite con la
+        /// nota <b>bajo 70</b> o con <b>2 o más omisiones</b>.
+        /// <para>
+        /// Es otra regla que <see cref="CanAdvance"/>, que sale de la hoja del cliente y no mira
+        /// la nota. Se dejan las dos a propósito: la de la hoja sostiene lo que la hoja decide
+        /// —y sus tests—, y ésta es la del examen, que es la que manda el flujo del módulo.
+        /// </para>
+        /// <para>
+        /// Las omisiones se cuentan sobre los esenciales, que es lo que son tanto un EPP de
+        /// núcleo sin coger como un punto del vehículo sin revisar.
+        /// </para>
+        /// </summary>
+        public bool FailsExam => SafetyScore < ExamPassMark || EssentialsMissing >= MaxOmissions;
+
         /// <summary>
         /// Abre «Continuar al Módulo 2». <b>Esto no sale de la hoja</b> —la hoja solo llega
         /// hasta la inspección preoperacional—, viene del corte de ≥75 % que fijó la reunión.

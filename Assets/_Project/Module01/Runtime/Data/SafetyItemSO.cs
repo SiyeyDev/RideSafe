@@ -57,6 +57,19 @@ namespace RideSafe.Module01
                  "copia lo de la mesa.")]
         [SerializeField] private GameObject _inspectPrefab;
 
+        [Tooltip("El render del elemento para su tarjeta de evaluación. Lo entrega diseño; " +
+                 "vacío, la tarjeta se queda sin imagen y la maquetación decide qué poner.")]
+        [SerializeField] private Sprite _thumbnail;
+
+        /// <summary>
+        /// El render del elemento para la cuadrícula de tarjetas (documento del equipo,
+        /// 2026-11-04: «el render/imagen del EPP es el protagonista, el texto compacto»).
+        /// </summary>
+        public Sprite Thumbnail => _thumbnail;
+
+        /// <summary>Solo para tests: el render sin pasar por el inspector.</summary>
+        public void ConfigureThumbnailForTests(Sprite thumbnail) => _thumbnail = thumbnail;
+
         public string ItemId => string.IsNullOrWhiteSpace(_itemId) ? string.Empty : _itemId.Trim();
         public string NameKey => _nameKey;
         public string RiskKey => _riskKey;

@@ -201,6 +201,15 @@ namespace RideSafe.Module01
         {
             if (!_awaitingReview) return;
             _awaitingReview = false;
+
+            // Reprobada la sección, aquí ya se vio el video —este método es lo que se llama al
+            // terminarlo— y toca repetir la selección entera desde el checkpoint inicial.
+            if ((_inVehicleSection ? VehicleScore : PersonalScore).FailsExam)
+            {
+                RestartSelection();
+                return;
+            }
+
             if (!_inVehicleSection)
             {
                 _inVehicleSection = true;
@@ -209,6 +218,24 @@ namespace RideSafe.Module01
                 Advance();
             }
             else { CurrentZone = null; IsFinished = true; Unsubscribe(); Finished?.Invoke(); }
+        }
+
+        /// <summary>
+        /// Vuelta al checkpoint inicial: se repite la selección entera, no solo la sección que
+        /// se suspendió (documento del equipo, 2026-11-04: «repetir la selección completa»).
+        /// <para>
+        /// Deja el estado como lo deja <see cref="Begin"/>, salvo las listas de zona y la
+        /// suscripción, que ya están hechas y no cambian entre vueltas.
+        /// </para>
+        /// </summary>
+        private void RestartSelection()
+        {
+            PersonalReport = VehicleReport = null;
+            PersonalScore = VehicleScore = default;
+            _inVehicleSection = false;
+            _index = -1;
+            _runner.Ledger.Clear();
+            Advance();
         }
 
         private void Advance()

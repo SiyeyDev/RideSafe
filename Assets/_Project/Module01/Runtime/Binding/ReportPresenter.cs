@@ -108,7 +108,13 @@ namespace RideSafe.Module01
                 }
 
                 string title = translate != null ? translate(item.NameKey) : item.NameKey;
-                entries.Add(new ComparisonEntry(status, title, item.ItemId));
+                // El id va además en su propio campo: una tarjeta tiene que saber de qué es sin
+                // leerse el detalle, y necesita pedirle su render al elemento.
+                entries.Add(new ComparisonEntry(status, title, item.ItemId)
+                {
+                    ItemId = item.ItemId,
+                    Image = item.Thumbnail,
+                });
             }
 
             return entries;

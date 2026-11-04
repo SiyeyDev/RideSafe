@@ -44,11 +44,29 @@ namespace RideSafe.UI
         public string Title;
         public string Detail;
 
+        /// <summary>
+        /// De qué elemento es esta fila o tarjeta.
+        /// <para>
+        /// Hasta el 2026-11-04 la identidad viajaba dentro de <see cref="Detail"/>, que es el
+        /// mismo campo que se pinta: filtrar por el texto visible funcionaba mientras la fila
+        /// fuera una línea, pero una tarjeta no puede saber de qué es leyéndose la descripción.
+        /// </para>
+        /// </summary>
+        public string ItemId;
+
+        /// <summary>
+        /// El render del elemento para su tarjeta; <c>null</c> si el elemento no declara
+        /// ninguno, y entonces la maquetación decide con qué llenar el hueco.
+        /// </summary>
+        public Sprite Image;
+
         public ComparisonEntry(ItemStatus status, string title, string detail = null)
         {
             Status = status;
             Title = title;
             Detail = detail;
+            ItemId = null;
+            Image = null;
         }
     }
 

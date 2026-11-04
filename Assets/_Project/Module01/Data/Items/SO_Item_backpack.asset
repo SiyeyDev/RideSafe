@@ -26,3 +26,4 @@ MonoBehaviour:
   _onlyForVehicle: escooter
   _substitutesFor: 
   _inspectPrefab: {fileID: 0}
+  _thumbnail: {fileID: 0}

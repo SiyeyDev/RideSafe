@@ -93,6 +93,17 @@ public static class Module01UiTerms
         Set(data, es, en, "M1/FinalScore_MustRepeat",
             "Necesitas más de 70 para continuar. Repite el módulo.",
             "You need more than 70 to continue. Repeat the module.");
+
+        // Checkpoint de sección (documento del equipo, 2026-11-04): al cerrar cada parte se ve
+        // su nota y si se sigue o se repite. El texto de repetir dice «la selección completa»
+        // porque es lo que hace el código: Module01Director vuelve al checkpoint inicial, no al
+        // principio de la sección suspendida.
+        Set(data, es, en, "M1/Section_CanAdvance",
+            "Puedes continuar. Mira la explicación antes de seguir.",
+            "You can continue. Watch the explanation before moving on.");
+        Set(data, es, en, "M1/Section_MustRepeat",
+            "No llegas a 70. Después del video repetirás la selección completa.",
+            "You are below 70. After the video you will repeat the full selection.");
         // The video's «Reproduciendo» tag was dropped (PO, 2026-10-16): its term goes too.
         data.RemoveTerm("M1/Video_Playing");
         // The pouch stopped being an item (2026-10-28). «M1/Stop_Tools» was dropped with it and

@@ -26,3 +26,4 @@ MonoBehaviour:
   _onlyForVehicle: ebike
   _substitutesFor: 
   _inspectPrefab: {fileID: 0}
+  _thumbnail: {fileID: 0}

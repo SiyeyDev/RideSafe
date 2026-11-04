@@ -120,7 +120,12 @@ namespace RideSafe.Module01.Tests
             Wire(out _, out VehicleProfileSO v);
             ManualProgress();
             _director.Begin();
+            // Se cogen los dos esenciales a propósito: desde la regla del examen (2026-11-04)
+            // cerrar la sección sin nada la reprueba y devuelve a la mesa, y entonces este test
+            // no estaría midiendo lo suyo —la primera estación del vehículo— sino el reinicio.
+            Resolve(_head, accept: true);
             _director.AdvanceZone();
+            Resolve(_clothing, accept: true);
             _director.AdvanceZone();
             _director.ContinueAfterReview();
 
@@ -199,6 +204,97 @@ namespace RideSafe.Module01.Tests
             Assert.IsNotNull(personal);
             CollectionAssert.AreEquivalent(new[] { "helmet_ok" }, personal.CoreOmitted);
             Assert.IsTrue(personal.HasCriticalProblem);
+
+            Object.DestroyImmediate(v);
+        }
+
+        /// <summary>
+        /// Cierra la sección en curso sin coger nada: los dos esenciales quedan omitidos, que es
+        /// lo que la regla del examen llama reprobar.
+        /// </summary>
+        private void CerrarSeccionReprobando()
+        {
+            _director.AdvanceZone();
+            _director.AdvanceZone();
+        }
+
+        /// <summary>
+        /// La regla del examen (documento del equipo, 2026-11-04): reprobada la sección, el video
+        /// es obligatorio y después se vuelve al checkpoint inicial a repetir la selección entera.
+        /// <para>
+        /// Va en <see cref="Module01Director.ContinueAfterReview"/> y no en un botón aparte porque
+        /// ese método es justo lo que se llama <b>al terminar el video</b>: así no hay forma de
+        /// saltárselo, que es lo que pide la hoja.
+        /// </para>
+        /// </summary>
+        [Test]
+        public void Reprobar_la_seccion_personal_devuelve_a_la_primera_estacion()
+        {
+            Wire(out _, out VehicleProfileSO v);
+            ManualProgress();
+            _director.Begin();
+            CerrarSeccionReprobando();
+
+            Assert.IsTrue(_director.PersonalScore.FailsExam, "premisa: la sección está reprobada");
+
+            _director.ContinueAfterReview();
+
+            Assert.AreEqual("head", _director.CurrentZone.ZoneId,
+                            "tras el video se vuelve a la primera estación, no se pasa al vehículo");
+
+            Object.DestroyImmediate(v);
+        }
+
+        /// <summary>
+        /// La vuelta nueva se califica sola: repetir bien levanta la nota, sin arrastrar lo de
+        /// la vuelta anterior.
+        /// <para>
+        /// Esto no se puede afirmar mirando solo que el libro quede vacío: el libro ya se vacía
+        /// también al pasar a la sección del vehículo, así que esa aserción pasaba sin medir
+        /// nada. Lo que distingue el reinicio es que la segunda vuelta se puede jugar y cambia
+        /// el resultado.
+        /// </para>
+        /// </summary>
+        [Test]
+        public void La_vuelta_despues_de_reprobar_se_califica_sola()
+        {
+            Wire(out _, out VehicleProfileSO v);
+            ManualProgress();
+            _director.Begin();
+            CerrarSeccionReprobando();
+            Assert.IsTrue(_director.PersonalScore.FailsExam, "premisa: la primera vuelta reprueba");
+
+            _director.ContinueAfterReview();
+
+            // Segunda vuelta, esta vez cogiendo los dos esenciales.
+            Resolve(_head, accept: true);
+            _director.AdvanceZone();
+            Resolve(_clothing, accept: true);
+            _director.AdvanceZone();
+
+            Assert.IsFalse(_director.PersonalScore.FailsExam,
+                           "repetida bien, la sección ya no reprueba");
+
+            Object.DestroyImmediate(v);
+        }
+
+        /// <summary>Y aprobando no cambia nada: se sigue al vehículo como siempre.</summary>
+        [Test]
+        public void Aprobar_la_seccion_personal_sigue_pasando_al_vehiculo()
+        {
+            Wire(out _, out VehicleProfileSO v);
+            ManualProgress();
+            _director.Begin();
+            Resolve(_head, accept: true);
+            _director.AdvanceZone();
+            Resolve(_clothing, accept: true);
+            _director.AdvanceZone();
+
+            Assert.IsFalse(_director.PersonalScore.FailsExam, "premisa: con todo cogido aprueba");
+
+            _director.ContinueAfterReview();
+
+            Assert.AreEqual("cockpit", _director.CurrentZone.ZoneId);
 
             Object.DestroyImmediate(v);
         }

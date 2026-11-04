@@ -346,14 +346,18 @@ namespace RideSafe.Module01
             _readinessCorrect = _vehicleReport != null && ReadinessDecision.IsCorrect(_choice, _vehicleReport);
             _director.ContinueAfterReview();
         }
-        private void ShowPersonalReport(SelectionReport report) { _personalEntries = Entries(report); ShowReport(_personalEntries); }
+        private void ShowPersonalReport(SelectionReport report)
+        {
+            _personalEntries = Entries(report);
+            ShowReport(_personalEntries, _director.PersonalScore);
+        }
         private void ShowVehicleReport(SelectionReport report)
         {
             // El informe llega por el evento porque todavia no esta publicado en el director:
             // se asigna justo antes de avisar. Se guarda para la decisión, que ahora viene después.
             _vehicleReport = report;
             _vehicleEntries = Entries(report);
-            ShowReport(_vehicleEntries);
+            ShowReport(_vehicleEntries, _director.VehicleScore);
         }
         private List<ComparisonEntry> Entries(SelectionReport report)
         {
@@ -369,13 +373,18 @@ namespace RideSafe.Module01
         /// duplicaba doce renglones en una pantalla que ya iba justa.
         /// </para>
         /// </summary>
-        private void ShowReport(List<ComparisonEntry> entries)
+        private void ShowReport(List<ComparisonEntry> entries, SelectionScore score)
         {
             Phase = "Report";
             _binding.Module.Show("Comparison");
-            // Sin nota bajo la lista (PO, 2026-10-29: «quitar ese texto inferior»): la lista y el
-            // botón de la explicación, nada más.
-            _binding.Comparison.SetSingleList(UIText.Resolve("M1/MyChoice_Title"), string.Empty, entries);
+            // El 29-10 esta caja se vació («quitar ese texto inferior»), y con eso el módulo se
+            // quedó sin una sola nota a la vista hasta la pantalla final. Desde el 2026-11-04
+            // vuelve, pero diciendo algo distinto: ya no es la coletilla de lo opcional sino la
+            // nota de ESTA sección y si toca repetirla.
+            _binding.Comparison.SetSingleList(
+                UIText.Resolve("M1/MyChoice_Title"),
+                SectionScoreNote.Compose(score, UIText.Resolve),
+                entries);
         }
 
         /// <summary>
