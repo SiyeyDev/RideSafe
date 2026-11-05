@@ -88,7 +88,7 @@ namespace RideSafe.UI.EditorTools
             {
                 // 340 px wide around the vehicle: room for "Patineta eléctrica de pie" (+35% string reserve).
                 VehicleLabel(group, toggleGroup, "ebike", "E-bike", "Pedal assist · seated", 30f, 183f, 370f, 257f),
-                VehicleLabel(group, toggleGroup, "escooter", "Standing e-scooter", "Standing · throttle", 660f, 185f, 1000f, 251f)
+                VehicleLabel(group, toggleGroup, "escooter", "E-scooter", "Standing · throttle", 660f, 185f, 1000f, 251f)
             };
 
             Transform bar = K.Pill(panel, "Status_Pill_Default", 196f, 440f, 806f, 514f, Color.white, "ConfirmationBar").transform;
@@ -144,7 +144,7 @@ namespace RideSafe.UI.EditorTools
         // 05 — posture, subtitles, text size, dominant hand.
         private void Comfort(Transform panel)
         {
-            Header(panel, "Set up your comfort", "Nothing here affects your results.", 64f, 103f);
+            Header(panel, "Settings", "Nothing here affects your results.", 64f, 103f);
             Transform box = K.Slice(panel, "Panel_Modal_Light", 113f, 148f, 889f, 431f, 2.4f, Color.white, "SettingsPanel").transform;
             Vector2 o = Origin(113f, 148f, 2.4f);
 

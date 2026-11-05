@@ -26,4 +26,4 @@ MonoBehaviour:
   _onlyForVehicle: 
   _substitutesFor: 
   _inspectPrefab: {fileID: 0}
-  _thumbnail: {fileID: 0}
+  _thumbnail: {fileID: 21300000, guid: 51b95bc08b1d4804d831432d6be031b3, type: 3}

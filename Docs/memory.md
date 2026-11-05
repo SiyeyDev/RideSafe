@@ -1,7 +1,13 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-10-29 — luces de la v5 rehorneadas en 6000.4.9f1 (CPU), paradas según
+> Última actualización: 2026-11-04 — «Revisa tus elecciones» y «Evaluación de tus elecciones» de
+> la sección de EPP en cuadrícula de tarjetas con el render de cada EPP (63 renders propios), píldora
+> «Puntaje: N» y solo el título; esos dos paneles y el del video a 1.3×; M0 sin «Selected», vehículos
+> solo «E-bike» / «E-scooter», «Ajustes» sin postura y títulos de un ancho estándar con el texto
+> centrado; bienvenida del M1 sin hueco; el control de la pista acostado de perfil; luces de la v5
+> rehorneadas otra vez (§11).
+> Antes, 2026-10-29 — luces de la v5 rehorneadas en 6000.4.9f1 (CPU), paradas según
 > las mesas y variantes P31–P36, iconos X / – / ✓, H2 al 70 % de H1, todo centrado, Módulo 0 con
 > título sobre la puerta, iconos de navegación, inglés por defecto y ubicación con banderas,
 > cajas ajustadas al texto y la puntuación final dentro de «Mi Elección» (§11).
@@ -685,8 +691,9 @@ Todo lo de esta lista quedó hecho y afirmado por el test el 2026-10-06. Lo que 
       Es una aserción de una línea (`lossyScale` del renderer), no un fallo de hoy.
 - [ ] **Una sola versión de Unity para el equipo.** El horneado de la v5 hecho en 6000.5.4f1
       **no carga** en 6000.4.9f1 y la escena sale negra (§9). Se rehízo en 6000.4.9f1 el
-      2026-10-16 (4 lightmaps, 3 sondas) y otra vez el 2026-10-29 (5 lightmaps, 3 sondas, en
-      **CPU**: el baker por GPU tumbó el portátil); si alguien vuelve a hornear en la otra
+      2026-10-16 (4 lightmaps, 3 sondas), otra vez el 2026-10-29 (5 lightmaps, 3 sondas, en
+      **CPU**: el baker por GPU tumbó el portátil) y el 2026-11-04, tras `77112bb` «update ebake
+      y exterior» (~9 min en CPU; darle Play durante el horneado lo cancela); si alguien vuelve a hornear en la otra
       versión, se repite el problema. Hasta decidirlo, el horneado no se commitea.
 - [x] ~~`df_g_helmet_01` no tiene collider~~ — **falso, corregido el 2026-10-16**: el collider
       de su raíz está desactivado, pero tiene otro activo en un hijo y el rayo lo alcanza. La
@@ -1228,6 +1235,75 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-11-04 — tarjetas de EPP en «Revisa tus elecciones» y «Evaluación de tus elecciones»
+
+Spec: `Docs/superpowers/specs/2026-11-04-epp-card-grid-design.md`. Pedido de la PO con dos capturas
+de referencia; solo cambia la presentación, el flujo y la nota se quedan.
+
+- **Decisiones de la PO:** renders propios de los 3D (no las fotos de marca del xlsx: su «Guía
+  visual» exige licencia); solo la sección de EPP (vehículo y final siguen en filas); Revisar sin
+  icono; Evaluación con ✓ / – / X arriba a la derecha; «Puntaje: N» solo, sin «/ 100», sin bono
+  ni veredicto (repetir al reprobar sigue igual, tras el video); solo el título; botones tal cual
+  («Seguir eligiendo» / «Enviar elecciones», y «Ver explicación»). Títulos «Revisa tus elecciones»
+  y «Evaluación de tus elecciones» (`M1/Evaluation_Title`, `M1/Score_Label` = «Puntaje: {0}»).
+- **Runtime:** `UI/Runtime/ItemCard` (prefab `UI/Prefabs/PF_EppCard`: render, nombre a 2 líneas,
+  icono; sin render, un marcador) y `CardGrid` (una tarjeta por entrada en un GridLayoutGroup de 3).
+  `ComparisonView.SetCards` = modo tarjetas con píldora; `SetSingleList`/`SetContent` vuelven a
+  filas. Las tarjetas comparten la ventana de scroll de las filas (se cambia `ScrollRect.content`).
+  Revisar ya no tiene `ChecklistView`: `Module01Experience` llama al `CardGrid` del panel.
+- **Datos:** ya estaban (los SO tienen id del xlsx, peso, grupo; cada EPP 3D apunta a su SO por
+  `_itemId`). Faltaba `SafetyItemSO.Thumbnail`, que ahora rellena el fotógrafo.
+- **Fotógrafo** (`RideSafe → Módulo 1 → Fotografiar EPP`, `Module01/Editor/EppThumbnailRenderer`):
+  mismo orden que el pedestal (modelo de inspección → copia de la mesa de la v5 → prefab; la copia
+  se extrajo a `Flow/VisibleMeshCopy`, que ahora usan los dos), `PreviewRenderUtility` con cámara
+  ortográfica 3/4 desde el ancla de la parada y 35° de alto, dos pasadas para encuadrar y fondo
+  transparente por doble toma negro/blanco. PNG 512 en `Module01/Art/Thumbnails/RS_M1_{ID}_{id}.png`
+  (nomenclatura de la guía del xlsx). **Volver a correrlo cuando el arte cambie.** Trampa: una
+  cámara propia en `NewPreviewScene` + `SubmitRenderRequest` salía negra en URP; `PreviewRenderUtility` sí.
+- **Composición:** `UI/Editor/UICardGrid` (menú `RideSafe/UI/Tarjetas de EPP`), llamado por
+  `UIComposition.ComposeModule01` después de `UIScrollList`. Idempotente.
+- **Puente del editor:** nuevo `editgroups Ns.Clase1;Ns.Clase2` para correr solo esas clases.
+- **Pruebas:** EditMode nuevas `CardGridTests` (7) y `ComparisonCardModeTests` (3); ajustadas
+  `Module01PrefabLayoutTests`, `ScrollListSceneTests`, `ModuleUITests` (PlayMode) y
+  `Module01SliceTests.AssertReportLayout` (EPP en tarjetas; el vehículo con su nota de sección del
+  4-11, que el test aún no contemplaba). Corrido aquí: 44/45 de las clases tocadas; el rojo es
+  `BrandMarkLayoutTests.Comfort_…` (título del M0 movido el 29-10, ya conocido).
+- **Más grandes (PO, misma tarde, captura con marca roja):** Revisa, Evaluación (`Comparison`,
+  que también es el reporte del vehículo y el final) y el video (`Explanation`) a **1.3×**, crecidos
+  desde el centro del cuadro (`UIComposition.ReadingPanels` / `ScaleAboutCentre`, pivote 0.5 y
+  posición (501, −278)). Los demás paneles del M1 siguen a 1. La v5 no tiene overrides en esas
+  raíces. Test: `Module01PrefabLayoutTests.Los_paneles_de_lectura_son_mas_grandes_y_centrados`.
+- **Módulo 0 (PO, misma tarde, dos capturas):** sin la palabra «Selected» en ninguna opción
+  (`SelectableStyle._onCaption` vacío; la tarjeta coral, su doblez y el check ya lo dicen) y el
+  nombre centrado en la tarjeta de idioma; en ubicación, nombre y bandera reparten el alto. Los
+  vehículos solo con su nombre: «E-bike» / «E-scooter» (es: «Bicicleta eléctrica» / «Patineta
+  eléctrica»), sin la línea de descripción, en tarjetas de una fila (48) con nombre y check
+  centrados; `FitCardToContent` ya no cuenta un texto apagado. Confirmación: «E-scooter selected.»
+  Tests: `VehicleLabelLayoutTests.VehicleCard_IsTheNameOnly` y `Options_NeverWriteSelected`.
+- **Ajustes, bienvenida y títulos del M0 (PO, misma noche, capturas de una versión vieja):**
+  «Ajusta tu comodidad» pasa a **«Ajustes» / «Settings»** y pierde la fila de postura (se queda
+  en sentado; `UIComposition.WithoutPosture` sube las otras tres y acorta la caja, una vez). Las
+  cuatro cajas de título del M0 tienen **un ancho estándar** (`StandardTitle`: el título más
+  largo de los dos idiomas a 34 pt + el sitio del logo a cada lado; 28–34 pt si uno nuevo no
+  cabe) y el texto va en la línea central (mismo margen a los dos lados; el logo cuelga a su
+  izquierda): ya no cambia de tamaño con el idioma. Se fue el `HugText` de esos títulos; la caja
+  de ajustes ya no se encoge al ancho del título (`ContentBox`). Bienvenida del M1: el cuerpo
+  mide dos líneas (auto-size si un idioma pide más) y los botones van 22 debajo
+  (`OrientationFitsItsBody`). El letrero de la parada ya estaba arreglado desde el 29-10 (su
+  captura era anterior). Ojo: el título bilingüe de `Garaje_Test` no cabe en el ancho estándar;
+  esa escena no está en el build. Tests: `BrandMarkLayoutTests` (Comfort reescrito, nuevo
+  `Module0Titles_ShareOneWidth_TheTextCentred`) y `La_bienvenida_no_deja_hueco_entre_texto_y_botones`.
+- **Pose del control en la pista (PO, con foto de producto):** acostado de perfil, aro a la
+  derecha, mango hacia abajo a la izquierda, gatillo bajo el aro y solo el borde de la cara de
+  botones a la vista. `TouchPlusPrefabBuilder.WritePoses` (menú «Recalcular posturas Touch Plus»):
+  pose del gatillo y pose por defecto = vista `left ? side − 0.05·top : −side + 0.12·top`, arriba
+  `top − 1.2·front`; el izquierdo se ve por el lado del grip, el derecho por el de fuera, y los dos
+  apuntan igual en pantalla. Ojo: el aprendiz mira la vista por su +Z, así que su derecha es −X.
+  Las demás poses (grip, botones) no cambian. Test: `Tutorial.Tests.TriggerPoseTests`.
+- **Pendiente para la PO:** los nombres de I2 son las descripciones largas del xlsx («Casco
+  certificado, íntegro, talla correcta y abrochado») y en tarjeta se cortan a dos líneas; la
+  referencia usa nombres cortos. El pantalón ajustado (E05) sale casi blanco: es su textura.
 
 ### 2026-10-29 (noche) — iconos del reporte y jerarquía del popup
 

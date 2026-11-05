@@ -397,6 +397,10 @@ namespace RideSafe.Module01.Tests
                 {
                     Assert.AreEqual("ReviewChoices", _binding.Module.Current);
                     Assert.IsNull(personal, "Feedback antes del envio");
+                    // Una tarjeta por lo elegido, sin icono: la revisión no adelanta la respuesta.
+                    CardGrid review = _binding.Module.Get<CardGrid>("ReviewChoices");
+                    Assert.AreEqual(_binding.PreparationList.Count, review.Cards.Count, "Una tarjeta por elemento elegido");
+                    Assert.IsFalse(review.Cards.Any(c => c.ShowsStatus), "La revisión no califica");
                     yield return Press(_binding.Module.Get<RectTransform>("ReviewChoices"), "ConfirmButton");
                     Assert.IsNotNull(personal);
                     Assert.AreEqual(omitHelmet, personal.HasCriticalProblem);
@@ -1218,13 +1222,29 @@ namespace RideSafe.Module01.Tests
                     "[" + momento + "] el nombre invade la columna de estado: " + row.name);
             }
 
-            // Since 2026-10-29 the section reports carry no note (PO: «quitar ese texto inferior»);
-            // only the final one does, and it is the score.
-            bool final = momento == "reporte final";
-            Assert.AreEqual(final, note.gameObject.activeInHierarchy,
-                "[" + momento + "] " + (final ? "la puntuación va bajo la lista" : "sin nota bajo la lista"));
+            // La sección de EPP se evalúa en tarjetas desde el 2026-11-04 (PO): título, «Puntaje: N»
+            // y una tarjeta con su icono por elemento, sin nota. El vehículo (nota de sección del
+            // 2026-11-04) y el reporte final siguen en filas con la puntuación bajo la lista.
+            RectTransform cards = (RectTransform)list.Find("Viewport/Cards");
+            bool gear = cards != null && cards.gameObject.activeInHierarchy;
+            if (gear)
+            {
+                foreach (ItemCard card in cards.GetComponentsInChildren<ItemCard>())
+                {
+                    Assert.IsTrue(card.ShowsStatus, "[" + momento + "] tarjeta sin icono de estado: " + card.name);
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(card.Name) || card.Name.StartsWith("M1/"),
+                        "[" + momento + "] tarjeta sin nombre traducido: " + card.Name);
+                    Assert.IsNotNull(card.Picture, "[" + momento + "] tarjeta sin render: " + card.ItemId);
+                }
+                TMP_Text score = list.Find("ScorePill/Pill/Text").GetComponent<TMP_Text>();
+                Assert.IsTrue(score.gameObject.activeInHierarchy, "[" + momento + "] sin puntaje");
+                StringAssert.IsMatch(@"\d+$", score.text, "[" + momento + "] el puntaje es el número solo: " + score.text);
+                Assert.IsFalse(score.text.StartsWith("M1/"), "[" + momento + "] puntaje sin traducir");
+            }
+            Assert.AreEqual(!gear, note.gameObject.activeInHierarchy,
+                "[" + momento + "] " + (gear ? "sin nota bajo las tarjetas" : "la puntuación va bajo la lista"));
             float listBottom = Bottom(list, panel);
-            if (final)
+            if (!gear)
             {
                 // The note's top edge right under the list's visible bottom.
                 float noteTop = Top(note, panel);
@@ -1232,6 +1252,9 @@ namespace RideSafe.Module01.Tests
                 Assert.LessOrEqual(listBottom - noteTop, ColumnComposition.Gap * 2f,
                     "[" + momento + "] hueco entre la lista y la nota: " + (listBottom - noteTop));
                 StringAssert.Contains("/ 100", note.GetComponentInChildren<TMP_Text>().text, "[" + momento + "] la nota es la puntuación");
+            }
+            if (momento == "reporte final")
+            {
                 Assert.IsFalse(Object.FindObjectsByType<RectTransform>(FindObjectsInactive.Include, FindObjectsSortMode.None)
                         .Any(r => r.name == "FinalScore" && r.gameObject.activeInHierarchy),
                     "[" + momento + "] el panel aparte de la nota ya no se enseña: se montaba sobre la lista");

@@ -11,7 +11,7 @@ namespace RideSafe.Tools.Editor
     /// batchmode run is impossible because the project is locked.
     /// <para>
     /// Polls <see cref="CommandPath"/>. One command per file, consumed on read:
-    /// <c>refresh</c>, <c>play</c>, <c>stop</c>, <c>editmode Asm1;Asm2</c>, <c>playmode Asm1</c> (results in
+    /// <c>refresh</c>, <c>play</c>, <c>stop</c>, <c>editmode Asm1;Asm2</c>, <c>editgroups Ns.Class1;Ns.Class2</c>, <c>playmode Asm1</c> (results in
     /// <see cref="HeadlessTestRunner.ResultPath"/>) or <c>exec Namespace.Type.Method</c> for a
     /// static, parameterless editor method (result in <see cref="ResultPath"/>).
     /// </para>
@@ -75,6 +75,9 @@ namespace RideSafe.Tools.Editor
                         break;
                     case "editmode":
                         HeadlessTestRunner.Run(assemblies);
+                        break;
+                    case "editgroups":
+                        HeadlessTestRunner.RunGroups(assemblies);
                         break;
                     case "playmode":
                         HeadlessTestRunner.RunPlayMode(assemblies);

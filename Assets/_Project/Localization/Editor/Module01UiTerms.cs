@@ -57,6 +57,11 @@ public static class Module01UiTerms
         Set(data, es, en, "M0/Location_Title", "Elige tu ubicación", "Choose your location");
         Set(data, es, en, "M0/Location_Florida", "EE. UU.", "United States");
         Set(data, es, en, "M0/Location_Bogota", "Latinoamérica", "Latin America");
+        // The comfort screen is «Ajustes» (PO, 2026-11-04), without its posture row.
+        Set(data, es, en, "M0/Comfort_Title", "Ajustes", "Settings");
+        // Vehicles by their name only (PO, 2026-11-04): «E-bike» and «E-scooter», no descriptions.
+        Set(data, es, en, "M0/Vehicle_EScooter", "Patineta eléctrica", "E-scooter");
+        Set(data, es, en, "M0/VehicleConfirm_EScooter", "Patineta eléctrica seleccionada. Confirma para continuar.", "E-scooter selected. Confirm to continue.");
 
         // Narratives §4.8.2: the scooter also checks its deck and fasteners; the e-bike has none.
         Set(data, es, en, "M1/Zone_Deck", "Plataforma", "Deck");
@@ -104,6 +109,10 @@ public static class Module01UiTerms
         Set(data, es, en, "M1/Section_MustRepeat",
             "No llegas a 70. Después del video repetirás la selección completa.",
             "You are below 70. After the video you will repeat the full selection.");
+        // Evaluación de la sección de EPP en tarjetas (PO, 2026-11-04): su título y la píldora con la
+        // nota, «solo el puntaje total». {0} es SelectionScore.Percent.
+        Set(data, es, en, "M1/Evaluation_Title", "Evaluación de tus elecciones", "Evaluation of your choices");
+        Set(data, es, en, "M1/Score_Label", "Puntaje: {0}", "Score: {0}");
         // The video's «Reproduciendo» tag was dropped (PO, 2026-10-16): its term goes too.
         data.RemoveTerm("M1/Video_Playing");
         // The pouch stopped being an item (2026-10-28). «M1/Stop_Tools» was dropped with it and

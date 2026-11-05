@@ -106,8 +106,9 @@ namespace RideSafe.UI
             _lastOn = on;
         }
 
+        // A hidden text takes no room: the vehicle cards lost their description (PO, 2026-11-04).
         private static float Preferred(TMP_Text text) =>
-            text == null || string.IsNullOrEmpty(text.text) ? 0f : text.GetPreferredValues(text.text).x;
+            text == null || !text.gameObject.activeSelf || string.IsNullOrEmpty(text.text) ? 0f : text.GetPreferredValues(text.text).x;
 
         private static void Place(RectTransform rect, float x, float width)
         {

@@ -325,12 +325,20 @@ namespace RideSafe.Module01
             {
                 Phase = "Review";
                 _binding.Module.Show("ReviewChoices");
-                var entries = _runner.Ledger.Selected.Select(id => new KeyValuePair<string,string>(id, NameOf(id)));
-                _binding.Module.Get<ChecklistView>("ReviewChoices").SetItems(entries);
+                // Tarjetas sin icono (PO, 2026-11-04): lo elegido, todavía sin calificar.
+                _binding.Module.Get<CardGrid>("ReviewChoices").Show(_runner.Ledger.Selected.Select(ReviewCard).ToList());
             }
         }
         private void PreviousZone() { if (Phase == "Choosing" && !_inspector.IsPresenting) _director.PreviousZone(); }
         private string NameOf(string id) => _allItems.TryGetItem(id, out var item) ? UIText.Resolve(item.NameKey) : id;
+
+        /// <summary>La tarjeta de un elemento elegido en «Revisa tus elecciones»: su render y su nombre.</summary>
+        private ComparisonEntry ReviewCard(string id) =>
+            new ComparisonEntry(ItemStatus.Selected, NameOf(id))
+            {
+                ItemId = id,
+                Image = _allItems.TryGetItem(id, out var item) ? item.Thumbnail : null,
+            };
         private void KeepChoosing() => EnterZone(_director.CurrentZone);
         private void Submit() { if (Phase == "Review") _director.AdvanceZone(); }
         /// <summary>
@@ -349,7 +357,7 @@ namespace RideSafe.Module01
         private void ShowPersonalReport(SelectionReport report)
         {
             _personalEntries = Entries(report);
-            ShowReport(_personalEntries, _director.PersonalScore);
+            ShowGearEvaluation(_personalEntries, _director.PersonalScore);
         }
         private void ShowVehicleReport(SelectionReport report)
         {
@@ -373,6 +381,23 @@ namespace RideSafe.Module01
         /// duplicaba doce renglones en una pantalla que ya iba justa.
         /// </para>
         /// </summary>
+        /// <summary>
+        /// «Evaluación de tus elecciones» de la sección de EPP (PO, 2026-11-04): una tarjeta por
+        /// elemento elegido con el icono de su estado y, bajo el título, el puntaje de la sección y
+        /// nada más: «solo muestra el puntaje total solito». La nota sale de las fórmulas de la hoja
+        /// del cliente (<see cref="SelectionScore"/>); el veredicto en palabras ya no se escribe,
+        /// pero repetir al reprobar sigue igual, después del video.
+        /// </summary>
+        private void ShowGearEvaluation(List<ComparisonEntry> entries, SelectionScore score)
+        {
+            Phase = "Report";
+            _binding.Module.Show("Comparison");
+            _binding.Comparison.SetCards(
+                UIText.Resolve("M1/Evaluation_Title"),
+                string.Format(UIText.Resolve("M1/Score_Label"), score.Percent),
+                entries);
+        }
+
         private void ShowReport(List<ComparisonEntry> entries, SelectionScore score)
         {
             Phase = "Report";

@@ -298,58 +298,8 @@ namespace RideSafe.Module01
             }
         }
 
-        private GameObject Copy(IEnumerable<MeshRenderer> renderers, string rootName)
-        {
-            GameObject root = null;
-            foreach (MeshRenderer renderer in renderers)
-            {
-                if (renderer == null || !renderer.enabled)
-                    continue;
-                // El verde de «ya seleccionado» y el contorno del vehículo son avisos del
-                // mundo, no el objeto: copiarlos pondría el aviso girando en el pedestal.
-                if (renderer.gameObject.name == SelectedHolo.MarkName ||
-                    renderer.gameObject.name == InspectionHighlight.OutlineName)
-                    continue;
-
-                // Fundido por el static batching, su MeshFilter apunta a la malla combinada de
-                // toda la escena, con los vertices ya en el mundo: la copia sale vacia o en otra
-                // parte. Paso en Quest 2026-10-16 con las botas, marcadas Static. Va el prefab.
-                if (renderer.isPartOfStaticBatch)
-                {
-                    if (root != null)
-                    {
-                        if (Application.isPlaying)
-                            Destroy(root);
-                        else
-                            DestroyImmediate(root);
-                    }
-                    return null;
-                }
-
-                MeshFilter filter = renderer.GetComponent<MeshFilter>();
-                if (filter == null || filter.sharedMesh == null)
-                    continue;
-
-                if (root == null)
-                {
-                    root = new GameObject(rootName);
-                    root.transform.SetParent(_instance.transform, false);
-                }
-
-                GameObject piece = new GameObject(
-                    renderer.gameObject.name, typeof(MeshFilter), typeof(MeshRenderer));
-                piece.transform.SetParent(root.transform, false);
-                // La pose del MUNDO, que es la que el arte le dio. Present recoloca y escala el
-                // conjunto despues, asi que da igual donde caiga ahora.
-                piece.transform.SetPositionAndRotation(
-                    renderer.transform.position, renderer.transform.rotation);
-                piece.transform.localScale = renderer.transform.lossyScale;
-                piece.GetComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
-                piece.GetComponent<MeshRenderer>().sharedMaterials = renderer.sharedMaterials;
-            }
-
-            return root;
-        }
+        private GameObject Copy(IEnumerable<MeshRenderer> renderers, string rootName) =>
+            VisibleMeshCopy.Of(renderers, rootName, _instance.transform);
 
         /// <summary>
         /// El mismo <c>!</c> que marca el punto en el mundo, para los que no tienen ni modelo ni

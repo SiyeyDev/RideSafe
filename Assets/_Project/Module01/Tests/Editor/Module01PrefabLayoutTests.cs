@@ -25,6 +25,46 @@ namespace RideSafe.Module01.Tests
             return found;
         }
 
+        /// <summary>
+        /// Revisa, la evaluación y el video, más grandes en el mundo (PO, 2026-11-04): 1.3 veces,
+        /// crecidos desde el centro del cuadro para que no se corran hacia un lado.
+        /// </summary>
+        [Test]
+        public void Los_paneles_de_lectura_son_mas_grandes_y_centrados()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+            foreach (string name in new[] { "ReviewChoices", "Comparison", "Explanation" })
+            {
+                RectTransform panel = (RectTransform)prefab.transform.Find(name);
+                Assert.AreEqual(1.3f, panel.localScale.x, 1e-4f, name);
+                Assert.AreEqual(1.3f, panel.localScale.y, 1e-4f, name);
+                Assert.AreEqual(new Vector2(0.5f, 0.5f), panel.pivot, name + " crece desde su centro");
+                Assert.AreEqual(new Vector2(501f, -278f), panel.anchoredPosition, name + " sigue centrado en el cuadro");
+            }
+            foreach (string name in new[] { "Orientation", "Preparation", "Diagnostic" })
+                Assert.AreEqual(Vector3.one, prefab.transform.Find(name).localScale, name + " no cambia");
+        }
+
+        /// <summary>
+        /// La bienvenida sin la franja vacía entre el texto y los botones (PO, 2026-11-04): el cuerpo
+        /// mide dos líneas y los botones van justo debajo.
+        /// </summary>
+        [Test]
+        public void La_bienvenida_no_deja_hueco_entre_texto_y_botones()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+            RectTransform box = (RectTransform)Find(prefab.transform, "OrientationPanel");
+            RectTransform body = (RectTransform)Find(box, "Body");
+            float bodyBottom = -body.anchoredPosition.y + body.sizeDelta.y;
+            foreach (string name in new[] { "RepeatAudioButton", "StartButton" })
+            {
+                RectTransform button = (RectTransform)Find(box, name);
+                float centre = -button.anchoredPosition.y + button.sizeDelta.y / 2f;
+                Assert.AreEqual(bodyBottom + 22f + 26f, centre, 0.5f, name + " justo bajo el texto");
+            }
+            Assert.IsTrue(body.GetComponent<TMPro.TMP_Text>().enableAutoSizing, "un texto más largo se encoge en vez de pisar los botones");
+        }
+
         [Test]
         public void Revisa_tus_elecciones_crece_con_la_lista()
         {
@@ -35,14 +75,16 @@ namespace RideSafe.Module01.Tests
             SerializedObject serialized = new SerializedObject(grow);
             // Since 2026-10-26 the window grows, up to a cap, and the rows scroll inside it.
             Assert.AreEqual("Viewport", serialized.FindProperty("_content").objectReferenceValue.name);
-            Assert.AreEqual("Rows", serialized.FindProperty("_scrolledRows").objectReferenceValue.name);
+            // Desde el 2026-11-04 lo que se desplaza son las tarjetas.
+            Assert.AreEqual("Cards", serialized.FindProperty("_scrolledRows").objectReferenceValue.name);
             Assert.AreEqual("ListBox", serialized.FindProperty("_box").objectReferenceValue.name);
             Assert.AreEqual("Modal", serialized.FindProperty("_recentre").objectReferenceValue.name);
             SerializedProperty push = serialized.FindProperty("_pushDown");
             string pushed = "";
             for (int i = 0; i < push.arraySize; i++)
                 pushed += push.GetArrayElementAtIndex(i).objectReferenceValue.name + ";";
-            foreach (string below in new[] { "LockNotice", "LockNoticeText", "KeepChoosingButton", "ConfirmButton" })
+            // El aviso de bloqueo se fue el 2026-10-29; quedan los dos botones.
+            foreach (string below in new[] { "KeepChoosingButton", "ConfirmButton" })
                 StringAssert.Contains(below + ";", pushed, below + " baja con la lista");
         }
 

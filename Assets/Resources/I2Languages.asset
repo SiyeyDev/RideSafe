@@ -504,8 +504,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Set up your comfort
-      - Ajusta tu comodidad
+      - Settings
+      - Ajustes
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Continue_Reason
@@ -608,8 +608,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Standing e-scooter selected. Confirm to continue.
-      - "Patinete el\xE9ctrico seleccionado. Confirma para continuar."
+      - E-scooter selected. Confirm to continue.
+      - "Patineta el\xE9ctrica seleccionada. Confirma para continuar."
       Flags: 0000
       Languages_Touch: []
     - Term: M0/VehicleConfirm_Title
@@ -648,8 +648,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Standing e-scooter
-      - "Patineta el\xE9ctrica de pie"
+      - E-scooter
+      - "Patineta el\xE9ctrica"
       Flags: 0000
       Languages_Touch: []
     - Term: M0/Vehicle_EScooter_Description
@@ -2371,6 +2371,38 @@ MonoBehaviour:
       Languages:
       - You need more than 70 to continue. Repeat the module.
       - "Necesitas m\xE1s de 70 para continuar. Repite el m\xF3dulo."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Section_CanAdvance
+      TermType: 0
+      Description: 
+      Languages:
+      - You can continue. Watch the explanation before moving on.
+      - "Puedes continuar. Mira la explicaci\xF3n antes de seguir."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Section_MustRepeat
+      TermType: 0
+      Description: 
+      Languages:
+      - You are below 70. After the video you will repeat the full selection.
+      - "No llegas a 70. Despu\xE9s del video repetir\xE1s la selecci\xF3n completa."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Evaluation_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Evaluation of your choices
+      - "Evaluaci\xF3n de tus elecciones"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Score_Label
+      TermType: 0
+      Description: 
+      Languages:
+      - 'Score: {0}'
+      - 'Puntaje: {0}'
       Flags: 0000
       Languages_Touch: []
     CaseInsensitiveTerms: 0

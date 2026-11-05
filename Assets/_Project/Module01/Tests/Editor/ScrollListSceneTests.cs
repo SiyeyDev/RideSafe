@@ -23,8 +23,9 @@ namespace RideSafe.Module01.Tests
             WithScene(all =>
             {
                 RectTransform modal = (RectTransform)all.Single(t => t.name == "Modal" && t.parent.name == "ReviewChoices");
-                RectTransform rows = (RectTransform)modal.Find("ListBox/Viewport/Rows");
-                Assert.IsNotNull(rows, "the rows live in ListBox/Viewport");
+                // Tarjetas desde el 2026-11-04 (PO): lo que se desplaza es la cuadrícula.
+                RectTransform rows = (RectTransform)modal.Find("ListBox/Viewport/Cards");
+                Assert.IsNotNull(rows, "the cards live in ListBox/Viewport");
                 AssertScrolls(rows);
                 SerializedObject grow = new SerializedObject(modal.GetComponent<GrowWithContent>());
                 Assert.AreSame(rows, grow.FindProperty("_scrolledRows").objectReferenceValue);

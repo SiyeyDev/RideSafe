@@ -6,7 +6,7 @@ namespace RideSafe.Module00.Tests
 {
     /// <summary>
     /// The vehicle name cards of PF_Module00_UI hold the Spanish names on one line
-    /// ("Bicicleta eléctrica", "Patineta eléctrica de pie": +35% string reserve of the UI system)
+    /// ("Bicicleta eléctrica", "Patineta eléctrica": +35% string reserve of the UI system)
     /// and stay centred over their vehicles.
     /// </summary>
     public class VehicleLabelLayoutTests
@@ -29,6 +29,37 @@ namespace RideSafe.Module00.Tests
             Assert.AreSame(Find(card, "Description").GetComponent<TMPro.TMP_Text>(), serialized.FindProperty("_description").objectReferenceValue);
             Assert.AreSame(Find(card, "Check"), serialized.FindProperty("_check").objectReferenceValue);
             Assert.AreSame(Find(card, "StateCaption"), serialized.FindProperty("_caption").objectReferenceValue);
+        }
+
+        /// <summary>
+        /// Only the vehicle's name (PO, 2026-11-04): «E-bike» / «E-scooter», no «Pedal assist · seated»
+        /// line under it, and the name and check centred in a one-row card.
+        /// </summary>
+        [TestCase("Option_ebike")]
+        [TestCase("Option_escooter")]
+        public void VehicleCard_IsTheNameOnly(string name)
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+            RectTransform card = Find(prefab.transform, name);
+            Assert.IsFalse(Find(card, "Description").gameObject.activeSelf, name + " has no description line");
+            float middle = card.sizeDelta.y / 2f;
+            foreach (string child in new[] { "Title", "Check" })
+            {
+                RectTransform rect = Find(card, child);
+                Assert.AreEqual(middle, -rect.anchoredPosition.y + rect.sizeDelta.y / 2f, 0.5f, name + "/" + child + " is centred");
+            }
+        }
+
+        /// <summary>
+        /// No «Selected» word on any module 0 option (PO, 2026-11-04): the coral card, its fold and its
+        /// check already say it.
+        /// </summary>
+        [Test]
+        public void Options_NeverWriteSelected()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+            foreach (RideSafe.UI.SelectableStyle style in prefab.GetComponentsInChildren<RideSafe.UI.SelectableStyle>(true))
+                Assert.IsEmpty(new SerializedObject(style).FindProperty("_onCaption").stringValue, style.name);
         }
 
         [Test]

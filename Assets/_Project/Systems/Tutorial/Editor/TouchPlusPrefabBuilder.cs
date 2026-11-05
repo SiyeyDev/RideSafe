@@ -77,7 +77,7 @@ namespace RideSafe.Tutorial.Editor
                     Vector3 bodyCenter = body.GetComponent<Renderer>().bounds.center;
                     List<ControllerButtonVisual> buttons = new List<ControllerButtonVisual>(root.GetComponentsInChildren<ControllerButtonVisual>(true));
                     SerializedObject serialized = new SerializedObject(visual);
-                    WritePoses(serialized, root.transform, bodyCenter, buttons, report);
+                    WritePoses(serialized, root.transform, bodyCenter, buttons, prefix == "L_", report);
                     serialized.ApplyModifiedPropertiesWithoutUndo();
                     PrefabUtility.SaveAsPrefabAsset(root, path);
                 }
@@ -130,7 +130,7 @@ namespace RideSafe.Tutorial.Editor
                 list.arraySize = buttons.Count;
                 for (int i = 0; i < buttons.Count; i++)
                     list.GetArrayElementAtIndex(i).objectReferenceValue = buttons[i];
-                WritePoses(serialized, root.transform, bodyCenter, buttons, report);
+                WritePoses(serialized, root.transform, bodyCenter, buttons, hand == XRNodeRole.LeftHand, report);
                 serialized.ApplyModifiedPropertiesWithoutUndo();
 
                 PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
@@ -171,7 +171,7 @@ namespace RideSafe.Tutorial.Editor
         /// the view's origin so the model turns in place. Tunable in the prefab afterwards.
         /// </summary>
         private static void WritePoses(SerializedObject serialized, Transform root, Vector3 bodyCenterWorld,
-            List<ControllerButtonVisual> buttons, StringBuilder report)
+            List<ControllerButtonVisual> buttons, bool left, StringBuilder report)
         {
             Vector3 center = root.InverseTransformPoint(bodyCenterWorld);
             Dictionary<ControllerControl, Vector3> direction = new Dictionary<ControllerControl, Vector3>();
@@ -188,12 +188,16 @@ namespace RideSafe.Tutorial.Editor
             Vector3 front = Vector3.ProjectOnPlane(trigger, top).normalized;
             Vector3 side = Vector3.ProjectOnPlane(grip, top).normalized;
 
+            // Lying on its side, ring to the right and handle down to the left, the trigger in profile
+            // under the ring and only the rim of the ring's face showing (PO, 2026-11-04, with a product
+            // photo). The left controller shows its grip side; the right one, mirrored, its outer side, so
+            // both point the same way on screen. Before, it stood leaning forward seen from above.
+            Vector3 profile = left ? side - top * 0.05f : -side + top * 0.12f;
+            Vector3 lying = top - front * 1.2f;
+
             var poses = new List<(ControllerControl Control, Vector3 View, Vector3 Up)>
             {
-                // As the learner holds it: leaning forward, seen from the grip side and a little from
-                // behind and above, so the trigger shows in profile under the finger (PO, 2026-10-16).
-                // The old pose stood it upright facing the viewer, like a product shot.
-                (ControllerControl.Trigger, side * 0.8f + top * 0.35f - front * 0.25f, top * 0.6f + front * 0.6f),
+                (ControllerControl.Trigger, profile, lying),
                 (ControllerControl.Grip, side + top * 0.35f, front),
                 (ControllerControl.PrimaryButton, top + side * 0.25f, front),
                 (ControllerControl.SecondaryButton, top + side * 0.25f, front),
@@ -213,7 +217,8 @@ namespace RideSafe.Tutorial.Editor
                 entry.FindPropertyRelative("Offset").vector3Value = -(rotation * center);
             }
 
-            Quaternion fallback = ViewRotation(top + side * 0.5f + front * 0.2f, front);
+            // Any control without its own pose is shown like the trigger, the tutorial's main one.
+            Quaternion fallback = ViewRotation(profile, lying);
             SerializedProperty defaultPose = serialized.FindProperty("_defaultPose");
             defaultPose.FindPropertyRelative("Control").enumValueIndex = (int)ControllerControl.None;
             defaultPose.FindPropertyRelative("Euler").vector3Value = fallback.eulerAngles;

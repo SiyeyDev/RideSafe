@@ -198,7 +198,8 @@ namespace RideSafe.UI.Tests
             Assert.IsTrue(next.interactable);
             Assert.IsFalse(Child<UnityEngine.UI.Toggle>(panel, "Options/Option_es").isOn, "Only one language at a time.");
             Assert.AreEqual("Card_Selected", english.GetComponent<UnityEngine.UI.Image>().sprite.name);
-            Assert.IsTrue(english.transform.Find("StateCaption").gameObject.activeSelf);
+            // Sin la palabra «Selected» (PO, 2026-11-04): la tarjeta coral, su doblez y el check ya lo dicen.
+            Assert.IsFalse(english.transform.Find("StateCaption").gameObject.activeSelf);
 
             next.onClick.Invoke();
             Assert.AreEqual("en", reported);
@@ -316,25 +317,28 @@ namespace RideSafe.UI.Tests
         }
 
         [UnityTest]
-        public IEnumerator ReviewChoices_ShowsOnlyGivenItemsReadOnly()
+        public IEnumerator ReviewChoices_ShowsOnlyGivenItemsAsCards()
         {
             GameObject panel = Open("PF_Module01_UI", "ReviewChoices");
             yield return null;
 
-            // Desde que la lista se desplaza (PO, 2026-10-26) las filas viven en su ventana.
-            Transform rows = panel.transform.Find("Modal/ListBox/Viewport/Rows") ?? panel.transform.Find("Modal/ListBox/Rows");
-            Assert.AreEqual(0, ActiveChildren(rows), "Preview sample rows must not survive into runtime.");
+            // Tarjetas desde el 2026-11-04 (PO), en la misma ventana que desplazaba las filas.
+            Transform cards = panel.transform.Find("Modal/ListBox/Viewport/Cards");
+            Assert.IsNotNull(cards, "the cards live in the scrolled window");
+            Assert.AreEqual(0, ActiveChildren(cards), "Preview sample cards must not survive into runtime.");
+            Assert.IsFalse(panel.transform.Find("Modal/Subtitle").gameObject.activeSelf, "only the title (PO)");
 
-            panel.GetComponent<ChecklistView>().SetItems(new[]
+            panel.GetComponent<CardGrid>().Show(new[]
             {
-                new KeyValuePair<string, string>("helmet", "Helmet · undamaged"),
-                new KeyValuePair<string, string>("jacket", "Fitted jacket")
+                new ComparisonEntry(ItemStatus.Selected, "Helmet · undamaged") { ItemId = "helmet" },
+                new ComparisonEntry(ItemStatus.Selected, "Fitted jacket") { ItemId = "jacket" }
             });
             yield return null;
 
-            Assert.AreEqual(2, ActiveChildren(rows));
-            Assert.IsFalse(rows.Find("Row · Fitted jacket").GetComponent<UnityEngine.UI.Button>().interactable,
-                           "The recap is read-only.");
+            Assert.AreEqual(2, ActiveChildren(cards));
+            foreach (ItemCard card in panel.GetComponent<CardGrid>().Cards)
+                Assert.IsFalse(card.ShowsStatus, "the review does not give the answer away");
+            Assert.IsNull(cards.GetComponentInChildren<UnityEngine.UI.Selectable>(), "The recap is read-only.");
         }
 
         [UnityTest]

@@ -60,7 +60,13 @@ namespace RideSafe.Tools.Editor
         /// <summary>Lanza los tests de PlayMode de las assemblies indicadas.</summary>
         public static void RunPlayMode(string[] assemblyNames) => Run(assemblyNames, TestMode.PlayMode);
 
-        private static void Run(string[] assemblyNames, TestMode mode)
+        /// <summary>
+        /// Solo las clases de EditMode indicadas, por nombre completo
+        /// (<c>RideSafe.Module01.Tests.CardGridTests</c>): verificar un cambio sin pasar la suite entera.
+        /// </summary>
+        public static void RunGroups(string[] groupNames) => Run(null, TestMode.EditMode, groupNames);
+
+        private static void Run(string[] assemblyNames, TestMode mode, string[] groupNames = null)
         {
             if (!PrepareEditor())
                 return;
@@ -75,6 +81,8 @@ namespace RideSafe.Tools.Editor
             Filter filter = new Filter { testMode = mode };
             if (assemblyNames != null && assemblyNames.Length > 0)
                 filter.assemblyNames = assemblyNames;
+            if (groupNames != null && groupNames.Length > 0)
+                filter.groupNames = System.Array.ConvertAll(groupNames, g => "^" + System.Text.RegularExpressions.Regex.Escape(g) + @"(\.|$)");
 
             api.Execute(new ExecutionSettings(filter));
         }

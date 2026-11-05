@@ -202,6 +202,23 @@ namespace RideSafe.UI
         [Tooltip("Alto máximo de la ventana; lo que no quepa se desplaza dentro.")]
         [SerializeField, Min(0f)] private float _maxListHeight = 300f;
 
+        [Header("Cards (EPP)")]
+        [Tooltip("La cuadrícula de tarjetas de la sección de EPP. Vacío = el panel solo pinta filas.")]
+        [SerializeField] private CardGrid _cards;
+        [Tooltip("El número de la píldora «Puntaje: 85».")]
+        [SerializeField] private TMP_Text _score;
+        [Tooltip("Lo que solo se ve con tarjetas: la píldora del puntaje.")]
+        [SerializeField] private GameObject[] _cardsOnly = new GameObject[0];
+        [Tooltip("Lo que solo se ve con filas: el separador de la caja.")]
+        [SerializeField] private GameObject[] _rowsOnly = new GameObject[0];
+        [Tooltip("El fondo de la caja de la lista: con tarjetas se apaga y van sobre el panel.")]
+        [SerializeField] private Graphic _columnBackground;
+        [Tooltip("Alto máximo de la ventana con tarjetas: dos filas; lo demás se desplaza.")]
+        [SerializeField, Min(0f)] private float _maxCardsHeight = 312f;
+
+        private bool _showingCards;
+        private int _rowsTopPadding = -1;
+
         private readonly List<ComparisonEntry> _current = new List<ComparisonEntry>();
 
         private RectTransform _below;
@@ -298,11 +315,12 @@ namespace RideSafe.UI
         /// </summary>
         private void FitViewport()
         {
-            if (_viewport == null || _leftRows == null)
+            RectTransform content = _showingCards ? _cards.Content : _leftRows;
+            if (_viewport == null || content == null)
                 return;
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_leftRows);
-            float rows = LayoutUtility.GetPreferredHeight(_leftRows);
-            _viewport.preferredHeight = _viewport.minHeight = Mathf.Min(rows, _maxListHeight);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+            float rows = LayoutUtility.GetPreferredHeight(content);
+            _viewport.preferredHeight = _viewport.minHeight = Mathf.Min(rows, _showingCards ? _maxCardsHeight : _maxListHeight);
             ScrollRect scroll = _viewport.GetComponent<ScrollRect>();
             if (scroll != null)
                 scroll.verticalNormalizedPosition = 1f;
@@ -337,6 +355,7 @@ namespace RideSafe.UI
         {
             if (_rowTemplate != null)
                 _rowTemplate.gameObject.SetActive(false);
+            ShowCards(false);
             Fill(_leftRows, _left);
             Fill(_rightRows, _right);
         }
@@ -345,6 +364,7 @@ namespace RideSafe.UI
                                string leftHeading, IList<ComparisonEntry> left,
                                string rightHeading, IList<ComparisonEntry> right)
         {
+            ShowCards(false);
             if (_title != null) _title.text = title;
             if (_subtitle != null) _subtitle.text = subtitle;
             ShowNote(!string.IsNullOrEmpty(subtitle));
@@ -372,6 +392,7 @@ namespace RideSafe.UI
         /// </summary>
         public void SetSingleList(string title, string note, IList<ComparisonEntry> entries)
         {
+            ShowCards(false);
             if (_title != null) _title.text = title;
             if (_subtitle != null) _subtitle.text = note;
             ShowNote(!string.IsNullOrEmpty(note));
@@ -389,6 +410,78 @@ namespace RideSafe.UI
             if (_emptyState != null)
                 _emptyState.SetActive(entries == null || entries.Count == 0);
             Fill(_leftRows, entries);
+        }
+
+        /// <summary>
+        /// «Evaluación de tus elecciones» de la sección de EPP (PO, 2026-11-04): el título, la
+        /// píldora del puntaje y una tarjeta por elemento elegido, cada una con el icono de su
+        /// estado. Sin subtítulo ni nota bajo la lista: «solo el título».
+        /// <para>
+        /// El mismo panel sigue pintando filas para el vehículo y el reporte final
+        /// (<see cref="SetSingleList"/>), que vuelve a ellas. Por eso las tarjetas comparten la
+        /// ventana de scroll de las filas: se cambia lo que se desplaza, no la ventana.
+        /// </para>
+        /// </summary>
+        public void SetCards(string title, string score, IList<ComparisonEntry> entries)
+        {
+            ShowCards(true);
+            if (_title != null) _title.text = title;
+            if (_score != null) _score.text = score;
+            if (_subtitle != null) _subtitle.text = string.Empty;
+            ShowNote(false);
+            if (_leftHeading != null) _leftHeading.gameObject.SetActive(false);
+            if (_rightHeading != null) _rightHeading.gameObject.SetActive(false);
+            if (_rightRows != null && _rightRows.parent != null)
+                _rightRows.parent.gameObject.SetActive(false);
+            if (_emptyState != null)
+                _emptyState.SetActive(entries == null || entries.Count == 0);
+
+            if (_cards != null)
+                _cards.Show(entries, _glyphs);
+            FitViewport();
+            ArrangeBelow();
+            _current.Clear();
+            if (entries != null)
+                _current.AddRange(entries);
+        }
+
+        /// <summary>Tarjetas o filas: apaga lo del otro modo y cambia lo que desplaza la ventana.</summary>
+        private void ShowCards(bool on)
+        {
+            if (_cards == null || _cards.Content == null)
+                on = false;
+            _showingCards = on;
+            if (_cards != null && _cards.Content != null)
+            {
+                _cards.Content.gameObject.SetActive(on);
+                if (!on)
+                    _cards.Clear();
+            }
+            if (_leftRows != null)
+                _leftRows.gameObject.SetActive(!on);
+            foreach (GameObject part in _cardsOnly)
+                if (part != null) part.SetActive(on);
+            foreach (GameObject part in _rowsOnly)
+                if (part != null) part.SetActive(!on);
+            if (_columnBackground != null)
+                _columnBackground.enabled = !on;
+            // Sin caja, su margen de arriba solo separaba la píldora del título.
+            VerticalLayoutGroup stack = Column != null ? Column.GetComponent<VerticalLayoutGroup>() : null;
+            if (stack != null)
+            {
+                if (_rowsTopPadding < 0)
+                    _rowsTopPadding = stack.padding.top;
+                stack.padding.top = on ? 0 : _rowsTopPadding;
+                LayoutRebuilder.MarkLayoutForRebuild(Column);
+            }
+
+            RectTransform content = on ? _cards.Content : _leftRows;
+            ScrollRect scroll = content != null ? content.GetComponentInParent<ScrollRect>(true) : null;
+            if (scroll != null)
+            {
+                scroll.content = content;
+                scroll.verticalNormalizedPosition = 1f;
+            }
         }
 
         private void Fill(RectTransform container, IList<ComparisonEntry> entries)

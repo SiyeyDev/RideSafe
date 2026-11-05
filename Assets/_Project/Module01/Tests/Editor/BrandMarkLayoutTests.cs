@@ -55,7 +55,12 @@ namespace RideSafe.Module01.Tests
                 if (hug != null)
                     room = Mathf.Max(room, new SerializedObject(hug).FindProperty("_firstLineIndent").floatValue);
                 Assert.GreaterOrEqual(room, width, title.parent.name + "/" + title.name + " makes room for the mark");
-                Assert.AreEqual(0f, text.margin.z, 0.01f, title.parent.name + "/" + title.name + ": no empty strip on the right");
+                // Except the module 0 titles (PO, 2026-11-04): «el texto siempre en la mitad del panel»,
+                // so the same room on the right; their box has one standard width.
+                bool module0Title = title.name == "Title" && title.parent.name == "Header" && text.margin.x > 0f
+                                    && title.root.name.Contains("Module00");
+                Assert.AreEqual(module0Title ? text.margin.x : 0f, text.margin.z, 0.01f,
+                                title.parent.name + "/" + title.name + (module0Title ? ": the text on the centre line" : ": no empty strip on the right"));
                 return image;
             }
             Assert.GreaterOrEqual(text.margin.x, offset + width, title.parent.name + "/" + title.name + " starts after the mark");
@@ -155,6 +160,11 @@ namespace RideSafe.Module01.Tests
             }
         }
 
+        /// <summary>
+        /// «Ajustes»: its title in the blue box above the door (2026-10-29) and the settings in their own
+        /// box under it, on the same centre line. Since 2026-11-04 the title box has the standard width
+        /// and the settings box is as wide as the settings, so the two no longer share their edges.
+        /// </summary>
         [Test]
         public void Comfort_TitleInABlueBox_SettingsInTheirOwnUnderIt()
         {
@@ -162,9 +172,33 @@ namespace RideSafe.Module01.Tests
             RectTransform header = TitleBox(prefab, "Comfort");
             RectTransform content = (RectTransform)prefab.transform.Find("Comfort/Frame");
             float pad = new SerializedObject(content.GetComponent<Enclose>()).FindProperty("_atlasPadding").floatValue;
-            Assert.AreEqual(16f, -content.anchoredPosition.y + pad - VisibleBottom(header), 0.5f, "the two boxes 16 apart");
-            Assert.AreEqual(header.anchoredPosition.x, content.anchoredPosition.x, 0.5f, "same left edge");
-            Assert.AreEqual(header.sizeDelta.x, content.sizeDelta.x, 0.5f, "same width");
+            Assert.Greater(-content.anchoredPosition.y + pad, VisibleBottom(header), "the settings under the title");
+            Assert.AreEqual(header.anchoredPosition.x + header.sizeDelta.x / 2f, content.anchoredPosition.x + content.sizeDelta.x / 2f,
+                            0.5f, "on the same centre line");
+            Assert.IsFalse(prefab.transform.Find("Comfort/SettingsPanel/PostureGroup").gameObject.activeSelf,
+                           "no riding posture (PO, 2026-11-04)");
+        }
+
+        /// <summary>
+        /// One standard title box on the four module 0 screens (PO, 2026-11-04: it changed size with the
+        /// language), with the text itself on the centre line: the same room right and left of it.
+        /// </summary>
+        [Test]
+        public void Module0Titles_ShareOneWidth_TheTextCentred()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Module00);
+            float width = -1f;
+            foreach (string screen in new[] { "Language", "Jurisdiction", "Vehicle", "Comfort" })
+            {
+                RectTransform title = (RectTransform)prefab.transform.Find(screen + "/Header/Title");
+                Assert.IsNull(title.GetComponent<HugText>(), screen + ": the box no longer hugs its text");
+                if (width < 0f)
+                    width = title.sizeDelta.x;
+                Assert.AreEqual(width, title.sizeDelta.x, 0.5f, screen + ": the standard width");
+                TMP_Text text = title.GetComponent<TMP_Text>();
+                Assert.AreEqual(text.margin.x, text.margin.z, 0.01f, screen + ": the text on the centre line");
+                Assert.AreEqual(HorizontalAlignmentOptions.Center, text.horizontalAlignment, screen);
+            }
         }
 
         [Test]

@@ -109,10 +109,12 @@ namespace RideSafe.UI.EditorTools
                 Transform firstPass = vehicle.Find(FrameName); // its header box was named "Frame" for a day
                 if (firstPass != null)
                     Object.DestroyImmediate(firstPass.gameObject);
-                HeaderBox(vehicle, kit);
+                HeaderBox(vehicle, kit, OptionsCentre);
                 SetVisibleY(Find(vehicle, "ConfirmationBar"), 440f, 74f);
-                SetVisibleY(Find(vehicle, "VehicleLabels/Option_ebike"), 183f, 74f);
-                SetVisibleY(Find(vehicle, "VehicleLabels/Option_escooter"), 185f, 66f);
+                // Only the name, «E-bike» / «E-scooter» (PO, 2026-11-04): the «Pedal assist · seated»
+                // line goes, the card shrinks to one row and the check sits beside the name.
+                SetVisibleY(Find(vehicle, "VehicleLabels/Option_ebike"), 183f, VehicleCardHeight);
+                SetVisibleY(Find(vehicle, "VehicleLabels/Option_escooter"), 185f, VehicleCardHeight);
                 foreach (Transform card in Find(vehicle, "VehicleLabels"))
                 {
                     FitCardToContent fit = card.GetComponent<FitCardToContent>();
@@ -120,6 +122,16 @@ namespace RideSafe.UI.EditorTools
                         continue;
                     fit.HoldCaptionInside(false);
                     EditorUtility.SetDirty(fit);
+                    card.Find("Description").gameObject.SetActive(false);
+                    RectTransform title = Find(card, "Title"), check = Find(card, "Check");
+                    // The prefab's own text, for the editor; at runtime I2 writes M0/Vehicle_EScooter.
+                    if (card.name == "Option_escooter")
+                        title.GetComponent<TMP_Text>().text = "E-scooter";
+                    float pad = PadOf((RectTransform)card);
+                    title.anchoredPosition = new Vector2(title.anchoredPosition.x, -(pad + (VehicleCardHeight - title.sizeDelta.y) * 0.5f));
+                    check.anchoredPosition = new Vector2(check.anchoredPosition.x, -(pad + (VehicleCardHeight - check.sizeDelta.y) * 0.5f));
+                    EditorUtility.SetDirty(title);
+                    EditorUtility.SetDirty(check);
                 }
 
                 Transform comfort = Find(root, "Comfort");
@@ -131,16 +143,28 @@ namespace RideSafe.UI.EditorTools
                 // «Izquierda» did not fit its pill; it grows leftward, «Derecha» keeps its place.
                 SetVisibleWidthKeepRight(Find(comfort, "SettingsPanel/HandGroup/LeftOption"), 105f);
                 // The settings stay on the door where they were (top 170) now that the title went up.
-                HeaderBox(comfort, kit);
+                HeaderBox(comfort, kit, UIBuilderKit.FrameW * 0.5f);
                 settings.anchoredPosition = new Vector2(settings.anchoredPosition.x, -ComfortSettingsTop);
+                WithoutPosture(settings);
                 Enclose box = ContentBox(comfort, kit, new[] { settings });
                 ButtonsUnder(box, Find(comfort, "BackButton"), Find(comfort, "StartButton"), NavButtonWidth, 220f);
                 // «Iniciar Módulo 1» keeps its words: it starts the module, it is not a step back or forth.
                 NavIcon(Find(comfort, "BackButton"), kit, "Icon_Back");
 
+                // «Selected» goes from every option (PO, 2026-11-04): the coral card, its fold and its
+                // check already say it.
+                foreach (SelectableStyle style in root.GetComponentsInChildren<SelectableStyle>(true))
+                {
+                    UIWire.Str(style, "_onCaption", string.Empty);
+                    EditorUtility.SetDirty(style);
+                }
+
                 LabelsNeverWrap(root);
             });
         }
+
+        /// <summary>The vehicle name cards, one row tall since they only carry the name.</summary>
+        private const float VehicleCardHeight = 48f;
 
         #endregion
 
@@ -157,6 +181,7 @@ namespace RideSafe.UI.EditorTools
                 SetX(Find(box, "Title"), centre - 270.5f, 541f);
                 SetVisibleX(Find(box, "RepeatAudioButton"), centre - 174.5f, 230f);
                 SetVisibleX(Find(box, "StartButton"), centre - 174.5f + 245f, 104f);
+                OrientationFitsItsBody(box);
                 // The company mark at the top left of every panel (2026-10-21), here where the body text
                 // starts and on the «MÓDULO 1 · PREPARACIÓN» line above the title (PO). The title keeps
                 // clear of it on one line: «Prepárate antes de rodar» wrapped onto the body.
@@ -286,12 +311,52 @@ namespace RideSafe.UI.EditorTools
 
                 // The review and «Mi Elección» scroll past a cap instead of growing off the view (PO, 2026-10-26).
                 UIScrollList.ApplyToModule01(root, kit);
+                // The EPP section in cards (PO, 2026-11-04), after the scroll windows it reuses.
+                UICardGrid.ApplyToModule01(root, kit);
+                // The review, the evaluation and the video, bigger in the world (PO, 2026-11-04, with a
+                // screenshot marked in red): the cards' renders and names read small at 1.8 m.
+                foreach (string panel in ReadingPanels)
+                    ScaleAboutCentre((RectTransform)root.transform.Find(panel), ReadingPanelScale);
 
                 LabelsNeverWrap(root);
             });
         }
 
         #endregion
+
+        /// <summary>
+        /// The welcome card without the empty band between its text and its buttons (PO, 2026-11-04): the
+        /// body takes two lines, the buttons follow it, and the card ends a margin under them. A longer
+        /// text shrinks a little (TMP auto-size) instead of running into the buttons.
+        /// </summary>
+        private static void OrientationFitsItsBody(RectTransform box)
+        {
+            RectTransform body = Find(box, "Body");
+            TMP_Text text = body.GetComponent<TMP_Text>();
+            float size = text.enableAutoSizing ? text.fontSizeMax : text.fontSize;
+            text.enableAutoSizing = false;
+            text.fontSize = size;
+            float twoLines = Mathf.Ceil(text.GetPreferredValues("A\nA", body.sizeDelta.x, 0f).y);
+            text.fontSizeMax = size;
+            text.fontSizeMin = size - 3f;
+            text.enableAutoSizing = true;
+            text.verticalAlignment = VerticalAlignmentOptions.Top;
+            EditorUtility.SetDirty(text);
+            body.sizeDelta = new Vector2(body.sizeDelta.x, twoLines);
+            EditorUtility.SetDirty(body);
+
+            float centre = -body.anchoredPosition.y + twoLines + OrientationGap + OrientationButtonHeight * 0.5f;
+            foreach (string name in new[] { "RepeatAudioButton", "StartButton" })
+            {
+                RectTransform button = Find(box, name);
+                button.anchoredPosition = new Vector2(button.anchoredPosition.x, -(centre - button.sizeDelta.y * 0.5f));
+                EditorUtility.SetDirty(button);
+            }
+            box.sizeDelta = new Vector2(box.sizeDelta.x, centre + OrientationButtonHeight * 0.5f + OrientationBottom + PadOf(box));
+            EditorUtility.SetDirty(box);
+        }
+
+        private const float OrientationGap = 22f, OrientationButtonHeight = 52f, OrientationBottom = 30f;
 
         /// <summary>
         /// White status glyphs tinted by status, in ItemStatus order (Selected, CoreOmitted,
@@ -325,6 +390,27 @@ namespace RideSafe.UI.EditorTools
                 colors.GetArrayElementAtIndex(i).colorValue = StatusSemaphore[i].Tint;
             }
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>The panels read at length: «Revisa tus elecciones», the evaluation and the video.</summary>
+        public static readonly string[] ReadingPanels = { "ReviewChoices", "Comparison", "Explanation" };
+
+        /// <summary>How much bigger they are than the storyboard frame (PO, 2026-11-04: the red mark was ~1.25–1.4×).</summary>
+        public const float ReadingPanelScale = 1.3f;
+
+        /// <summary>
+        /// Scales a full-frame panel about the frame's centre, so it grows evenly on every side and
+        /// nothing inside moves relative to the rest of it. Idempotent: absolute pivot, position and scale.
+        /// </summary>
+        public static void ScaleAboutCentre(RectTransform panel, float scale)
+        {
+            Vector2 size = panel.sizeDelta;
+            // The kit's groups hang from the top-left; the same rect, held by its centre.
+            Vector2 topLeft = panel.anchoredPosition - new Vector2(panel.pivot.x * size.x, (panel.pivot.y - 1f) * size.y);
+            panel.pivot = new Vector2(0.5f, 0.5f);
+            panel.anchoredPosition = topLeft + new Vector2(0.5f * size.x, -0.5f * size.y);
+            panel.localScale = new Vector3(scale, scale, 1f);
+            EditorUtility.SetDirty(panel);
         }
 
         /// <summary>PF_Subtitles is hand-made (no builder): only its follower's pitch changes.</summary>
@@ -375,10 +461,11 @@ namespace RideSafe.UI.EditorTools
         /// module 0 questions apart from their options, like «Elige tu vehículo»). Returns where the
         /// box's visible edge ends, top-down, for what goes under it.
         /// </summary>
-        private static float HeaderBox(Transform panel, UIBuilderKit kit)
+        private static float HeaderBox(Transform panel, UIBuilderKit kit, float centre)
         {
             RectTransform title = Find(panel, "Header/Title");
             RectTransform body = Find(panel, "Header/Body");
+            StandardTitle(title, kit, centre);
             // The box wraps what shows: the module 0 subtitles are off since 2026-10-29.
             RectTransform[] pieces = body.gameObject.activeSelf ? new[] { title, body } : new[] { title };
             Enclose box = Frame(panel, kit, pieces, HeaderMargin, HeaderFrameName, TitleBoxSprite);
@@ -390,16 +477,94 @@ namespace RideSafe.UI.EditorTools
             bodyText.color = UIBuilderKit.OnDark;
             EditorUtility.SetDirty(bodyText);
             UIBrand.Place(kit, titleText, (RectTransform)box.transform, HeaderMargin.x, true);
-            // The box as wide as the title and its mark, not a fixed width with the rest empty
-            // (PO, 2026-10-29). The width the builder gave the title is the most it may take.
+            // The text itself on the centre line, the mark hanging at its left (PO, 2026-11-04): the
+            // same room on the right as the mark takes on the left. Inline, mark and text were centred
+            // as one block and the text sat right of centre.
+            Vector4 room = titleText.margin;
+            room.z = room.x;
+            titleText.margin = room;
+            EditorUtility.SetDirty(titleText);
+            // One width for every module 0 title (PO, 2026-11-04): the box hugging its text changed size
+            // when the language changed. StandardTitle sets it; the hug of 2026-10-29 goes.
             HugText hug = title.GetComponent<HugText>();
-            if (hug == null)
-                hug = title.gameObject.AddComponent<HugText>();
-            float widest = title.sizeDelta.x - titleText.margin.x - titleText.margin.z;
-            hug.Configure(titleText, null, widest, 0f, Vector2.zero, false);
-            EditorUtility.SetDirty(hug);
+            if (hug != null)
+                Object.DestroyImmediate(hug);
             RectTransform frame = (RectTransform)box.transform;
             return -frame.anchoredPosition.y + frame.sizeDelta.y - PadOf(frame);
+        }
+
+        /// <summary>
+        /// Every module 0 title, in both languages (the I2 values of M0/Language_Title, Location_Title,
+        /// Vehicle_Title and Comfort_Title). The standard title box fits the widest at full size.
+        /// </summary>
+        private static readonly string[] TitleTexts =
+        {
+            "Choose your language", "Elige tu idioma", "Choose your location", "Elige tu ubicación",
+            "Choose your vehicle", "Elige tu vehículo", "Settings", "Ajustes"
+        };
+        private const float TitleFontMax = 34f, TitleFontMin = 28f;
+
+        /// <summary>Where the option cards and the vehicles are centred (their cards at 185/845 and 200/830).</summary>
+        private const float OptionsCentre = 515f;
+
+        /// <summary>
+        /// The same box for every module 0 title, whatever the language (PO, 2026-11-04: «dejemos un
+        /// standard de este título y que el texto siempre esté en la mitad del panel»): as wide as the
+        /// widest title plus the mark's room on both sides, centred on <paramref name="centre"/>. The text
+        /// is centred in it, so it sits on the panel's centre line; the mark stays at the box's left.
+        /// A longer future title shrinks (28–34 pt) instead of growing the box.
+        /// </summary>
+        private static void StandardTitle(RectTransform title, UIBuilderKit kit, float centre)
+        {
+            TMP_Text text = title.GetComponent<TMP_Text>();
+            Vector4 margin = text.margin;
+            text.margin = Vector4.zero;
+            text.enableAutoSizing = false;
+            text.fontSize = TitleFontMax;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            float widest = 0f;
+            foreach (string candidate in TitleTexts)
+                widest = Mathf.Max(widest, text.GetPreferredValues(candidate).x);
+            text.margin = margin;
+            text.fontSizeMax = TitleFontMax;
+            text.fontSizeMin = TitleFontMin;
+            text.enableAutoSizing = true;
+            text.alignment = TextAlignmentOptions.Center;
+            EditorUtility.SetDirty(text);
+
+            float width = Mathf.Ceil(widest) + 2f * UIBrand.Room(kit, true) + 8f;
+            SetX(title, centre - width * 0.5f, width);
+        }
+
+        /// <summary>
+        /// «Postura de conducción» goes (PO, 2026-11-04): the three settings left move up into its row and
+        /// the box shrinks by one row. Seated stays the posture, as it was by default. Once only.
+        /// </summary>
+        private static void WithoutPosture(RectTransform settings)
+        {
+            RectTransform posture = Find(settings, "PostureGroup");
+            if (!posture.gameObject.activeSelf)
+                return;
+            RectTransform label = Find(settings, "Label_Ridingposture");
+            float row = label.anchoredPosition.y - Find(settings, "Label_Subtitles").anchoredPosition.y;
+            // The first divider is the one under the posture row: the highest of the three.
+            RectTransform firstDivider = null;
+            foreach (Transform child in settings)
+                if (child.name == "Divider" && (firstDivider == null || child.localPosition.y > firstDivider.localPosition.y))
+                    firstDivider = (RectTransform)child;
+            RectTransform[] gone = { posture, label, Find(settings, "Detail_Ridingposture"), firstDivider };
+            foreach (Transform child in settings)
+            {
+                RectTransform rect = (RectTransform)child;
+                if (System.Array.IndexOf(gone, rect) >= 0)
+                    continue;
+                rect.anchoredPosition += new Vector2(0f, row);
+                EditorUtility.SetDirty(rect);
+            }
+            foreach (RectTransform rect in gone)
+                rect.gameObject.SetActive(false);
+            settings.sizeDelta -= new Vector2(0f, row);
+            EditorUtility.SetDirty(settings);
         }
 
         /// <summary>The box of options under the title's box, exactly as wide as it.</summary>
@@ -407,7 +572,10 @@ namespace RideSafe.UI.EditorTools
         {
             (float titleLeft, float titleRight) = SpanX(new[] { Find(panel, "Header/Title") }, panel);
             (float left, float right) = SpanX(pieces, panel);
-            Vector4 margin = new Vector4(left - titleLeft + HeaderMargin.x, Margin.y, titleRight - right + HeaderMargin.z, Margin.w);
+            // As wide as the title's box, but never narrower than what it holds: since the titles share
+            // one standard width (2026-11-04), «Ajustes» is narrower than its settings.
+            Vector4 margin = new Vector4(Mathf.Max(0f, left - titleLeft + HeaderMargin.x), Margin.y,
+                                         Mathf.Max(0f, titleRight - right + HeaderMargin.z), Margin.w);
             return Frame(panel, kit, pieces, margin);
         }
 
@@ -458,7 +626,7 @@ namespace RideSafe.UI.EditorTools
             question.fontSizeMin = 28f;
             question.enableAutoSizing = true;
             EditorUtility.SetDirty(question);
-            HeaderBox(panel, kit);
+            HeaderBox(panel, kit, OptionsCentre);
 
             Transform options = Find(panel, "Options");
             Require(options.childCount == 2, panel.name + " has " + options.childCount + " options; the layout is for two.");
@@ -476,14 +644,16 @@ namespace RideSafe.UI.EditorTools
                 if (flagged)
                 {
                     // The region's name over its flag: the rule-pack sentence read as fine print (PO, 2026-10-29).
+                    // Without «Selected» over it, the name and the flag share the card's height evenly.
                     InCard(card, "StateCaption", 60f, 12f, w - 60f, 26f);
-                    InCard(card, "Title", 24f, 28f, w - 24f, 58f);
+                    InCard(card, "Title", 24f, 18f, w - 24f, 48f);
                     Find(card, "Description").gameObject.SetActive(false);
-                    Flag(card, kit, LocationFlags[card.name], w * 0.5f, 64f);
+                    Flag(card, kit, LocationFlags[card.name], w * 0.5f, 58f);
                 }
                 else
                 {
-                    InCard(card, "Title", 24f, 30f, w - 24f, 64f);
+                    // The name alone, centred in the card: «Selected» under it is gone (PO, 2026-11-04).
+                    InCard(card, "Title", 24f, (cardHeight - 34f) * 0.5f, w - 24f, (cardHeight + 34f) * 0.5f);
                     InCard(card, "StateCaption", 24f, 70f, w - 24f, 86f);
                 }
                 foreach (string text in new[] { "Title", "StateCaption", "Description" })

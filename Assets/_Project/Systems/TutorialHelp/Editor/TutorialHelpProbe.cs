@@ -161,7 +161,10 @@ namespace RideSafe.Help.Editor
             experience.GetType().GetMethod("StartWithDefaults").Invoke(experience, new object[] { settings });
         }
 
-        /// <summary>Shows the module 1 panel named in ArgPath; ReviewChoices gets 7 rows.</summary>
+        /// <summary>
+        /// Shows the module 1 panel named in ArgPath; ReviewChoices gets 7 cards, and «Evaluation» is the
+        /// Comparison panel with the EPP cards and their states (2026-11-04).
+        /// </summary>
         public static void ShowPanel()
         {
             string id = File.ReadAllText(ArgPath).Trim();
@@ -170,7 +173,19 @@ namespace RideSafe.Help.Editor
                 if (module.name != "PF_Module01_UI")
                     continue;
                 module.gameObject.SetActive(true);
-                module.Show(id);
+                module.Show(id == "Evaluation" ? "Comparison" : id);
+                if (id == "Evaluation")
+                {
+                    var cards = new System.Collections.Generic.List<RideSafe.UI.ComparisonEntry>();
+                    var states = new[] { ("helmet_ok", RideSafe.UI.ItemStatus.Selected), ("shoes_ok", RideSafe.UI.ItemStatus.Selected),
+                                         ("pannier", RideSafe.UI.ItemStatus.NoEffect), ("cable_lock", RideSafe.UI.ItemStatus.NoEffect),
+                                         ("elbow_pads", RideSafe.UI.ItemStatus.NoEffect), ("poncho", RideSafe.UI.ItemStatus.NotSuited),
+                                         ("umbrella", RideSafe.UI.ItemStatus.NotSuited), ("mittens", RideSafe.UI.ItemStatus.NotSuited),
+                                         ("clothing_loose", RideSafe.UI.ItemStatus.NotSuited) };
+                    foreach (var (itemId, status) in states)
+                        cards.Add(ProbeCard(itemId, status));
+                    module.Get<RideSafe.UI.ComparisonView>("Comparison").SetCards("Evaluación de tus elecciones", "Puntaje: 46", cards);
+                }
                 if (id == "Comparison")
                 {
                     foreach (Transform t in module.GetComponentsInChildren<Transform>(true))
@@ -186,14 +201,31 @@ namespace RideSafe.Help.Editor
                 }
                 if (id == "ReviewChoices")
                 {
-                    RideSafe.UI.ChecklistView view = module.Get<RideSafe.UI.ChecklistView>(id);
-                    var items = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, string>>();
-                    foreach (string name in new[] { "Casco íntegro y ajustado", "Gafas", "Chaleco reflectivo", "Rodilleras",
-                                                    "Pantalón ajustado", "Calzado cerrado", "Carga asegurada" })
-                        items.Add(new System.Collections.Generic.KeyValuePair<string, string>(name, name));
-                    view.SetItems(items);
+                    // Tarjetas desde 2026-11-04: siete, con su render si el EPP ya se fotografió.
+                    var items = new System.Collections.Generic.List<RideSafe.UI.ComparisonEntry>();
+                    foreach (string itemId in new[] { "helmet_ok", "glasses", "reflective", "knee_pads", "trousers_fitted",
+                                                      "shoes_ok", "cargo_secured" })
+                        items.Add(ProbeCard(itemId, RideSafe.UI.ItemStatus.Selected));
+                    module.Get<RideSafe.UI.CardGrid>(id).Show(items);
                 }
             }
+        }
+
+        /// <summary>
+        /// A card for <paramref name="itemId"/> with its translated name and render, read from its asset
+        /// so this editor assembly does not depend on module 1.
+        /// </summary>
+        private static RideSafe.UI.ComparisonEntry ProbeCard(string itemId, RideSafe.UI.ItemStatus status)
+        {
+            Object item = AssetDatabase.LoadMainAssetAtPath("Assets/_Project/Module01/Data/Items/SO_Item_" + itemId + ".asset");
+            if (item == null)
+                return new RideSafe.UI.ComparisonEntry(status, itemId) { ItemId = itemId };
+            SerializedObject so = new SerializedObject(item);
+            return new RideSafe.UI.ComparisonEntry(status, RideSafe.UI.UIText.Resolve(so.FindProperty("_nameKey").stringValue))
+            {
+                ItemId = itemId,
+                Image = so.FindProperty("_thumbnail").objectReferenceValue as Sprite,
+            };
         }
 
         /// <summary>The images GestureHintView counts as module panels: path, alpha, viewport rect.</summary>

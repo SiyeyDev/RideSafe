@@ -26,4 +26,4 @@ MonoBehaviour:
   _onlyForVehicle: escooter
   _substitutesFor: 
   _inspectPrefab: {fileID: 0}
-  _thumbnail: {fileID: 0}
+  _thumbnail: {fileID: 21300000, guid: 7c4170d89a383db46a63ff848617b343, type: 3}
