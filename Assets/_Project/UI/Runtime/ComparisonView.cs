@@ -60,6 +60,12 @@ namespace RideSafe.UI
         /// </summary>
         public Sprite Image;
 
+        /// <summary>
+        /// Clave de la palabra de la columna de estado, cuando no es la del <see cref="Status"/>:
+        /// un punto del vehículo no es «correcto», está «revisado» (PO, 2026-11-06).
+        /// </summary>
+        public string StateKey;
+
         public ComparisonEntry(ItemStatus status, string title, string detail = null)
         {
             Status = status;
@@ -67,6 +73,7 @@ namespace RideSafe.UI
             Detail = detail;
             ItemId = null;
             Image = null;
+            StateKey = null;
         }
     }
 
@@ -218,6 +225,7 @@ namespace RideSafe.UI
 
         private bool _showingCards;
         private int _rowsTopPadding = -1;
+        private float _listHeightNow;
 
         private readonly List<ComparisonEntry> _current = new List<ComparisonEntry>();
 
@@ -320,7 +328,7 @@ namespace RideSafe.UI
                 return;
             LayoutRebuilder.ForceRebuildLayoutImmediate(content);
             float rows = LayoutUtility.GetPreferredHeight(content);
-            _viewport.preferredHeight = _viewport.minHeight = Mathf.Min(rows, _showingCards ? _maxCardsHeight : _maxListHeight);
+            _viewport.preferredHeight = _viewport.minHeight = Mathf.Min(rows, _showingCards ? _maxCardsHeight : (_listHeightNow > 0f ? _listHeightNow : _maxListHeight));
             ScrollRect scroll = _viewport.GetComponent<ScrollRect>();
             if (scroll != null)
                 scroll.verticalNormalizedPosition = 1f;
@@ -390,9 +398,10 @@ namespace RideSafe.UI
         /// como segunda línea ni en una leyenda al pie.
         /// </para>
         /// </summary>
-        public void SetSingleList(string title, string note, IList<ComparisonEntry> entries)
+        public void SetSingleList(string title, string note, IList<ComparisonEntry> entries, float maxListHeight = 0f)
         {
             ShowCards(false);
+            _listHeightNow = maxListHeight > 0f ? maxListHeight : _maxListHeight;
             if (_title != null) _title.text = title;
             if (_subtitle != null) _subtitle.text = note;
             ShowNote(!string.IsNullOrEmpty(note));
@@ -513,7 +522,8 @@ namespace RideSafe.UI
                 // texto de depuración y estaba saliendo debajo de cada título. Se pinta sin él;
                 // quien lo necesita lo lee de Entries.
                 ComparisonEntry visible = new ComparisonEntry(entries[i].Status, entries[i].Title);
-                _glyphs.Bind(row.transform, visible, StateLabel(entries[i].Status));
+                string state = string.IsNullOrEmpty(entries[i].StateKey) ? StateLabel(entries[i].Status) : UIText.Resolve(entries[i].StateKey);
+                _glyphs.Bind(row.transform, visible, state);
             }
 
             if (container == _leftRows)

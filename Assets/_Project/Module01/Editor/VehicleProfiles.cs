@@ -99,7 +99,9 @@ namespace RideSafe.Module01.Editor
                     // De costado. A 180 la rueda trasera quedaba detrás del checklist, que vive a
                     // la derecha; el test pasaba igual y lo cazó una captura.
                     ("wheels", 0f),
-                    ("visibility", -90f),  // por detras: luces y reflectivos
+                    // Luces y reflectivos, de costado como las llantas (PO, 2026-11-06): por detrás
+                    // solo se veía la trasera, y se revisan las dos.
+                    ("visibility", 0f),
                 },
                 new[]
                 {
@@ -114,8 +116,10 @@ namespace RideSafe.Module01.Editor
                 }),
             // La patineta viene en dos piezas anidadas: 'Manubrio' (con 'freno_iz', 'freno_de' y
             // 'llanta_delantera') y 'cuerpo' (con 'llanta_tracera' y 'soporte'). La plataforma
-            // —solo la revisa la patineta, narrativa §4.8.2— es el 'cuerpo'. Lo eléctrico y las
-            // luces se quedan con el signo: la pantalla es un material del Manubrio y no hay faro.
+            // —solo la revisa la patineta, narrativa §4.8.2— es el 'cuerpo'. Desde 826c9a2 el
+            // Manubrio trae además 'luz_freontal' (así, con esa errata) y las dos direccionales,
+            // las únicas piezas separadas para esos dos puntos (PO, 2026-11-06): no hay luz trasera,
+            // pantalla ni batería como pieza, y lo eléctrico se ve en los controles del manubrio.
             new Definition("Escooter", "escooter", "E_Scooter.fbx", 1.4f, PlaceholderVideo,
                 new[]
                 {
@@ -124,7 +128,7 @@ namespace RideSafe.Module01.Editor
                     // La plataforma va entre las ruedas y las luces: de costado a tres cuartos por
                     // detras a por detras, el vehiculo gira siempre hacia el mismo lado.
                     ("deck", -135f),
-                    ("visibility", 180f),  // por detras
+                    ("visibility", -90f),  // de costado, como las llantas (PO, 2026-11-06)
                 },
                 new[]
                 {
@@ -134,6 +138,9 @@ namespace RideSafe.Module01.Editor
                     ("point_wheels", "llanta_tracera"),
                     ("point_wheels", "llanta_delantera"),
                     ("point_deck", "cuerpo"),
+                    ("point_lights", "luz_freontal"),
+                    ("point_electrics", "direccional_de"),
+                    ("point_electrics", "direccional_iz"),
                 }),
         };
 

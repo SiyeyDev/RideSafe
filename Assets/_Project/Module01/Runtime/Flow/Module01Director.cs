@@ -206,7 +206,10 @@ namespace RideSafe.Module01
             // terminarlo— y toca repetir la selección entera desde el checkpoint inicial.
             if ((_inVehicleSection ? VehicleScore : PersonalScore).FailsExam)
             {
-                RestartSelection();
+                if (_inVehicleSection)
+                    RestartVehicleSection();
+                else
+                    RestartSelection();
                 return;
             }
 
@@ -233,6 +236,19 @@ namespace RideSafe.Module01
             PersonalReport = VehicleReport = null;
             PersonalScore = VehicleScore = default;
             _inVehicleSection = false;
+            _index = -1;
+            _runner.Ledger.Clear();
+            Advance();
+        }
+
+        /// <summary>
+        /// Con el vehículo sin revisar se repite su revisión, no el módulo: los EPP ya se enviaron y
+        /// aprobaron, y volver a la mesa no le enseña nada de lo que le faltó (PO, 2026-11-06).
+        /// </summary>
+        private void RestartVehicleSection()
+        {
+            VehicleReport = null;
+            VehicleScore = default;
             _index = -1;
             _runner.Ledger.Clear();
             Advance();

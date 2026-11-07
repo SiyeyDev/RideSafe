@@ -27,6 +27,30 @@ namespace RideSafe.Module01.Tests
             Assert.AreEqual("helmet_ok", entries[0].Detail);
         }
 
+        /// <summary>
+        /// Los puntos del vehículo salen todos: revisados y sin revisar (PO, 2026-11-06). Decir que
+        /// no y no señalarlo es lo mismo: el libro no lo tiene.
+        /// </summary>
+        [Test]
+        public void El_vehiculo_lista_lo_revisado_y_lo_que_no()
+        {
+            Module01CatalogSO catalog = Catalog(Zone("cockpit",
+                Item("point_brakes", SafetyItemCategory.Core),
+                Item("point_lights", SafetyItemCategory.Core)));
+            SelectionLedger ledger = new SelectionLedger();
+            ledger.Add("point_brakes");
+
+            List<ComparisonEntry> entries = ReportPresenter.BuildInspectionEntries(
+                catalog, SelectionGrader.Grade(catalog, ledger), Fake);
+
+            Assert.AreEqual(2, entries.Count);
+            ComparisonEntry brakes = Find(entries, "point_brakes"), lights = Find(entries, "point_lights");
+            Assert.AreEqual(ItemStatus.Selected, brakes.Status);
+            Assert.AreEqual(ReportPresenter.ReviewedKey, brakes.StateKey);
+            Assert.AreEqual(ItemStatus.CoreOmitted, lights.Status);
+            Assert.AreEqual(ReportPresenter.NotReviewedKey, lights.StateKey);
+        }
+
         [Test]
         public void Lo_de_nucleo_que_se_llevo_sale_como_correcto()
         {

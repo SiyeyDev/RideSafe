@@ -667,13 +667,17 @@ namespace RideSafe.Module01.Tests
         /// </summary>
         private float LowestRim(Transform disc)
         {
+            // El podio del artista (2026-11-06), con las medidas de su malla.
+            MeshFilter podium = disc.GetComponentInChildren<MeshFilter>(true);
+            Bounds mesh = podium.sharedMesh.bounds;
             float lowest = float.MaxValue;
             for (int i = 0; i < 64; i++)
             {
                 float a = i * Mathf.PI * 2f / 64f;
-                foreach (float y in new[] { -1f, 1f })   // el cilindro primitivo va de -1 a 1 en Y
+                foreach (float y in new[] { mesh.min.y, mesh.max.y })
                 {
-                    Vector3 rim = disc.TransformPoint(new Vector3(Mathf.Cos(a) * .5f, y, Mathf.Sin(a) * .5f));
+                    Vector3 rim = podium.transform.TransformPoint(mesh.center.x + Mathf.Cos(a) * mesh.extents.x, y,
+                                                                  mesh.center.z + Mathf.Sin(a) * mesh.extents.z);
                     lowest = Mathf.Min(lowest, _camera.WorldToScreenPoint(rim).y);
                 }
             }
@@ -1223,8 +1227,8 @@ namespace RideSafe.Module01.Tests
             }
 
             // La sección de EPP se evalúa en tarjetas desde el 2026-11-04 (PO): título, «Puntaje: N»
-            // y una tarjeta con su icono por elemento, sin nota. El vehículo (nota de sección del
-            // 2026-11-04) y el reporte final siguen en filas con la puntuación bajo la lista.
+            // y una tarjeta con su icono por elemento. El vehículo sigue en filas, sin nota, y solo
+            // el resumen final lleva pie: si sigue o repite, sin puntaje (PO, 2026-11-06).
             RectTransform cards = (RectTransform)list.Find("Viewport/Cards");
             bool gear = cards != null && cards.gameObject.activeInHierarchy;
             if (gear)
@@ -1241,20 +1245,18 @@ namespace RideSafe.Module01.Tests
                 StringAssert.IsMatch(@"\d+$", score.text, "[" + momento + "] el puntaje es el número solo: " + score.text);
                 Assert.IsFalse(score.text.StartsWith("M1/"), "[" + momento + "] puntaje sin traducir");
             }
-            Assert.AreEqual(!gear, note.gameObject.activeInHierarchy,
-                "[" + momento + "] " + (gear ? "sin nota bajo las tarjetas" : "la puntuación va bajo la lista"));
+            bool final = momento == "reporte final";
+            Assert.AreEqual(final, note.gameObject.activeInHierarchy,
+                "[" + momento + "] " + (final ? "el veredicto va bajo la lista" : "sin nota bajo la lista"));
             float listBottom = Bottom(list, panel);
-            if (!gear)
+            if (final)
             {
                 // The note's top edge right under the list's visible bottom.
                 float noteTop = Top(note, panel);
                 Assert.GreaterOrEqual(listBottom - noteTop, -.5f, "[" + momento + "] la nota se monta sobre la lista");
                 Assert.LessOrEqual(listBottom - noteTop, ColumnComposition.Gap * 2f,
                     "[" + momento + "] hueco entre la lista y la nota: " + (listBottom - noteTop));
-                StringAssert.Contains("/ 100", note.GetComponentInChildren<TMP_Text>().text, "[" + momento + "] la nota es la puntuación");
-            }
-            if (momento == "reporte final")
-            {
+                StringAssert.DoesNotContain("/ 100", note.GetComponentInChildren<TMP_Text>().text, "[" + momento + "] sin puntaje");
                 Assert.IsFalse(Object.FindObjectsByType<RectTransform>(FindObjectsInactive.Include, FindObjectsSortMode.None)
                         .Any(r => r.name == "FinalScore" && r.gameObject.activeInHierarchy),
                     "[" + momento + "] el panel aparte de la nota ya no se enseña: se montaba sobre la lista");

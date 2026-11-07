@@ -68,6 +68,7 @@ namespace RideSafe.Module01.Editor
             SyncPresentationCatalog();
             ComposeFocus();
             ComposePopup(kit, Find("ItemInspectorCanvas/Confirmation"), Find("ItemInspectorCanvas/ItemName"));
+            Module01Podium.Apply();
 
             RectTransform sign = Find("Module01Controls/StationInstruction");
             SetVisibleSize(sign, new Vector2(640f, 98f));
@@ -115,10 +116,8 @@ namespace RideSafe.Module01.Editor
 
             // The final buttons stand free under «Mi Elección»'s box, with no box of their own (PO, 2026-10-16).
             RectTransform result = Find("Module01Controls/FinalResult");
-            SetVisibleSize(result, new Vector2(660f, 84f));
             result.GetComponent<Image>().enabled = false;
-            PlaceButton(Child(result, "ContinueModule2Button"), new Vector2(-148f, 0f), new Vector2(300f, 48f));
-            PlaceButton(Child(result, "RepeatModuleButton"), new Vector2(158f, 0f), new Vector2(280f, 48f));
+            PlaceFinalButtons(result);
             RideSafe.UI.FollowBelow follow = result.GetComponent<RideSafe.UI.FollowBelow>();
             follow.Configure(Find("Comparison/Frame"), 16f);
             EditorUtility.SetDirty(follow);
@@ -137,6 +136,26 @@ namespace RideSafe.Module01.Editor
 
             WriteTranslations();
         }
+
+        /// <summary>
+        /// Los botones finales como todos los pares del módulo (PO, 2026-11-06): el secundario a la
+        /// izquierda y el principal a la derecha, igual que «Seguir eligiendo» y «Enviar elecciones».
+        /// Del ancho de su texto: a 300 y 280 se veían enormes. Cuelgan del HUD y no del panel, así
+        /// que llevan su escala aparte para que la letra lea como la del panel, que está a 1.3×.
+        /// </summary>
+        internal static void PlaceFinalButtons(RectTransform result)
+        {
+            result.localScale = new Vector3(UIComposition.ReadingPanelScale, UIComposition.ReadingPanelScale, 1f);
+            SetVisibleSize(result, new Vector2(FinalRepeatWidth + FinalButtonsGap + FinalContinueWidth, FinalButtonHeight + 18f));
+            float left = -(FinalRepeatWidth + FinalButtonsGap + FinalContinueWidth) * 0.5f;
+            PlaceButton(Child(result, "RepeatModuleButton"), new Vector2(left + FinalRepeatWidth * 0.5f, 0f),
+                        new Vector2(FinalRepeatWidth, FinalButtonHeight), FinalButtonFont);
+            PlaceButton(Child(result, "ContinueModule2Button"), new Vector2(-left - FinalContinueWidth * 0.5f, 0f),
+                        new Vector2(FinalContinueWidth, FinalButtonHeight), FinalButtonFont);
+            EditorUtility.SetDirty(result);
+        }
+
+        private const float FinalRepeatWidth = 170f, FinalContinueWidth = 226f, FinalButtonsGap = 12f, FinalButtonHeight = 42f, FinalButtonFont = 15f;
 
         public const string FocusMaterialPath = "Assets/_Project/UI/Materials/M_FocusDome.mat";
         /// <summary>

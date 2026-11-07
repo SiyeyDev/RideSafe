@@ -278,6 +278,37 @@ namespace RideSafe.Module01.Tests
             Object.DestroyImmediate(v);
         }
 
+        /// <summary>
+        /// Con el vehículo sin revisar se repite su sección y no el módulo (PO, 2026-11-06): los EPP
+        /// ya aprobaron y su nota se conserva.
+        /// </summary>
+        [Test]
+        public void Reprobar_el_vehiculo_repite_su_seccion_sin_tocar_los_epp()
+        {
+            Wire(out _, out VehicleProfileSO v);
+            ManualProgress();
+            _director.Begin();
+            Resolve(_head, accept: true);
+            _director.AdvanceZone();
+            Resolve(_clothing, accept: true);
+            _director.AdvanceZone();
+            _director.ContinueAfterReview();
+            int personal = _director.PersonalScore.Percent;
+
+            for (int i = 0; i < 20 && _director.VehicleReport == null; i++)
+                _director.AdvanceZone();
+            Assert.IsTrue(_director.VehicleScore.FailsExam, "premisa: no revisó nada");
+
+            _director.ContinueAfterReview();
+
+            Assert.IsTrue(_director.InVehicleSection, "sigue en la sección del vehículo");
+            Assert.AreEqual("cockpit", _director.CurrentZone.ZoneId, "desde su primera zona");
+            Assert.IsNotNull(_director.PersonalReport, "los EPP no se repiten");
+            Assert.AreEqual(personal, _director.PersonalScore.Percent);
+
+            Object.DestroyImmediate(v);
+        }
+
         /// <summary>Y aprobando no cambia nada: se sigue al vehículo como siempre.</summary>
         [Test]
         public void Aprobar_la_seccion_personal_sigue_pasando_al_vehiculo()

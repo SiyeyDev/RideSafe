@@ -142,19 +142,28 @@ namespace RideSafe.Module01.Tests
         }
 
         /// <summary>
-        /// Y los otros dos se quedan con el signo <b>a propósito</b>: la pantalla es un material
-        /// del <c>Manubrio</c>, no una pieza, y delinear el manubrio entero para decir «revisa el
-        /// sistema eléctrico» repite la dirección. El faro no existe como pieza en el FBX.
+        /// Luces y eléctrico ya no se quedan en el signo (PO, 2026-11-06): el FBX de <c>826c9a2</c>
+        /// trae la luz frontal y las direccionales como piezas separadas.
         /// </summary>
         [Test]
-        public void El_patinete_deja_en_el_signo_lo_que_no_tiene_pieza_propia()
+        public void El_patinete_ensena_sus_piezas_de_luces_y_electrico()
         {
             VehicleProfileSO scooter = Profile(ScooterPath);
 
-            Assert.AreEqual(string.Empty, scooter.PartNameFor("point_electrics"),
-                "La pantalla es un material del Manubrio, no una pieza: delinear el manubrio entero para lo electrico repite la direccion.");
-            Assert.AreEqual(string.Empty, scooter.PartNameFor("point_lights"),
-                "El patinete no trae faro como pieza.");
+            CollectionAssert.AreEqual(new[] { "luz_freontal" }, scooter.PartNamesFor("point_lights"));
+            CollectionAssert.AreEqual(new[] { "direccional_de", "direccional_iz" }, scooter.PartNamesFor("point_electrics"));
+        }
+
+        /// <summary>
+        /// Las luces se revisan de costado, como las llantas: desde atrás no se ve la delantera
+        /// (PO, 2026-11-06).
+        /// </summary>
+        [TestCase(EbikePath)]
+        [TestCase(ScooterPath)]
+        public void Las_luces_se_revisan_desde_donde_se_revisan_las_llantas(string path)
+        {
+            VehicleProfileSO profile = Profile(path);
+            Assert.AreEqual(profile.YawFor(Zone(profile, "wheels")), profile.YawFor(Zone(profile, "visibility")));
         }
 
         /// <summary>

@@ -28,6 +28,9 @@ namespace RideSafe.Module01
         [Tooltip("Dónde se instancia el objeto presentado.")]
         [SerializeField] private Transform _stage;
 
+        [Tooltip("La cara de arriba del podio: lo presentado se apoya en ella. Vacío = se centra en el stage.")]
+        [SerializeField] private Transform _surface;
+
         [Tooltip("Grados por segundo del giro de presentación.")]
         [SerializeField] private float _rotationSpeed = 25f;
 
@@ -139,8 +142,18 @@ namespace RideSafe.Module01
 
         private void Update()
         {
-            if (_instance != null && _spins)
-                _instance.transform.Rotate(Vector3.up, _rotationSpeed * Time.deltaTime, Space.World);
+            if (_spins)
+                Spin(Time.deltaTime);
+        }
+
+        /// <summary>
+        /// Una vuelta de presentación, sobre el eje del podio y no el del mundo: la presentación
+        /// cuelga de la cámara, y al mirar hacia abajo el objeto atravesaría el disco.
+        /// </summary>
+        public void Spin(float seconds)
+        {
+            if (_instance != null && _stage != null)
+                _instance.transform.Rotate(_stage.up, _rotationSpeed * seconds, Space.World);
         }
 
         public void Present(SafetyItemSO item) => Present(item, null, null);
@@ -191,18 +204,45 @@ namespace RideSafe.Module01
                 var renderers = model.GetComponentsInChildren<Renderer>();
                 if (renderers.Length > 0)
                 {
-                    Bounds bounds = renderers[0].bounds;
-                    foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+                    Bounds bounds = BoundsOf(renderers);
                     float longest = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
                     if (longest > 0) model.transform.localScale *= DisplaySize / longest;
-                    bounds = renderers[0].bounds;
-                    foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+                    bounds = BoundsOf(renderers);
                     model.transform.position += _stage.position - bounds.center;
+                    if (_surface != null)
+                        RestOnSurface(model.transform, BoundsOf(renderers));
                 }
             }
             RefreshText();
             SetChromeVisible(true);
             Speak(item);
+        }
+
+        private static Bounds BoundsOf(Renderer[] renderers)
+        {
+            Bounds bounds = renderers[0].bounds;
+            foreach (Renderer renderer in renderers)
+                bounds.Encapsulate(renderer.bounds);
+            return bounds;
+        }
+
+        /// <summary>
+        /// Baja lo presentado hasta que su punto más bajo toque el podio (PO, 2026-11-06: «que todos
+        /// los EPP se pongan sobre este»). Centrado en el stage solo lo más alto llegaba al disco; un
+        /// teléfono o unos guantes, de 32 cm de largo y 3 de alto, flotaban a media altura. Se mide
+        /// a lo largo del eje del podio, que cuelga de la cámara y se inclina con la cabeza.
+        /// </summary>
+        private void RestOnSurface(Transform model, Bounds bounds)
+        {
+            Vector3 up = _stage.up;
+            float lowest = float.MaxValue;
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 corner = bounds.center + Vector3.Scale(bounds.extents,
+                    new Vector3((i & 1) == 0 ? -1f : 1f, (i & 2) == 0 ? -1f : 1f, (i & 4) == 0 ? -1f : 1f));
+                lowest = Mathf.Min(lowest, Vector3.Dot(corner, up));
+            }
+            model.position += up * (Vector3.Dot(_surface.position, up) - lowest);
         }
 
         /// <summary>
@@ -338,6 +378,8 @@ namespace RideSafe.Module01
         }
 
         /// <summary>Solo para tests y para el montador de escena.</summary>
+        public void ConfigureSurfaceForTests(Transform surface) => _surface = surface;
+
         public void ConfigureForTests(Transform stage) => _stage = stage;
 
         /// <summary>

@@ -96,19 +96,16 @@ public static class Module01UiTerms
         Set(data, es, en, "M1/FinalScore_CanContinue",
             "Puedes continuar al Módulo 2.", "You can continue to Module 2.");
         Set(data, es, en, "M1/FinalScore_MustRepeat",
-            "Necesitas más de 70 para continuar. Repite el módulo.",
-            "You need more than 70 to continue. Repeat the module.");
+            "Repite el módulo para poder continuar.",
+            "Repeat the module to continue.");
+        // El resumen final y la revisión del vehículo, sin puntaje (PO, 2026-11-06).
+        Set(data, es, en, "M1/Summary_Title", "Resumen", "Summary");
+        Set(data, es, en, "M1/Inspection_Reviewed", "Revisado", "Reviewed");
+        Set(data, es, en, "M1/Inspection_NotReviewed", "No revisado", "Not reviewed");
 
-        // Checkpoint de sección (documento del equipo, 2026-11-04): al cerrar cada parte se ve
-        // su nota y si se sigue o se repite. El texto de repetir dice «la selección completa»
-        // porque es lo que hace el código: Module01Director vuelve al checkpoint inicial, no al
-        // principio de la sección suspendida.
-        Set(data, es, en, "M1/Section_CanAdvance",
-            "Puedes continuar. Mira la explicación antes de seguir.",
-            "You can continue. Watch the explanation before moving on.");
-        Set(data, es, en, "M1/Section_MustRepeat",
-            "No llegas a 70. Después del video repetirás la selección completa.",
-            "You are below 70. After the video you will repeat the full selection.");
+        // La nota de sección se fue (PO, 2026-11-06), y con ella sus dos frases.
+        foreach (string gone in new[] { "M1/Section_CanAdvance", "M1/Section_MustRepeat" })
+            data.RemoveTerm(gone);
         // Evaluación de la sección de EPP en tarjetas (PO, 2026-11-04): su título y la píldora con la
         // nota, «solo el puntaje total». {0} es SelectionScore.Percent.
         Set(data, es, en, "M1/Evaluation_Title", "Evaluación de tus elecciones", "Evaluation of your choices");

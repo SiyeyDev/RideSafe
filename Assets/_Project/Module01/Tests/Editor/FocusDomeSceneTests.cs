@@ -68,6 +68,34 @@ namespace RideSafe.Module01.Tests
             Assert.IsNull(dome.GetComponent<Collider>(), "no collider: it must not block the pointer");
         }
 
+        /// <summary>
+        /// The podium the artist delivered, at its real size, instead of the primitive cylinder
+        /// (PO, 2026-11-06), with the surface the items rest on at its top.
+        /// </summary>
+        [Test]
+        public void ThePedestal_IsTheArtistsPodium_AndItemsRestOnItsTop()
+        {
+            ItemInspector inspector = Find<ItemInspector>();
+            Assume.That(inspector, Is.Not.Null);
+            SerializedObject serialized = new SerializedObject(inspector);
+            GameObject pedestal = (GameObject)serialized.FindProperty("_pedestal").objectReferenceValue;
+            Assert.IsNull(pedestal.GetComponent<MeshRenderer>(), "the cylinder is gone");
+            Assert.AreEqual(Vector3.one, pedestal.transform.localScale, "no leftover of its squashed scale");
+
+            MeshFilter podium = pedestal.GetComponentInChildren<MeshFilter>(true);
+            Assert.IsNotNull(podium, "the pedestal shows the podium");
+            Assert.AreEqual("Assets/_Project/Models/CITY/MODELADOS 3d/podium.fbx",
+                            PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(podium.gameObject));
+            Assert.AreEqual(1f, podium.transform.lossyScale.x, .001f, "at the size the artist modelled");
+            Assert.AreEqual(0f, Mathf.DeltaAngle(podium.transform.localEulerAngles.y, -80f), .01f, "the side the PO chose faces the learner");
+            Assert.AreEqual("podium_Mat", podium.GetComponent<MeshRenderer>().sharedMaterial.name, "with its emissive material");
+
+            Transform surface = (Transform)serialized.FindProperty("_surface").objectReferenceValue;
+            Assert.IsNotNull(surface, "the items rest on something");
+            Vector3 top = podium.transform.TransformPoint(new Vector3(0f, podium.sharedMesh.bounds.max.y, 0f));
+            Assert.Less(Vector3.Distance(top, surface.position), .001f, "the surface is the podium's top");
+        }
+
         [Test]
         public void ThePedestalItsPartAndThePopup_StayInsideTheBubble()
         {

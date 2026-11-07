@@ -27,7 +27,7 @@ MonoBehaviour:
   - Zone: {fileID: 11400000, guid: 95fe0ad9f50e77e4fae277cd66505147, type: 2}
     Yaw: -135
   - Zone: {fileID: 11400000, guid: 01bccd36419332147ae3c3be8d6e16f1, type: 2}
-    Yaw: 180
+    Yaw: -90
   _partBindings:
   - ItemId: point_steering
     PartName: Manubrio
@@ -41,4 +41,10 @@ MonoBehaviour:
     PartName: llanta_delantera
   - ItemId: point_deck
     PartName: cuerpo
+  - ItemId: point_lights
+    PartName: luz_freontal
+  - ItemId: point_electrics
+    PartName: direccional_de
+  - ItemId: point_electrics
+    PartName: direccional_iz
   _explanationVideo: {fileID: 32900000, guid: 17736dd0a8a77ca45a0743be7ee95c6d, type: 3}

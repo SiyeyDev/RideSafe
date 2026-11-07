@@ -364,8 +364,8 @@ namespace RideSafe.Module01
             // El informe llega por el evento porque todavia no esta publicado en el director:
             // se asigna justo antes de avisar. Se guarda para la decisión, que ahora viene después.
             _vehicleReport = report;
-            _vehicleEntries = Entries(report);
-            ShowReport(_vehicleEntries, _director.VehicleScore);
+            _vehicleEntries = ReportPresenter.BuildInspectionEntries(_allItems, report, UIText.Resolve);
+            ShowVehicleReview(_vehicleEntries);
         }
         private List<ComparisonEntry> Entries(SelectionReport report)
         {
@@ -398,18 +398,15 @@ namespace RideSafe.Module01
                 entries);
         }
 
-        private void ShowReport(List<ComparisonEntry> entries, SelectionScore score)
+        /// <summary>
+        /// La revisión del vehículo: lo que se revisó y lo que no, y nada más (PO, 2026-11-06: «no es
+        /// necesario el puntaje»). La nota sigue por dentro para decidir si se repite la sección.
+        /// </summary>
+        private void ShowVehicleReview(List<ComparisonEntry> entries)
         {
             Phase = "Report";
             _binding.Module.Show("Comparison");
-            // El 29-10 esta caja se vació («quitar ese texto inferior»), y con eso el módulo se
-            // quedó sin una sola nota a la vista hasta la pantalla final. Desde el 2026-11-04
-            // vuelve, pero diciendo algo distinto: ya no es la coletilla de lo opcional sino la
-            // nota de ESTA sección y si toca repetirla.
-            _binding.Comparison.SetSingleList(
-                UIText.Resolve("M1/MyChoice_Title"),
-                SectionScoreNote.Compose(score, UIText.Resolve),
-                entries);
+            _binding.Comparison.SetSingleList(UIText.Resolve("M1/MyChoice_Title"), string.Empty, entries);
         }
 
         /// <summary>
@@ -418,20 +415,23 @@ namespace RideSafe.Module01
         /// marco— y además partía en dos lo que la reunión pidió unificar.
         /// </summary>
         /// <para>
-        /// La nota final ya no es una frase al pie: es la puntuación, dentro del mismo panel y bajo
-        /// la lista (PO, 2026-10-29: «se ve todo muy pegado y feo, el texto de puntuación se puede
-        /// poner en ese mismo panel»). Antes iba en un panel aparte montado encima de la lista.
-        /// El porcentaje sale del título: lo dice la puntuación, en grande.
+        /// Sin puntuación (PO, 2026-11-06): al pie solo queda si sigue o repite, en palabras. Se llama
+        /// «Resumen» y no «Mi Elección» para no leerse como la pantalla de antes de la decisión. La
+        /// lista va más corta que en las secciones: el panel está a 1.3× y, con más alto, los botones
+        /// de Módulo 2 y Repetir, que van debajo, se salían de la vista.
         /// </para>
         private void ShowVerdict(List<ComparisonEntry> entries, PerformanceRank rank, FinalScore final)
         {
             Phase = "Report";
             _binding.Module.Show("Comparison");
             _binding.Comparison.SetSingleList(
-                UIText.Resolve("M1/MyChoice_Title") + "  ·  " + UIText.Resolve(rank.TitleKey()),
-                ScoreNote(final),
-                entries);
+                UIText.Resolve("M1/Summary_Title") + "  ·  " + UIText.Resolve(rank.TitleKey()),
+                VerdictNote(final),
+                entries,
+                SummaryListHeight);
         }
+
+        private const float SummaryListHeight = 220f;
         private void PlayVideo()
         {
             if (Phase != "Report") return;
@@ -552,8 +552,9 @@ namespace RideSafe.Module01
             _video.Stop();
             _binding.Module.HideAll();
             _binding.PreparationList.Clear();
-            // After the vehicle's video comes its go/no-go; Decide closes the module.
-            if (_director.InVehicleSection) { Phase = "Decision"; _decision.SetActive(true); return; }
+            // After the vehicle's video comes its go/no-go; Decide closes the module. Not when the
+            // section has to be repeated: there is nothing to decide about a check left undone.
+            if (_director.InVehicleSection && !_director.VehicleScore.FailsExam) { Phase = "Decision"; _decision.SetActive(true); return; }
             _director.ContinueAfterReview();
         }
         /// <summary>
@@ -574,7 +575,7 @@ namespace RideSafe.Module01
             ShowVerdict(entries, final.Rank, final);
             Phase = "Finished";
             Find<Button>(_binding.Comparison.transform, "ExplainButton").gameObject.SetActive(false);
-            // La puntuación va dentro de «Mi Elección»; el panel aparte ya no se enseña.
+            // La puntuación ya no se enseña en ningún panel.
             if (_finalScorePanel != null) _finalScorePanel.SetActive(false);
 
             if (_result != null) _result.SetActive(true);
@@ -585,28 +586,11 @@ namespace RideSafe.Module01
             SetInteractable(_result, "RepeatModuleButton", true);
         }
 
-        /// <summary>
-        /// La nota final, para la caja bajo la lista de «Mi Elección»: el título, el promedio en
-        /// grande, de dónde sale, y si pasa o repite el módulo entero.
-        /// <para>
-        /// El veredicto se escribe con palabras y no solo con el número: «59 de 100» no le dice
-        /// a nadie si puede seguir. Los textos salen de I2, nunca literales. Los tamaños son
-        /// relativos al cuerpo de la nota (15): el número, a 46 como en el panel de antes.
-        /// </para>
-        /// </summary>
-        private string ScoreNote(FinalScore final)
+        /// <summary>El pie del resumen: si sigue o repite el módulo y si se equivocó en «¿circular o no?».</summary>
+        private string VerdictNote(FinalScore final)
         {
-            string sections = string.Format("{0} {1}   ·   {2} {3}",
-                Traducir("M1/FinalScore_Gear"), Mathf.RoundToInt(final.Epp.SafetyScore),
-                Traducir("M1/FinalScore_Vehicle"), Mathf.RoundToInt(final.Vehicle.SafetyScore));
             string verdict = Traducir(final.MustRepeatModule ? "M1/FinalScore_MustRepeat" : "M1/FinalScore_CanContinue");
-            // La única frase de la nota de antes que se queda: si se equivocó en «¿circular o no?».
-            if (!_readinessCorrect)
-                verdict += "\n" + Traducir("M1/Decision_Review");
-            return "<size=120%><b>" + Traducir("M1/FinalScore_Title") + "</b></size>\n"
-                   + "<size=300%><b>" + final.Percent + " / 100</b></size>\n"
-                   + sections + "\n"
-                   + "<color=#4A6480>" + verdict + "</color>";
+            return _readinessCorrect ? verdict : verdict + "\n" + Traducir("M1/Decision_Review");
         }
 
         /// <summary>Texto de I2; si falta el término se ve la clave, que delata la falta.</summary>

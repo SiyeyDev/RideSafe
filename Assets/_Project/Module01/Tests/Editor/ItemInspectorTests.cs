@@ -151,6 +151,56 @@ namespace RideSafe.Module01.Tests
             return stage.transform;
         }
 
+        private Transform Surface(Transform stage, float below)
+        {
+            GameObject surface = new GameObject("surface");
+            Track(surface);
+            surface.transform.position = stage.position + Vector3.down * below;
+            _inspector.ConfigureSurfaceForTests(surface.transform);
+            return surface.transform;
+        }
+
+        private Bounds Presented()
+        {
+            Renderer[] renderers = _inspector.Presented.GetComponentsInChildren<Renderer>();
+            Bounds bounds = renderers[0].bounds;
+            foreach (Renderer r in renderers)
+                bounds.Encapsulate(r.bounds);
+            return bounds;
+        }
+
+        [Test]
+        public void Con_superficie_el_objeto_se_apoya_en_ella_y_no_flota()
+        {
+            // Centrado en un punto fijo, solo lo más alto llegaba al podio; lo plano flotaba (PO, 2026-11-06).
+            Transform stage = Stage();
+            stage.position = new Vector3(1f, 2f, 3f);
+            Transform surface = Surface(stage, .19f);
+
+            _inspector.Present(Item("helmet_ok", SafetyItemCategory.Core), Mesa(1, Quaternion.identity));
+
+            Bounds bounds = Presented();
+            Assert.AreEqual(surface.position.y, bounds.min.y, .001f, "toca la superficie");
+            Assert.AreEqual(stage.position.x, bounds.center.x, .001f, "centrado en el podio");
+            Assert.AreEqual(stage.position.z, bounds.center.z, .001f, "centrado en el podio");
+        }
+
+        [Test]
+        public void Al_girar_gira_sobre_el_eje_del_podio_aunque_la_cabeza_este_inclinada()
+        {
+            // La presentación cuelga de la cámara: con el eje del mundo, al mirar hacia abajo el
+            // objeto atravesaría el disco en cada vuelta.
+            Transform stage = Stage();
+            stage.rotation = Quaternion.Euler(30f, 0f, 0f);
+
+            _inspector.Present(Item("helmet_ok", SafetyItemCategory.Core), Mesa(1, Quaternion.identity));
+            Vector3 up = _inspector.Presented.up;
+            _inspector.Spin(1f);
+
+            Assert.AreEqual(0f, Vector3.Angle(stage.up, _inspector.Presented.up), .01f, "el eje es el del podio");
+            Assert.AreEqual(0f, Vector3.Angle(up, _inspector.Presented.up), .01f, "girar no lo ladea");
+        }
+
         [Test]
         public void El_pedestal_ensena_tantas_mallas_como_el_objeto_de_la_mesa()
         {

@@ -2369,24 +2369,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - You need more than 70 to continue. Repeat the module.
-      - "Necesitas m\xE1s de 70 para continuar. Repite el m\xF3dulo."
-      Flags: 0000
-      Languages_Touch: []
-    - Term: M1/Section_CanAdvance
-      TermType: 0
-      Description: 
-      Languages:
-      - You can continue. Watch the explanation before moving on.
-      - "Puedes continuar. Mira la explicaci\xF3n antes de seguir."
-      Flags: 0000
-      Languages_Touch: []
-    - Term: M1/Section_MustRepeat
-      TermType: 0
-      Description: 
-      Languages:
-      - You are below 70. After the video you will repeat the full selection.
-      - "No llegas a 70. Despu\xE9s del video repetir\xE1s la selecci\xF3n completa."
+      - Repeat the module to continue.
+      - "Repite el m\xF3dulo para poder continuar."
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Evaluation_Title
@@ -2403,6 +2387,30 @@ MonoBehaviour:
       Languages:
       - 'Score: {0}'
       - 'Puntaje: {0}'
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Summary_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Summary
+      - Resumen
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Inspection_Reviewed
+      TermType: 0
+      Description: 
+      Languages:
+      - Reviewed
+      - Revisado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Inspection_NotReviewed
+      TermType: 0
+      Description: 
+      Languages:
+      - Not reviewed
+      - No revisado
       Flags: 0000
       Languages_Touch: []
     CaseInsensitiveTerms: 0

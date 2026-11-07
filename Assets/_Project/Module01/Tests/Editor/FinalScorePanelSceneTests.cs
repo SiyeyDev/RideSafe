@@ -132,6 +132,19 @@ namespace RideSafe.Module01.Tests
                 "Title no tiene Module01Text: el texto se quedaría en el idioma del build");
         }
 
+        /// <summary>
+        /// El mismo orden que el resto de pares del módulo (PO, 2026-11-06): el secundario a la
+        /// izquierda y el que hace avanzar a la derecha.
+        /// </summary>
+        [Test]
+        public void Repetir_va_a_la_izquierda_y_continuar_a_la_derecha()
+        {
+            RectTransform repetir = Todo().First(g => g.name == "RepeatModuleButton").GetComponent<RectTransform>();
+            RectTransform continuar = Todo().First(g => g.name == "ContinueModule2Button").GetComponent<RectTransform>();
+            Assert.AreSame(repetir.parent, continuar.parent);
+            Assert.Less(repetir.anchoredPosition.x + repetir.sizeDelta.x, continuar.anchoredPosition.x + 1f, "sin pisarse");
+        }
+
         [Test]
         public void El_panel_no_tapa_los_botones_de_continuar_y_repetir()
         {

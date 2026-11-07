@@ -120,6 +120,38 @@ namespace RideSafe.Module01
             return entries;
         }
 
+        /// <summary>
+        /// Los puntos del vehículo, todos: los que el aprendiz revisó y los que no, sea porque dijo
+        /// que no o porque ni los señaló (PO, 2026-11-06). Aquí no vale lo de listar solo lo elegido
+        /// de <see cref="BuildEntries"/>: lo que se quiere leer es justo lo que quedó sin revisar.
+        /// </summary>
+        public static List<ComparisonEntry> BuildInspectionEntries(Module01CatalogSO catalog, SelectionReport report,
+                                                                   Func<string, string> translate)
+        {
+            List<ComparisonEntry> entries = new List<ComparisonEntry>();
+            if (catalog == null || report == null)
+                return entries;
+
+            foreach (SafetyItemSO item in catalog.AllItems)
+            {
+                if (item == null)
+                    continue;
+                bool reviewed = Contains(report.CoreSelected, item.ItemId);
+                if (!reviewed && !Contains(report.CoreOmitted, item.ItemId))
+                    continue;
+                string title = translate != null ? translate(item.NameKey) : item.NameKey;
+                entries.Add(new ComparisonEntry(reviewed ? ItemStatus.Selected : ItemStatus.CoreOmitted, title, item.ItemId)
+                {
+                    ItemId = item.ItemId,
+                    StateKey = reviewed ? ReviewedKey : NotReviewedKey,
+                });
+            }
+            return entries;
+        }
+
+        public const string ReviewedKey = "M1/Inspection_Reviewed";
+        public const string NotReviewedKey = "M1/Inspection_NotReviewed";
+
         private static bool Contains(IReadOnlyList<string> list, string id)
         {
             for (int i = 0; i < list.Count; i++)

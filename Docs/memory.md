@@ -1,7 +1,10 @@
 # RideSafe — estado del proyecto
 
 > Documento vivo. Se actualiza a medida que avanza el trabajo.
-> Última actualización: 2026-11-04 — «Revisa tus elecciones» y «Evaluación de tus elecciones» de
+> Última actualización: 2026-11-06 — el podio del artista bajo los EPP; revisión del vehículo y resumen
+> final sin puntaje, botones finales a la vista, luces de costado, piezas de la patineta y repetir
+> solo la sección del vehículo al reprobarla (§11).
+> Antes, 2026-11-04 — «Revisa tus elecciones» y «Evaluación de tus elecciones» de
 > la sección de EPP en cuadrícula de tarjetas con el render de cada EPP (63 renders propios), píldora
 > «Puntaje: N» y solo el título; esos dos paneles y el del video a 1.3×; M0 sin «Selected», vehículos
 > solo «E-bike» / «E-scooter», «Ajustes» sin postura y títulos de un ancho estándar con el texto
@@ -1235,6 +1238,67 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-11-06 (tarde) — prueba de la PO: vehículo y paneles finales
+
+- **Luces como las llantas:** `visibility` usa el mismo giro que `wheels` en los dos vehículos
+  (e-bike 0, patineta −90). Por detrás no se veía la luz delantera, y se revisan las dos.
+- **Piezas de la patineta:** el FBX de `826c9a2` trae `luz_freontal` (con esa errata) y
+  `direccional_de` / `direccional_iz`. **Decisión mía a confirmar con la PO:** luces =
+  `luz_freontal`; eléctrico y controles = las dos direccionales, porque no hay pantalla, batería
+  ni luz trasera como pieza. Se cambia en `VehicleProfiles` y en `SO_VehicleProfile_Escooter`.
+- **Revisión del vehículo sin puntaje:** `ReportPresenter.BuildInspectionEntries` lista todos los
+  puntos, ✓ «Revisado» y X «No revisado» (`ComparisonEntry.StateKey`). Decir «No» y no señalarlo es
+  lo mismo. La nota sigue por dentro (`SelectionScore`) para decidir si se repite. Se borró
+  `SectionScoreNote`, sus tests y los términos `M1/Section_*`.
+- **Repetir el vehículo (cambio de regla):** el 2026-11-04 reprobar volvía al inicio de los EPP en
+  las dos secciones («repetir la selección completa», documento del equipo). La PO da por hecho que
+  el vehículo vuelve a su propia sección, así que ahora es así (`RestartVehicleSection`); los EPP
+  reprobados siguen volviendo al inicio. Corte igual: 2 omisiones o más (e-bike: 3 de 5 o menos;
+  patineta: 4 de 6 o menos). Si reprueba no se pregunta «¿qué decides?»: tras el video vuelve.
+- **Resumen final:** sin «Puntuación final», «N / 100» ni Gear/Vehicle; título `M1/Summary_Title`
+  («Resumen · rango») para no confundirse con «Mi Elección»; al pie, si sigue o repite en palabras
+  (`M1/FinalScore_MustRepeat` ya no nombra el 70). La nota sigue decidiendo Módulo 2 y el rango.
+- **Botones finales fuera de la vista:** con el panel a 1.3× y la caja de la nota, quedaban debajo
+  del encuadre. Ahora la lista del resumen topa en 220 (`SetSingleList(…, maxListHeight)`) y los
+  botones también van a 1.3× (`FinalButtonsAtPanelScale`). Medido con 14 filas en la cámara de
+  escritorio (FOV 60): entre 12 % y 19 % de la altura de la vista.
+- **Por qué no daba 100:** no era un error de cálculo. Vehicle 80 = 4 de 5 puntos; Gear 95 cuadra con
+  faltar solo la ropa ceñida (peso 5). Con todo bien da 100.
+- **Pruebas:** nuevas en `ReportPresenterTests`, `VehiclePartsTests` y `Module01DirectorTests`;
+  ajustado `Module01SliceTests.AssertReportLayout`. **Sin correr: las corre la PO.**
+
+### 2026-11-06 (noche) — podio girado y botones finales
+
+- **Podio:** `Module01Podium.PodiumYaw = -80` (PO, con captura). Es la rotación **local**: el pedestal
+  cuelga de la cámara, así que el podio enseña la misma cara en todas las paradas. Su captura era
+  de una prueba en Play con el objeto movido de sitio, así que no aclara el marco: si en el visor no
+  coincide, se ajusta ese número.
+- **Botones finales:** «Repetir» a la izquierda y «Continuar» a la derecha, como los demás pares del
+  módulo. Más pequeños: 170 y 226 × 42, letra 15, a la escala 1.3 de su panel
+  (`Module01SceneComposition.PlaceFinalButtons`; antes 280 y 300 × 48).
+
+### 2026-11-06 — el podio del artista bajo los EPP
+
+- **Qué es:** `Models/CITY/MODELADOS 3d/podium.fbx` (commits `f30feb7` y `4287a11`): un disco de
+  40,6 × 40 cm y 4 de alto, pivote al centro, material `podium_Mat` (URP Lit, emisión ×6). **No
+  hay prefab ni luces reales:** su «iluminación» es esa emisión.
+- **Escena v5:** `InspectorPedestal` deja de ser el cilindro primitivo de 26 cm y es un grupo con
+  la instancia del FBX a tamaño real (`Podium`) y `Surface`, su cara de arriba. Lo hace
+  `Module01/Scene/Editor/Module01Podium` (menú «Poner el podio del artista bajo los EPP»), llamado
+  también desde `Module01SceneComposition.Compose`. Idempotente.
+- **Los EPP se apoyan:** `ItemInspector._surface` baja lo presentado hasta que su punto más bajo
+  toca el podio. Antes se centraban en el stage y lo plano flotaba. El giro va sobre el eje del
+  podio (`_stage.up`), porque la presentación cuelga de la cámara y con el eje del mundo el objeto
+  atravesaba el disco al mirar hacia abajo. Se mide con `Renderer.bounds`: una pieza girada en su
+  malla puede quedar a poca distancia del disco.
+- **El popup no se movió:** el disco más ancho adelanta su borde hacia la cámara, y bajar el popup
+  15 dejaba sus botones en el límite de la vista. El podio sube 1,8 cm (centro en −.2123) para que
+  ese borde se proyecte donde el del cilindro. Trampa: `LowestRim` del slice test proyectaba el
+  cilindro primitivo; ahora usa las medidas de la malla.
+- **Pruebas:** `ItemInspectorTests` (apoyo y eje de giro) y
+  `FocusDomeSceneTests.ThePedestal_IsTheArtistsPodium_AndItemsRestOnItsTop`. El diff de la escena
+  trae además ruido de layout de las tarjetas de muestra (overrides de RectTransform), inofensivo.
 
 ### 2026-11-04 — tarjetas de EPP en «Revisa tus elecciones» y «Evaluación de tus elecciones»
 
