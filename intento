@@ -1,0 +1,111 @@
+
+float2 ParallaxUV(float2 uv, float3 viewDirTS)
+{
+    float3 viewDir = normalize(viewDirTS);
+
+    // Evita divisiones extremas cuando la cámara mira de lado.
+    float viewZ = max(viewDir.z, 0.15);
+
+    // Dirección de desplazamiento en coordenadas UV.
+    float2 parallaxDirection = viewDir.xy / viewZ;
+
+    // Profundidad máxima del efecto.
+    float2 totalOffset = parallaxDirection * _ParallaxHeight;
+
+    totalOffset.x /= max(_UVAspect, 0.001);
+
+    totalOffset = clamp(
+        totalOffset,
+        -_MaxOffset,
+        _MaxOffset
+    );
+
+    // Más muestras cuando la cámara mira de lado.
+    float angle = saturate(viewDir.z);
+
+    int steps = (int)lerp(
+        _MaxSteps,
+        _MinSteps,
+        angle
+    );
+
+    steps = clamp(steps, 4, 16);
+
+    float layerStep = 1.0 / steps;
+    float2 uvStep = totalOffset / steps;
+
+    float currentLayer = 0.0;
+
+    float2 currentUV = uv;
+    float2 previousUV = uv;
+
+    float previousLayer = 0.0;
+
+    float2 uvDx = ddx(uv);
+    float2 uvDy = ddy(uv);
+
+    float currentHeight = 0.0;
+
+    [loop]
+    for (int i = 0; i < steps; i++)
+    {
+        currentHeight = SAMPLE_TEXTURE2D_GRAD(
+            _HeightMap,
+            sampler_HeightMap,
+            currentUV,
+            uvDx,
+            uvDy
+        ).r;
+
+        // Blanco = superficie elevada.
+        // Negro = superficie profunda.
+        float surfaceDepth = 1.0 - currentHeight;
+
+        if (currentLayer >= surfaceDepth)
+            break;
+
+        previousUV = currentUV;
+        previousLayer = currentLayer;
+
+        currentUV -= uvStep;
+        currentLayer += layerStep;
+    }
+
+    // Refinamiento de la intersección.
+    float previousHeight = SAMPLE_TEXTURE2D_GRAD(
+        _HeightMap,
+        sampler_HeightMap,
+        previousUV,
+        uvDx,
+        uvDy
+    ).r;
+
+    float afterDepth =
+        (1.0 - currentHeight) - currentLayer;
+
+    float beforeDepth =
+        (1.0 - previousHeight) - previousLayer;
+
+    float denominator = afterDepth - beforeDepth;
+
+    float weight = abs(denominator) > 0.0001
+        ? saturate(afterDepth / denominator)
+        : 0.0;
+
+    float2 refinedUV = lerp(
+        currentUV,
+        previousUV,
+        weight
+    );
+
+    currentUV = lerp(
+        currentUV,
+        refinedUV,
+        saturate(_Refinement)
+    );
+
+    currentUV.x = frac(currentUV.x);
+    currentUV.y = saturate(currentUV.y);
+
+    return currentUV;
+}
