@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: BuildEXOne.001
-    second: {fileID: 2100000, guid: d82720d61d3acea40b6127a509058d17, type: 2}
+    second: {fileID: 2100000, guid: c5d411f1b04722846b72fda9ebf88fe8, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
