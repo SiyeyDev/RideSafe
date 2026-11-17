@@ -33,7 +33,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Texture2D_arrow:
-        m_Texture: {fileID: 2800000, guid: 4d7e26c6107df644fa20e7499354c30f, type: 3}
+        m_Texture: {fileID: 2800000, guid: a8b7b1fb0b5cf4241b889fc574b4ec13, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _alpha:

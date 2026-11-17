@@ -8,7 +8,22 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: BuildEXOne.001
-    second: {fileID: 2100000, guid: c5d411f1b04722846b72fda9ebf88fe8, type: 2}
+    second: {fileID: 2100000, guid: a7f8a9f207cd005419b31b3fca5bbdc8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: StoreFront2
+    second: {fileID: 2100000, guid: 62dc29bc639a0844394e7ca4a5583396, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Trim10
+    second: {fileID: 2100000, guid: 61aa78bd878ed08469ff56eb9b1350d7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: unnamed
+    second: {fileID: 2100000, guid: bac7c7bdb0882e749a8455c33307e686, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
