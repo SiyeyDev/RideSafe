@@ -139,7 +139,11 @@ namespace RideSafe.Module01.Editor
                     ? new (string, GameObject)[0]
                     : definition.PodiumModels.Select(m =>
                     {
-                        GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(Module01Library.Models + m.ModelFile);
+                        // «archivo.fbx#ruta/hijo»: solo esa parte del modelo, con lo que cuelga de ella.
+                        string[] file = m.ModelFile.Split('#');
+                        GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(Module01Library.Models + file[0]);
+                        if (model != null && file.Length > 1)
+                            model = model.transform.Find(file[1])?.gameObject;
                         if (model == null)
                             Debug.LogError($"[Module01] {profile.name}: no carga el modelo del podio {m.ModelFile} de {m.Item}.");
                         return (m.Item, model);

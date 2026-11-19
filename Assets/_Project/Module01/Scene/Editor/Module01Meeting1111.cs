@@ -64,6 +64,14 @@ public static class Module01Meeting1111
         EditorSceneManager.SaveOpenScenes();
     }
 
+    /// <summary>Solo los perfiles de los vehículos (piezas y modelos del podio). -executeMethod Module01Meeting1111.RunProfilesBatch</summary>
+    public static void RunProfilesBatch()
+    {
+        EditorSceneManager.OpenScene(Module01ClientListCleanup.ScenePath, OpenSceneMode.Single);
+        Module01VehicleStaging.StageOpenScene();
+        AssetDatabase.SaveAssets();
+    }
+
     /// <summary>
     /// Daniel giró unos grados el display de la e-bike en su escena (ed44f2c, 2026-11-17). Esta
     /// escena no es la suya, así que se copia aquí la pose que dejó.

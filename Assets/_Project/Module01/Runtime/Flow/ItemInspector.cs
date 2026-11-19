@@ -134,6 +134,12 @@ namespace RideSafe.Module01
         /// <summary>Lo que se ve en el pedestal, para que un test afirme sin mirar la pantalla.</summary>
         public bool PresentsSolid => _spins;
 
+        /// <summary>El punto del podio, para orientar lo presentado.</summary>
+        public Transform Stage => _stage;
+
+        /// <summary>Sin la vuelta de presentación: la dirección se mueve sola y girando no se entendía.</summary>
+        public void HoldStill() => _spins = false;
+
         /// <summary>
         /// Lo que hay montado sobre el pedestal ahora mismo, o null. Expuesto para que un test
         /// afirme lo que se va a dibujar en vez de mirar una captura.
@@ -171,7 +177,7 @@ namespace RideSafe.Module01
         /// hay pieza se enseña el <c>!</c>, que es el mismo idioma que el marcador del mundo.
         /// </para>
         /// </summary>
-        public void Present(SafetyItemSO item, Transform source, string questionKey) =>
+        public GameObject Present(SafetyItemSO item, Transform source, string questionKey) =>
             PresentWith(item, questionKey, () => CopyOf(source));
 
         /// <summary>
@@ -180,7 +186,7 @@ namespace RideSafe.Module01
         /// dirección es el padre de la rueda, la luz, los frenos y la pantalla: copiarlo con sus
         /// hijos ponía en el pedestal todo el tren delantero para «Dirección y manubrio».
         /// </summary>
-        public void PresentParts(SafetyItemSO item, IReadOnlyList<Transform> parts, string questionKey) =>
+        public GameObject PresentParts(SafetyItemSO item, IReadOnlyList<Transform> parts, string questionKey) =>
             PresentWith(item, questionKey, () => CopyOfParts(parts));
 
         /// <summary>
@@ -189,7 +195,13 @@ namespace RideSafe.Module01
         /// pedestal, para delinear en él, o null si no hay pedestal.
         /// </summary>
         public GameObject PresentModel(SafetyItemSO item, GameObject prefab, string questionKey) =>
-            PresentWith(item, questionKey, () => prefab == null ? null : Instantiate(prefab, _instance.transform));
+            PresentWith(item, questionKey, () =>
+            {
+                if (prefab == null) return null;
+                GameObject copy = Instantiate(prefab, _instance.transform);
+                copy.name = prefab.name; // sin «(Clone)»: OutlinePodium y la animación buscan por nombre de pieza
+                return copy;
+            });
 
         private GameObject PresentWith(SafetyItemSO item, string questionKey, Func<GameObject> copy)
         {

@@ -53,5 +53,7 @@ MonoBehaviour:
     Image: {fileID: 21300000, guid: f0f59648e737a9b48883993be31a1c1c, type: 3}
   - ItemId: point_lights
     Image: {fileID: 21300000, guid: 741ff4b91f05be5409d052c41d54ff02, type: 3}
-  _podiumModels: []
+  _podiumModels:
+  - ItemId: point_steering
+    Model: {fileID: -1599720674489675081, guid: 1fb91a68150f4d3449e1dff97451d1b7, type: 3}
   _explanationVideo: {fileID: 32900000, guid: 17736dd0a8a77ca45a0743be7ee95c6d, type: 3}

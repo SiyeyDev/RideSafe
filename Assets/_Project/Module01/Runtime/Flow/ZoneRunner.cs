@@ -188,12 +188,19 @@ namespace RideSafe.Module01
                     InspectionHighlight highlight = world.GetComponent<InspectionHighlight>();
                     // Con modelo propio del podio (los frenos de la bici: el manubrio entero), ese
                     // modelo, delineando en él lo mismo que en el vehículo.
+                    GameObject shown;
                     if (highlight != null && highlight.PodiumModel != null)
-                        highlight.OutlinePodium(_inspector.PresentModel(item, highlight.PodiumModel, question));
+                    {
+                        shown = _inspector.PresentModel(item, highlight.PodiumModel, question);
+                        highlight.OutlinePodium(shown);
+                    }
                     else if (highlight != null && highlight.Parts.Count > 0)
-                        _inspector.PresentParts(item, highlight.Parts, question);
+                        shown = _inspector.PresentParts(item, highlight.Parts, question);
                     else
-                        _inspector.Present(item, world.transform, question);
+                        shown = _inspector.Present(item, world.transform, question);
+                    // Las piezas del vehículo se mueven en el podio (Excel 11-13); los EPP no.
+                    if (item.ItemId.StartsWith("point_"))
+                        PodiumAnimation.Attach(shown, item.ItemId, _inspector);
                     return;
                 }
             }

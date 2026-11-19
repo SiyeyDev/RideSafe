@@ -142,6 +142,9 @@ namespace RideSafe.Module01.Editor
                     // La transmisión separada que trajo Daniel en ef550e3 —cadena, plato y piñones—:
                     // en la bici solo hay 'pedales', así que al podio va este modelo entero.
                     ("point_drivetrain", "piezas ebike.fbx"),
+                    // La dirección gira en el podio con el manubrio, el tenedor y la rueda delantera
+                    // (Excel 11-13): el 'tenedor' con lo que cuelga de él, no solo su malla.
+                    ("point_steering", "ebike.fbx#marco/tenedor"),
                 }),
             // La patineta viene en dos piezas anidadas: 'Manubrio' (con 'freno_iz', 'freno_de' y
             // 'llanta_delantera') y 'cuerpo' (con 'llanta_tracera' y 'soporte'). La plataforma
@@ -173,6 +176,11 @@ namespace RideSafe.Module01.Editor
                     ("point_lights", "luz_freontal"),
                     ("point_lights", "luz_trasera"),
                     ("point_electrics", "display"),
+                },
+                // Como en la bici: manubrio, poste, tenedor y rueda delantera girando (Excel 11-13).
+                new[]
+                {
+                    ("point_steering", "E_Scooter.fbx#cuerpo/Manubrio"),
                 }),
         };
 

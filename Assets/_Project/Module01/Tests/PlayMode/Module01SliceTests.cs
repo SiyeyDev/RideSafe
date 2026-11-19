@@ -56,6 +56,11 @@ namespace RideSafe.Module01.Tests
             // La traza va al archivo porque la recarga de dominio al salir de PlayMode se lleva
             // los callbacks del TestRunnerApi: sin esto solo queda el mensaje, sin linea culpable.
             System.IO.File.AppendAllText(ResultPath, $"{r.Outcome.Status}  {TestContext.CurrentContext.Test.Name}\n{r.Message}\n{r.StackTrace}\n");
+            // Aquí y no en el finally de Demo: si la demostración falla, el runner no lo ejecuta y
+            // la grabadora seguía guardando un JPG por frame en los tests siguientes (timeouts, 2026-11-19).
+            _demo = false;
+            var recorder = GameObject.Find("DemoRecorder");
+            if (recorder != null) Object.Destroy(recorder);
             yield return null;
         }
         [UnityTest] public IEnumerator El_modulo_recorre_de_la_primera_zona_al_reporte_final()
@@ -87,12 +92,20 @@ namespace RideSafe.Module01.Tests
         /// en <see cref="DemoFolder"/>. El mp4 lo arma ffmpeg. Solo corre si se pide por su nombre.
         /// </summary>
         [UnityTest, Explicit, Timeout(1800000)] public IEnumerator Demo_video_patinete_completo()
+        { yield return Demo("escooter"); }
+
+        /// <summary>Igual con la bici: frenos con el manubrio, transmisión y display en el podio (2026-11-19).</summary>
+        [UnityTest, Explicit, Timeout(1800000)] public IEnumerator Demo_video_bici_completo()
+        { yield return Demo("ebike"); }
+
+        private IEnumerator Demo(string vehicle)
         {
             _demo = true;
+            _demoVehicle = vehicle;
             var recorder = new GameObject("DemoRecorder").AddComponent<DemoRecorder>();
             try
             {
-                yield return RunFlow(false, true, "escooter");
+                yield return RunFlow(false, true, vehicle);
                 yield return DemoPause();
                 float until = Time.realtimeSinceStartup + 3f;
                 while (Time.realtimeSinceStartup < until) yield return null;
@@ -104,7 +117,9 @@ namespace RideSafe.Module01.Tests
             }
         }
 
-        public const string DemoFolder = "C:/Users/charl/AppData/Local/Temp/claude/379153a7069ee373/d84955e3-e550-4056-89cd-1b315cb3d100/scratchpad/demo";
+        /// <summary>Docs/verification no va a git. Una carpeta por vehículo.</summary>
+        private static string DemoFolder => System.IO.Path.GetFullPath("Docs/verification/demo/" + _demoVehicle);
+        private static string _demoVehicle = "escooter";
         private static bool _demo;
 
         /// <summary>Antes de cada clic de la demostración: que acabe la voz y un respiro para leer.</summary>
@@ -122,7 +137,10 @@ namespace RideSafe.Module01.Tests
                 quiet = sounding ? 0f : quiet + (now - last);
                 last = now;
             }
-            float until = Time.realtimeSinceStartup + .6f;
+            // Una pieza del vehículo en el podio: que se vea moverse (Excel 11-13) antes de seguir.
+            var inspector = Object.FindAnyObjectByType<ItemInspector>();
+            bool part = inspector != null && inspector.Current != null && inspector.Current.ItemId.StartsWith("point_");
+            float until = Time.realtimeSinceStartup + (part ? 4f : .6f);
             while (Time.realtimeSinceStartup < until) yield return null;
         }
 
@@ -443,10 +461,12 @@ namespace RideSafe.Module01.Tests
                     Assert.IsFalse(model.GetComponentsInChildren<MeshFilter>()
                         .Any(mf => mf.sharedMesh != null && mf.sharedMesh.name.StartsWith("Sphere")),
                         "Esfera blanca en el pedestal: " + item.ItemId);
-                    Quaternion before = model.rotation;
+                    // Gira el conjunto, salvo la dirección: esa va y vuelve sobre su eje (Excel 11-13).
+                    Transform moving = item.ItemId == "point_steering" && model.childCount > 0 ? model.GetChild(0) : model;
+                    Quaternion before = moving.rotation;
                     yield return new WaitForSeconds(.15f);
                     if (solido)
-                        Assert.Greater(Quaternion.Angle(before, model.rotation), 1, "El EPP no gira");
+                        Assert.Greater(Quaternion.Angle(before, moving.rotation), 1, "El EPP no gira: " + item.ItemId);
                     else
                         Assert.AreEqual(0f, Quaternion.Angle(before, model.rotation), .01f,
                             "El signo no debe girar: es texto plano y se quedaria de canto.");

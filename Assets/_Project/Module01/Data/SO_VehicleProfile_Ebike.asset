@@ -67,4 +67,6 @@ MonoBehaviour:
     Model: {fileID: 919132149155446097, guid: 0a0d3937ebb9881429f09544fd674d97, type: 3}
   - ItemId: point_drivetrain
     Model: {fileID: 919132149155446097, guid: b4260c41077c1cd4babb9470cba3aac0, type: 3}
+  - ItemId: point_steering
+    Model: {fileID: 647824872642329070, guid: e8019823d73f27347a191ddac608b826, type: 3}
   _explanationVideo: {fileID: 32900000, guid: 17736dd0a8a77ca45a0743be7ee95c6d, type: 3}
