@@ -1,20 +1,14 @@
 {
   "characters": [
-    "Objeto",
-    "en",
-    "la",
-    "mano"
+    "Teléfono",
+    "inteligente"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.685,
-    0.836,
-    0.975
+    0.627
   ],
   "character_end_times_seconds": [
-    0.604,
-    0.778,
-    0.917,
+    0.592,
     1.672
   ]
 }

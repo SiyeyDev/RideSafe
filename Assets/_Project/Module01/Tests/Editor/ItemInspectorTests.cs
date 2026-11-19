@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -306,6 +307,37 @@ namespace RideSafe.Module01.Tests
             _inspector.PresentParts(item, new[] { Pieza("freno_de"), Pieza("freno_iz") }, null);
 
             Assert.AreEqual(2, _inspector.Presented.GetComponentsInChildren<MeshRenderer>(true).Length);
+        }
+
+        /// <summary>
+        /// Los frenos de la bici: en el podio va el manubrio entero (frenos.fbx) y se delinean solo
+        /// las manetas, las mismas que brillan en la bici (cliente, 2026-11-11, 21:32).
+        /// </summary>
+        [Test]
+        public void Un_modelo_del_podio_se_presenta_entero_y_delinea_solo_las_piezas_del_punto()
+        {
+            Stage();
+            SafetyItemSO item = Item("point_brakes", SafetyItemCategory.Core);
+            GameObject point = new GameObject("point_brakes");
+            Track(point);
+            InspectionHighlight highlight = point.AddComponent<InspectionHighlight>();
+            Material outline = new Material(Shader.Find("RideSafe/Inspection Outline"));
+            highlight.ConfigureForTests(outline, Color.white, Color.green);
+            highlight.BindParts(new[] { Pieza("freno_de"), Pieza("freno_iz") });
+            Transform podium = Pieza("frenos", "freno_de", "freno_iz");
+
+            GameObject shown = _inspector.PresentModel(item, podium.gameObject, null);
+
+            Assert.IsNotNull(shown);
+            Assert.AreEqual(2, highlight.OutlinePodium(shown));
+            string[] outlined = shown.GetComponentsInChildren<MeshRenderer>(true)
+                .Where(r => r.name == InspectionHighlight.OutlineName).Select(r => r.transform.parent.name).ToArray();
+            CollectionAssert.AreEquivalent(new[] { "freno_de", "freno_iz" }, outlined, "Se delineó el manubrio, no solo las manetas.");
+            MaterialPropertyBlock block = new MaterialPropertyBlock();
+            shown.GetComponentsInChildren<MeshRenderer>(true).First(r => r.name == InspectionHighlight.OutlineName).GetPropertyBlock(block);
+            Assert.AreEqual(InspectionHighlight.PodiumGlowWidth, block.GetFloat("_GlowWidth"), 1e-6f, "El halo del podio va con el grosor del vehículo y tapa las manetas.");
+            Assert.IsTrue(shown.GetComponentsInChildren<MeshRenderer>(true).Any(r => r.name.StartsWith("frenos")), "Falta el manubrio en el podio.");
+            Object.DestroyImmediate(outline);
         }
 
         [Test]

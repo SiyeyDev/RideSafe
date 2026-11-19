@@ -90,7 +90,8 @@ namespace RideSafe.Module00.Editor
             }
         }
 
-        private static ControllerHint3DView EnsureHint3D(Scene scene, Transform tutorial, StringBuilder report)
+        /// <summary>También lo usa la bienvenida de la escena del módulo 1 (Module01Meeting1111).</summary>
+        public static ControllerHint3DView EnsureHint3D(Scene scene, Transform tutorial, StringBuilder report)
         {
             ControllerHint3DView view = tutorial.GetComponentInChildren<ControllerHint3DView>(true);
             if (view == null)

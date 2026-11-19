@@ -64,8 +64,13 @@ namespace RideSafe.Module01.Editor
 
             List<ZoneSO> zones = catalog.Zones.Where(z => z != null).ToList();
             ClearDecorFromTops(zones);
+            // Solo se reparte lo que ya descansa sobre una tapa: lo del suelo o lo colgado (el
+            // poncho) no se sube a la mesa, que es como acabó atravesando el estante (2026-11-17).
+            // Cualquier tapa del garaje, no solo las de su parada: lo que está en el mueble de otra
+            // parada también se trae al suyo.
+            var todas = zones.SelectMany(Tops).ToList();
             foreach (ZoneSO zone in zones)
-                Arrange(zone, Mine(zone, byId));
+                Arrange(zone, Mine(zone, byId).Where(e => SobreUnaTapa(e, todas)).ToList());
             Module01LayoutStamp.Guardar();
             Physics.SyncTransforms();
 
@@ -77,6 +82,7 @@ namespace RideSafe.Module01.Editor
                 PlaceViewPoint(zone, Mine(zone, byId), blocked, floor);
 
             RevealLoose(zones, byId);
+            Module01LayoutStamp.Guardar();   // RevealLoose también mueve, y lo apunta
             // Con todo en su sitio: quién se pulsa por su forma y quién por su caja depende de
             // lo que tenga al lado.
             Module01SceneEntities.FitClickShapes();
@@ -532,6 +538,21 @@ namespace RideSafe.Module01.Editor
 
         private static float Largo(Bounds b, bool depthAlongX) => depthAlongX ? b.size.z : b.size.x;
 
+        /// <summary>
+        /// Su base está sobre alguna tapa de su parada, o flotando por encima. Lo que baja de la tapa
+        /// —el suelo, o el poncho colgado del borde— no.
+        /// </summary>
+        private static bool SobreUnaTapa(WorldObjectTaskEntity e, List<(Surface Surface, GameObject Go, Bounds Box)> tops)
+        {
+            bool estaba = e.gameObject.activeSelf;
+            if (!estaba)
+                e.gameObject.SetActive(true);
+            bool ok = TryBounds(e.gameObject, out Bounds b);
+            if (!estaba)
+                e.gameObject.SetActive(false);
+            return ok && tops.Any(t => b.min.y > t.Surface.WorktopHeight - .12f);
+        }
+
         /// <summary>Reparte un puñado de EPP sobre un mueble, en dos bandas disjuntas.</summary>
         private static void Mueble((Surface Surface, GameObject Go, Bounds Box) top, List<Pieza> piezas,
             Vector3 outward, bool depthAlongX, string zoneId)
@@ -540,6 +561,19 @@ namespace RideSafe.Module01.Editor
                 return;
 
             float fondoUtil = (depthAlongX ? top.Box.size.x : top.Box.size.z) - 2f * StationLayout.EdgeInset;
+
+            // Si caben todos en una fila con aire, una sola fila: dos bandas ponen una pieza delante
+            // de otra y desde la parada se leen encimadas (cliente, 2026-11-11: «la bolsa, los guantes…»).
+            float largoMueble = Largo(top.Box, depthAlongX) - 2f * StationLayout.EdgeInset;
+            // Basta el hueco mínimo: Fila reparte lo que sobre a partes iguales. Pedir 8 cm mandaba
+            // el mostrador de la ropa a dos bandas por 4 cm y la gorra pisaba las gafas rayadas.
+            if (piezas.Sum(p => p.W) + (piezas.Count + 1) * MinimoEntreVecinos <= largoMueble)
+            {
+                float centro = depthAlongX ? top.Box.center.x : top.Box.center.z;
+                float desde = (depthAlongX ? top.Box.min.z : top.Box.min.x) + StationLayout.EdgeInset;
+                Fila(top, piezas, depthAlongX, centro, desde, largoMueble, zoneId);
+                return;
+            }
 
             // Las dos bandas no son iguales: la del fondo se lleva el 55 % porque ahí va lo más
             // hondo —un par de zapatos ocupa 30 cm— y delante basta con lo plano. Partir por la
@@ -813,7 +847,14 @@ namespace RideSafe.Module01.Editor
                             && r.GetComponentInParent<Canvas>() == null
                             && !tops.Any(t => r.transform.IsChildOf(t.Go.transform))
                             && !except.Any(e => r.transform.IsChildOf(e.transform)))
-                .Select(r => r.bounds).ToList();
+                .Select(r => r.bounds)
+                // Y la caja de clic de cada EPP, más gruesa que su malla: con solo la malla las gafas
+                // rayadas caían dentro del collider de la gorra y era la gorra la que se pulsaba.
+                .Concat(Object.FindObjectsByType<WorldObjectTaskEntity>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
+                    .Where(e => !except.Contains(e))
+                    .SelectMany(e => e.GetComponentsInChildren<Collider>(false))
+                    .Where(c => c.enabled).Select(c => c.bounds))
+                .ToList();
 
         /// <summary>
         /// Lleva los signos «!» de la mesa a huecos libres de su mueble, lo más cerca posible de
@@ -996,6 +1037,9 @@ namespace RideSafe.Module01.Editor
             box = Clickable(entity, box);
             Undo.RecordObject(entity.transform, "Colocar signo");
             entity.transform.position += spot - box.center;
+            // Sin apuntarlo, la pasada siguiente lo daba por movido a mano y ya no lo tocaba nunca:
+            // así se quedaron las gafas rayadas dentro de la caja de clic de la gorra.
+            Module01LayoutStamp.Apuntar(entity.ItemId, entity.transform.position);
             occupied.Add(FrontBlock(top, spot, box.size, outward));
             Bounds at = new Bounds(spot, box.size);
             placed?.Add(at);

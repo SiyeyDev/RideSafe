@@ -57,6 +57,38 @@ namespace RideSafe.Module01
         /// simplemente no lleva a ningún sitio.
         /// </summary>
         public UnityEvent onContinueToModule2 = new UnityEvent();
+
+        /// <summary>Se abre la bienvenida del módulo 0: la voz que explica cómo usar el control (cliente, 2026-11-11).</summary>
+        public UnityEvent onWelcome = new UnityEvent();
+        public UnityEvent onLeaveWelcome = new UnityEvent();
+
+        /// <summary>Empieza la sección de EPP: la instrucción hablada (cliente, 2026-11-11).</summary>
+        public UnityEvent onSelectionStarted = new UnityEvent();
+
+        /// <summary>
+        /// Llega a la primera zona del vehículo: la voz de entrada a la sección (M02_Welcome, hoja del
+        /// cliente). Suena una sola vez en el módulo.
+        /// </summary>
+        public UnityEvent onVehicleSectionStarted = new UnityEvent();
+
+        /// <summary>
+        /// El aprendiz actúa —abre un elemento o cambia de estación—: corta la instrucción hablada.
+        /// Su subtítulo dura unos 10 s y, si sigue, se pisa con el nombre del podio y los botones.
+        /// </summary>
+        public UnityEvent onLearnerActs = new UnityEvent();
+
+        /// <summary>
+        /// Los veredictos, para sus voces: aprobó la sección de EPP, no aprobó la de EPP o la del
+        /// vehículo, y completó el módulo. <see cref="onLeaveAchievement"/> las corta al pulsar.
+        /// </summary>
+        public UnityEvent onEppPassed = new UnityEvent();
+        public UnityEvent onEppFailed = new UnityEvent();
+        public UnityEvent onVehicleFailed = new UnityEvent();
+        public UnityEvent onModuleCompleted = new UnityEvent();
+        public UnityEvent onLeaveAchievement = new UnityEvent();
+
+        /// <summary>Panel de logro: la felicitación al aprobar una sección y el cierre del módulo.</summary>
+        public const string AchievementPanel = "Achievement";
         public string Phase { get; private set; } = "Outside";
         public bool SubtitlesEnabled { get; private set; } = true;
         /// <summary>Lo que el módulo 0 dejó decidido. Es lo que leen los requisitos de secuencia.</summary>
@@ -66,8 +98,6 @@ namespace RideSafe.Module01
         public const string DefaultLanguage = "en";
         private bool _started;
         private bool _videoComplete;
-        private bool _readinessCorrect;
-        private ReadinessChoice _choice;
         private List<ComparisonEntry> _personalEntries;
         private List<ComparisonEntry> _vehicleEntries;
         /// <summary>The vehicle section's result, kept for the go/no-go that now comes after its review.</summary>
@@ -86,13 +116,11 @@ namespace RideSafe.Module01
             _sidebar = _binding.Sidebar;
             _binding.Module.gameObject.SetActive(true);
             _binding.Module.HideAll();
+            // El «¿qué decides?» y la barra del resumen general ya no salen (reunión del 2026-11-11):
+            // cada sección cierra con su resumen y el módulo con el panel de logro.
             _sidebar.SetActive(false); _navigation.SetActive(false); _decision.SetActive(false); _instruction.SetActive(false);
-            if (_result != null)
-            {
-                _result.SetActive(false);
-                Bind(_result.transform, "RepeatModuleButton", RepeatModule);
-                Bind(_result.transform, "ContinueModule2Button", () => onContinueToModule2.Invoke());
-            }
+            if (_result != null) _result.SetActive(false);
+            Bind(_binding.Module.Get<RectTransform>(AchievementPanel), "ContinueButton", ContinueFromAchievement);
             Bind(_binding.Module.Get<RectTransform>("Orientation"), "StartButton", StartZones);
             Bind(_binding.Module.Get<RectTransform>("Orientation"), "RepeatAudioButton", () => onOrientation.Invoke());
             Bind(_navigation.transform, "NextZoneButton", NextZone);
@@ -104,13 +132,10 @@ namespace RideSafe.Module01
             Bind(_binding.Explanation.transform, "PauseButton", () => { if (_video.isPlaying) _video.Pause(); else _video.Play(); });
             Bind(_binding.Explanation.transform, "ReplayButton", () => { _video.time = 0; _video.Play(); });
             Bind(_binding.Explanation.transform, "ContinueButton", FinishVideo);
-            Bind(_decision.transform, "RoadReadyButton", () => Decide(ReadinessChoice.RoadReady));
-            Bind(_decision.transform, "NeedsServiceButton", () => Decide(ReadinessChoice.NeedsService));
-            Bind(_decision.transform, "DoNotRideButton", () => Decide(ReadinessChoice.DoNotRide));
             _director.ZoneEntered += EnterZone;
             _director.PersonalSectionCompleted += ShowPersonalReport;
             _director.VehicleSectionCompleted += ShowVehicleReport;
-            _director.Finished += ShowFinalReport;
+            _director.Finished += ShowModuleComplete;
             _inspector.Accepted += _ => _navigation.SetActive(Phase == "Choosing");
             _inspector.Declined += _ => _navigation.SetActive(Phase == "Choosing");
             // Foco al revisar (Cindy, 2026-10-23): con el popup abierto se oscurece todo -el vehiculo
@@ -118,6 +143,7 @@ namespace RideSafe.Module01
             // mesas de EPP, para que destaque el elemento elegido: las tres quedan a 2,6 m o mas del
             // punto de vista y el radio es 1,6 (FocusDomeSceneTests).
             _inspector.Presenting += _ => { if (_focus != null) _focus.SetOn(true); };
+            _inspector.Presenting += _ => onLearnerActs.Invoke();
             _inspector.Accepted += _ => { if (_focus != null) _focus.SetOn(false); };
             _inspector.Declined += _ => { if (_focus != null) _focus.SetOn(false); };
             _inspector.Dismissed += () => { if (_focus != null && _focus.IsOn) _focus.SetOn(false); };
@@ -142,11 +168,13 @@ namespace RideSafe.Module01
                 // Every session opens in English (PO, 2026-10-29), whatever the device's language or
                 // the one chosen last time (I2 remembers it); the learner picks theirs on the next screen.
                 SetLanguage(DefaultLanguage);
+                onWelcome.Invoke();
             }
         }
         /// <summary>Begin: con parámetros de prueba asignados entra al módulo 1; si no, al onboarding.</summary>
         private void Begin()
         {
+            onLeaveWelcome.Invoke();
             if (_quickStart == null) { _onboarding.Show("Language"); return; }
             Apply(_quickStart);
             StartEntrance();
@@ -239,22 +267,6 @@ namespace RideSafe.Module01
             return string.Empty;
         }
 
-        /// <summary>
-        /// Vuelve a empezar el módulo desde la primera zona. Es lo único que desbloquean los
-        /// rangos por debajo del 75 %.
-        /// </summary>
-        private void RepeatModule()
-        {
-            if (Phase != "Finished") return;
-            if (_result != null) _result.SetActive(false);
-            _binding.Module.HideAll();
-            _personalEntries = null;
-            _vehicleEntries = null;
-            _vehicleReport = null;
-            _readinessCorrect = false;
-            StartZones();
-        }
-
         private void StartZones()
         {
             onLeaveOrientation.Invoke();
@@ -263,8 +275,9 @@ namespace RideSafe.Module01
             // de Begin, que es donde se arma el recorrido del vehiculo.
             _director.SelectVehicle(Context.Get(Module01Context.VehicleKey));
             _director.Begin();
+            onSelectionStarted.Invoke();
         }
-        private void EnterZone(ZoneSO zone) => StartCoroutine(Arrive(zone));
+        private void EnterZone(ZoneSO zone) { onLearnerActs.Invoke(); StartCoroutine(Arrive(zone)); }
         private IEnumerator Arrive(ZoneSO zone)
         {
             Phase = "Moving";
@@ -285,7 +298,10 @@ namespace RideSafe.Module01
             _instructionKey = zone.TitleKey;
             RefreshInstruction();
             Phase = "Choosing";
+            // Una sola vez: ni al volver con «Estación anterior» ni al repetir la sección.
+            if (_director.InVehicleSection && !_vehicleIntroDone) { _vehicleIntroDone = true; onVehicleSectionStarted.Invoke(); }
         }
+        private bool _vehicleIntroDone;
         private void RefreshInstruction()
         {
             if (string.IsNullOrEmpty(_instructionKey)) return;
@@ -341,19 +357,6 @@ namespace RideSafe.Module01
             };
         private void KeepChoosing() => EnterZone(_director.CurrentZone);
         private void Submit() { if (Phase == "Review") _director.AdvanceZone(); }
-        /// <summary>
-        /// El apto / no apto del vehiculo, después de su «Mi Elección» y su video. Registra la
-        /// elección contra el informe del vehículo y cierra el módulo: el veredicto se lee en
-        /// el reporte final, no en un rotulo suelto.
-        /// </summary>
-        private void Decide(ReadinessChoice choice)
-        {
-            if (Phase != "Decision") return;
-            _decision.SetActive(false);
-            _choice = choice;
-            _readinessCorrect = _vehicleReport != null && ReadinessDecision.IsCorrect(_choice, _vehicleReport);
-            _director.ContinueAfterReview();
-        }
         private void ShowPersonalReport(SelectionReport report)
         {
             _personalEntries = Entries(report);
@@ -365,6 +368,14 @@ namespace RideSafe.Module01
             // se asigna justo antes de avisar. Se guarda para la decisión, que ahora viene después.
             _vehicleReport = report;
             _vehicleEntries = ReportPresenter.BuildInspectionEntries(_allItems, report, UIText.Resolve);
+            // Cada tarjeta, el render del vehículo con esa pieza resaltada (cliente, 2026-11-11).
+            VehicleProfileSO vehicle = _director.SelectedVehicle;
+            for (int i = 0; i < _vehicleEntries.Count; i++)
+            {
+                ComparisonEntry entry = _vehicleEntries[i];
+                entry.Image = vehicle != null ? vehicle.RenderFor(entry.ItemId) : null;
+                _vehicleEntries[i] = entry;
+            }
             ShowVehicleReview(_vehicleEntries);
         }
         private List<ComparisonEntry> Entries(SelectionReport report)
@@ -400,38 +411,16 @@ namespace RideSafe.Module01
 
         /// <summary>
         /// La revisión del vehículo: lo que se revisó y lo que no, y nada más (PO, 2026-11-06: «no es
-        /// necesario el puntaje»). La nota sigue por dentro para decidir si se repite la sección.
+        /// necesario el puntaje»). Desde el 2026-11-11 en tarjetas con el render del vehículo y la
+        /// pieza resaltada, en vez de la lista. La nota sigue por dentro para decidir si se repite.
         /// </summary>
         private void ShowVehicleReview(List<ComparisonEntry> entries)
         {
             Phase = "Report";
             _binding.Module.Show("Comparison");
-            _binding.Comparison.SetSingleList(UIText.Resolve("M1/MyChoice_Title"), string.Empty, entries);
+            _binding.Comparison.SetCards(UIText.Resolve("M1/MyChoice_Title"), string.Empty, entries);
         }
 
-        /// <summary>
-        /// El mismo panel, con el veredicto en su encabezado. Separar el rango en una tarjeta
-        /// aparte no cabía —medido: por debajo de la leyenda quedan unos 80 de los 556 del
-        /// marco— y además partía en dos lo que la reunión pidió unificar.
-        /// </summary>
-        /// <para>
-        /// Sin puntuación (PO, 2026-11-06): al pie solo queda si sigue o repite, en palabras. Se llama
-        /// «Resumen» y no «Mi Elección» para no leerse como la pantalla de antes de la decisión. La
-        /// lista va más corta que en las secciones: el panel está a 1.3× y, con más alto, los botones
-        /// de Módulo 2 y Repetir, que van debajo, se salían de la vista.
-        /// </para>
-        private void ShowVerdict(List<ComparisonEntry> entries, PerformanceRank rank, FinalScore final)
-        {
-            Phase = "Report";
-            _binding.Module.Show("Comparison");
-            _binding.Comparison.SetSingleList(
-                UIText.Resolve("M1/Summary_Title") + "  ·  " + UIText.Resolve(rank.TitleKey()),
-                VerdictNote(final),
-                entries,
-                SummaryListHeight);
-        }
-
-        private const float SummaryListHeight = 220f;
         private void PlayVideo()
         {
             if (Phase != "Report") return;
@@ -552,59 +541,63 @@ namespace RideSafe.Module01
             _video.Stop();
             _binding.Module.HideAll();
             _binding.PreparationList.Clear();
-            // After the vehicle's video comes its go/no-go; Decide closes the module. Not when the
-            // section has to be repeated: there is nothing to decide about a check left undone.
-            if (_director.InVehicleSection && !_director.VehicleScore.FailsExam) { Phase = "Decision"; _decision.SetActive(true); return; }
-            _director.ContinueAfterReview();
+            // Aprobada la sección tras el video: felicitación en tono de logro, en lugar del cuadro
+            // que venía antes (cliente, 2026-11-11). Reprobada, se repite sin más.
+            bool failed = (_director.InVehicleSection ? _director.VehicleScore : _director.PersonalScore).FailsExam;
+            // No aprobada: se dice por qué y se repite la sección al pulsar (Charlie, 2026-11-18;
+            // los textos son los del flujo del 2026-11-07). Antes se reiniciaba sin decir nada.
+            if (failed)
+            {
+                bool vehicle = _director.InVehicleSection;
+                ShowAchievement("Retry", "M1/Retry_Title", vehicle ? "M1/Retry_Vehicle_Body" : "M1/Retry_Epp_Body", "M1/Retry_Button", false);
+                (vehicle ? onVehicleFailed : onEppFailed).Invoke();
+                return;
+            }
+            // Tras el video de la inspección, la felicitación ES el cierre del módulo, con su premio
+            // (hoja «Feedback Modulo 1», 8:57): no va un panel de sección antes.
+            if (_director.InVehicleSection) { _director.ContinueAfterReview(); return; }
+            ShowAchievement("Congrats", "M1/Congrats_Title", "M1/Congrats_Body", "M1/Continue", false);
+            onEppPassed.Invoke();
         }
+
         /// <summary>
-        /// Pantalla final: «Mi Elección», la nota con su rango y lo que esa nota desbloquea.
-        /// <para>
-        /// La nota se calcula <b>aquí</b> y no durante el recorrido, que es el «checkpoint
-        /// final» que pidió la reunión: hasta este punto el aprendiz puede volver atrás y
-        /// cambiar de opinión, así que mostrarle una nota antes sería puntuar un borrador.
-        /// </para>
+        /// El cierre del módulo: ilustración de premio, lo aprendido y «Continuar al módulo 2»
+        /// (cliente, 2026-11-11). Sustituye al resumen general, que mezclaba las dos secciones.
         /// </summary>
-        private void ShowFinalReport()
+        private void ShowModuleComplete()
         {
-            var entries = new List<ComparisonEntry>(_personalEntries); entries.AddRange(_vehicleEntries);
-            // Una sola cifra manda en toda la pantalla. Antes la barra de rango salía de
-            // Combine (suma de pesos) y el panel del promedio de Average: dos números
-            // distintos para la misma nota, uno encima del otro.
-            FinalScore final = _director.ModuleScore;
-            ShowVerdict(entries, final.Rank, final);
-            Phase = "Finished";
-            Find<Button>(_binding.Comparison.transform, "ExplainButton").gameObject.SetActive(false);
-            // La puntuación ya no se enseña en ningún panel.
             if (_finalScorePanel != null) _finalScorePanel.SetActive(false);
-
-            if (_result != null) _result.SetActive(true);
-            // Solo el aprobado abre el modulo 2. Los demas rangos dejan repetir, y nada mas:
-            // el boton de continuar se apaga en vez de desaparecer para que se vea que existe
-            // y que hay algo que conseguir.
-            SetInteractable(_result, "ContinueModule2Button", final.CanContinue);
-            SetInteractable(_result, "RepeatModuleButton", true);
+            ShowAchievement("Finished", "M1/Complete_Title", "M1/Complete_Body", "M1/Complete_Continue", true);
+            onModuleCompleted.Invoke();
         }
 
-        /// <summary>El pie del resumen: si sigue o repite el módulo y si se equivocó en «¿circular o no?».</summary>
-        private string VerdictNote(FinalScore final)
+        private void ShowAchievement(string phase, string titleKey, string bodyKey, string buttonKey, bool award)
         {
-            string verdict = Traducir(final.MustRepeatModule ? "M1/FinalScore_MustRepeat" : "M1/FinalScore_CanContinue");
-            return _readinessCorrect ? verdict : verdict + "\n" + Traducir("M1/Decision_Review");
+            Phase = phase;
+            _binding.Module.Show(AchievementPanel);
+            RectTransform panel = _binding.Module.Get<RectTransform>(AchievementPanel);
+            Label(Find<TMP_Text>(panel, "ModuleTag"), "M1/Orientation_Tag");
+            Label(Find<TMP_Text>(panel, "Title"), titleKey);
+            Label(Find<TMP_Text>(panel, "Body"), bodyKey);
+            Button button = Find<Button>(panel, "ContinueButton");
+            if (button != null) Label(button.GetComponentInChildren<TMP_Text>(true), buttonKey);
+            Image icon = Find<Image>(panel, "Award");
+            if (icon != null) icon.gameObject.SetActive(award);
         }
 
-        /// <summary>Texto de I2; si falta el término se ve la clave, que delata la falta.</summary>
-        private string Traducir(string key)
+        private static void Label(TMP_Text text, string key)
         {
-            string texto = _localization != null ? _localization.GetTranslation(key) : null;
-            return string.IsNullOrEmpty(texto) ? key : texto;
+            if (text == null) return;
+            Module01Text label = text.GetComponent<Module01Text>();
+            if (label == null) label = text.gameObject.AddComponent<Module01Text>();
+            label.Configure(key);
         }
 
-        private static void SetInteractable(GameObject root, string name, bool value)
+        private void ContinueFromAchievement()
         {
-            if (root == null) return;
-            Button button = Find<Button>(root.transform, name);
-            if (button != null) button.interactable = value;
+            onLeaveAchievement.Invoke();
+            if (Phase == "Congrats" || Phase == "Retry") { _binding.Module.HideAll(); _director.ContinueAfterReview(); }
+            else if (Phase == "Finished") onContinueToModule2.Invoke();
         }
         private void Bind(Transform root, string name, UnityAction action)
         { var b = Find<Button>(root, name); if (b == null) { Debug.LogError("[Module01] Falta boton " + name); return; } b.onClick.AddListener(action); _listeners.Add((b,action)); }
@@ -613,7 +606,7 @@ namespace RideSafe.Module01
         {
             foreach (var listener in _listeners) if (listener.button != null) listener.button.onClick.RemoveListener(listener.action);
             if (_localization != null) _localization.LanguageChanged -= RefreshInstruction;
-            if (_director != null) { _director.ZoneEntered -= EnterZone; _director.PersonalSectionCompleted -= ShowPersonalReport; _director.VehicleSectionCompleted -= ShowVehicleReport; _director.Finished -= ShowFinalReport; }
+            if (_director != null) { _director.ZoneEntered -= EnterZone; _director.PersonalSectionCompleted -= ShowPersonalReport; _director.VehicleSectionCompleted -= ShowVehicleReport; _director.Finished -= ShowModuleComplete; }
         }
     }
 }

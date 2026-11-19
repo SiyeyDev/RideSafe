@@ -1,0 +1,23 @@
+{
+  "characters": [
+    "¡Felicitaciones!",
+    "Seleccionaste",
+    "de",
+    "manera",
+    "correcta."
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    1.161,
+    2.078,
+    2.206,
+    2.624
+  ],
+  "character_end_times_seconds": [
+    1.138,
+    2.032,
+    2.148,
+    2.566,
+    3.437
+  ]
+}

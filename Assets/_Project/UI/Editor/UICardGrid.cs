@@ -91,6 +91,8 @@ namespace RideSafe.UI.EditorTools
                 Inset((RectTransform)picture.transform, pad + 10f, pad + 8f, pad + 10f, pad + 44f);
                 picture.preserveAspect = true;
                 picture.raycastTarget = false;
+                // Sin sprite hasta que ItemCard le pone el render: transparente, o es un cuadro blanco.
+                picture.color = Color.clear;
 
                 Image placeholder = Ensure<Image>(Child(root.transform, "Placeholder").gameObject);
                 Inset((RectTransform)placeholder.transform, pad + 10f, pad + 8f, pad + 10f, pad + 44f);

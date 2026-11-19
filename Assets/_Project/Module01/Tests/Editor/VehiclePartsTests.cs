@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
@@ -136,22 +136,37 @@ namespace RideSafe.Module01.Tests
             VehicleProfileSO scooter = Profile(ScooterPath);
 
             CollectionAssert.AreEqual(new[] { "Manubrio" }, scooter.PartNamesFor("point_steering"));
-            CollectionAssert.AreEqual(new[] { "freno_iz", "freno_de" }, scooter.PartNamesFor("point_brakes"));
-            CollectionAssert.AreEqual(new[] { "llanta_tracera", "llanta_delantera" }, scooter.PartNamesFor("point_wheels"));
-            CollectionAssert.AreEqual(new[] { "cuerpo" }, scooter.PartNamesFor("point_deck"));
+            CollectionAssert.AreEqual(new[] { "freno_de", "freno_iz" }, scooter.PartNamesFor("point_brakes"));
+            // La delantera, solo el neumático (ef550e3); la trasera sigue entera.
+            CollectionAssert.AreEqual(new[] { "llanta_tracera", "neumatico" }, scooter.PartNamesFor("point_wheels"));
+            CollectionAssert.IsEmpty(scooter.PartNamesFor("point_deck"), "La plataforma ya no se revisa (cliente, 2026-11-11).");
         }
 
         /// <summary>
-        /// Luces y eléctrico ya no se quedan en el signo (PO, 2026-11-06): el FBX de <c>826c9a2</c>
-        /// trae la luz frontal y las direccionales como piezas separadas.
+        /// En la bici la transmisión se delinea en 'pedales', que es lo que trae su FBX, y al podio va
+        /// la transmisión separada de Daniel (ef550e3): cadena, plato y piñones.
+        /// </summary>
+        [Test]
+        public void La_bici_delinea_su_transmision()
+        {
+            CollectionAssert.AreEqual(new[] { "pedales" }, Profile(EbikePath).PartNamesFor("point_drivetrain"));
+            GameObject podium = Profile(EbikePath).PodiumModelFor("point_drivetrain");
+            Assert.IsNotNull(podium, "La transmisión no lleva su modelo al podio.");
+            string[] names = podium.GetComponentsInChildren<MeshFilter>(true).Select(f => f.name).ToArray();
+            CollectionAssert.IsSubsetOf(new[] { "cadena", "anilli_de_cadena" }, names);
+        }
+
+        /// <summary>
+        /// Luces y eléctrico: desde ef550e3 (Daniel, 2026-11-18) el FBX trae luz trasera y display, y
+        /// lo eléctrico es el display, no las direccionales.
         /// </summary>
         [Test]
         public void El_patinete_ensena_sus_piezas_de_luces_y_electrico()
         {
             VehicleProfileSO scooter = Profile(ScooterPath);
 
-            CollectionAssert.AreEqual(new[] { "luz_freontal" }, scooter.PartNamesFor("point_lights"));
-            CollectionAssert.AreEqual(new[] { "direccional_de", "direccional_iz" }, scooter.PartNamesFor("point_electrics"));
+            CollectionAssert.AreEqual(new[] { "luz_freontal", "luz_trasera" }, scooter.PartNamesFor("point_lights"));
+            CollectionAssert.AreEqual(new[] { "display" }, scooter.PartNamesFor("point_electrics"));
         }
 
         /// <summary>
@@ -180,9 +195,48 @@ namespace RideSafe.Module01.Tests
 
             CollectionAssert.AreEqual(new[] { "tenedor" }, ebike.PartNamesFor("point_steering"));
             CollectionAssert.AreEqual(new[] { "freno_de", "freno_iz" }, ebike.PartNamesFor("point_brakes"));
-            CollectionAssert.AreEqual(new[] { "rueda_tracera", "llanta_delantera" }, ebike.PartNamesFor("point_wheels"));
+            // Solo las llantas, sin rines ni radios (cliente, 2026-11-11).
+            CollectionAssert.AreEqual(new[] { "rueda_tracera1", "caucho" }, ebike.PartNamesFor("point_wheels"));
             CollectionAssert.AreEqual(new[] { "luz_delantera", "luz_tracera" }, ebike.PartNamesFor("point_lights"));
-            CollectionAssert.AreEqual(new[] { "pantalla" }, ebike.PartNamesFor("point_electrics"));
+            CollectionAssert.AreEqual(new[] { "display", "pantalla" }, ebike.PartNamesFor("point_electrics"));
+        }
+
+        /// <summary>
+        /// Las llantas de la bici son más grandes que la rueda de la que cuelgan: si un FBX nuevo
+        /// cambia los nombres, se delinearía el rin y no la llanta sin que nada fallara.
+        /// </summary>
+        [Test]
+        public void Las_llantas_de_la_bici_rodean_a_su_rueda()
+        {
+            GameObject model = Profile(EbikePath).Model;
+            foreach ((string tire, string wheel) in new[] { ("caucho", "llanta_delantera"), ("rueda_tracera1", "rueda_tracera") })
+            {
+                Mesh tireMesh = model.GetComponentsInChildren<MeshFilter>(true).Single(f => f.name == tire).sharedMesh;
+                Mesh wheelMesh = model.GetComponentsInChildren<MeshFilter>(true).Single(f => f.name == wheel).sharedMesh;
+                Assert.Greater(tireMesh.bounds.size.y, wheelMesh.bounds.size.y, $"{tire} no rodea a {wheel}");
+            }
+        }
+
+        /// <summary>
+        /// Los frenos de la bici van al podio con el manubrio entero (frenos.fbx) y en él se delinean
+        /// solo las manetas, que se llaman igual que en la bici: solas, el borde del podio las tapa
+        /// (captura 2026-11-18). Las manetas están separadas en los dos vehículos.
+        /// </summary>
+        [Test]
+        public void Los_frenos_de_la_bici_van_al_podio_con_el_manubrio()
+        {
+            GameObject podium = Profile(EbikePath).PodiumModelFor("point_brakes");
+            Assert.IsNotNull(podium, "La bici no declara modelo del podio para los frenos.");
+            string[] names = podium.GetComponentsInChildren<MeshFilter>(true).Select(f => f.name).ToArray();
+            foreach (string lever in Profile(EbikePath).PartNamesFor("point_brakes"))
+                CollectionAssert.Contains(names, lever, "El modelo del podio no trae la maneta " + lever);
+            Assert.IsTrue(podium.GetComponentsInChildren<MeshRenderer>(true).All(r => r.sharedMaterials.All(m => m != null && m.name == "e_bike")),
+                "frenos.fbx sin el material de la bici: sale gris en el podio.");
+            foreach (string path in new[] { EbikePath, ScooterPath })
+            {
+                string[] meshes = Profile(path).Model.GetComponentsInChildren<MeshFilter>(true).Select(f => f.name).ToArray();
+                CollectionAssert.IsSubsetOf(new[] { "freno_de", "freno_iz" }, meshes, path + ": las manetas no están separadas.");
+            }
         }
 
         /// <summary>
@@ -255,22 +309,5 @@ namespace RideSafe.Module01.Tests
                 "Zonas con el giro compartido: " + string.Join(", ", iguales));
         }
 
-        /// <summary>
-        /// En la zona de plataforma el scooter se ve de tres cuartos por detrás: la rueda de
-        /// atrás —el extremo de la plataforma— hacia el aprendiz y a su izquierda, lejos del
-        /// checklist. De costado puro no cambiaría nada respecto a la zona de llantas.
-        /// </summary>
-        [Test]
-        public void En_la_zona_de_plataforma_el_scooter_se_ve_de_tres_cuartos_por_detras()
-        {
-            VehicleProfileSO scooter = Profile(ScooterPath);
-            float yaw = scooter.YawFor(Zone(scooter, "deck"));
-            Vector3 tail = OffsetAfterYaw(scooter, "llanta_tracera", yaw);
-
-            Assert.Greater(tail.z * TowardLearner, 0f, $"A {yaw:F0}° la cola queda de espaldas.");
-            Assert.Greater(tail.x, 0f, $"A {yaw:F0}° la cola cae por la derecha, bajo el checklist.");
-            Assert.AreNotEqual(scooter.YawFor(Zone(scooter, "wheels")), yaw,
-                "Si no gira entre llantas y plataforma, el aprendiz no nota que cambio de zona.");
-        }
     }
 }

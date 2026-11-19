@@ -183,10 +183,19 @@ namespace RideSafe.Module01
         public void PresentParts(SafetyItemSO item, IReadOnlyList<Transform> parts, string questionKey) =>
             PresentWith(item, questionKey, () => CopyOfParts(parts));
 
-        private void PresentWith(SafetyItemSO item, string questionKey, Func<GameObject> copy)
+        /// <summary>
+        /// Presenta un modelo propio del podio en vez de copiar piezas del vehículo: los frenos de la
+        /// bici enseñan el manubrio entero (<c>frenos.fbx</c>). Devuelve lo que quedó sobre el
+        /// pedestal, para delinear en él, o null si no hay pedestal.
+        /// </summary>
+        public GameObject PresentModel(SafetyItemSO item, GameObject prefab, string questionKey) =>
+            PresentWith(item, questionKey, () => prefab == null ? null : Instantiate(prefab, _instance.transform));
+
+        private GameObject PresentWith(SafetyItemSO item, string questionKey, Func<GameObject> copy)
         {
+            GameObject model = null;
             if (item == null)
-                return;
+                return null;
             Dismiss();
             Current = item;
             _presentQuestion = questionKey;
@@ -197,7 +206,7 @@ namespace RideSafe.Module01
             {
                 _instance = new GameObject("PresentedItem");
                 _instance.transform.SetParent(_stage, false);
-                GameObject model = BuildDisplay(item, copy);
+                model = BuildDisplay(item, copy);
                 model.transform.SetParent(_instance.transform, false);
                 _spins = model.GetComponentsInChildren<Renderer>().Length > 0;
                 foreach (Collider collider in model.GetComponentsInChildren<Collider>()) collider.enabled = false;
@@ -216,6 +225,7 @@ namespace RideSafe.Module01
             RefreshText();
             SetChromeVisible(true);
             Speak(item);
+            return model;
         }
 
         private static Bounds BoundsOf(Renderer[] renderers)

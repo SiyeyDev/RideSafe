@@ -1,23 +1,14 @@
 {
   "characters": [
     "Gafas",
-    "transparentes",
-    "resistentes",
-    "a",
-    "impacto"
+    "transparentes"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.488,
-    1.254,
-    1.939,
-    1.997
+    0.453
   ],
   "character_end_times_seconds": [
-    0.441,
-    1.207,
-    1.881,
-    1.962,
-    2.879
+    0.406,
+    1.44
   ]
 }

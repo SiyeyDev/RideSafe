@@ -1,14 +1,11 @@
 {
   "characters": [
-    "Timbre",
-    "compatible"
+    "Campana"
   ],
   "character_start_times_seconds": [
-    0.0,
-    0.464
+    0.0
   ],
   "character_end_times_seconds": [
-    0.418,
-    1.44
+    1.161
   ]
 }

@@ -2,19 +2,16 @@
   "characters": [
     "Luz",
     "trasera",
-    "roja",
-    "funcional"
+    "roja"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.325,
-    0.859,
-    1.173
+    0.337,
+    0.882
   ],
   "character_end_times_seconds": [
-    0.29,
-    0.778,
-    1.126,
-    2.043
+    0.302,
+    0.801,
+    1.579
   ]
 }

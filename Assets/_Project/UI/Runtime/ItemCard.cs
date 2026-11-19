@@ -46,6 +46,8 @@ namespace RideSafe.UI
             {
                 _picture.sprite = entry.Image;
                 _picture.enabled = hasPicture;
+                // En el prefab va transparente: una imagen sin sprite se dibujaría como un cuadro blanco.
+                _picture.color = hasPicture ? Color.white : Color.clear;
             }
             if (_placeholder != null)
                 _placeholder.SetActive(!hasPicture);

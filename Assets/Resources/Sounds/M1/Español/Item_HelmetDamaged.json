@@ -1,35 +1,14 @@
 {
   "characters": [
     "Casco",
-    "agrietado,",
-    "aplastado,",
-    "talla",
-    "evidentemente",
-    "incorrecta",
-    "o",
-    "de",
-    "novedad"
+    "deteriorado"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.592,
-    1.707,
-    3.019,
-    3.471,
-    4.505,
-    5.399,
-    5.538,
-    5.666
+    0.464
   ],
   "character_end_times_seconds": [
-    0.499,
-    1.498,
-    2.694,
-    3.379,
-    4.423,
-    5.306,
-    5.48,
-    5.608,
-    6.502
+    0.418,
+    1.486
   ]
 }

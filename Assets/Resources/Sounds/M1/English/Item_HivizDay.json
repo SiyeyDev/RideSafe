@@ -1,20 +1,14 @@
 {
   "characters": [
     "Fluorescent",
-    "top",
-    "for",
-    "daytime"
+    "top"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.708,
-    0.987,
-    1.138
+    0.72
   ],
   "character_end_times_seconds": [
-    0.662,
-    0.929,
-    1.08,
-    1.811
+    0.685,
+    1.347
   ]
 }

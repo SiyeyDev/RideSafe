@@ -1,20 +1,11 @@
 {
   "characters": [
-    "Multiherramienta",
-    "compacta",
-    "y",
-    "compatible"
+    "Multiherramienta"
   ],
   "character_start_times_seconds": [
-    0.0,
-    1.033,
-    1.567,
-    1.637
+    0.0
   ],
   "character_end_times_seconds": [
-    0.975,
-    1.533,
-    1.591,
-    2.647
+    1.486
   ]
 }

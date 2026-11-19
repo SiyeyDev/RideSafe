@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -81,20 +81,16 @@ namespace RideSafe.Module01.Tests
                 "Solo los H de la hoja pueden puntuar como peligro.");
         }
 
+        /// <summary>
+        /// Cliente, reunión del 2026-11-11: «solo cuentan los EPP del documento; el resto sobra».
+        /// Quedan los 32 de la hoja «Sistema de puntuación», ni un P, y ninguno de los retirados.
+        /// </summary>
         [Test]
-        public void Los_siete_que_dejaron_de_ser_peligro_siguen_en_la_mesa_sin_puntuar()
+        public void Solo_quedan_los_32_de_la_hoja_del_cliente()
         {
-            // No se borraron: se examinan, se eligen y salen en el reporte como «No necesario»,
-            // igual que el teléfono. Borrarlos habría vaciado media mesa de la ropa.
-            string[] neutralizados = { "P24", "P25", "P26", "P28", "P29", "P30" };
-
-            foreach (string id in neutralizados)
-            {
-                Module01Library.Entry e = Module01Library.All.First(x => x.LibraryId == id);
-                Assert.AreEqual(SafetyItemCategory.Optional, e.Category, id + " debería ser neutral.");
-                Assert.AreEqual(0f, e.Weight, 0.01f, id + " neutral no puede pesar.");
-                Assert.IsNull(e.HazardGroup, id + " ya no es peligro: no puede traer grupo.");
-            }
+            Assert.AreEqual(32, Module01Library.All.Length);
+            CollectionAssert.IsEmpty(Module01Library.All.Where(e => e.LibraryId.StartsWith("P")).Select(e => e.LibraryId));
+            CollectionAssert.IsEmpty(Module01Library.All.Select(e => e.ItemId).Intersect(Module01Library.Retired));
         }
 
         [Test]
@@ -268,7 +264,6 @@ namespace RideSafe.Module01.Tests
         [TestCase("H04", "Crocs.fbx")]
         [TestCase("H08", "guante voluminoso.fbx")]
         [TestCase("H13", "audifonos ipod.fbx")]
-        [TestCase("P06", "gafas_deportivas.fbx")]
         public void Los_EPP_nuevos_de_esenciales_usan_su_modelo(string libraryId, string file)
         {
             Module01Library.Entry e = Module01Library.All.First(x => x.LibraryId == libraryId);

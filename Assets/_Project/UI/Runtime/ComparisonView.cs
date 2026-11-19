@@ -435,7 +435,14 @@ namespace RideSafe.UI
         {
             ShowCards(true);
             if (_title != null) _title.text = title;
-            if (_score != null) _score.text = score;
+            if (_score != null)
+            {
+                _score.text = score;
+                // La revisión del vehículo va sin puntaje: sin esto quedaba la píldora vacía.
+                Transform pillRow = _score.transform.parent != null ? _score.transform.parent.parent : null;
+                if (pillRow != null)
+                    pillRow.gameObject.SetActive(!string.IsNullOrEmpty(score));
+            }
             if (_subtitle != null) _subtitle.text = string.Empty;
             ShowNote(false);
             if (_leftHeading != null) _leftHeading.gameObject.SetActive(false);

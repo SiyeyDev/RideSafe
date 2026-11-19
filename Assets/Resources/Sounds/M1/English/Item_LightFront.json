@@ -1,20 +1,17 @@
 {
   "characters": [
-    "Functional",
-    "white",
+    "White",
     "front",
     "light"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.65,
-    0.975,
-    1.289
+    0.395,
+    0.731
   ],
   "character_end_times_seconds": [
-    0.569,
-    0.929,
-    1.219,
-    1.765
+    0.337,
+    0.65,
+    1.393
   ]
 }

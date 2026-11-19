@@ -23,3 +23,7 @@ MonoBehaviour:
   _hazardGroup: 
   _exclusiveBonusWith: 
   _bonusCondition: 
+  _onlyForVehicle: 
+  _substitutesFor: 
+  _inspectPrefab: {fileID: 0}
+  _thumbnail: {fileID: 0}

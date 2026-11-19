@@ -186,7 +186,11 @@ namespace RideSafe.Module01
                     // Un punto del vehiculo ensena exactamente las piezas que se delinean, sin lo
                     // que cuelga de ellas (Cindy, 2026-10-21).
                     InspectionHighlight highlight = world.GetComponent<InspectionHighlight>();
-                    if (highlight != null && highlight.Parts.Count > 0)
+                    // Con modelo propio del podio (los frenos de la bici: el manubrio entero), ese
+                    // modelo, delineando en él lo mismo que en el vehículo.
+                    if (highlight != null && highlight.PodiumModel != null)
+                        highlight.OutlinePodium(_inspector.PresentModel(item, highlight.PodiumModel, question));
+                    else if (highlight != null && highlight.Parts.Count > 0)
                         _inspector.PresentParts(item, highlight.Parts, question);
                     else
                         _inspector.Present(item, world.transform, question);

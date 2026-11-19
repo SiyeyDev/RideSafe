@@ -1,17 +1,14 @@
 {
   "characters": [
-    "Wheels",
-    "and",
-    "structure"
+    "Tire",
+    "pressure"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.488,
-    0.65
+    0.43
   ],
   "character_end_times_seconds": [
-    0.43,
-    0.592,
-    1.533
+    0.383,
+    1.022
   ]
 }

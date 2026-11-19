@@ -1,32 +1,20 @@
 {
   "characters": [
-    "Ropa",
+    "Pantalones",
     "ceñida",
-    "con",
-    "puños,",
-    "cordones",
-    "y",
-    "tiras",
-    "asegurados"
+    "al",
+    "cuerpo"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.395,
-    0.94,
-    1.149,
-    1.695,
-    2.357,
-    2.473,
-    2.844
+    0.697,
+    1.126,
+    1.242
   ],
   "character_end_times_seconds": [
-    0.36,
-    0.882,
-    1.08,
-    1.66,
-    2.276,
-    2.392,
-    2.775,
-    3.808
+    0.673,
+    1.103,
+    1.184,
+    1.95
   ]
 }

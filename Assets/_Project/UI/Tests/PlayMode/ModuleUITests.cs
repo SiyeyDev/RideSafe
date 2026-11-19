@@ -24,6 +24,8 @@ namespace RideSafe.UI.Tests
             "Assets/_Project/UI/RideSafe_UI_Atlas_A_4096.png",
             "Assets/_Project/UI/RideSafe_UI_Atlas_B_4096.png",
             "Assets/_Project/UI/ridesafe-logo.png",
+            // The rosette of the Module 1 closing award (client, 2026-11-11; UIAchievementPanel).
+            "Assets/_Project/UI/Icons/Award_Rosette.png",
             // White status glyphs for the traffic-light tints, generated from atlas B (UIStatusIcons).
             "Assets/_Project/UI/StatusIcons/StatusMono_Independent.png",
             "Assets/_Project/UI/StatusIcons/StatusMono_Supported.png",

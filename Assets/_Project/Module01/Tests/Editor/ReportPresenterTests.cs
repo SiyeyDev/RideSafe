@@ -100,6 +100,26 @@ namespace RideSafe.Module01.Tests
             Assert.AreEqual(ItemStatus.NoEffect, Find(entries, "reflective").Status);
         }
 
+        /// <summary>Cliente, 2026-11-11: primero los mal elegidos, luego los condicionales, al final los correctos.</summary>
+        [Test]
+        public void Salen_primero_los_errores_luego_los_condicionales_y_al_final_lo_correcto()
+        {
+            Module01CatalogSO catalog = Catalog(Zone("head",
+                Item("helmet_ok", SafetyItemCategory.Core),
+                Item("glasses", SafetyItemCategory.Optional),
+                Item("phone", SafetyItemCategory.Inappropriate)));
+            SelectionLedger ledger = new SelectionLedger();
+            ledger.Add("helmet_ok");
+            ledger.Add("glasses");
+            ledger.Add("phone");
+
+            List<ComparisonEntry> entries = ReportPresenter.BuildEntries(
+                catalog, SelectionGrader.Grade(catalog, ledger), Fake);
+
+            CollectionAssert.AreEqual(new[] { "phone", "glasses", "helmet_ok" },
+                entries.ConvertAll(e => e.Detail));
+        }
+
         [Test]
         public void Los_titulos_salen_traducidos_no_con_la_clave_cruda()
         {

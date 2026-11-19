@@ -17,11 +17,14 @@ MonoBehaviour:
   _inspectionZones:
   - {fileID: 11400000, guid: 2e812fb54e2d7364fa3302d91d7e907d, type: 2}
   - {fileID: 11400000, guid: 65b474ed86641f9468aec537c0de391d, type: 2}
+  - {fileID: 11400000, guid: aa725e380b3a8044bb636eceb50b7453, type: 2}
   - {fileID: 11400000, guid: 01bccd36419332147ae3c3be8d6e16f1, type: 2}
   _zoneViews:
   - Zone: {fileID: 11400000, guid: 2e812fb54e2d7364fa3302d91d7e907d, type: 2}
     Yaw: 90
   - Zone: {fileID: 11400000, guid: 65b474ed86641f9468aec537c0de391d, type: 2}
+    Yaw: 0
+  - Zone: {fileID: 11400000, guid: aa725e380b3a8044bb636eceb50b7453, type: 2}
     Yaw: 0
   - Zone: {fileID: 11400000, guid: 01bccd36419332147ae3c3be8d6e16f1, type: 2}
     Yaw: 0
@@ -33,13 +36,35 @@ MonoBehaviour:
   - ItemId: point_brakes
     PartName: freno_iz
   - ItemId: point_wheels
-    PartName: rueda_tracera
+    PartName: rueda_tracera1
   - ItemId: point_wheels
-    PartName: llanta_delantera
+    PartName: caucho
   - ItemId: point_lights
     PartName: luz_delantera
   - ItemId: point_lights
     PartName: luz_tracera
   - ItemId: point_electrics
+    PartName: display
+  - ItemId: point_electrics
     PartName: pantalla
+  - ItemId: point_drivetrain
+    PartName: pedales
+  _pointRenders:
+  - ItemId: point_steering
+    Image: {fileID: 21300000, guid: 6305f35ddc301dd4dbeb47b2a4abfa4c, type: 3}
+  - ItemId: point_brakes
+    Image: {fileID: 21300000, guid: 1b4ca9e7e5b9b7743bbde9ab75a2ba05, type: 3}
+  - ItemId: point_electrics
+    Image: {fileID: 21300000, guid: 351447a79a6dda749b1f54777311175c, type: 3}
+  - ItemId: point_wheels
+    Image: {fileID: 21300000, guid: a07ff6e1cf47d9a47ba3bdfd2ae605c9, type: 3}
+  - ItemId: point_drivetrain
+    Image: {fileID: 21300000, guid: d833d2a9416e09d448e3e09bf1ee1f4d, type: 3}
+  - ItemId: point_lights
+    Image: {fileID: 21300000, guid: 7de8c4d4a07f9c346bafc2f402fafe08, type: 3}
+  _podiumModels:
+  - ItemId: point_brakes
+    Model: {fileID: 919132149155446097, guid: 0a0d3937ebb9881429f09544fd674d97, type: 3}
+  - ItemId: point_drivetrain
+    Model: {fileID: 919132149155446097, guid: b4260c41077c1cd4babb9470cba3aac0, type: 3}
   _explanationVideo: {fileID: 32900000, guid: 17736dd0a8a77ca45a0743be7ee95c6d, type: 3}

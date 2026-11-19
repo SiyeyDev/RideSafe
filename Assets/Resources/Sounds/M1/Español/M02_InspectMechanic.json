@@ -1,0 +1,53 @@
+{
+  "characters": [
+    "Apunta",
+    "a",
+    "cada",
+    "componente",
+    "marcado",
+    "con",
+    "el",
+    "control",
+    "derecho",
+    "y",
+    "aprieta",
+    "el",
+    "gatillo",
+    "para",
+    "revisarlo."
+  ],
+  "character_start_times_seconds": [
+    0.0,
+    0.569,
+    0.65,
+    0.952,
+    1.579,
+    2.101,
+    2.287,
+    2.415,
+    2.81,
+    3.332,
+    3.564,
+    4.029,
+    4.145,
+    4.632,
+    4.876
+  ],
+  "character_end_times_seconds": [
+    0.522,
+    0.592,
+    0.894,
+    1.521,
+    2.055,
+    2.229,
+    2.357,
+    2.752,
+    3.239,
+    3.448,
+    4.005,
+    4.087,
+    4.574,
+    4.807,
+    5.898
+  ]
+}

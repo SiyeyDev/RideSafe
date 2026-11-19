@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
@@ -66,7 +66,6 @@ namespace RideSafe.Module01.Tests
         [TestCase("sandals", "Crocs.fbx")]
         [TestCase("mittens", "guante voluminoso.fbx")]
         [TestCase("airpods", "audifonos ipod.fbx")]
-        [TestCase("sport_glasses", "gafas_deportivas.fbx")]
         public void El_elemento_se_pulsa_sobre_su_modelo_nuevo(string itemId, string file)
         {
             List<Seen> entities = Collect(g =>

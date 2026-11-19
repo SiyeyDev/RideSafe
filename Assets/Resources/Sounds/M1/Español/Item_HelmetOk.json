@@ -2,7 +2,6 @@
   "characters": [
     "Casco",
     "certificado,",
-    "íntegro,",
     "talla",
     "correcta",
     "y",
@@ -11,19 +10,17 @@
   "character_start_times_seconds": [
     0.0,
     0.43,
-    1.44,
-    1.985,
-    2.299,
-    2.81,
-    2.879
+    1.533,
+    1.881,
+    2.461,
+    2.554
   ],
   "character_end_times_seconds": [
     0.395,
-    1.324,
-    1.939,
-    2.241,
-    2.74,
-    2.833,
-    3.808
+    1.358,
+    1.823,
+    2.368,
+    2.496,
+    3.529
   ]
 }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using RideSafe.Module01.Editor;
@@ -95,10 +95,6 @@ namespace RideSafe.Module01.Tests
         [TestCase("gafas de sol")]
         [TestCase("mochila")]
         [TestCase("zapatos de seguridad (3)")]
-        [TestCase("codera")]
-        [TestCase("tenis_deportivos")]
-        [TestCase("snorquel")]
-        [TestCase("gafas")]
         [TestCase("rompe veintos")]
         [TestCase("Crocs")]
         [TestCase("poncho h")]
@@ -193,8 +189,16 @@ namespace RideSafe.Module01.Tests
             Module01ArtEpp.Collect(_art)
                 .Where(g => !DecoradoAProposito.ContainsKey(g.name)
                          && !EsModeloDePedestal(g)
-                         && !string.IsNullOrEmpty(Source(g)))
+                         && !string.IsNullOrEmpty(Source(g))
+                         && EnLaHoja(g))
                 .GroupBy(Source);
+
+        /// <summary>
+        /// ¿Es el modelo de algún elemento de la hoja? Desde la reunión del 2026-11-11 lo que no lo
+        /// es (coderas, linterna, chanclas de baño…) salió de v5 a propósito y no tiene copia.
+        /// </summary>
+        private static bool EnLaHoja(GameObject art) =>
+            Module01Library.All.Any(e => e.Model == Source(art) || e.ExtraModels.Contains(Source(art)));
 
         // Aquí vivía `Ningun_EPP_mide_en_v5_algo_distinto_de_lo_que_mide_en_el_arte`, que
         // comparaba la caja del objeto en las dos escenas. No sirve, y conviene que quede
@@ -313,8 +317,8 @@ namespace RideSafe.Module01.Tests
             var conPedestal = Module01Library.All
                 .Where(e => !string.IsNullOrEmpty(e.InspectModel)).ToList();
 
-            Assert.AreEqual(4, conPedestal.Count,
-                "E05, P17, P18 y P26: los cuatro pantalones de la mesa.");
+            Assert.AreEqual(1, conPedestal.Count,
+                "Solo E05: P17, P18 y P26 salieron con los demás P (cliente, 2026-11-11).");
 
             foreach (Module01Library.Entry e in conPedestal)
                 Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<GameObject>(e.InspectModel),
@@ -361,19 +365,19 @@ namespace RideSafe.Module01.Tests
                     continue;
                 }
 
-                Renderer r = mf.GetComponent<Renderer>();
-                if (r == null)
-                    continue;
-                Bounds b = r.bounds;
-                puntos.Add(b.center);
+                // La caja de la malla en su propio espacio, no la del renderer: ésa va alineada
+                // al mundo y, con el objeto girado (el paraguas, el casco agrietado), sus
+                // esquinas caen en aire y el test daba por tapado lo que se pulsa entero.
+                Bounds b = mesh.bounds;
+                puntos.Add(mf.transform.TransformPoint(b.center));
                 // Los ocho vértices justo por dentro de la caja: en el borde exacto el rayo
                 // puede pasar de largo y contarse como tapado por nada.
                 Vector3 ext = b.extents * .8f;
                 for (int i = 0; i < 8; i++)
-                    puntos.Add(b.center + new Vector3(
+                    puntos.Add(mf.transform.TransformPoint(b.center + new Vector3(
                         (i & 1) == 0 ? -ext.x : ext.x,
                         (i & 2) == 0 ? -ext.y : ext.y,
-                        (i & 4) == 0 ? -ext.z : ext.z));
+                        (i & 4) == 0 ? -ext.z : ext.z)));
             }
             return puntos;
         }
@@ -404,20 +408,17 @@ namespace RideSafe.Module01.Tests
         }
 
         /// <summary>
-        /// Las botas rojas del decorado son P22 y se pulsan. Ya no se buscan por la ruta
-        /// <c>enviroment_decoration/botas</c>: el renombrado al Excel del 2026-10-29 las dejó
-        /// como <c>P22_boots</c> —«para que sepas cuál es cuál»— y el test se quedó buscando un
-        /// nombre que ya no existe. Se busca por el <c>ItemId</c>, que es lo que no cambia.
+        /// Lo que no está en la hoja del cliente no se pulsa en ninguna parte de v5 (reunión del
+        /// 2026-11-11). Sustituye al test de las botas rojas (P22), que eran uno de ellos.
         /// </summary>
         [Test]
-        public void Las_botas_del_decorado_del_garaje_tambien_se_pulsan()
+        public void Nada_de_lo_retirado_se_pulsa_en_v5()
         {
-            WorldObjectTaskEntity botas = All(_v5)
+            var retired = new HashSet<string>(Module01Library.Retired);
+            CollectionAssert.IsEmpty(All(_v5)
                 .Select(g => g.GetComponent<WorldObjectTaskEntity>())
-                .FirstOrDefault(e => e != null && e.ItemId == "boots");
-
-            Assert.IsNotNull(botas, "las botas rojas no tienen entidad en v5");
-            Assert.IsNotNull(botas.GetComponent<Collider>(), "sin collider no hay clic");
+                .Where(e => e != null && retired.Contains(e.ItemId))
+                .Select(e => e.ItemId + " (" + e.name + ")"));
         }
 
         /// <summary>

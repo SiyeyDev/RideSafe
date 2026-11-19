@@ -1,5 +1,57 @@
 # EPP — nomenclatura única
 
+> **2026-11-18: el Excel de EPP es la referencia** (Charlie): los 32, su puntaje y su nombre salen
+> de `Docs/RideSafe_VR_equipment_image_reference_library_2026-11-13.xlsx`, hoja «Sistema de
+> puntuación». El nombre es la columna C palabra por palabra (`Module01MeetingTerms.ShortNames`), y lo
+> que no está en el Excel se desactiva. Si un nombre parece mal, se valida con el Excel: aquí no se
+> corrige. La puntuación se comprobó una a una contra el catálogo ese mismo día. El inglés es
+> traducción nuestra, porque el Excel solo trae español. Los demás textos del módulo sí salen de la
+> hoja del cliente «Textos Modulo 1».
+>
+> | ID (Excel) | Clave | Nombre (es) | Name (en) |
+> |---|---|---|---|
+> | E01 | HelmetOk | Casco certificado, talla correcta y abrochado | Certified helmet, correct size and fastened |
+> | E02 | LightFront | Luz delantera blanca | White front light |
+> | E03 | LightRear | Luz trasera roja | Red rear light |
+> | E04 | ShoesOk | Calzado cerrado | Closed shoes |
+> | E05 | TrousersFitted | Pantalones ceñida al cuerpo | Close-fitting trousers |
+> | O01 | HivizDay | Prenda superior fluorescente | Fluorescent top |
+> | O02 | Reflective | Chaleco o chaqueta retroreflectiva | Retroreflective vest or jacket |
+> | O04 | Gloves | Guantes completos | Full-finger gloves |
+> | O07 | Glasses | Gafas transparentes | Clear glasses |
+> | O08 | Sunglasses | Gafas solares con protección UV | UV-protection sunglasses |
+> | O09 | Backpack | Mochila cerrada de dos tirantes | Closed two-strap backpack |
+> | O11 | CargoSecured | Candado de seguridad | Security lock |
+> | O12 | FlatKit | Kit para reparar pinchazos | Puncture repair kit |
+> | O13 | Multitool | Multiherramienta | Multi-tool |
+> | O14 | PhoneMount | Soporte universal para teléfono | Universal phone mount |
+> | O15 | Bell | Campana | Bell |
+> | O16 | RainJacket | Chaqueta impermeable | Rain jacket |
+> | O18 | Bottle | Caramañola | Water bottle |
+> | O19 | Pannier | Alforja impermeable y reflectiva | Waterproof reflective pannier |
+> | H01 | HelmetStrap | Casco con correa de barbilla faltante | Helmet with missing chin strap |
+> | H02 | HelmetDamaged | Casco deteriorado | Damaged helmet |
+> | H03 | Headphones | Audífonos grandes que ocluyen ambos oídos | Large headphones covering both ears |
+> | H04 | Sandals | Sandalias abiertas | Open sandals |
+> | H06 | Poncho | Impermeable extragrande | Oversized raincoat |
+> | H07 | GlassesDamaged | Gafas con lente severamente rayados | Glasses with badly scratched lenses |
+> | H08 | Mittens | Mitones voluminosos | Bulky mittens |
+> | H09 | Tote | Tote abierto de una correa | Open single-strap tote |
+> | H10 | Umbrella | Paraguas de mano | Handheld umbrella |
+> | H11 | Drink | Vaso de café o bebida para llevar en la mano | Coffee cup or takeaway drink in hand |
+> | H12 | Cap | cachucha | Cap |
+> | H13 | Airpods | Auriculares | Earbuds |
+> | N01 | CargoHandheld | Teléfono inteligente | Smartphone |
+>
+> En el mismo Excel, E05 pasó a «Esencial condicional», pero la misma fila sigue diciendo
+> «Siempre» y `required = true`. El juego lo deja esencial hasta que el cliente lo aclare, porque
+> tiene pendiente verificar qué es esencial en EE. UU. y en Colombia.
+>
+> Historia: el 2026-11-17 quedaron solo los 32 de esa hoja. Los 29 «P» del cuadro de abajo (y las
+> variantes P31–P36) salieron del catálogo y de la escena (`Module01Library.Retired`). La chaqueta
+> impermeable (O16) pasó de la mesa de la entrada al mostrador de la ropa, porque sin los P la
+> entrada quedaba al 108 % de su largo. Lo de abajo es el cuadro histórico de 61 elementos.
+
 > Referencia para hablar todos de lo mismo: PO, arte y código.
 > Fuente: `Docs/RideSafe_VR_equipment_image_reference_library_2026-10-19.xlsx`.
 > Generado y verificado contra el proyecto el 2026-10-29.

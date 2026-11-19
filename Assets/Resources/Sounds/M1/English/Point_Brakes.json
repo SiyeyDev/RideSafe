@@ -1,11 +1,14 @@
 {
   "characters": [
-    "Brakes"
+    "Brake",
+    "adjustment"
   ],
   "character_start_times_seconds": [
-    0.0
+    0.0,
+    0.453
   ],
   "character_end_times_seconds": [
-    0.836
+    0.406,
+    1.254
   ]
 }

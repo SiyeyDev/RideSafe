@@ -3,7 +3,12 @@ guid: 0a0d3937ebb9881429f09544fd674d97
 ModelImporter:
   serializedVersion: 24501
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: e_bike
+    second: {fileID: 2100000, guid: c1443623ecc844e43a3557b335cf646d, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -1,32 +1,17 @@
 {
   "characters": [
     "Candado",
-    "con",
-    "soporte",
-    "o",
-    "ubicación",
     "de",
-    "transporte",
-    "segura"
+    "seguridad"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.743,
-    0.94,
-    1.672,
-    1.811,
-    2.438,
-    2.543,
-    3.158
+    0.673,
+    0.789
   ],
   "character_end_times_seconds": [
-    0.673,
-    0.882,
-    1.556,
-    1.788,
-    2.403,
-    2.496,
-    3.111,
-    3.994
+    0.615,
+    0.743,
+    1.718
   ]
 }

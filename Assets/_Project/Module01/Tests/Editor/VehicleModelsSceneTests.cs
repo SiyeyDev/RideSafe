@@ -84,7 +84,7 @@ namespace RideSafe.Module01.Tests
         /// <c>VehicleStage</c>.
         /// </summary>
         [Test]
-        public void La_plataforma_no_cuelga_encendida_de_la_bici()
+        public void La_transmision_cuelga_de_la_bici_y_la_plataforma_ya_no_existe()
         {
             Scene scene = SceneManager.GetSceneByPath(ScenePath);
             bool openedHere = !scene.isLoaded;
@@ -92,13 +92,13 @@ namespace RideSafe.Module01.Tests
                 scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Additive);
             try
             {
-                WorldObjectTaskEntity deck = scene.GetRootGameObjects()
-                    .SelectMany(r => r.GetComponentsInChildren<WorldObjectTaskEntity>(true))
-                    .Single(e => e.ItemId == "point_deck");
-                bool underBike = deck.GetComponentsInParent<Transform>(true).Any(t => t.name == "ebike");
-
-                Assert.IsFalse(underBike, "La plataforma cuelga de la bici.");
-                Assert.IsFalse(deck.gameObject.activeSelf, "Con la bici en el editor, la plataforma se apaga.");
+                WorldObjectTaskEntity[] entities = scene.GetRootGameObjects()
+                    .SelectMany(r => r.GetComponentsInChildren<WorldObjectTaskEntity>(true)).ToArray();
+                WorldObjectTaskEntity drivetrain = entities.Single(e => e.ItemId == "point_drivetrain");
+                Assert.IsTrue(drivetrain.GetComponentsInParent<Transform>(true).Any(t => t.name == "ebike"),
+                    "La transmisión es de la bici (cliente, 2026-11-11).");
+                Assert.IsFalse(entities.Any(e => e.ItemId == "point_deck"),
+                    "La plataforma de la patineta ya no se revisa.");
             }
             finally
             {

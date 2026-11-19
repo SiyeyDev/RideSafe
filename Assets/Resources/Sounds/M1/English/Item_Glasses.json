@@ -1,17 +1,14 @@
 {
   "characters": [
-    "Impact-resistant",
-    "clear",
+    "Clear",
     "glasses"
   ],
   "character_start_times_seconds": [
     0.0,
-    1.033,
-    1.347
+    0.418
   ],
   "character_end_times_seconds": [
-    0.975,
-    1.289,
-    1.95
+    0.36,
+    1.068
   ]
 }

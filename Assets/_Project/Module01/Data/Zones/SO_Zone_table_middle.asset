@@ -16,11 +16,7 @@ MonoBehaviour:
   _titleKey: M1/Stop_Middle
   _items:
   - {fileID: 11400000, guid: f90605e8de6028a48a8219e6b26c9993, type: 2}
-  - {fileID: 11400000, guid: a6478568077c4d647b4a555ee6fa1788, type: 2}
   - {fileID: 11400000, guid: 036e626d897b5094c92049182fcb6efe, type: 2}
-  - {fileID: 11400000, guid: 33b7101bc3e17164fb03ce479c276b2f, type: 2}
   - {fileID: 11400000, guid: 945a67a3701bbad498a99073147db4fa, type: 2}
-  - {fileID: 11400000, guid: 07d631ddf27f94f45bbe3d29f547f204, type: 2}
-  - {fileID: 11400000, guid: 72273d60de27edc4e8278db126132ade, type: 2}
-  - {fileID: 11400000, guid: d7a0fa8c0d9704e4e9b9802b3b8e552e, type: 2}
   - {fileID: 11400000, guid: 451409881b7305441baf668e3cc297e8, type: 2}
+  - {fileID: 11400000, guid: 6d4cf43718bc31948aa8da4e8b1a3453, type: 2}

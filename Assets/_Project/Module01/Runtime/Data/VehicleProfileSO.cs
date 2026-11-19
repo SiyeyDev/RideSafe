@@ -73,6 +73,64 @@ namespace RideSafe.Module01
         [Tooltip("Pieza que delinea cada punto. Vacío = ese punto se queda con el signo.")]
         [SerializeField] private List<PartBinding> _partBindings = new List<PartBinding>();
 
+        /// <summary>El render del vehículo con la pieza de un punto resaltada, para su tarjeta.</summary>
+        [Serializable]
+        private class PointRender
+        {
+            public string ItemId;
+            public Sprite Image;
+        }
+
+        [Tooltip("Render por punto para la revisión del vehículo (VehiclePartRenderer).")]
+        [SerializeField] private List<PointRender> _pointRenders = new List<PointRender>();
+
+        /// <summary>El render de ese punto en este vehículo, o null si no se ha fotografiado.</summary>
+        public Sprite RenderFor(string itemId)
+        {
+            string wanted = Normalize(itemId);
+            foreach (PointRender render in _pointRenders)
+                if (render != null && Normalize(render.ItemId) == wanted)
+                    return render.Image;
+            return null;
+        }
+
+        /// <summary>Usado por el fotógrafo de piezas y por los tests.</summary>
+        public void ConfigurePointRenders(IEnumerable<(string ItemId, Sprite Image)> renders)
+        {
+            _pointRenders = new List<PointRender>();
+            foreach ((string itemId, Sprite image) in renders)
+                _pointRenders.Add(new PointRender { ItemId = itemId, Image = image });
+        }
+
+        /// <summary>Lo que se pone en el podio para un punto, en vez de copiar sus piezas.</summary>
+        [Serializable]
+        private class PodiumModel
+        {
+            public string ItemId;
+            public GameObject Model;
+        }
+
+        [Tooltip("Modelo del podio por punto (los frenos de la bici: frenos.fbx). Vacío = copia de las piezas.")]
+        [SerializeField] private List<PodiumModel> _podiumModels = new List<PodiumModel>();
+
+        /// <summary>El modelo del podio de ese punto en este vehículo, o null si se copian sus piezas.</summary>
+        public GameObject PodiumModelFor(string itemId)
+        {
+            string wanted = Normalize(itemId);
+            foreach (PodiumModel podium in _podiumModels)
+                if (podium != null && podium.Model != null && Normalize(podium.ItemId) == wanted)
+                    return podium.Model;
+            return null;
+        }
+
+        /// <summary>Usado por el montador del vehículo y por los tests.</summary>
+        public void ConfigurePodiumModels(IEnumerable<(string ItemId, GameObject Model)> models)
+        {
+            _podiumModels = new List<PodiumModel>();
+            foreach ((string itemId, GameObject model) in models)
+                _podiumModels.Add(new PodiumModel { ItemId = itemId, Model = model });
+        }
+
         [Tooltip("Video que explica la revisión de este vehículo, tras «Mi Elección».")]
         [SerializeField] private VideoClip _explanationVideo;
 

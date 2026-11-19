@@ -1,20 +1,11 @@
 {
   "characters": [
-    "Compact",
-    "and",
-    "compatible",
-    "multi-tool"
+    "Multi-tool"
   ],
   "character_start_times_seconds": [
-    0.0,
-    0.627,
-    0.778,
-    1.463
+    0.0
   ],
   "character_end_times_seconds": [
-    0.592,
-    0.72,
-    1.405,
-    2.461
+    1.068
   ]
 }

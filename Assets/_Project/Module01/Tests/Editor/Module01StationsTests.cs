@@ -43,11 +43,13 @@ namespace RideSafe.Module01.Tests
         [Test]
         public void Ninguna_tapa_esta_a_una_altura_imposible()
         {
+            // La tapa principal va a la altura de una mesa; los niveles de más pueden ser un
+            // estante a la altura de los ojos, como el de la entrada a 1,75 que pidió la PO.
             foreach (Station s in Module01Stations.All)
-                foreach (Surface top in s.Surfaces)
-                    Assert.That(top.WorktopHeight, Is.InRange(.6f, 1.3f),
-                        "La tapa de '" + s.ZoneId + "' (" + top.Name + ") esta a "
-                        + top.WorktopHeight + " m: o es el suelo o es un armario alto.");
+                for (int i = 0; i < s.Surfaces.Count; i++)
+                    Assert.That(s.Surfaces[i].WorktopHeight, Is.InRange(.6f, i == 0 ? 1.3f : 1.8f),
+                        "La tapa de '" + s.ZoneId + "' (" + s.Surfaces[i].Name + ") esta a "
+                        + s.Surfaces[i].WorktopHeight + " m: o es el suelo o es un armario alto.");
         }
     }
 }

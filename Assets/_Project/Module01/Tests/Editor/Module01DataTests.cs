@@ -89,7 +89,7 @@ namespace RideSafe.Module01.Tests
             Assert.IsNotNull(profile, Missing);
 
             Assert.AreEqual("ebike", profile.VehicleContextValue);
-            Assert.AreEqual(3, profile.InspectionZones.Count);
+            Assert.AreEqual(4, profile.InspectionZones.Count, "Tres comunes y la transmisión (cliente, 2026-11-11).");
             Assert.IsNotNull(profile.Model, "El perfil debe apuntar al greybox mientras llega 3D.");
         }
 
@@ -117,30 +117,33 @@ namespace RideSafe.Module01.Tests
             Assert.IsNotNull(ebike, Missing);
             Assert.IsNotNull(scooter, Missing);
 
-            CollectionAssert.AreEqual(ebike.InspectionZones,
-                scooter.InspectionZones.Where(z => z.ZoneId != "deck").ToList(),
+            CollectionAssert.AreEqual(ebike.InspectionZones.Where(z => z.ZoneId != "drivetrain").ToList(),
+                scooter.InspectionZones,
                 "Las zonas comunes deben ser las mismas ZoneSO, en el mismo orden.");
         }
 
+        /// <summary>
+        /// Cliente, 2026-11-11: la patineta revisa lo mismo que la bici menos el kit de arrastre
+        /// (cambios, cadena y corona). La plataforma, que antes revisaba solo la patineta, se fue.
+        /// </summary>
         [Test]
-        public void El_escooter_recorre_plataforma_y_la_ebike_no()
+        public void La_ebike_recorre_la_transmision_y_el_escooter_no()
         {
             VehicleProfileSO ebike = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(VehiclePath);
             VehicleProfileSO scooter = AssetDatabase.LoadAssetAtPath<VehicleProfileSO>(ScooterPath);
             Assert.IsNotNull(ebike, Missing);
             Assert.IsNotNull(scooter, Missing);
 
-            CollectionAssert.AreEqual(new[] { "cockpit", "wheels", "visibility" },
+            CollectionAssert.AreEqual(new[] { "cockpit", "wheels", "drivetrain", "visibility" },
                 ebike.InspectionZones.Select(z => z.ZoneId).ToArray());
-            CollectionAssert.AreEqual(new[] { "cockpit", "wheels", "deck", "visibility" },
-                scooter.InspectionZones.Select(z => z.ZoneId).ToArray(),
-                "Narrativa §4.8.2: el scooter revisa la plataforma; la bici no tiene plataforma.");
+            CollectionAssert.AreEqual(new[] { "cockpit", "wheels", "visibility" },
+                scooter.InspectionZones.Select(z => z.ZoneId).ToArray());
 
-            ZoneSO deck = scooter.InspectionZones.First(z => z.ZoneId == "deck");
-            Assert.AreEqual("M1/Zone_Deck", deck.TitleKey);
-            Assert.AreEqual(1, deck.Items.Count);
-            Assert.AreEqual("point_deck", deck.Items[0].ItemId);
-            Assert.AreEqual(SafetyItemCategory.Core, deck.Items[0].Category,
+            ZoneSO drivetrain = ebike.InspectionZones.First(z => z.ZoneId == "drivetrain");
+            Assert.AreEqual("M1/Zone_Drivetrain", drivetrain.TitleKey);
+            Assert.AreEqual(1, drivetrain.Items.Count);
+            Assert.AreEqual("point_drivetrain", drivetrain.Items[0].ItemId);
+            Assert.AreEqual(SafetyItemCategory.Core, drivetrain.Items[0].Category,
                 "Como los otros puntos: omitirlo es no diagnosticar el vehiculo.");
         }
 

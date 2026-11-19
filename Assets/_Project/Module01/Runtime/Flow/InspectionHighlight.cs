@@ -47,12 +47,27 @@ namespace RideSafe.Module01
         private static readonly List<InspectionHighlight> Bound = new List<InspectionHighlight>();
 
         private static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
+        private static readonly int GlowColorId = Shader.PropertyToID("_GlowColor");
+        private static readonly int OutlineWidthId = Shader.PropertyToID("_OutlineWidth");
+        private static readonly int GlowWidthId = Shader.PropertyToID("_GlowWidth");
+
+        /// <summary>Grosores del contorno en el podio, en metros: las piezas ahí son pequeñas.</summary>
+        public const float PodiumOutlineWidth = .003f, PodiumGlowWidth = .008f;
+
+        /// <summary>
+        /// Blanco apenas azulado: el núcleo de la línea de la referencia del cliente (Excel 11-13,
+        /// «limpio y tecnológico, de color blanco/azuloso así tal cual»). El halo lo pone el shader.
+        /// </summary>
+        public static readonly Color DefaultActiveColor = new Color(.9f, .95f, 1f, 1f);
+
+        /// <summary>El halo azul alrededor de la línea blanca, como en la referencia.</summary>
+        public static readonly Color ActiveGlow = new Color(.28f, .5f, 1f, .75f);
 
         [Tooltip("Material de casco invertido. M_InspectionOutline.")]
         [SerializeField] private Material _outlineMaterial;
 
-        [Tooltip("Naranja neón del punto que toca revisar ahora. El mismo que el signo.")]
-        [SerializeField] private Color _activeColor = new Color(1f, .42f, .05f, 1f);
+        [Tooltip("Núcleo de la línea del punto que toca revisar ahora: blanco azulado.")]
+        [SerializeField] private Color _activeColor = new Color(.9f, .95f, 1f, 1f);
 
         [Tooltip("Color de un punto ya resuelto. El mismo que el signo.")]
         [SerializeField] private Color _resolvedColor = new Color(.46f, .83f, .54f, .9f);
@@ -64,6 +79,12 @@ namespace RideSafe.Module01
         private bool _highlighted;
         private bool _resolved;
         private bool _obscured;
+
+        /// <summary>
+        /// Lo que va al podio en vez de la copia de las piezas, si el vehículo lo declara (los frenos
+        /// de la bici: el manubrio entero, <c>frenos.fbx</c>). Lo pone <c>VehicleStage</c>.
+        /// </summary>
+        public GameObject PodiumModel { get; set; }
 
         /// <summary>El contorno de la primera pieza, o null si este punto no tiene pieza.</summary>
         public Renderer Outline => _outlines.Count > 0 ? _outlines[0] : null;
@@ -138,6 +159,47 @@ namespace RideSafe.Module01
                 return;
             }
 
+            _parts.Add(part);
+            _outlines.Add(CreateOutline(part, filter.sharedMesh));
+            _areas.Add(CreateArea(filter.sharedMesh));
+            PlaceArea(_areas.Count - 1);
+        }
+
+        /// <summary>
+        /// Delinea, dentro del modelo del podio, las piezas que se llaman como las que delinea este
+        /// punto: en <c>frenos.fbx</c>, solo las manetas y no el manubrio (cliente, 2026-11-11). Van
+        /// con el color de «por revisar» y se destruyen con el modelo.
+        /// </summary>
+        public int OutlinePodium(GameObject podium)
+        {
+            if (podium == null)
+                return 0;
+            HashSet<string> names = new HashSet<string>();
+            foreach (Transform part in _parts)
+                if (part != null)
+                    names.Add(part.name);
+            int count = 0;
+            foreach (MeshFilter filter in podium.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (filter.sharedMesh == null || filter.name == OutlineName || !names.Contains(filter.name))
+                    continue;
+                MeshRenderer outline = CreateOutline(filter.transform, filter.sharedMesh);
+                Paint(outline, _activeColor, ActiveGlow);
+                // Más fino que en el vehículo: el grosor va en metros, y 3,5 cm de halo sobre unas
+                // manetas de 7 cm en el podio las tapaban (captura 2026-11-18).
+                MaterialPropertyBlock block = new MaterialPropertyBlock();
+                outline.GetPropertyBlock(block);
+                block.SetFloat(OutlineWidthId, PodiumOutlineWidth);
+                block.SetFloat(GlowWidthId, PodiumGlowWidth);
+                outline.SetPropertyBlock(block);
+                outline.enabled = true;
+                count++;
+            }
+            return count;
+        }
+
+        private MeshRenderer CreateOutline(Transform part, Mesh mesh)
+        {
             // Un contorno de una sesion anterior que alguien guardara en la escena.
             Transform stale = part.Find(OutlineName);
             if (stale != null)
@@ -146,12 +208,12 @@ namespace RideSafe.Module01
             GameObject go = new GameObject(OutlineName, typeof(MeshFilter), typeof(MeshRenderer));
             go.transform.SetParent(part, false);
             go.layer = part.gameObject.layer;
-            go.GetComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
+            go.GetComponent<MeshFilter>().sharedMesh = mesh;
 
             MeshRenderer outline = go.GetComponent<MeshRenderer>();
             // Un material por submalla: con uno solo Unity dibuja la primera y nada mas, y el
             // Manubrio del scooter o la pantalla de la e-bike se quedaban medio delineados.
-            Material[] materials = new Material[Mathf.Max(1, filter.sharedMesh.subMeshCount)];
+            Material[] materials = new Material[Mathf.Max(1, mesh.subMeshCount)];
             for (int i = 0; i < materials.Length; i++)
                 materials[i] = _outlineMaterial;
             outline.sharedMaterials = materials;
@@ -162,11 +224,7 @@ namespace RideSafe.Module01
             outline.lightProbeUsage = LightProbeUsage.Off;
             outline.reflectionProbeUsage = ReflectionProbeUsage.Off;
             outline.staticShadowCaster = false;
-
-            _parts.Add(part);
-            _outlines.Add(outline);
-            _areas.Add(CreateArea(filter.sharedMesh));
-            PlaceArea(_areas.Count - 1);
+            return outline;
         }
 
         /// <summary>
@@ -285,12 +343,18 @@ namespace RideSafe.Module01
                 if (outline == null)
                     continue;
                 outline.enabled = !_obscured && (_highlighted || _resolved);
-
-                MaterialPropertyBlock block = new MaterialPropertyBlock();
-                outline.GetPropertyBlock(block);
-                block.SetColor(OutlineColorId, _resolved ? _resolvedColor : _activeColor);
-                outline.SetPropertyBlock(block);
+                Color glow = _resolved ? new Color(_resolvedColor.r, _resolvedColor.g, _resolvedColor.b, _resolvedColor.a * .45f) : ActiveGlow;
+                Paint(outline, _resolved ? _resolvedColor : _activeColor, glow);
             }
+        }
+
+        private static void Paint(Renderer outline, Color core, Color glow)
+        {
+            MaterialPropertyBlock block = new MaterialPropertyBlock();
+            outline.GetPropertyBlock(block);
+            block.SetColor(OutlineColorId, core);
+            block.SetColor(GlowColorId, glow);
+            outline.SetPropertyBlock(block);
         }
 
         private void OnDestroy() => Release();

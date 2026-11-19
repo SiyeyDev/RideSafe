@@ -54,8 +54,14 @@ namespace RideSafe.Module01.Editor
             {
                 if (IsEppContainer(root, models))
                 {
+                    // Solo lo que está en la hoja del cliente: la caja del artista aún guarda los
+                    // 31 retirados el 2026-11-17 y no deben volver a la escena de trabajo.
                     foreach (Transform child in root.transform)
-                        epp.Add(child.gameObject);
+                    {
+                        string childSource = SourceOf(child.gameObject);
+                        if (models.Contains(childSource) || childSource.StartsWith(Module01Library.Essentials))
+                            epp.Add(child.gameObject);
+                    }
                     continue;
                 }
                 string source = SourceOf(root);
@@ -89,6 +95,10 @@ namespace RideSafe.Module01.Editor
                 return false;
             if (root.GetComponent<Renderer>() != null)
                 return false;   // tiene malla propia: es un objeto, no una caja
+            // `epps` perdió la mayoría al retirar los 31 P (casi todos vivían ahí); sigue
+            // siendo la caja del artista y guarda O01 (`rompe veintos`).
+            if (root.name.Equals("epps", System.StringComparison.OrdinalIgnoreCase))
+                return true;
 
             int declarados = 0;
             foreach (Transform child in root.transform)
@@ -166,9 +176,8 @@ namespace RideSafe.Module01.Editor
         /// </summary>
         public static readonly (string Path, string Surface, Vector3 Point)[] Moves =
         {
-            ("epps/poncho h", null, new Vector3(3.55f, 0.035f, -3.64f)),
-            ("enviroment_decoration/df_g_helmet_01", "cabinetmid 1", new Vector3(0.75f, 1.08f, -4.45f)),
-            ("epps/soporte celular", "mesa", new Vector3(4.38f, 1.02f, 4.82f)),
+            // El poncho, el casco sin correa (H01) y el soporte del celular salieron de aquí el
+            // 2026-11-17: desde la reunión del 11-11 los coloca Module01ClientListCleanup con el reparto.
             // La mesa del centro es la única parada con decorado encima, y era la más apretada del
             // garaje: 16 % de tapa libre (medido el 2026-10-29). La culpa es de tres reglas del
             // artista, planas sobre la tapa, que entre las tres cubren 1,38 m² de los 1,27 que

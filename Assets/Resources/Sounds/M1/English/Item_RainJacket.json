@@ -1,17 +1,14 @@
 {
   "characters": [
-    "Fitted",
-    "waterproof",
+    "Rain",
     "jacket"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.406,
-    1.01
+    0.395
   ],
   "character_end_times_seconds": [
-    0.348,
-    0.929,
-    1.811
+    0.313,
+    0.975
   ]
 }

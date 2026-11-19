@@ -86,6 +86,42 @@ public static class M1ItemAudioBatch
 
     public const string PlanPath = "Temp/ridesafe-audio-plan.txt";
 
+    /// <summary>
+    /// Las voces en off del módulo, que no son nombres: (clip que reproduce NarrationPlayer,
+    /// término de I2 con su texto). La bienvenida y la entrada al vehículo son de la hoja del
+    /// cliente; el control y la instrucción de EPP, de la reunión del 2026-11-11.
+    /// </summary>
+    public static readonly (string Clip, string[] Terms)[] Narration =
+    {
+        ("M01_Welcome", new[] { "M1/M01_Welcome" }),
+        ("M01_WelcomeController", new[] { "M1/Welcome_Controller" }),
+        ("M01_SelectionInstruction", new[] { "M1/Selection_Instruction" }),
+        ("M02_Welcome", new[] { "M1/M02_Welcome" }),
+        ("M01_SelectionMechanic", new[] { "M1/Selection_Mechanic" }),
+        ("M02_InspectMechanic", new[] { "M1/Inspect_Mechanic" }),
+        // Los veredictos dicen lo que pone el panel: título y cuerpo.
+        ("M01_EppPassed", new[] { "M1/Congrats_Title", "M1/Congrats_Body" }),
+        ("M01_EppRetry", new[] { "M1/Retry_Title", "M1/Retry_Epp_Body" }),
+        ("M01_VehicleRetry", new[] { "M1/Retry_Title", "M1/Retry_Vehicle_Body" }),
+        ("M01_ModuleComplete", new[] { "M1/Complete_Title", "M1/Complete_Body" }),
+    };
+
+    /// <summary>
+    /// Para -batchmode sin -quit: genera lo que falta o cambió —nombres y voces en off— y cierra
+    /// Unity con 0 si no falló nada.
+    /// </summary>
+    public static void RunMissingAndExit()
+    {
+        EditorCoroutineUtility.StartCoroutineOwnerless(ThenExit());
+    }
+
+    private static IEnumerator ThenExit()
+    {
+        yield return EditorCoroutineUtility.StartCoroutineOwnerless(Batch(true));
+        string result = File.Exists(ResultPath) ? File.ReadAllText(ResultPath) : string.Empty;
+        EditorApplication.Exit(result.Contains("fallos=0") ? 0 : 1);
+    }
+
     [MenuItem("RideSafe/Módulo 1/Generar locución de los elementos (ES + EN)")]
     public static void Run()
     {
@@ -217,6 +253,27 @@ public static class M1ItemAudioBatch
                 if (ok) hechos++; else fallos++;
                 Log($"{(ok ? "ok" : "FALLO")} {language}/{name}");
             }
+
+            foreach ((string clip, string[] termKeys) in Narration)
+            {
+                string[] parts = termKeys.Select(k => data.GetTermData(k)?.Languages[idx]).ToArray();
+                string text = parts.Any(string.IsNullOrWhiteSpace) ? null : string.Join(" ", parts);
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    Log($"SALTADO {language}/{clip}: {string.Join("+", termKeys)} sin texto");
+                    fallos++;
+                    continue;
+                }
+                if (onlyStale && Stale(folder, clip, text) == null)
+                    continue;
+
+                yield return EditorCoroutineUtility.StartCoroutineOwnerless(
+                    generator.Generate(UrlStart + voiceId + UrlEnd, text, clip));
+
+                bool ok = File.Exists($"{folder}/{clip}.mp3");
+                if (ok) hechos++; else fallos++;
+                Log($"{(ok ? "ok" : "FALLO")} {language}/{clip}");
+            }
         }
 
         AssetDatabase.Refresh();
@@ -227,6 +284,8 @@ public static class M1ItemAudioBatch
     private static void Log(string line)
     {
         File.AppendAllText(ResultPath, line + "\n");
+        // También al log del Editor: en -batchmode Temp/ se borra al salir.
+        Debug.Log("[M1 audio] " + line);
     }
 }
 #endif

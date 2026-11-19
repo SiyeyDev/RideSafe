@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -182,7 +182,7 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>Luz de producto: principal arriba a un lado, relleno al otro y una luz ambiente suave.</summary>
-        private static void Light(PreviewRenderUtility studio, Vector3 view)
+        internal static void Light(PreviewRenderUtility studio, Vector3 view)
         {
             studio.ambientColor = new Color(0.42f, 0.44f, 0.48f);
             Light key = studio.lights[0];
@@ -219,7 +219,7 @@ namespace RideSafe.Module01.Editor
         }
 
         /// <summary>Centra y ajusta la cámara a lo que de verdad ocupa el objeto en la toma.</summary>
-        private static void Refit(Camera camera, Texture2D draft)
+        internal static void Refit(Camera camera, Texture2D draft)
         {
             Color[] pixels = draft.GetPixels();
             int width = draft.width, height = draft.height;
@@ -245,7 +245,7 @@ namespace RideSafe.Module01.Editor
         /// Dos tomas, sobre negro y sobre blanco: lo que cambia entre ellas es lo que no tapa el
         /// objeto. Así sale el alfa con cualquier pipeline, también si el de URP no lo conserva.
         /// </summary>
-        private static Texture2D Shoot(PreviewRenderUtility studio)
+        internal static Texture2D Shoot(PreviewRenderUtility studio)
         {
             Texture2D onBlack = Take(studio, Color.black), onWhite = Take(studio, Color.white);
             Color[] b = onBlack.GetPixels(), w = onWhite.GetPixels();
@@ -257,12 +257,47 @@ namespace RideSafe.Module01.Editor
                     ? new Color(Mathf.Clamp01(b[i].r / alpha), Mathf.Clamp01(b[i].g / alpha), Mathf.Clamp01(b[i].b / alpha), alpha)
                     : Color.clear;
             }
+            SeeThrough(result);
             Texture2D photo = new Texture2D(onBlack.width, onBlack.height, TextureFormat.RGBA32, false);
             photo.SetPixels(result);
             photo.Apply();
             Object.DestroyImmediate(onBlack);
             Object.DestroyImmediate(onWhite);
             return photo;
+        }
+
+        /// <summary>
+        /// Lo que no se leería sobre la tarjeta clara: las gafas transparentes salen blancas y casi
+        /// sin alfa. Si ni el 10 % más opaco de la silueta llega a la mitad, se le sube el alfa; si
+        /// la silueta es casi blanca de media, se oscurece hasta un gris medio. Lo demás no cambia.
+        /// </summary>
+        public static void SeeThrough(Color[] pixels)
+        {
+            List<float> alphas = pixels.Where(p => p.a > .004f).Select(p => p.a).OrderBy(a => a).ToList();
+            if (alphas.Count == 0)
+                return;
+            float p90 = alphas[(int)(alphas.Count * .9f)];
+            float boost = p90 < .5f ? .85f / p90 : 1f;
+
+            float weight = 0f, light = 0f;
+            foreach (Color p in pixels)
+                if (p.a > .004f)
+                {
+                    weight += p.a;
+                    light += p.a * (.299f * p.r + .587f * p.g + .114f * p.b);
+                }
+            float mean = light / weight;
+            float dim = mean > .8f ? .55f / mean : 1f;
+            if (boost == 1f && dim == 1f)
+                return;
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                Color p = pixels[i];
+                if (p.a <= .004f)
+                    continue;
+                pixels[i] = new Color(p.r * dim, p.g * dim, p.b * dim, Mathf.Clamp01(p.a * boost));
+            }
         }
 
         private static Texture2D Take(PreviewRenderUtility studio, Color background)

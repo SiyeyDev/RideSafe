@@ -277,8 +277,9 @@ namespace RideSafe.Module01
 
             if (!_inVehicleSection)
             {
+                // Sin la lista de ReportPresenter: el cliente quiere las tarjetas con el render
+                // (reunión 2026-11-11), y las pinta Module01Experience al recibir el evento.
                 PersonalSectionCompleted?.Invoke(report);
-                _report?.Show(report);
 
                 _inVehicleSection = true;
                 _index = -1;
@@ -288,7 +289,6 @@ namespace RideSafe.Module01
             }
 
             VehicleSectionCompleted?.Invoke(report);
-            _report?.Show(report);
 
             CurrentZone = null;
             IsFinished = true;

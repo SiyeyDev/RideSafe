@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cachacos;
 using UnityEngine;
 using RideSafe.UI;
@@ -117,7 +118,21 @@ namespace RideSafe.Module01
                 });
             }
 
-            return entries;
+            // Primero los errores, luego los condicionales y al final lo correcto (cliente,
+            // 2026-11-11). OrderBy es estable: dentro de cada grupo se queda el orden del catálogo.
+            return entries.OrderBy(e => ReviewOrder(e.Status)).ToList();
+        }
+
+        /// <summary>0 mal elegido, 1 condicional o sin efecto, 2 correcto.</summary>
+        public static int ReviewOrder(ItemStatus status)
+        {
+            switch (status)
+            {
+                case ItemStatus.Selected: return 2;
+                case ItemStatus.ConditionDependent:
+                case ItemStatus.NoEffect: return 1;
+                default: return 0;
+            }
         }
 
         /// <summary>

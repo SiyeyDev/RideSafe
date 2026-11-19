@@ -2,19 +2,16 @@
   "characters": [
     "Luz",
     "delantera",
-    "blanca",
-    "funcional"
+    "blanca"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.325,
-    0.882,
-    1.277
+    0.302,
+    0.789
   ],
   "character_end_times_seconds": [
-    0.29,
-    0.836,
-    1.231,
-    2.229
+    0.279,
+    0.755,
+    1.533
   ]
 }

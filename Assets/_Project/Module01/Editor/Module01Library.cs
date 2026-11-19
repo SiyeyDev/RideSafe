@@ -1,4 +1,4 @@
-
+﻿
 namespace RideSafe.Module01.Editor
 {
     /// <summary>
@@ -130,29 +130,31 @@ namespace RideSafe.Module01.Editor
             // entrada, el centro y las herramientas no tienen esencial, el fondo tiene las dos
             // luces y el mostrador el casco, el calzado y el pantalón.
             // mesa: la de la pared derecha junto a la puerta.
+            // Desde el 2026-11-11 solo los 32 de la hoja «Sistema de puntuación» (cliente: «solo
+            // cuentan los EPP del documento; el resto sobra»). Los P se fueron de aquí y de la escena.
+            // La chaqueta impermeable vino aquí el 2026-11-17: sin los P la entrada quedó al 27 % y el
+            // mostrador de la ropa pasó a dos cuerpos. Las gafas de sol y las rayadas no caben: el
+            // poncho cuelga de una punta (StationLayout recorta la tapa a z ≤ 4,90).
             new Stop("table_entrance", "M1/Stop_Entrance",
-                     "poncho", "backpack", "pannier", "glasses", "work_goggles", "cable_lock", "rain_jacket"),
-            // otra mesa: la del centro.
+                     "poncho", "backpack", "pannier", "rain_jacket"),
+            // otra mesa: la del centro. Las gafas vienen de la entrada (2026-11-17): alli no cabian
+            // en una fila y quedaban delante de la alforja.
             new Stop("table_middle", "M1/Stop_Middle",
-                     "umbrella", "elbow_pads", "mittens", "knee_pads", "tote", "face_mask",
-                     "clothing_loose", "neck_scarf", "drink"),
+                     "umbrella", "mittens", "tote", "drink", "glasses"),
             // mesa nueva: la del fondo. Esenciales: las dos luces.
+            // Los audífonos grandes y el timbre pasaron al banco el 2026-11-17: con nueve piezas iban en
+            // dos bandas, una delante de otra. Los AirPods se quedan: cada parada lleva un peligro.
             new Stop("table_back", "M1/Stop_Back",
-                     "light_front", "light_rear", "gloves", "headphones", "bell", "flashlight", "phone_mount",
-                     "reflective", "cargo_handheld", "spare_red_light", "airpods", "boots", "work_vest",
-                     "old_headphones"),
-            // cabinet (1) + cabinetmid 1 + cabinet: el mostrador del fondo, de punta a punta.
-            // Esenciales: el casco, el calzado y el pantalón ceñido.
+                     "light_front", "light_rear", "gloves", "phone_mount", "reflective", "cargo_handheld", "airpods"),
+            // cabinetmid 1 + cabinet: el mostrador del fondo (sin el cuerpo del armario alto desde
+            // el 2026-11-17). Esenciales: el casco, el calzado y el pantalón ceñido.
             new Stop("counter_clothes", "M1/Stop_Clothes",
-                     "helmet_ok", "shoes_ok", "trousers_fitted", "helmet_damaged", "helmet_cracked", "cap",
-                     "gloves_spare_2", "sneakers", "snorkel", "sunglasses", "shower_slippers", "glasses_damaged",
-                     "sandals", "hiviz_day", "loose_laces", "trousers_loose", "folded_jeans", "trousers_tech",
-                     "sport_glasses"),
+                     "helmet_ok", "shoes_ok", "trousers_fitted", "helmet_damaged", "cap",
+                     "sunglasses", "glasses_damaged", "sandals", "hiviz_day"),
             // metal table: el banco bajo el logo.
             new Stop("table_tools", "M1/Stop_Tools",
-                     "cargo_secured", "flat_kit", "damaged_cable_lock", "fabric_gloves", "latex_gloves",
-                     "loose_padlock", "work_gloves", "helmet_strap", "multitool", "bottle",
-                     "gloves_spare", "shoes_spare", "reflective_spare", "vest_grey"),
+                     "cargo_secured", "flat_kit", "helmet_strap", "multitool", "bottle",
+                     "headphones", "bell"),
         };
 
         /// <summary>La parada de un elemento, o <c>null</c> si no está en ninguna.</summary>
@@ -498,88 +500,19 @@ namespace RideSafe.Module01.Editor
             new Entry("N01", "cargo_handheld", Opt, 0f, Mesa2,
                       model: Models + "MobilePhone_01.fbx"),
 
-            // ---- Añadidos por la PO: no están en la hoja ----------------------------------
-            // Prefijo P y no O: un O inventado se leería como una fila del Excel del cliente.
-            // «Recomendada condicional» como los O de la hoja: bono si se eligen, nunca restan.
-            // El peso lo puse yo, igual que los guantes (O04, +2): protección de un punto de
-            // contacto en una caída. Pendiente de que el cliente lo confirme.
-            new Entry("P01", "elbow_pads", Opt, 2f, Mesa1,
-                      model: Models + "codera.fbx"),
-            new Entry("P02", "knee_pads", Opt, 2f, Mesa1,
-                      model: Models + "rodillera.fbx"),
+            // Los 31 «P» (coderas, rodilleras, pantalones y zapatos de más, copias…) se fueron el
+            // 2026-11-17: el cliente pidió en la reunión del 11-11 dejar solo los EPP del documento.
+            // Sus ids siguen en Retired para limpiar la escena.
+        };
 
-            // ---- Lo demás que modeló el artista (PO, 2026-10-28) --------------------------
-            // «Todos los que ha hecho el artista son interactuables». Lo que la hoja no evalúa
-            // es NEUTRAL, como el teléfono (N01): se examina y se elige, pero no suma ni resta y
-            // en el reporte sale «No necesario». No se inventa una nota que el cliente no puso.
-            new Entry("P03", "flashlight", Opt, 0f, Mesa2, model: Essentials + "lintarna.fbx"),
-            new Entry("P05", "snorkel", Opt, 0f, Mesa1, model: Models + "snorquel.fbx"),
-            new Entry("P06", "sport_glasses", Opt, 0f, Mesa1, model: Essentials + "gafas_deportivas.fbx"),
-            new Entry("P07", "work_vest", Opt, 0f, Mesa2, model: Models + "chaleco refectivo.fbx"),
-            new Entry("P08", "work_goggles", Opt, 0f, Mesa1, model: Models + "gafas.fbx"),
-            new Entry("P09", "spare_red_light", Opt, 0f, Mesa2, model: Models + "luz roja 1.fbx"),
-            new Entry("P10", "loose_padlock", Opt, 0f, Mesa3, model: Models + "candado.fbx"),
-            new Entry("P11", "cable_lock", Opt, 0f, Mesa3, model: Models + "guaya candado.fbx"),
-            new Entry("P12", "damaged_cable_lock", Opt, 0f, Mesa3, model: Models + "guayya dañado.fbx"),
-            new Entry("P13", "work_gloves", Opt, 0f, Mesa1, model: Models + "guante.fbx"),
-            new Entry("P14", "latex_gloves", Opt, 0f, Mesa1,
-                      model: Models + "Robbers_T3ANI210_LatexGloves_Abdilla.fbx"),
-            new Entry("P15", "fabric_gloves", Opt, 0f, Mesa1, model: Models + "bloves 02.fbx"),
-            new Entry("P16", "face_mask", Opt, 0f, Mesa1, model: Models + "tapabocas.fbx"),
-            new Entry("P17", "folded_jeans", Opt, 0f, Mesa3, model: Models + "jean_ajustado_doblado 1.fbx",
-                      inspectModel: Models + "jean ajustado.fbx"),
-            new Entry("P18", "trousers_tech", Opt, 0f, Mesa3, model: Models + "pantalon deportivo doblado.fbx",
-                      inspectModel: Models + "pant low.fbx"),
-                      // Emparejado por forma: el `pant low` de pie no tiene doblado propio y el
-                      // deportivo doblado no tenía abierto. Confirmar con el artista.
-            new Entry("P21", "sneakers", Opt, 0f, Mesa1, model: Models + "tenis_deportivos.fbx"),
-            new Entry("P22", "boots", Opt, 0f, Mesa1, model: Models + "botas.fbx"),
-                      // Vienen dentro del prefab de decoración del garaje, no sueltas: se
-                      // reconocen por su malla (Module01SceneEntities).
-            // P23 era el estuche (`cartuchera_low`): desde que el artista trajo el kit compacto y la
-            // multiherramienta a la mesa del centro (2026-10-28), el estuche y la Tool_Tajima son
-            // del banco de herramientas, como las pinzas, y no se traen.
-
-            // PELIGROS: solo los del Excel. El 2026-10-29 la PO cerró que «los incorrectos sean
-            // los mismos que el Excel»: los doce H de la hoja, ni uno más. Estos seis los
-            // habíamos declarado peligro por cuenta propia —ropa suelta, audífonos viejos,
-            // chanclas— con pesos que yo mismo propuse. Vuelven a NEUTRAL: se examinan y se
-            // eligen, no suman ni restan, y en el reporte salen «No necesario», igual que el
-            // teléfono. La hoja del cliente es la que puntúa.
-            // −15 y un solo grupo, así que llevarse varias prendas sueltas descuenta una vez, como
-            // los grupos de la hoja. El peso lo propuse yo: el mismo que las chanclas (H04).
-            new Entry("P24", "clothing_loose", Opt, 0f, Mesa1, model: Models + "bufanda 01.fbx"),
-            new Entry("P25", "neck_scarf", Opt, 0f, Mesa1, model: Models + "mascada.fbx"),
-            new Entry("P26", "trousers_loose", Opt, 0f, Mesa3, model: Models + "jean ancho doblado.fbx",
-                      inspectModel: Models + "pantalon ancho.fbx"),
-                      // El ancho se lee abierto o no se lee: doblado parece uno ceñido más.
-            new Entry("P28", "loose_laces", Opt, 0f, Mesa1, model: Models + "tenis_cordones_sueltos.fbx"),
-            // Los audífonos de antes son lo mismo que H03: peligro en su mismo grupo, que descuenta
-            // una sola vez aunque se lleve los dos. Neutrales enseñarían que se puede rodar con ellos.
-            new Entry("P29", "old_headphones", Opt, 0f, Mesa2, model: Models + "audifonos.fbx"),
-            // Las chanclas de antes: H04 pasó a las Crocs (2026-10-28). Mismo peligro y mismo grupo,
-            // así que llevarse las dos descuenta una vez.
-            new Entry("P30", "shower_slippers", Opt, 0f, Mesa1, model: Models + "Slippers.fbx"),
-
-            // ---- Variantes que el artista puso en v5 (2026-10-29, commit «epps») -----------
-            // Mismo FBX que un elemento del Excel, colocadas a propósito en otra mesa o con otro
-            // material. La PO decidió cómo cuenta cada una. Las reconoce
-            // `Module01SceneEntities` por la entidad que ya llevan, no por el FBX, que comparten.
-            // El casco certificado con el material agrietado: peligro, como el casco dañado (H02).
-            new Entry("P31", "helmet_cracked", Bad, 30f, Mesa1,
-                      model: Essentials + "Casco certificado.fbx", hazardGroup: "helmet_integrity"),
-            // El chaleco con material gris: parece un chaleco pero no refleja. Neutral.
-            new Entry("P32", "vest_grey", Opt, 0f, Mesa2, model: Essentials + "chaleco reflectivo.fbx"),
-            // Copias idénticas a su original (mismo material): neutrales. Llevan el nombre y la
-            // locución del original porque se ven igual; solo la explicación es suya.
-            new Entry("P33", "gloves_spare", Opt, 0f, Mesa1,
-                      model: Essentials + "gloves.fbx", sameNameAs: "gloves"),
-            new Entry("P34", "gloves_spare_2", Opt, 0f, Mesa1,
-                      model: Essentials + "gloves.fbx", sameNameAs: "gloves"),
-            new Entry("P35", "shoes_spare", Opt, 0f, Mesa1,
-                      model: Essentials + "zapatos de seguridad.fbx", sameNameAs: "shoes_ok"),
-            new Entry("P36", "reflective_spare", Opt, 0f, Mesa2,
-                      model: Essentials + "chaleco reflectivo.fbx", sameNameAs: "reflective"),
+        /// <summary>Los elementos que salieron del catálogo el 2026-11-17 (no están en la hoja del cliente).</summary>
+        public static readonly string[] Retired =
+        {
+            "elbow_pads", "knee_pads", "flashlight", "snorkel", "sport_glasses", "work_vest", "work_goggles",
+            "spare_red_light", "loose_padlock", "cable_lock", "damaged_cable_lock", "work_gloves", "latex_gloves",
+            "fabric_gloves", "face_mask", "folded_jeans", "trousers_tech", "sneakers", "boots", "clothing_loose",
+            "neck_scarf", "trousers_loose", "loose_laces", "old_headphones", "shower_slippers", "helmet_cracked",
+            "vest_grey", "gloves_spare", "gloves_spare_2", "shoes_spare", "reflective_spare",
         };
     }
 }

@@ -27,7 +27,8 @@ namespace RideSafe.Module01.Editor
         public readonly struct Definition
         {
             public Definition(string assetSuffix, string contextValue, string modelFile, float sceneScale,
-                              string videoPath, (string Id, float Yaw)[] zones, (string Item, string Part)[] parts)
+                              string videoPath, (string Id, float Yaw)[] zones, (string Item, string Part)[] parts,
+                              (string Item, string ModelFile)[] podiumModels = null)
             {
                 AssetSuffix = assetSuffix;
                 ContextValue = contextValue;
@@ -36,6 +37,7 @@ namespace RideSafe.Module01.Editor
                 VideoPath = videoPath;
                 Zones = zones;
                 Parts = parts;
+                PodiumModels = podiumModels ?? new (string Item, string ModelFile)[0];
             }
 
             /// <summary>Sufijo del asset: <c>SO_VehicleProfile_{AssetSuffix}</c>.</summary>
@@ -79,6 +81,14 @@ namespace RideSafe.Module01.Editor
             /// </summary>
             public IReadOnlyList<(string Item, string Part)> Parts { get; }
 
+            /// <summary>
+            /// Modelo propio del podio para un punto, cuando en el podio va otra cosa que lo que se
+            /// delinea en el vehículo: delinea en él las piezas del mismo nombre. FBX dentro de
+            /// <see cref="Module01Library.Models"/>. Lo usan los frenos de la bici (<c>frenos.fbx</c>, el
+            /// manubrio con las manetas, de Daniel).
+            /// </summary>
+            public IReadOnlyList<(string Item, string ModelFile)> PodiumModels { get; }
+
             public IEnumerable<string> ZoneIds => Zones.Select(z => z.Id);
 
             public string ModelPath => Module01Library.Models + ModelFile;
@@ -99,6 +109,9 @@ namespace RideSafe.Module01.Editor
                     // De costado. A 180 la rueda trasera quedaba detrás del checklist, que vive a
                     // la derecha; el test pasaba igual y lo cazó una captura.
                     ("wheels", 0f),
+                    // La transmisión, de costado: solo la bici la tiene (cliente, 2026-11-11). El FBX
+                    // no separa cadena ni corona; 'pedales' es lo más cercano hasta que 3D las separe.
+                    ("drivetrain", 0f),
                     // Luces y reflectivos, de costado como las llantas (PO, 2026-11-06): por detrás
                     // solo se veía la trasera, y se revisan las dos.
                     ("visibility", 0f),
@@ -108,11 +121,27 @@ namespace RideSafe.Module01.Editor
                     ("point_steering", "tenedor"),
                     ("point_brakes", "freno_de"),
                     ("point_brakes", "freno_iz"),
-                    ("point_wheels", "rueda_tracera"),
-                    ("point_wheels", "llanta_delantera"),
+                    // Solo las llantas, no rines ni radios (cliente, 2026-11-11, 24:52; Excel 11-13):
+                    // 'caucho' es la delantera y 'rueda_tracera1' la trasera, las dos más anchas que
+                    // la rueda de la que cuelgan (0,74 m frente a 0,62).
+                    ("point_wheels", "rueda_tracera1"),
+                    ("point_wheels", "caucho"),
                     ("point_lights", "luz_delantera"),
                     ("point_lights", "luz_tracera"),
+                    // El display que Daniel añadió el 2026-11-17 (reunión, 36:27), y la pantalla de antes.
+                    ("point_electrics", "display"),
                     ("point_electrics", "pantalla"),
+                    ("point_drivetrain", "pedales"),
+                },
+                // Los frenos van al podio con el manubrio entero y solo las manetas delineadas: solas
+                // son dos palitos de 11 cm que el borde del podio tapa (captura 2026-11-18; cliente,
+                // 2026-11-11, 21:32; Excel 11-13, «en conjunto con el manubrio»).
+                new[]
+                {
+                    ("point_brakes", "frenos.fbx"),
+                    // La transmisión separada que trajo Daniel en ef550e3 —cadena, plato y piñones—:
+                    // en la bici solo hay 'pedales', así que al podio va este modelo entero.
+                    ("point_drivetrain", "piezas ebike.fbx"),
                 }),
             // La patineta viene en dos piezas anidadas: 'Manubrio' (con 'freno_iz', 'freno_de' y
             // 'llanta_delantera') y 'cuerpo' (con 'llanta_tracera' y 'soporte'). La plataforma
@@ -125,22 +154,25 @@ namespace RideSafe.Module01.Editor
                 {
                     ("cockpit", 0f),       // de frente: Manubrio, frenos y pantalla
                     ("wheels", -90f),      // de costado, con la llanta de atras a la izquierda
-                    // La plataforma va entre las ruedas y las luces: de costado a tres cuartos por
-                    // detras a por detras, el vehiculo gira siempre hacia el mismo lado.
-                    ("deck", -135f),
+                    // Sin plataforma desde el 2026-11-11: la patineta revisa lo mismo que la bici
+                    // menos la transmisión (cliente).
                     ("visibility", -90f),  // de costado, como las llantas (PO, 2026-11-06)
                 },
                 new[]
                 {
                     ("point_steering", "Manubrio"),
-                    ("point_brakes", "freno_iz"),
+                    // freno_de primero: el signo va a la primera maneta, y la izquierda está pegada al
+                    // display que trajo ef550e3; con ella los dos signos se pisaban (PlayMode 2026-11-18).
                     ("point_brakes", "freno_de"),
+                    ("point_brakes", "freno_iz"),
+                    // Desde ef550e3 (Daniel, 2026-11-18) la rueda delantera trae el 'neumatico' aparte:
+                    // solo la llanta, no el rin (cliente, 2026-11-11). La trasera sigue entera.
                     ("point_wheels", "llanta_tracera"),
-                    ("point_wheels", "llanta_delantera"),
-                    ("point_deck", "cuerpo"),
+                    ("point_wheels", "neumatico"),
+                    // Y ya trae luz trasera y display: lo eléctrico es el display, no las direccionales.
                     ("point_lights", "luz_freontal"),
-                    ("point_electrics", "direccional_de"),
-                    ("point_electrics", "direccional_iz"),
+                    ("point_lights", "luz_trasera"),
+                    ("point_electrics", "display"),
                 }),
         };
 
@@ -158,13 +190,16 @@ namespace RideSafe.Module01.Editor
             // pantalla y los signos se montan. La dirección va a un puño y el freno al lado de su
             // maneta: quedan puño, pantalla y maneta, de izquierda a derecha.
             { "point_steering",  new Vector3(.86f, .94f, .15f) }, // manubrio, en un puño
-            { "point_brakes",    new Vector3(.79f, .78f, .82f) }, // maneta de freno, al otro lado
+            { "point_brakes",    new Vector3(.79f, .78f, .97f) }, // maneta de freno, en su punta, al otro lado
             { "point_lights",    new Vector3(.95f, .62f, .50f) }, // faro delantero
             // Por encima de la rueda: dentro, el signo naranja caía sobre los radios naranjas del
             // contorno y no se veía.
             { "point_wheels",    new Vector3(.10f, .80f, .50f) }, // sobre la rueda
-            { "point_electrics", new Vector3(.45f, .36f, .82f) }, // bateria, al otro lado
+            // Arriba y al centro, sobre el display, que ya tienen los dos (ef550e3). Del lado de la
+            // maneta, como cuando era la batería, el signo caía encima del de los frenos.
+            { "point_electrics", new Vector3(.86f, .94f, .42f) }, // display, en el centro del manubrio
             { "point_deck",      new Vector3(.35f, .15f, .50f) }, // sobre la plataforma, atras
+            { "point_drivetrain", new Vector3(.45f, .30f, .82f) }, // bielas y corona, del lado de la cadena
         };
 
         public static string AssetPath(Definition definition) =>

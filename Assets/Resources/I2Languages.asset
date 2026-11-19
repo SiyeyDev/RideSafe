@@ -728,10 +728,10 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Select an object to examine. You can change your choices before submitting
+      - Select an object to examine it. You can edit your choices before submitting
         them.
-      - Selecciona un objeto para examinarlo. Puedes cambiar tus elecciones antes
-        de enviarlas.
+      - Selecciona un objeto para examinarlo. Puedes editar tus elecciones antes
+        de presentarlas.
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Conditional
@@ -754,8 +754,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Do you want to add this element to your preparation?
-      - "\xBFQuieres a\xF1adir este elemento a tu preparaci\xF3n?"
+      - Do you want to add this item to your list?
+      - "\xBFQuieres a\xF1adir este elemento a tu lista?"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Continue
@@ -818,8 +818,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Select each marker to review the component before exiting.
-      - Selecciona cada marcador para revisar el componente antes de salir.
+      - Inspect each component before riding.
+      - Inspecciona cada componente antes de conducir.
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Inspect_Question
@@ -834,8 +834,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Object in hand
-      - Objeto en la mano
+      - Smartphone
+      - "Tel\xE9fono inteligente"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_ClothingLoose
@@ -866,11 +866,14 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Welcome to Module 1! In this module, you will learn everything about the
-        necessary precautions and PPE you must take before starting your vehicle.
-        Let's begin!
-      - Bienvenido al Modulo1, En este modulo vas a aprender todo sobre los precursores
-        y epps que debes tener en cuenta antes de dar marcha con tu vehiculo. Comencemos!
+      - Welcome to RideSafe! In this first module, you'll learn how to prepare for
+        a safe ride. You'll identify the basic personal protective equipment and
+        the vehicle components you should inspect every time you're about to ride.
+        Let's get started!
+      - "\xA1Bienvenido a RideSafe! En este primer m\xF3dulo vas a aprender a prepararte
+        para un viaje seguro. Identificar\xE1s los elementos b\xE1sicos de protecci\xF3n
+        personal y los componentes de tu veh\xEDculo que debes inspeccionar cada
+        vez que te dispongas a manejar. \xA1Comencemos!"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/NeedsService
@@ -885,8 +888,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Continue tour
-      - Continuar recorrido
+      - Continue
+      - Continuar
       Flags: 0000
       Languages_Touch: []
     - Term: M1/No
@@ -909,18 +912,18 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Browse the stations and choose what to take. Then check the e-bike. You'll
-        see feedback as you submit each section.
-      - "Recorre las estaciones y elige qu\xE9 llevar. Despu\xE9s revisa la e-bike.
-        Ver\xE1s la retroalimentaci\xF3n al enviar cada secci\xF3n."
+      - Walk through the stations, select the protective equipment you need and avoid
+        distracting items.
+      - "Recorre las estaciones, selecciona los elementos de protecci\xF3n necesarios
+        y evita los elementos distractores."
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Orientation_Title
       TermType: 0
       Description: 
       Languages:
-      - Prepare yourself before filming
-      - "Prep\xE1rate antes de rodar"
+      - Get ready before you ride
+      - "Prep\xE1rate antes de manejar"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Pause
@@ -935,16 +938,16 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Brakes
-      - Frenos
+      - Brake adjustment
+      - Ajuste de frenos
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Point_Electrics
       TermType: 0
       Description: 
       Languages:
-      - Electrical status and controls
-      - "Estado el\xE9ctrico y controles"
+      - Power-on and electrical system
+      - "Encendido y sistema el\xE9ctrico"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Point_Lights
@@ -959,16 +962,16 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Steering and handlebars
-      - "Direcci\xF3n y manubrio"
+      - Handlebar steering
+      - "Direcci\xF3n de manubrio"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Point_Wheels
       TermType: 0
       Description: 
       Languages:
-      - Wheels and structure
-      - Ruedas y estructura
+      - Tire pressure
+      - "Presi\xF3n de llantas"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Previous
@@ -1007,8 +1010,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Optional elements do not incur penalties. Review omissions and risks.
-      - Los elementos opcionales no penalizan. Revisa las omisiones y los riesgos.
+      - 
+      - 
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Report_Title
@@ -1023,8 +1026,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Your choice
-      - "Tu elecci\xF3n"
+      - Results of your selections
+      - Resultados de tus selecciones
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Review_Lock
@@ -1039,16 +1042,16 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - You can go back and change them before sending.
-      - Puedes volver y cambiarlas antes de enviar.
+      - Check the safety items you selected before continuing.
+      - Verifica los elementos de seguridad seleccionados antes de continuar.
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Review_Title
       TermType: 0
       Description: 
       Languages:
-      - Review your choices
-      - Revisa tus elecciones
+      - Review the selected items
+      - Revisa los elementos seleccionados
       Flags: 0000
       Languages_Touch: []
     - Term: M1/RoadReady
@@ -1087,8 +1090,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - My preparation
-      - "Mi preparaci\xF3n"
+      - Selected items
+      - Elementos seleccionados
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Start
@@ -1135,8 +1138,8 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Steering, brakes and controls
-      - "Direcci\xF3n, frenos y controles"
+      - Front and rear brakes
+      - Freno delantero y trasero
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Zone_Head
@@ -1321,175 +1324,175 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Certified helmet, intact, correct size and fastened
-      - "Casco certificado, \xEDntegro, talla correcta y abrochado"
+      - Certified helmet, correct size and fastened
+      - Casco certificado, talla correcta y abrochado
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_LightFront
       TermType: 0
       Description: 
       Languages:
-      - Functional white front light
-      - Luz delantera blanca funcional
+      - White front light
+      - Luz delantera blanca
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_LightRear
       TermType: 0
       Description: 
       Languages:
-      - Functional red rear light
-      - Luz trasera roja funcional
+      - Red rear light
+      - Luz trasera roja
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_ShoesOk
       TermType: 0
       Description: 
       Languages:
-      - Closed, safe footwear with a good grip sole
-      - Calzado cerrado, seguro y con suela de buen agarre
+      - Closed shoes
+      - Calzado cerrado
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_TrousersFitted
       TermType: 0
       Description: 
       Languages:
-      - Tight-fitting clothing with secured cuffs, drawstrings, and straps
-      - "Ropa ce\xF1ida con pu\xF1os, cordones y tiras asegurados"
+      - Close-fitting trousers
+      - "Pantalones ce\xF1ida al cuerpo"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_HivizDay
       TermType: 0
       Description: 
       Languages:
-      - Fluorescent top for daytime
-      - "Prenda superior fluorescente para el d\xEDa"
+      - Fluorescent top
+      - Prenda superior fluorescente
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Reflective
       TermType: 0
       Description: 
       Languages:
-      - Fitted retroreflective vest or jacket
-      - Chaleco o chaqueta retroreflectiva ajustada
+      - Retroreflective vest or jacket
+      - Chaleco o chaqueta retroreflectiva
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Gloves
       TermType: 0
       Description: 
       Languages:
-      - Full-coverage gloves that preserve grip and access to controls
-      - Guantes completos que preservan agarre y acceso a controles
+      - Full-finger gloves
+      - Guantes completos
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Glasses
       TermType: 0
       Description: 
       Languages:
-      - Impact-resistant clear glasses
-      - Gafas transparentes resistentes a impacto
+      - Clear glasses
+      - Gafas transparentes
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Sunglasses
       TermType: 0
       Description: 
       Languages:
-      - Sunglasses with UV protection suitable for sun and glare
-      - "Gafas solares con protecci\xF3n UV adecuadas para sol y deslumbramiento"
+      - UV-protection sunglasses
+      - "Gafas solares con protecci\xF3n UV"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Backpack
       TermType: 0
       Description: 
       Languages:
-      - Closed backpack with two straps, lightweight and well-fitted
-      - Mochila cerrada de dos tirantes, ligera y bien ajustada
+      - Closed two-strap backpack
+      - Mochila cerrada de dos tirantes
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_CargoSecured
       TermType: 0
       Description: 
       Languages:
-      - Padlock with bracket or secure transport location
-      - "Candado con soporte o ubicaci\xF3n de transporte segura"
+      - Security lock
+      - Candado de seguridad
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_FlatKit
       TermType: 0
       Description: 
       Languages:
-      - Compact puncture repair kit with identifiable contents
-      - Kit compacto para reparar pinchazos con contenido identificable
+      - Puncture repair kit
+      - Kit para reparar pinchazos
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Multitool
       TermType: 0
       Description: 
       Languages:
-      - Compact and compatible multi-tool
-      - Multiherramienta compacta y compatible
+      - Multi-tool
+      - Multiherramienta
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_PhoneMount
       TermType: 0
       Description: 
       Languages:
-      - Universal aluminum phone and passive navigation mount
-      - "Soporte universal de aluminio para tel\xE9fono y navegaci\xF3n pasiva"
+      - Universal phone mount
+      - "Soporte universal para tel\xE9fono"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Bell
       TermType: 0
       Description: 
       Languages:
-      - Compatible doorbell
-      - Timbre compatible
+      - Bell
+      - Campana
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_RainJacket
       TermType: 0
       Description: 
       Languages:
-      - Fitted waterproof jacket
-      - Chaqueta impermeable ajustada
+      - Rain jacket
+      - Chaqueta impermeable
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Bottle
       TermType: 0
       Description: 
       Languages:
-      - Sealed bottle in compatible bottle holder
-      - Botella sellada en portabotella compatible
+      - Water bottle
+      - "Carama\xF1ola"
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Pannier
       TermType: 0
       Description: 
       Languages:
-      - Waterproof and reflective saddlebag installed on luggage rack
-      - Alforja impermeable y reflectiva instalada en portaequipajes
+      - Waterproof reflective pannier
+      - Alforja impermeable y reflectiva
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_HelmetStrap
       TermType: 0
       Description: 
       Languages:
-      - Helmet with chin strap cut, detached or missing
-      - Casco con correa de barbilla cortada, desprendida o faltante
+      - Helmet with missing chin strap
+      - Casco con correa de barbilla faltante
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_HelmetDamaged
       TermType: 0
       Description: 
       Languages:
-      - Cracked or crushed helmet, obviously the wrong size or a novelty item
-      - Casco agrietado, aplastado, talla evidentemente incorrecta o de novedad
+      - Damaged helmet
+      - Casco deteriorado
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Headphones
       TermType: 0
       Description: 
       Languages:
-      - Large headphones that occlude both ears
+      - Large headphones covering both ears
       - "Aud\xEDfonos grandes que ocluyen ambos o\xEDdos"
       Flags: 0000
       Languages_Touch: []
@@ -1497,40 +1500,40 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Flip-flops, slides, or open, loose sandals
-      - Chanclas, slides o sandalias abiertas y sueltas
+      - Open sandals
+      - Sandalias abiertas
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Poncho
       TermType: 0
       Description: 
       Languages:
-      - Oversized poncho-tarp with open sides and excess material
-      - Poncho-tarp extragrande con laterales abiertos y exceso de material
+      - Oversized raincoat
+      - Impermeable extragrande
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_GlassesDamaged
       TermType: 0
       Description: 
       Languages:
-      - Glasses with severely scratched, cracked, deformed, or fogged lenses
-      - "Gafas con lente severamente rayada, agrietada, deformada o empa\xF1ada"
+      - Glasses with badly scratched lenses
+      - Gafas con lente severamente rayados
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Mittens
       TermType: 0
       Description: 
       Languages:
-      - Bulky mittens that prevent the operation of controls
-      - Mitones voluminosos que impiden operar controles
+      - Bulky mittens
+      - Mitones voluminosos
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Tote
       TermType: 0
       Description: 
       Languages:
-      - Open tote bag with a long, unsecured strap
-      - Tote abierto de una correa con tira larga sin asegurar
+      - Open single-strap tote
+      - Tote abierto de una correa
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Umbrella
@@ -1545,7 +1548,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Cup of coffee or takeaway drink in hand
+      - Coffee cup or takeaway drink in hand
       - "Vaso de caf\xE9 o bebida para llevar en la mano"
       Flags: 0000
       Languages_Touch: []
@@ -1553,16 +1556,16 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Visor cap selected instead of helmet
-      - Gorra de visera seleccionada en lugar del casco
+      - Cap
+      - cachucha
       Flags: 0000
       Languages_Touch: []
     - Term: M1/Item_Airpods
       TermType: 0
       Description: 
       Languages:
-      - AirPods
-      - AirPods
+      - Earbuds
+      - Auriculares
       Flags: 0000
       Languages_Touch: []
     - Term: M1/
@@ -2411,6 +2414,176 @@ MonoBehaviour:
       Languages:
       - Not reviewed
       - No revisado
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Congrats_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Congratulations!
+      - "\xA1Felicitaciones!"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Congrats_Body
+      TermType: 0
+      Description: 
+      Languages:
+      - You made the right choices.
+      - Seleccionaste de manera correcta.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Complete_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Congratulations!
+      - "\xA1Felicitaciones!"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Complete_Body
+      TermType: 0
+      Description: 
+      Languages:
+      - You completed Module 1. You now know the protective gear you must always
+        wear and the components you must always inspect before riding.
+      - "Completaste el m\xF3dulo 1. Ya conoces los EPP que siempre debes usar y
+        los componentes que siempre debes inspeccionar antes de conducir."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Complete_Continue
+      TermType: 0
+      Description: 
+      Languages:
+      - Continue to Module 2
+      - "Continuar al m\xF3dulo 2"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Selection_Instruction
+      TermType: 0
+      Description: 
+      Languages:
+      - Select the items and accessories to see them in detail. Choose only the ones
+        you consider necessary and useful to protect yourself in any situation.
+      - "Selecciona los elementos y accesorios para verlos en detalle. Elige \xFAnicamente
+        aquellos que consideres necesarios y \xFAtiles para protegerte ante cualquier
+        eventualidad."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Welcome_Controller
+      TermType: 0
+      Description: 
+      Languages:
+      - Welcome to RideSafe! Now you'll choose your training settings. To select,
+        point at an option with your right controller and pull the trigger.
+      - "\xA1Bienvenido a RideSafe! Ahora vas a elegir la configuraci\xF3n de tu
+        entrenamiento. Para seleccionar, apunta con el control derecho a una opci\xF3n
+        y aprieta el gatillo."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Zone_Drivetrain
+      TermType: 0
+      Description: 
+      Languages:
+      - Drivetrain
+      - "Transmisi\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Point_Drivetrain
+      TermType: 0
+      Description: 
+      Languages:
+      - Drivetrain
+      - "Sistema de transmisi\xF3n"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Point_Drivetrain_Risk
+      TermType: 0
+      Description: 
+      Languages:
+      - A dry or slack chain, or a worn chainring, can slip or snap while you pedal.
+      - Una cadena seca o floja, o una corona gastada, se puede salir o romper mientras
+        pedaleas.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/M02_Welcome
+      TermType: 0
+      Description: 
+      Languages:
+      - In this part of the module, we'll identify the precursors you should keep
+        in mind when you start riding the vehicle.
+      - "En esta parte del m\xF3dulo vamos a identificar los precursores que debes
+        tener en cuenta al momento de comenzar a manejar el veh\xEDculo."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Retry_Title
+      TermType: 0
+      Description: 
+      Languages:
+      - Let's try again
+      - "Intent\xE9moslo de nuevo"
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Retry_Epp_Body
+      TermType: 0
+      Description: 
+      Languages:
+      - Some essential gear was missing or unsuitable. Go back to the first table
+        and choose your gear again.
+      - "Falt\xF3 equipo esencial o elegiste algo inadecuado. Vuelve a la primera
+        mesa y elige tu equipo de nuevo."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Retry_Vehicle_Body
+      TermType: 0
+      Description: 
+      Languages:
+      - Some parts of the vehicle were left unchecked. Check it again, part by part.
+      - "Algunas partes del veh\xEDculo quedaron sin revisar. Rev\xEDsalo de nuevo,
+        parte por parte."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Retry_Button
+      TermType: 0
+      Description: 
+      Languages:
+      - Try again
+      - Intentar de nuevo
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Tutorial/Point
+      TermType: 0
+      Description: 
+      Languages:
+      - Point at the target with your right controller.
+      - Apunta al objetivo con el control derecho.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: Tutorial/Select
+      TermType: 0
+      Description: 
+      Languages:
+      - Pull the trigger to select it.
+      - Presiona el gatillo para seleccionarlo.
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Selection_Mechanic
+      TermType: 0
+      Description: 
+      Languages:
+      - Point at each item with your right controller and pull the trigger to see
+        it in detail. Then decide whether to add it to your list.
+      - "Apunta a cada elemento con el control derecho y aprieta el gatillo para
+        verlo en detalle. Despu\xE9s decide si lo agregas a tu lista."
+      Flags: 0000
+      Languages_Touch: []
+    - Term: M1/Inspect_Mechanic
+      TermType: 0
+      Description: 
+      Languages:
+      - Point at each marked component with your right controller and pull the trigger
+        to check it.
+      - Apunta a cada componente marcado con el control derecho y aprieta el gatillo
+        para revisarlo.
       Flags: 0000
       Languages_Touch: []
     CaseInsensitiveTerms: 0

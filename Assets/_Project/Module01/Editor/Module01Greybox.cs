@@ -82,7 +82,9 @@ namespace RideSafe.Module01.Editor
             ("point_electrics", "M1/Point_Electrics", new Vector3(0f, 0.1f, 0f)),
             ("point_wheels",    "M1/Point_Wheels",    new Vector3(0f, -0.3f, 0.5f)),
             ("point_lights",    "M1/Point_Lights",    new Vector3(0f, 0.3f, 0.6f)),
-            ("point_deck",      "M1/Point_Deck",      new Vector3(0f, -0.2f, 0f))
+            ("point_deck",      "M1/Point_Deck",      new Vector3(0f, -0.2f, 0f)),
+            // Transmisión (kit de arrastre: cambios, cadena y corona): solo la bici (cliente, 2026-11-11).
+            ("point_drivetrain", "M1/Point_Drivetrain", new Vector3(0f, -0.1f, 0.1f))
         };
 
         private static readonly (string ZoneId, string TitleKey, string[] PointIds)[] VehicleZones =
@@ -92,7 +94,8 @@ namespace RideSafe.Module01.Editor
             ("visibility", "M1/Zone_Visibility", new[] { "point_lights" }),
             // Solo la recorre el scooter: narrativa §4.8.2, «Deck/baseboard and visible
             // load-bearing fasteners». Que zona recorre cada vehiculo lo dice VehicleProfiles.
-            ("deck",       "M1/Zone_Deck",       new[] { "point_deck" })
+            ("deck",       "M1/Zone_Deck",       new[] { "point_deck" }),
+            ("drivetrain", "M1/Zone_Drivetrain", new[] { "point_drivetrain" })
         };
 
         /// <summary>

@@ -210,7 +210,9 @@ namespace RideSafe.Module01.Tests
                 "Debe haber una sola camara de juego en modo PC. Activas: "
                 + string.Join(", ", gameCameras.Select(c => Path(c.transform) + " [escena " + c.gameObject.scene.name + "]")));
             Assert.Greater(_camera.transform.position.z, 6.6f, "El jugador debe empezar fuera del garaje.");
-            var door = GameObject.Find("Door_Garage_Brown_5x").transform;
+            // La que mueve el módulo: por nombre hay dos, la del garaje y la de la misma casa en el
+            // barrio de Daniel, y GameObject.Find devolvía una u otra según la corrida.
+            var door = Field<Transform>(Object.FindAnyObjectByType<Module01Experience>(), "_door");
             var tourForFade = Object.FindAnyObjectByType<GuidedTour>();
             var fade = Field<CanvasGroup>(tourForFade, "_fade");
             Assert.IsNotNull(fade);
@@ -246,11 +248,13 @@ namespace RideSafe.Module01.Tests
                 .ToArray();
             Assert.That(zones, Is.EquivalentTo(zones.Distinct()), "Hay zonas repetidas en el recorrido.");
             string[] vehicleZones = _director.SelectedVehicle.InspectionZones.Select(z => z.ZoneId).ToArray();
+            // Cliente, 2026-11-11: la patineta revisa lo mismo que la bici menos el kit de arrastre.
             if (vehicleId == "escooter")
-                CollectionAssert.AreEqual(new[] { "cockpit", "wheels", "deck", "visibility" }, vehicleZones,
-                    "Narrativa §4.8.2: el scooter revisa tambien la plataforma.");
+                CollectionAssert.AreEqual(new[] { "cockpit", "wheels", "visibility" }, vehicleZones,
+                    "La patineta: lo de la bici menos la transmisión, y sin plataforma.");
             else
-                CollectionAssert.DoesNotContain(vehicleZones, "deck", "La bici no tiene plataforma.");
+                CollectionAssert.AreEqual(new[] { "cockpit", "wheels", "drivetrain", "visibility" }, vehicleZones,
+                    "La bici suma la transmisión.");
             foreach (string zoneId in zones)
             {
                 yield return WaitFor(() => _director.CurrentZone != null && _director.CurrentZone.ZoneId == zoneId && Object.FindAnyObjectByType<Module01Experience>().Phase == "Choosing" && Field<CanvasGroup>(Object.FindAnyObjectByType<GuidedTour>(), "_fade").alpha == 0, "Llegada a " + zoneId);
@@ -368,6 +372,8 @@ namespace RideSafe.Module01.Tests
                     // La prueba de que el pedestal ya no fabrica esferas blancas: un punto con
                     // pieza real y otro sin ella. Ningun assert ensena como queda.
                     if (!omitHelmet && item.ItemId == "point_steering") yield return Capture("pedestal-con-pieza");
+                    // El manubrio con solo las manetas delineadas, en la bici; las manetas, en la patineta.
+                    if (!omitHelmet && item.ItemId == "point_brakes") yield return Capture("pedestal-frenos");
                     // 'electrics' y no 'brakes': el freno dejo de servir de ejemplo de punto sin
                     // pieza cuando el patinete llego con su maneta despiezada. La bateria sigue
                     // dentro del chasis en los dos vehiculos, asi que vale para los dos.
@@ -405,41 +411,52 @@ namespace RideSafe.Module01.Tests
                     Assert.IsNotNull(personal);
                     Assert.AreEqual(omitHelmet, personal.HasCriticalProblem);
                     yield return ReviewAndVideo();
+                    if (omitHelmet)
+                    {
+                        // Sin el casco se reprueba (2026-11-04): tras el video no hay felicitación,
+                        // se vuelve a la primera parada de EPP, y ahí acaba este caso.
+                        var flow = Object.FindAnyObjectByType<Module01Experience>();
+                        Assert.AreNotEqual("Congrats", flow.Phase, "Reprobado no se felicita.");
+                        // Se dice que no pasó y por qué, y se repite al pulsar (2026-11-18).
+                        Assert.AreEqual("Retry", flow.Phase, "Reprobado sin mensaje.");
+                        RectTransform retry = _binding.Module.Get<RectTransform>(Module01Experience.AchievementPanel);
+                        Assert.IsFalse(retry.GetComponentsInChildren<Image>(true).First(i => i.name == "Award").gameObject.activeSelf,
+                            "El premio no va en el panel de reprobado.");
+                        yield return Capture("reprobado-epp");
+                        AssertTextIsLegible("reprobado");
+                        yield return Press(retry, "ContinueButton");
+                        yield return WaitFor(() => flow.Phase == "Choosing" && !_director.InVehicleSection,
+                            "Vuelta a la primera parada de EPP", 15);
+                        Assert.AreEqual(catalogo.Zones.First().ZoneId, _director.CurrentZone.ZoneId);
+                        yield break;
+                    }
                 }
                 if (zoneId == _director.SelectedVehicle.InspectionZones.Last().ZoneId)
                 {
-                    // Orden desde 2026-10-20 (Cindy): «Mi Elección» del vehículo y su video, luego
-                    // la decisión, y por último el reporte final.
+                    // Desde el 2026-11-11: «Mi Elección» del vehículo en tarjetas con su render, el
+                    // video, la felicitación y el cierre del módulo. Ni decisión ni resumen general.
                     Assert.IsNotNull(vehicle);
-                    bool deckGraded = vehicle.CoreSelected.Concat(vehicle.CoreOmitted).Contains("point_deck");
-                    Assert.AreEqual(vehicleId == "escooter", deckGraded,
-                        "La plataforma se califica en el scooter y en la bici no existe.");
-                    Assert.IsFalse(_director.IsFinished, "La decisión todavía no se ha tomado");
+                    bool drivetrainGraded = vehicle.CoreSelected.Concat(vehicle.CoreOmitted).Contains("point_drivetrain");
+                    Assert.AreEqual(vehicleId == "ebike", drivetrainGraded,
+                        "La transmisión se revisa en la bici y en la patineta no existe.");
+                    Assert.IsTrue(_binding.Comparison.Entries.All(e => e.Image != null),
+                        "Cada punto del vehículo lleva su render en la tarjeta.");
                     yield return ReviewAndVideo();
-                    Assert.AreEqual("Decision", Object.FindAnyObjectByType<Module01Experience>().Phase);
-                    AssertHudDoesNotOverlap();   // con el panel de decision en pantalla
-                    yield return Press(_binding.Module.transform, "RoadReadyButton");
                 }
             }
-            yield return WaitFor(() => _director.IsFinished, "Reporte final");
-            Assert.AreEqual("Comparison", _binding.Module.Current);
-            AssertVisible(_binding.Comparison.GetComponentsInChildren<TMP_Text>().First(t => t.name == "Title").rectTransform);
-            // Se afirma sobre los DATOS del panel y no sobre su texto: el id ya no se pinta
-            // -era texto de depuracion saliendo debajo de cada titulo- y el nombre visible
-            // depende del idioma.
-            Assert.IsTrue(_binding.Comparison.Entries.Any(e => e.Detail == "point_brakes"),
-                "El reporte no muestra el vehiculo");
-            Assert.IsFalse(_binding.Comparison.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("point_brakes")),
-                "El id crudo 'point_brakes' se esta viendo en pantalla.");
+            yield return WaitFor(() => _director.IsFinished, "Cierre del módulo");
+            Assert.AreEqual(Module01Experience.AchievementPanel, _binding.Module.Current);
+            RectTransform achievement = _binding.Module.Get<RectTransform>(Module01Experience.AchievementPanel);
+            AssertVisible(achievement.GetComponentsInChildren<Image>().First(i => i.name == "Award").rectTransform);
             yield return null;
-            // Antes de afirmar: si algo falla, la captura es lo que hay que mirar.
-            yield return Capture(omitHelmet ? "final-report-sin-casco" : "final-report");
-            AssertTextIsLegible("reporte final");
-            AssertReportLayout("reporte final");
-            // Con las catorce filas el panel crecia hasta sacar de la vista los botones (PO, 2026-10-26).
-            foreach (string name in new[] { "ContinueModule2Button", "RepeatModuleButton" })
-                AssertWhollyOnScreen(Object.FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                    .Single(b => b.name == name).GetComponent<RectTransform>());
+            yield return Capture(omitHelmet ? "cierre-modulo-sin-casco" : "cierre-modulo");
+            AssertTextIsLegible("cierre del módulo");
+            Button toModule2 = achievement.GetComponentsInChildren<Button>().Single(b => b.name == "ContinueButton");
+            AssertWhollyOnScreen(toModule2.GetComponent<RectTransform>());
+            bool continued = false;
+            Object.FindAnyObjectByType<Module01Experience>().onContinueToModule2.AddListener(() => continued = true);
+            yield return Press(achievement, "ContinueButton");
+            Assert.IsTrue(continued, "«Continuar al módulo 2» no llegó al evento");
             // 4 y no 6: tres saltos a las estaciones de protección personal y UNO al punto de
             // exhibición del vehículo. Las otras dos zonas del vehículo ya no mueven al
             // aprendiz —gira el vehículo, que es lo que pidió la reunión—, así que exigir seis
@@ -502,6 +519,7 @@ namespace RideSafe.Module01.Tests
                                  + "reproduccion ni el candado. La valvula de seguridad si se comprobo. "
                                  + "Hay que mirar el video a mano o en el visor.");
                 yield return Press(_binding.Explanation.transform, "ContinueButton");
+                yield return PassCongrats();
                 yield break;
             }
 
@@ -531,6 +549,28 @@ namespace RideSafe.Module01.Tests
                 () => $"El video acabo y Continuar sigue apagado: time={video.time:F2} length={video.length:F2} playing={video.isPlaying}",
                 20);
             yield return Press(_binding.Explanation.transform, "ContinueButton");
+            yield return PassCongrats();
+        }
+
+        /// <summary>
+        /// Aprobada la sección, tras el video sale la felicitación en vez del cuadro (cliente,
+        /// 2026-11-11); reprobada, se repite sin ella. Se pulsa su botón como lo haría el aprendiz.
+        /// </summary>
+        private IEnumerator PassCongrats()
+        {
+            var experience = Object.FindAnyObjectByType<Module01Experience>();
+            // Aprobada la inspección, el cierre del módulo es la única felicitación (8:57).
+            if (_director.IsFinished)
+                Assert.AreEqual("Finished", experience.Phase, "Tras el video del vehículo va directo el cierre del módulo.");
+            if (experience.Phase != "Congrats")
+                yield break;
+            Assert.AreEqual(Module01Experience.AchievementPanel, _binding.Module.Current);
+            RectTransform panel = _binding.Module.Get<RectTransform>(Module01Experience.AchievementPanel);
+            Assert.IsFalse(panel.GetComponentsInChildren<Image>(true).First(i => i.name == "Award").gameObject.activeSelf,
+                "La insignia es del cierre del módulo, no de cada sección.");
+            yield return Capture(_director.InVehicleSection ? "felicitacion-vehiculo" : "felicitacion-epp");
+            AssertTextIsLegible("felicitación");
+            yield return Press(panel, "ContinueButton");
         }
         /// <summary>
         /// Entra al módulo 1 pulsando Begin, nunca llamando a StartWithDefaults: ese atajo apagaba
@@ -565,8 +605,27 @@ namespace RideSafe.Module01.Tests
 
             var welcome = onboarding.Get<RectTransform>("Welcome");
             yield return WaitFor(() => onboarding.Current == "Welcome", "Welcome visible");
+            Transform hint = GameObject.Find("--- UI ---").transform.Find("Bienvenida_Mando");
+            Assert.IsNotNull(hint, "Falta el mando de la bienvenida en la escena.");
             yield return Press(welcome, "BeginButton");
             Assert.IsFalse(welcome.gameObject.activeInHierarchy, "El panel Welcome sigue encendido despues de Begin.");
+            // Tras Iniciar: la bienvenida hablada y el mando derecho con el gatillo (2026-11-18).
+            yield return WaitFor(() => hint.GetComponentsInChildren<Renderer>().Any(r => r.enabled), "El mando se ve tras Iniciar", 3);
+            yield return null;
+            yield return Capture("bienvenida-gatillo");
+            // Y se anima: el gatillo brilla (bloque de propiedades) y se aprieta (alguna pieza gira).
+            Transform[] parts = hint.GetComponentsInChildren<Transform>();
+            Quaternion[] before = parts.Select(p => p.localRotation).ToArray();
+            float waited = 0f;
+            bool moved = false;
+            while (!moved && waited < 2f)
+            {
+                yield return null;
+                waited += Time.unscaledDeltaTime;
+                moved = parts.Where((p, i) => p != null && Quaternion.Angle(p.localRotation, before[i]) > 1f).Any();
+            }
+            Assert.IsTrue(moved, "El mando de la bienvenida está quieto: no se ve apretar el gatillo.");
+            Assert.IsTrue(hint.GetComponentsInChildren<Renderer>().Any(r => r.HasPropertyBlock()), "El gatillo no brilla.");
 
             Assert.AreEqual("Language", onboarding.Current, "Begin sin parametros deberia abrir Language.");
             // Atrás vuelve a la pantalla anterior. Cindy, 2026-10-21: lo pulsaba y no pasaba nada,
@@ -1120,6 +1179,16 @@ namespace RideSafe.Module01.Tests
             {
                 if (mf.sharedMesh == null)
                     continue;
+                // Sin «Read/Write» leer vértices escribe un error en consola: la caja basta para apuntar.
+                if (!mf.sharedMesh.isReadable)
+                {
+                    Bounds b = mf.sharedMesh.bounds;
+                    yield return mf.transform.TransformPoint(b.center);
+                    for (int c = 0; c < 8; c++)
+                        yield return mf.transform.TransformPoint(b.center + Vector3.Scale(b.extents * .8f,
+                            new Vector3((c & 1) == 0 ? -1 : 1, (c & 2) == 0 ? -1 : 1, (c & 4) == 0 ? -1 : 1)));
+                    continue;
+                }
                 Vector3[] v = mf.sharedMesh.vertices;
                 for (int i = 0; i < v.Length; i += Mathf.Max(1, v.Length / 60))
                     yield return mf.transform.TransformPoint(v[i]);
@@ -1240,10 +1309,17 @@ namespace RideSafe.Module01.Tests
                         "[" + momento + "] tarjeta sin nombre traducido: " + card.Name);
                     Assert.IsNotNull(card.Picture, "[" + momento + "] tarjeta sin render: " + card.ItemId);
                 }
+                // Solo los EPP llevan puntaje; la revisión del vehículo no (PO, 2026-11-06).
                 TMP_Text score = list.Find("ScorePill/Pill/Text").GetComponent<TMP_Text>();
-                Assert.IsTrue(score.gameObject.activeInHierarchy, "[" + momento + "] sin puntaje");
-                StringAssert.IsMatch(@"\d+$", score.text, "[" + momento + "] el puntaje es el número solo: " + score.text);
-                Assert.IsFalse(score.text.StartsWith("M1/"), "[" + momento + "] puntaje sin traducir");
+                if (!_director.InVehicleSection)
+                {
+                    Assert.IsTrue(score.gameObject.activeInHierarchy, "[" + momento + "] sin puntaje");
+                    StringAssert.IsMatch(@"\d+$", score.text, "[" + momento + "] el puntaje es el número solo: " + score.text);
+                    Assert.IsFalse(score.text.StartsWith("M1/"), "[" + momento + "] puntaje sin traducir");
+                }
+                else
+                    Assert.IsFalse(list.Find("ScorePill").gameObject.activeInHierarchy,
+                        "[" + momento + "] el vehículo enseña la píldora del puntaje vacía");
             }
             bool final = momento == "reporte final";
             Assert.AreEqual(final, note.gameObject.activeInHierarchy,
@@ -1326,6 +1402,15 @@ namespace RideSafe.Module01.Tests
         {
             const string folder = "Docs/verification/module01";
             System.IO.Directory.CreateDirectory(folder);
+            // En -batchmode no hay Game View y ScreenCapture no escribe nada: se renderiza la
+            // cámara principal —con su stack, donde vive la UI— a una textura.
+            if (Application.isBatchMode)
+            {
+                // Un frame normal: WaitForEndOfFrame no vuelve en batchmode.
+                yield return null;
+                CaptureCamera(folder + "/" + name + _captureTag + ".png");
+                yield break;
+            }
             // CaptureScreenshot a archivo, no CaptureScreenshotAsTexture: la variante en memoria
             // devolvia el frame sin la UI desde que esta vive en la camara de overlay del stack.
             string path = folder + "/" + name + _captureTag + ".png";
@@ -1342,6 +1427,53 @@ namespace RideSafe.Module01.Tests
             Assert.Greater(System.IO.File.GetLastWriteTimeUtc(path), before,
                 "La captura '" + name + _captureTag + "' no se reescribio: la evidencia seria la de la corrida anterior.");
         }
+        private static void CaptureCamera(string path)
+        {
+            Camera cam = Camera.main;
+            if (cam == null)
+            {
+                Debug.LogWarning("[test] Sin cámara principal para la captura " + path);
+                return;
+            }
+            var rt = new RenderTexture(1600, 900, 24);
+            RenderTexture prevTarget = cam.targetTexture, prevActive = RenderTexture.active;
+            // La UI la dibuja la cámara de overlay del stack, que no se renderiza sola: durante la
+            // foto la base se queda con sus capas y con los canvas que miraban a otra cámara.
+            int prevMask = cam.cullingMask;
+            foreach (Camera other in Camera.allCameras)
+                if (other != cam)
+                    cam.cullingMask |= other.cullingMask;
+            var canvases = new List<(Canvas Canvas, RenderMode Mode, Camera Camera, float Plane)>();
+            foreach (Canvas c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+                if (c.isRootCanvas && c.renderMode != RenderMode.WorldSpace)
+                {
+                    canvases.Add((c, c.renderMode, c.worldCamera, c.planeDistance));
+                    c.renderMode = RenderMode.ScreenSpaceCamera;
+                    c.worldCamera = cam;
+                    c.planeDistance = cam.nearClipPlane + .05f;
+                }
+            Canvas.ForceUpdateCanvases();
+            cam.targetTexture = rt;
+            cam.Render();
+            cam.cullingMask = prevMask;
+            foreach (var c in canvases)
+            {
+                c.Canvas.renderMode = c.Mode;
+                c.Canvas.worldCamera = c.Camera;
+                c.Canvas.planeDistance = c.Plane;
+            }
+            RenderTexture.active = rt;
+            var tex = new Texture2D(rt.width, rt.height, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+            tex.Apply();
+            cam.targetTexture = prevTarget;
+            RenderTexture.active = prevActive;
+            System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
+            Object.Destroy(tex);
+            rt.Release();
+            Object.Destroy(rt);
+        }
+
         private static string Path(Transform t)
         {
             string path = t.name;

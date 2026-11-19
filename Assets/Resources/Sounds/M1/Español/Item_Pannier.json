@@ -3,27 +3,18 @@
     "Alforja",
     "impermeable",
     "y",
-    "reflectiva",
-    "instalada",
-    "en",
-    "portaequipajes"
+    "reflectiva"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.708,
-    1.486,
-    1.66,
-    2.345,
-    2.995,
-    3.1
+    0.731,
+    1.509,
+    1.683
   ],
   "character_end_times_seconds": [
-    0.627,
-    1.416,
-    1.544,
-    2.264,
-    2.972,
-    3.042,
-    4.272
+    0.639,
+    1.44,
+    1.567,
+    2.647
   ]
 }

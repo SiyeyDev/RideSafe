@@ -81,6 +81,9 @@ Spec y plan del módulo 1 (borrados el 2026-10-27; lo que importa está en §12,
 
 - **`main`** — rama compartida. Cindy trabaja aquí. Va por detrás: su punta (`ffcc058`) es
   ancestro de `dev`.
+- **2026-11-17:** `dev` en `12de0c8` (ciudad y flechas de Daniel), con lo de la reunión del
+  11-11 **sin commitear** (bitácora de ese día). Churn del Editor en el stash
+  «churn editor 2026-11-17».
 - **`dev`** — **al día y pusheada** (`e75e876`, 2026-10-23). Tiene todo: el garaje
   **v9**, el módulo 1 entero con sus 4 estaciones, el patinete despiezado, los materiales e
   iluminación de Cindy, la tanda de UI del 2026-10-20/21 (isotipo, semáforo, cajas de título,
@@ -1238,6 +1241,125 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 ---
 
 ## 11. Bitácora
+
+### 2026-11-18 — módulo 1 listo para la presentación del 19-11 (todo en batchmode)
+
+Fuentes: la grabación de la reunión del 11-11 (`D:\Videos\Ridesafe\Runion 11 nov\`), la hoja del
+cliente «Textos Modulo 1» y el Excel de EPP del 2026-11-13, que **es la referencia**: los 32, su
+puntaje y su nombre (columna C, palabra por palabra) salen de él. Ver `Docs/EPP_Nomenclatura.md`.
+
+- **Daniel:** se trajeron `7b04738`, `10a2afd` y `ef550e3` conservando la escena local (la suya
+  ponía a cero tamaños de la UI). La bici trae `display`, llantas separadas (`caucho`,
+  `rueda_tracera1`) y `frenos.fbx` (manubrio con manetas). La patineta trae display, luz trasera
+  y `neumatico` delantero. `piezas ebike.fbx` es la transmisión separada.
+- **Vehículo:**
+  - Solo se resalta la llanta.
+  - Los frenos de la bici van al podio con el manubrio y solo las manetas delineadas; solas no
+    se veían.
+  - Al podio de la transmisión va `piezas ebike.fbx` (`PodiumModels` en `VehicleProfiles`).
+  - El resaltado es blanco con halo azul, como la imagen del Excel.
+- **Flujo:**
+  - Al no aprobar una sección sale «Intentémoslo de nuevo» y se repite al pulsar. Antes se
+    reiniciaba sin decir nada.
+  - Al aprobar el vehículo sale un solo panel de cierre, con el premio.
+  - Se quitó el camino viejo que pintaba la lista con «CORRECTA».
+- **Voces (es/en, ElevenLabs):**
+  - Bienvenida tras pulsar Iniciar, con el mando derecho y el gatillo animado (`WelcomeTriggerHint`).
+  - Instrucción y mecánica con el control al empezar cada sección.
+  - Veredictos.
+  - Los 32 nombres.
+  - Todo se rehace con `M1ItemAudioBatch.RunMissingAndExit`.
+- **Tests:** EditMode 786/787 (1 inconcluso de siempre). PlayMode: módulo 1 6/6 y UI 13/13. Sigue
+  fallando `GarajeTestSceneTests.PointThenSelect`, en la escena de pruebas del M0 sin tocar desde el
+  27-10.
+
+### 2026-11-17 — reunión del 11-11: lo de Carlos y los EPP de la hoja (todo en batchmode)
+
+Plan y estado por tarea: `Docs/Plan_Reunion_2026-11-11.md`. Se trabajó **sin Editor abierto**, con
+`Unity.exe -batchmode` (ver la memoria de Claude «unity-batchmode»). Antes se trajo `dev`
+(`da5b43c → 12de0c8`, la ciudad y las flechas de Daniel) apartando el churn de fuentes y OpenXR en
+el stash «churn editor 2026-11-17».
+
+- **EPP (pedido de Daniel, hecho aquí):** solo los **32 de la hoja**. Fuera los 31 «P» de
+  `Module01Library` (quedan en `Module01Library.Retired`), sus `SO_Item_*`, sus miniaturas y sus
+  objetos de la v5. **H01** (casco con correa cortada, −30) estaba dentro de
+  `enviroment_decoration`, con la raíz apagada: se desempaquetó esa instancia y H01 pasó a `epps`.
+  Lo hace `Module01ClientListCleanup` (menú «Dejar solo los EPP de la hoja del cliente»).
+- **Reparto:** `Module01EppLayout` pone **una sola fila** cuando todo cabe con 10 cm de aire (dos
+  bandas dejaban una pieza delante de otra: lo «encimado» que vio el cliente) y solo mueve lo que
+  descansa sobre una tapa o flota encima (el poncho cuelga del borde y no se sube). El mostrador de
+  la ropa pierde «cabinet (1)» y la mesa de la entrada se recorta a z ≤ 4,95 (ahí cuelga el poncho).
+  Las tres gafas y la chaqueta impermeable pasan a la entrada. «Revisar las mesas» sin solapes
+  entre EPP; las fotos desde cada ancla están en el scratchpad de la sesión.
+- **Resumen de EPP ordenado:** errores, luego condicionales, luego correctos
+  (`ReportPresenter.ReviewOrder`, orden estable dentro de cada grupo).
+- **Revisión del vehículo en tarjetas con render:** `VehiclePartRenderer` fotografía cada vehículo
+  una vez por punto, gris con la pieza en coral, y lo guarda en `VehicleProfileSO._pointRenders`.
+  Lo pequeño (frenos, pantalla, luces) se encuadra de cerca (60 cm).
+- **Fuera el resumen general y el «¿qué decides?»:** al aprobar una sección, tras el video, sale
+  «¡Felicitaciones! Seleccionaste de manera correcta» (panel `Achievement`, copia del de
+  bienvenida); al terminar el vehículo, el mismo panel con la escarapela de premio, «Ya sabes qué
+  EPP usar…» y «Continuar al módulo 2» (`onContinueToModule2`). **Interpretación mía del «cuadro»
+  del minuto 28:42: el panel de decisión.** Confirmar con la PO.
+- **Patineta = bici menos el kit de arrastre:** la bici suma el punto **Transmisión**
+  (`point_drivetrain`, zona `drivetrain`, pieza `pedales` hasta que 3D separe cadena y corona); la
+  patineta deja la plataforma (`point_deck`).
+- **Textos nuevos (I2, `Module01MeetingTerms`):** felicitación, cierre, instrucción de la sección
+  de EPP, ayuda del control en la bienvenida, transmisión, y **un nombre corto por EPP** (tabla en
+  `EPP_Nomenclatura.md`). La locución de los nombres sigue diciendo el largo.
+- **Locuciones nuevas cableadas sin audio:** `Narration_WelcomeController` (bienvenida del M0,
+  `onWelcome`) y `Narration_SelectionInstruction` (`onSelectionStarted`), clips
+  `M01_WelcomeController` y `M01_SelectionInstruction` por generar. **Música:** `BackgroundMusic`
+  en bucle a 0,08, sin pista.
+- **Módulo 2, base sin cablear** (`Assets/_Project/Module02/`): `RouteArrowTint` (color de las
+  flechas de Daniel por velocidad, `_Color_arrow` y `_Fresnel_Color`; modo neutro para la prueba) y
+  `RouteCheckpoints` (práctica: fallo → evento para el video → vuelta al último checkpoint; prueba:
+  solo aprobado/no). Con tests de EditMode.
+- **Pruebas (batchmode, corridas aquí):** PlayMode del módulo 1 **6/6** (recorre bici y
+  patineta pulsando la felicitación, las tarjetas del vehículo y «Continuar al módulo 2»).
+  EditMode **777/781**. Los 3 que fallan ya fallaban antes o no son de esto: el estante a 1,75 m
+  (`Module01StationsTests`), `rompe veintos` (modelo de O01) que el arte ya no aporta, y el
+  alcance del rayo al paraguas (11 %) y al casco agrietado (44 %). Ese último medido contra la
+  escena de HEAD: allí daba paraguas 11 %, casco agrietado 33 %, y además bolsa 44 %, casco 44 %,
+  luz trasera 44 % y H01 0 %, que ahora pasan. En batchmode las capturas de PlayMode se saltan
+  (`Application.isBatchMode`): no hay Game View. También se rehízo la vitrina del M0
+  (`Module00ShowroomSetup.RefreshDisplayCopies`), vieja desde `da5b43c`.
+- **Segunda pasada (misma fecha, «que quede listo el módulo 1»):**
+  - **El rayo sí llega al paraguas y al casco agrietado.** Medido: 100 % de su caja orientada, sin
+    nada delante. El test muestreaba la caja del renderer, alineada al mundo, y con el objeto
+    girado sus esquinas caen en aire. Ahora usa `mesh.bounds` en el espacio del objeto.
+  - **`rompe veintos` (O01) volvía a perderse:** la caja `epps` de la escena de arte dejó de tener
+    mayoría de modelos declarados al retirar los 31 P. `Module01ArtEpp` la reconoce por nombre y
+    de una caja solo trae lo que está en la hoja, para que los retirados no vuelvan.
+  - **Estante de la entrada a 1,75:** se queda (lo pidió la PO); el test admite hasta 1,8 en los
+    niveles que no son la tapa principal.
+  - **Mesas:** las gafas O07 pasan a la mesa del centro (en la entrada iban delante de la alforja);
+    la entrada se recorta a z ≤ 4,90 (la alforja rozaba el poncho); la fila única pide solo el
+    hueco mínimo (4 cm), porque `Fila` ya reparte lo que sobra a partes iguales. «Revisar las
+    mesas»: ningún solape; quedan `cargo_handheld` y `flat_kit` hundidos 3 cm en su tapa.
+  - **La gorra se comía el clic de las gafas rayadas:** las gafas son un objeto instanciado
+    («suelto», bajo `Module01_Spawned`) y las coloca `RevealLoose`, que buscaba hueco mirando
+    solo las mallas; el collider de la gorra es más grueso. `Occupied` cuenta ahora también las
+    cajas de clic. Y `Move` no apuntaba en `Module01LayoutStamp`: a la pasada siguiente las gafas
+    parecían movidas a mano y el reparto ya no las tocaba. Ahora apunta y se guarda tras
+    `RevealLoose`.
+  - **Vistos en las capturas y corregidos:** la revisión del vehículo enseñaba la píldora del
+    puntaje vacía (`ComparisonView.SetCards` la apaga si no hay puntaje; afirmado en
+    `Module01SliceTests`), y la miniatura de las gafas transparentes era blanco sobre blanco
+    (`EppThumbnailRenderer.SeeThrough`: sube el alfa de lo traslúcido y oscurece lo casi blanco;
+    afecta también a las gafas rayadas y a los AirPods, que ahora se leen). Miniaturas rehechas.
+  - **H02 (casco agrietado) a la escala del artista (1,1):** estaba a 1 desde el garaje v5; salió
+    al volver a comparar la caja `epps`.
+  - **H01 era estático** (casi todas las marcas, combinación de mallas incluida) por venir del
+    decorado: se le quitaron y se **rehorneó la v5** (486 renderers con lightmap, 5 mapas).
+  - **El «por qué» en el resumen no se montó:** las tarjetas son de tamaño fijo y la PO pidió
+    «solo el título». Espera al documento «Feedback módulo 1».
+  - **Pruebas al cerrar:** PlayMode M1 6/6 y EditMode 783/784 (el que falta es el inconcluso de
+    siempre, `Un_objeto_fundido_por_el_static_batching…`). Sin fallos.
+  - **Capturas de PlayMode en batch:** `Camera.Render` de la cámara principal, metiendo en ella
+    las capas y los canvas de la de overlay durante la foto. **El PlayMode en batch se colgaba** al
+    recargar el dominio: el relay MCP de la sesión de Claude (`relay_win.exe --mcp`) se conectaba
+    al Unity del lote. Hay que cerrarlo antes. Y `WaitForEndOfFrame` no vuelve en batch.
 
 ### 2026-11-06 (tarde) — prueba de la PO: vehículo y paneles finales
 

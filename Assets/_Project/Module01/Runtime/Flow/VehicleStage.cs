@@ -112,6 +112,7 @@ namespace RideSafe.Module01
 
                 if (highlight != null)
                 {
+                    highlight.PodiumModel = profile.PodiumModelFor(point.ItemId);
                     // Todas las piezas del punto: la e-bike de 2026-10-21 trae frenos, ruedas y
                     // luces en dos (Cindy: delinear las dos). La esfera va a la primera.
                     List<Transform> parts = new List<Transform>();

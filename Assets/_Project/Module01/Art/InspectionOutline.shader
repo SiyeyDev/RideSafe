@@ -11,12 +11,18 @@
 // CBUFFER UnityPerMaterial A PROPOSITO, para que este shader NO sea compatible con el batcher
 // y el color por renderer llegue. Si alguien las mete dentro, los cinco puntos se delinean
 // todos del mismo color y el verde de "resuelto" deja de verse.
+//
+// Dos pasadas, como la referencia del cliente (Excel 11-13): primero un halo azul ancho que se
+// apaga hacia fuera (SRPDefaultUnlit, que URP dibuja antes que UniversalForward) y encima la
+// linea fina casi blanca.
 Shader "RideSafe/Inspection Outline"
 {
     Properties
     {
-        _OutlineColor ("Color", Color) = (1, 0.42, 0.05, 1)
-        _OutlineWidth ("Grosor en metros", Range(0.001, 0.08)) = 0.015
+        _OutlineColor ("Color", Color) = (0.9, 0.95, 1, 1)
+        _OutlineWidth ("Grosor en metros", Range(0.001, 0.08)) = 0.012
+        _GlowColor ("Halo", Color) = (0.28, 0.5, 1, 0.75)
+        _GlowWidth ("Grosor del halo en metros", Range(0.001, 0.08)) = 0.035
     }
 
     SubShader
@@ -27,6 +33,63 @@ Shader "RideSafe/Inspection Outline"
             "Queue" = "Transparent"
             "RenderPipeline" = "UniversalPipeline"
             "IgnoreProjector" = "True"
+        }
+
+        Pass
+        {
+            Name "InspectionGlow"
+            Tags { "LightMode" = "SRPDefaultUnlit" }
+
+            Cull Front
+            ZWrite Off
+            ZTest LEqual
+            Blend SrcAlpha OneMinusSrcAlpha
+
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            float4 _GlowColor;
+            float _GlowWidth;
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float3 normalOS   : NORMAL;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                float3 normalWS   : TEXCOORD0;
+                float3 positionWS : TEXCOORD1;
+                UNITY_VERTEX_OUTPUT_STEREO
+            };
+
+            Varyings vert(Attributes IN)
+            {
+                Varyings OUT;
+                UNITY_SETUP_INSTANCE_ID(IN);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+                float3 positionWS = TransformObjectToWorld(IN.positionOS.xyz);
+                float3 normalWS = normalize(TransformObjectToWorldNormal(IN.normalOS));
+                OUT.positionWS = positionWS + normalWS * _GlowWidth;
+                OUT.normalWS = normalWS;
+                OUT.positionCS = TransformWorldToHClip(OUT.positionWS);
+                return OUT;
+            }
+
+            half4 frag(Varyings IN) : SV_Target
+            {
+                // Caras traseras: junto a la pieza miran lejos de la camara y en el borde del casco
+                // quedan de canto. Asi el halo es fuerte pegado a la linea y se apaga hacia fuera.
+                float3 view = normalize(GetWorldSpaceViewDir(IN.positionWS));
+                float fade = saturate(-dot(normalize(IN.normalWS), view) * 3.0);
+                return half4(_GlowColor.rgb, _GlowColor.a * fade);
+            }
+            ENDHLSL
         }
 
         Pass

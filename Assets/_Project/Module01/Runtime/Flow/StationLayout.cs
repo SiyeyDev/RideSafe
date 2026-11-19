@@ -142,9 +142,11 @@ namespace RideSafe.Module01
             // declarado: lo que ella puso ahí acababa bajando a la tapa.
             // Hay dos niveles más abajo (0,850 y 0,190) que no se declaran: quedan por debajo
             // de la cintura y el recorrido mira la mesa de frente, no desde arriba.
+            // Hasta z 4,90 desde el 2026-11-17: de ahí a la punta cuelga el poncho (H06) como lo dejó
+            // el arte, y el reparto ponía la alforja detrás de él (0 % pulsable).
             new Station("table_entrance",
-                        new Surface("mesa", 1.01f, depthFrom: 3.82f, depthTo: 4.57f),
-                        new Surface("mesa", 1.75f, depthFrom: 4.19f, depthTo: 4.57f)),
+                        new Surface("mesa", 1.01f, usableTo: 4.90f, depthFrom: 3.82f, depthTo: 4.57f),
+                        new Surface("mesa", 1.75f, usableTo: 4.90f, depthFrom: 4.19f, depthTo: 4.57f)),
             new Station("table_middle", new Surface("otra mesa", 1.04f)),
             new Station("table_back", new Surface("mesa nueva", 1.02f)),
             // cabinet (1) lleva el armario alto del rincón, macizo de suelo a techo. Dónde acaba
@@ -155,8 +157,10 @@ namespace RideSafe.Module01
             // captura. El dato viejo venía de las manillas de las puertas, no de la tapa.
             // «cabinet» es el tramo de la esquina derecha (x 1,35..4,57): el artista puso ahí los
             // cascos, la gorra y unos guantes el 2026-10-29. Misma cota que el resto del mostrador.
-            new Station("counter_clothes", new Surface("cabinet (1)", 1.08f, usableFrom: -3.45f),
-                        new Surface("cabinetmid 1", 1.08f), new Surface("cabinet", 1.08f)),
+            // Desde el 2026-11-17, sin «cabinet (1)»: con solo los 32 EPP de la hoja sobra, y
+            // repartir hasta esa punta alejaba el punto de vista a más de 5 m del casco, fuera del
+            // alcance del tutorial (TutorialHaloReachTests).
+            new Station("counter_clothes", new Surface("cabinetmid 1", 1.08f), new Surface("cabinet", 1.08f)),
             // La mesa de herramientas vuelve a ser parada (PO, 2026-10-29): con 61 elementos en
             // cuatro muebles la mesa del fondo iba al 94 % de su tapa, y esta estaba vacía. No
             // lleva alacena encima ni panel detrás, al contrario que las otras, cuya caja sube

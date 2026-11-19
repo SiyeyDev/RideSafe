@@ -1,32 +1,14 @@
 {
   "characters": [
-    "Tight-fitting",
-    "clothing",
-    "with",
-    "secured",
-    "cuffs,",
-    "drawstrings,",
-    "and",
-    "straps"
+    "Close-fitting",
+    "trousers"
   ],
   "character_start_times_seconds": [
     0.0,
-    0.743,
-    1.231,
-    1.428,
-    1.974,
-    2.577,
-    3.506,
-    3.796
+    0.731
   ],
   "character_end_times_seconds": [
-    0.685,
-    1.173,
-    1.382,
-    1.916,
-    2.461,
-    3.332,
-    3.715,
-    4.458
+    0.673,
+    1.347
   ]
 }

@@ -135,6 +135,15 @@ namespace RideSafe.Module01.Editor
                     : new (string Item, string Part)[0];
                 Undo.RecordObject(profile, "Piezas del vehiculo");
                 profile.ConfigurePartBindings(table);
+                profile.ConfigurePodiumModels(definition.PodiumModels == null
+                    ? new (string, GameObject)[0]
+                    : definition.PodiumModels.Select(m =>
+                    {
+                        GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(Module01Library.Models + m.ModelFile);
+                        if (model == null)
+                            Debug.LogError($"[Module01] {profile.name}: no carga el modelo del podio {m.ModelFile} de {m.Item}.");
+                        return (m.Item, model);
+                    }).Where(m => m.model != null).ToArray());
                 EditorUtility.SetDirty(profile);
                 Debug.Log($"[Module01] {profile.name}: {table.Length} pieza(s) a delinear"
                           + (table.Length == 0 ? " (sin piezas declaradas: todo al signo)." : ": "
@@ -149,9 +158,9 @@ namespace RideSafe.Module01.Editor
                 InspectionHighlight highlight =
                     Module01EditorComponents.Ensure<InspectionHighlight>(point.gameObject);
                 Undo.RecordObject(highlight, "Contorno del punto");
-                // Los mismos colores que el signo: naranja lo que toca, verde lo resuelto.
-                highlight.ConfigureForTests(
-                    outline, new Color(1f, .42f, .05f, 1f), new Color(.46f, .83f, .54f, .9f));
+                // Blanco con halo azulado lo que toca, «limpio y tecnológico» (cliente, Excel 11-13,
+                // imagen de referencia); verde lo resuelto, como el signo.
+                highlight.ConfigureForTests(outline, InspectionHighlight.DefaultActiveColor, new Color(.46f, .83f, .54f, .9f));
                 EditorUtility.SetDirty(highlight);
                 wired++;
             }
