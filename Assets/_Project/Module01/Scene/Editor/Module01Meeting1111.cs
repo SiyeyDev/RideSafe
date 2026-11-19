@@ -21,6 +21,8 @@ public static class Module01Meeting1111
     /// <summary>La mecánica con el control, tras la instrucción de cada sección (Charlie, 2026-11-18).</summary>
     public const string SelectionMechanicClip = "M01_SelectionMechanic";
     public const string InspectMechanicClip = "M02_InspectMechanic";
+    /// <summary>La música de fondo (Charlie, 2026-11-19).</summary>
+    public const string MusicClip = "Assets/_Project/Audio/Music/background.mp3";
 
     /// <summary>Las voces de los veredictos: (clip, evento que la lanza), en Resources/Sounds/M1/&lt;idioma&gt;/.</summary>
     private static (string Clip, System.Func<Module01Experience, UnityEngine.Events.UnityEvent> Event)[] Verdicts =>
@@ -52,6 +54,14 @@ public static class Module01Meeting1111
 
         VehiclePartRenderer.RenderAll();
         AssetDatabase.SaveAssets();
+    }
+
+    /// <summary>Solo las locuciones y la música, sin rehacer paneles ni poses. -executeMethod Module01Meeting1111.RunMusicBatch</summary>
+    public static void RunMusicBatch()
+    {
+        EditorSceneManager.OpenScene(Module01ClientListCleanup.ScenePath, OpenSceneMode.Single);
+        WireNarrationAndMusic();
+        EditorSceneManager.SaveOpenScenes();
     }
 
     /// <summary>
@@ -192,7 +202,7 @@ public static class Module01Meeting1111
             Debug.LogWarning("[M1-BATCH] Falta el audio " + VehicleIntroClip + ": la sección del vehículo empieza sin voz.");
         }
 
-        // Música de fondo muy suave (cliente): la pista está pendiente; sin clip no suena nada.
+        // Música de fondo muy suave (cliente): baja con las voces y se pausa en los videos (BackgroundMusic).
         // Sin «??»: un componente de Unity que falta no es null para C#.
         GameObject music = GameObject.Find("BackgroundMusic");
         if (music == null) music = new GameObject("BackgroundMusic");
@@ -205,6 +215,22 @@ public static class Module01Meeting1111
         source.spatialBlend = 0f;
         source.volume = 0.08f;
         source.priority = 200;
+        // Larga: en streaming y comprimida, que no ocupe memoria en el Quest.
+        if (AssetImporter.GetAtPath(MusicClip) is AudioImporter importer)
+        {
+            AudioImporterSampleSettings sample = importer.defaultSampleSettings;
+            if (sample.loadType != AudioClipLoadType.Streaming || sample.compressionFormat != AudioCompressionFormat.Vorbis)
+            {
+                sample.loadType = AudioClipLoadType.Streaming;
+                sample.compressionFormat = AudioCompressionFormat.Vorbis;
+                sample.quality = .5f;
+                importer.defaultSampleSettings = sample;
+                importer.SaveAndReimport();
+            }
+        }
+        source.clip = AssetDatabase.LoadAssetAtPath<AudioClip>(MusicClip);
+        if (source.clip == null) Debug.LogWarning("[M1-BATCH] Falta la música " + MusicClip + ": no suena nada de fondo.");
+        if (music.GetComponent<BackgroundMusic>() == null) music.AddComponent<BackgroundMusic>();
         EditorSceneManager.MarkSceneDirty(experience.gameObject.scene);
     }
 

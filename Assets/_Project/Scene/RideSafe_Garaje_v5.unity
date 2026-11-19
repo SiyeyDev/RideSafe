@@ -885,9 +885,10 @@ MonoBehaviour:
   onLeaveWelcome:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 294940282}
-        m_TargetAssemblyTypeName: RideSafe.Narration.NarrationPlayer, Assembly-CSharp
-        m_MethodName: Play
+      - m_Target: {fileID: 920214460}
+        m_TargetAssemblyTypeName: RideSafe.Tutorial.Presentation.WelcomeTriggerHint,
+          Tutorial.Presentation
+        m_MethodName: Show
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -897,10 +898,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 920214460}
-        m_TargetAssemblyTypeName: RideSafe.Tutorial.Presentation.WelcomeTriggerHint,
-          Tutorial.Presentation
-        m_MethodName: Show
+      - m_Target: {fileID: 294940282}
+        m_TargetAssemblyTypeName: RideSafe.Narration.NarrationPlayer, Assembly-CSharp
+        m_MethodName: Play
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -122407,6 +122407,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1789231108}
   - component: {fileID: 1789231107}
+  - component: {fileID: 1789231109}
   m_Layer: 0
   m_Name: BackgroundMusic
   m_TagString: Untagged
@@ -122425,7 +122426,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: f00f05abb7c8b3d418889b59a3dfde2f, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.08
   m_Pitch: 1
@@ -122526,6 +122527,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 950295642}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1789231109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1789231106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71c1004fe27fa934fb87d97678b7cf44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RideSafe.Module01::RideSafe.Module01.BackgroundMusic
+  _volume: 0.08
+  _duckedVolume: 0.025
+  _fadeSeconds: 0.5
 --- !u!1 &1791565990
 GameObject:
   m_ObjectHideFlags: 0

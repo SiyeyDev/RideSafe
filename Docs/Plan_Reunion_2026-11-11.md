@@ -20,7 +20,7 @@ Leyenda: **hecho** · **base** = código sin cablear porque la escena aún no ex
 | 6 | Textos del documento «Feedback módulo 1», con locución | es la hoja de Google «Textos Modulo 1» del cliente (se ve en la grabación, 0:56 y 47:00). La pestaña «Feedback Modulo 1» ya está aplicada (1:06, 8:57-9:09); la pestaña «Modulo1», con las traducciones corregidas, no está en nuestro Drive | **pendiente**: que el cliente comparta la hoja |
 | 7 | Voz en off en la bienvenida: cómo usar el control | texto en I2 y reproductor cableado (`M01_WelcomeController`) | **pendiente**: generar el audio (ElevenLabs) |
 | 8 | Instrucción hablada al empezar los EPP | texto de la hoja (1:06) en I2: «Selecciona los elementos y accesorios para verlos en detalle…»; reproductor cableado (`M01_SelectionInstruction`) | **pendiente**: generar el audio |
-| 9 | Música lofi muy suave | `BackgroundMusic` en bucle a 0,08 | **pendiente**: la pista |
+| 9 | Música lofi muy suave | `BackgroundMusic` en bucle a 0,08 con `Audio/Music/background.mp3`; baja a 0,025 con voz y se pausa con los videos (2026-11-19) | hecho |
 | 10 | Nombres cortos y únicos | los de la columna C del Excel del cliente del 2026-11-13, sin inventar ninguno (`EPP_Nomenclatura.md`); el inglés es traducción nuestra | hecho; **pendiente**: que el cliente revise el inglés, y regenerar la voz de los 32 nombres |
 | 11 | Inspección con la patineta | bici + Transmisión; patineta igual sin ella y sin plataforma | hecho; la transmisión usa `pedales` hasta que 3D separe cadena y corona |
 

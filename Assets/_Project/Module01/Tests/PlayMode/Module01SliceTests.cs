@@ -81,6 +81,99 @@ namespace RideSafe.Module01.Tests
         { yield return RunFlow(false, true, "escooter"); }
 
         /// <summary>
+        /// No es un test: graba el recorrido completo con la patineta para enseñarlo (Charlie,
+        /// 2026-11-18). Va al ritmo de una persona —espera a que acabe cada voz y deja leer antes de
+        /// cada clic— y deja un fotograma por frame con su instante real, y cuándo suena cada audio,
+        /// en <see cref="DemoFolder"/>. El mp4 lo arma ffmpeg. Solo corre si se pide por su nombre.
+        /// </summary>
+        [UnityTest, Explicit, Timeout(1800000)] public IEnumerator Demo_video_patinete_completo()
+        {
+            _demo = true;
+            var recorder = new GameObject("DemoRecorder").AddComponent<DemoRecorder>();
+            try
+            {
+                yield return RunFlow(false, true, "escooter");
+                yield return DemoPause();
+                float until = Time.realtimeSinceStartup + 3f;
+                while (Time.realtimeSinceStartup < until) yield return null;
+            }
+            finally
+            {
+                _demo = false;
+                Object.Destroy(recorder.gameObject);
+            }
+        }
+
+        public const string DemoFolder = "C:/Users/charl/AppData/Local/Temp/claude/379153a7069ee373/d84955e3-e550-4056-89cd-1b315cb3d100/scratchpad/demo";
+        private static bool _demo;
+
+        /// <summary>Antes de cada clic de la demostración: que acabe la voz y un respiro para leer.</summary>
+        private static IEnumerator DemoPause()
+        {
+            // 1,2 s seguidos sin ningún audio, no solo uno: entre dos líneas de una misma voz hay
+            // 0,4 s de silencio, y con eso el clic cortaba la segunda (la mecánica con el control).
+            float limit = Time.realtimeSinceStartup + 40f, quiet = 0f, last = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup < limit && quiet < 1.2f)
+            {
+                yield return null;
+                float now = Time.realtimeSinceStartup;
+                bool sounding = Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None)
+                    .Any(a => a.isPlaying && a.clip != null && !a.loop);
+                quiet = sounding ? 0f : quiet + (now - last);
+                last = now;
+            }
+            float until = Time.realtimeSinceStartup + .6f;
+            while (Time.realtimeSinceStartup < until) yield return null;
+        }
+
+        /// <summary>Un JPG por frame con su instante real, y el principio y el fin de cada audio.</summary>
+        private class DemoRecorder : MonoBehaviour
+        {
+            private float _t0;
+            private int _n;
+            private System.IO.StreamWriter _frames, _audio;
+            private readonly Dictionary<AudioSource, (AudioClip Clip, bool Playing)> _seen = new Dictionary<AudioSource, (AudioClip, bool)>();
+
+            private void Start()
+            {
+                if (System.IO.Directory.Exists(DemoFolder)) System.IO.Directory.Delete(DemoFolder, true);
+                System.IO.Directory.CreateDirectory(DemoFolder);
+                _frames = new System.IO.StreamWriter(DemoFolder + "/frames.txt");
+                _audio = new System.IO.StreamWriter(DemoFolder + "/audio.txt");
+                _t0 = Time.realtimeSinceStartup;
+                StartCoroutine(Loop());
+            }
+
+            private IEnumerator Loop()
+            {
+                while (true)
+                {
+                    yield return null;
+                    float t = Time.realtimeSinceStartup - _t0;
+                    CaptureCamera($"{DemoFolder}/f{_n:D6}.jpg", 1280, 720);
+                    _frames.WriteLine($"{_n} {t:F3}");
+                    _n++;
+                    foreach (AudioSource a in Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+                    {
+                        bool playing = a.isPlaying && a.clip != null;
+                        _seen.TryGetValue(a, out var before);
+                        if (before.Playing && (!playing || before.Clip != a.clip))
+                            _audio.WriteLine($"stop\t{t:F3}\t{before.Clip.name}");
+                        if (playing && (!before.Playing || before.Clip != a.clip))
+                            _audio.WriteLine($"start\t{t:F3}\t{a.clip.name}\t{a.volume:F2}");
+                        _seen[a] = (a.clip, playing);
+                    }
+                }
+            }
+
+            private void OnDestroy()
+            {
+                _frames?.Close();
+                _audio?.Close();
+            }
+        }
+
+        /// <summary>
         /// Elegir patinete en el módulo 0 tiene que llegar hasta el perfil que usa el
         /// director y hasta la malla que se ve en el garaje. Con un solo perfil
         /// serializado esto pasaba en silencio: el aprendiz elegía patinete y revisaba
@@ -500,6 +593,9 @@ namespace RideSafe.Module01.Tests
             {
                 yield return new WaitForSeconds(1f);
                 yield return Capture(_director.InVehicleSection ? "video-vehiculo" : "video-epp");
+                // Con el video la música se pausa (Charlie, 2026-11-19).
+                var music = Object.FindAnyObjectByType<BackgroundMusic>().GetComponent<AudioSource>();
+                Assert.IsFalse(music.isPlaying, "La música sigue sonando durante el video.");
             }
 
             if (!video.isPlaying)
@@ -544,10 +640,13 @@ namespace RideSafe.Module01.Tests
 
             // Se salta al final en vez de esperar el clip entero: lo que se comprueba es que
             // la puerta se abre al terminar, no cuanto dura el archivo de prueba.
-            video.time = System.Math.Max(0d, video.length - .25d);
+            if (!_demo) video.time = System.Math.Max(0d, video.length - .25d);
             yield return WaitFor(() => _binding.Explanation.CanContinue,
                 () => $"El video acabo y Continuar sigue apagado: time={video.time:F2} length={video.length:F2} playing={video.isPlaying}",
                 20);
+            // Acabado el video, la música vuelve.
+            var musicAfter = Object.FindAnyObjectByType<BackgroundMusic>().GetComponent<AudioSource>();
+            yield return WaitFor(() => musicAfter.isPlaying, "La música no vuelve después del video", 2);
             yield return Press(_binding.Explanation.transform, "ContinueButton");
             yield return PassCongrats();
         }
@@ -618,24 +717,39 @@ namespace RideSafe.Module01.Tests
             Quaternion[] before = parts.Select(p => p.localRotation).ToArray();
             float waited = 0f;
             bool moved = false;
-            while (!moved && waited < 2f)
+            // En la demostración no: grabar cada fotograma baja el ritmo y esto ya lo cubre el test normal.
+            while (!_demo && !moved && waited < 2f)
             {
                 yield return null;
                 waited += Time.unscaledDeltaTime;
                 moved = parts.Where((p, i) => p != null && Quaternion.Angle(p.localRotation, before[i]) > 1f).Any();
             }
-            Assert.IsTrue(moved, "El mando de la bienvenida está quieto: no se ve apretar el gatillo.");
+            Assert.IsTrue(_demo || moved, "El mando de la bienvenida está quieto: no se ve apretar el gatillo.");
             Assert.IsTrue(hint.GetComponentsInChildren<Renderer>().Any(r => r.HasPropertyBlock()), "El gatillo no brilla.");
+            // La música sigue sonando, pero baja mientras habla la bienvenida (Charlie, 2026-11-19).
+            var music = Object.FindAnyObjectByType<BackgroundMusic>();
+            Assert.IsNotNull(music, "Falta la música de fondo en la escena.");
+            var musicSource = music.GetComponent<AudioSource>();
+            Assert.IsNotNull(musicSource.clip, "La música de fondo no tiene pista.");
+            Assert.IsTrue(musicSource.isPlaying, "La música de fondo no suena.");
+            yield return WaitFor(() => musicSource.volume <= music.DuckedVolume + .001f,
+                () => $"La música no baja con la voz de bienvenida: volumen={musicSource.volume:F3}", 3);
 
             Assert.AreEqual("Language", onboarding.Current, "Begin sin parametros deberia abrir Language.");
             // Atrás vuelve a la pantalla anterior. Cindy, 2026-10-21: lo pulsaba y no pasaba nada,
             // porque ninguna pantalla escuchaba su evento.
             var language = onboarding.Get<ChoicePanel>("Language");
-            yield return GoBack(onboarding, language.transform, "Welcome");
-            yield return Press(welcome, "BeginButton");
+            if (!_demo)
+            {
+                yield return GoBack(onboarding, language.transform, "Welcome");
+                yield return Press(welcome, "BeginButton");
+            }
             yield return Choose(language, "Option_es");
-            yield return GoBack(onboarding, onboarding.Get<ChoicePanel>("Jurisdiction").transform, "Language");
-            yield return ContinueAgain(language);
+            if (!_demo)
+            {
+                yield return GoBack(onboarding, onboarding.Get<ChoicePanel>("Jurisdiction").transform, "Language");
+                yield return ContinueAgain(language);
+            }
             yield return Choose(onboarding.Get<ChoicePanel>("Jurisdiction"), "Option_bogota");
             yield return Choose(onboarding.Get<ChoicePanel>("Vehicle"), "Option_" + vehicle);
             // Lo que el aprendiz eligió tiene que llegar al contexto, no solo pasar de pantalla.
@@ -644,9 +758,12 @@ namespace RideSafe.Module01.Tests
 
             var comfort = onboarding.Get<ComfortSettingsPanel>("Comfort");
             yield return WaitFor(() => comfort.gameObject.activeInHierarchy, "Comfort visible");
-            yield return GoBack(onboarding, comfort.transform, "Vehicle");
-            yield return ContinueAgain(onboarding.Get<ChoicePanel>("Vehicle"));
-            yield return WaitFor(() => comfort.gameObject.activeInHierarchy, "Comfort visible otra vez");
+            if (!_demo)
+            {
+                yield return GoBack(onboarding, comfort.transform, "Vehicle");
+                yield return ContinueAgain(onboarding.Get<ChoicePanel>("Vehicle"));
+                yield return WaitFor(() => comfort.gameObject.activeInHierarchy, "Comfort visible otra vez");
+            }
             if (comfort.Current.Subtitles != subtitles)
                 yield return PressControl<Toggle>(comfort.transform, "SubtitlesSwitch");
             Assert.AreEqual(subtitles, comfort.Current.Subtitles, "El interruptor de subtitulos no cambio.");
@@ -1108,6 +1225,7 @@ namespace RideSafe.Module01.Tests
         }
         private IEnumerator ClickGraphic(RectTransform rect)
         {
+            if (_demo) yield return DemoPause();
             yield return null; yield return null;
             Canvas.ForceUpdateCanvases();
             AssertVisible(rect);
@@ -1117,6 +1235,7 @@ namespace RideSafe.Module01.Tests
         }
         private IEnumerator ClickWorld(WorldObjectTaskEntity entity)
         {
+            if (_demo) yield return DemoPause();
             Physics.SyncTransforms();
             var collider = entity.GetComponent<Collider>();
             Vector3 p = _camera.WorldToScreenPoint(collider.bounds.center);
@@ -1427,7 +1546,7 @@ namespace RideSafe.Module01.Tests
             Assert.Greater(System.IO.File.GetLastWriteTimeUtc(path), before,
                 "La captura '" + name + _captureTag + "' no se reescribio: la evidencia seria la de la corrida anterior.");
         }
-        private static void CaptureCamera(string path)
+        private static void CaptureCamera(string path, int width = 1600, int height = 900)
         {
             Camera cam = Camera.main;
             if (cam == null)
@@ -1435,7 +1554,7 @@ namespace RideSafe.Module01.Tests
                 Debug.LogWarning("[test] Sin cámara principal para la captura " + path);
                 return;
             }
-            var rt = new RenderTexture(1600, 900, 24);
+            var rt = new RenderTexture(width, height, 24);
             RenderTexture prevTarget = cam.targetTexture, prevActive = RenderTexture.active;
             // La UI la dibuja la cámara de overlay del stack, que no se renderiza sola: durante la
             // foto la base se queda con sus capas y con los canvas que miraban a otra cámara.
@@ -1468,7 +1587,7 @@ namespace RideSafe.Module01.Tests
             tex.Apply();
             cam.targetTexture = prevTarget;
             RenderTexture.active = prevActive;
-            System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
+            System.IO.File.WriteAllBytes(path, path.EndsWith(".jpg") ? tex.EncodeToJPG(85) : tex.EncodeToPNG());
             Object.Destroy(tex);
             rt.Release();
             Object.Destroy(rt);
