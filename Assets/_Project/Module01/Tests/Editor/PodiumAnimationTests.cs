@@ -80,6 +80,42 @@ namespace RideSafe.Module01.Tests
         }
 
         /// <summary>
+        /// Lo que va de verdad al podio con los frenos de la patineta: una copia de las dos manetas en
+        /// un contenedor que se llama como la primera («freno_de») y tiene el pivote donde estaba el
+        /// vehículo. Tomarlo por maneta lo giraba sobre ese pivote y sacaba las manetas del podio
+        /// (PO, 2026-11-19).
+        /// </summary>
+        [Test]
+        public void Las_manetas_de_la_patineta_no_se_salen_del_podio()
+        {
+            GameObject vehicle = Object.Instantiate(Profile(ScooterPath).Model);
+            vehicle.transform.position = new Vector3(0f, 0f, 2.5f);
+            _root = new GameObject("PresentedItem");
+            try
+            {
+                MeshRenderer[] parts = vehicle.GetComponentsInChildren<MeshRenderer>()
+                    .Where(r => r.name == "freno_de" || r.name == "freno_iz").OrderByDescending(r => r.name).ToArray();
+                GameObject copy = VisibleMeshCopy.Of(parts, parts[0].name, _root.transform);
+                copy.transform.position = new Vector3(-.3f, -1.4f, -2.3f); // el contenedor lejos de las manetas, como en Play
+                Quaternion rest = copy.transform.localRotation;
+                Vector3[] before = copy.GetComponentsInChildren<Renderer>().Select(r => r.bounds.center).ToArray();
+
+                PodiumAnimation anim = PodiumAnimation.Attach(copy, "point_brakes", null);
+                Assert.IsNotNull(anim);
+                anim.Tick(PodiumAnimation.SqueezePeriod / 4f);
+
+                Assert.AreEqual(0f, Quaternion.Angle(rest, copy.transform.localRotation), .01f, "El contenedor gira como si fuera una maneta.");
+                Vector3[] after = copy.GetComponentsInChildren<Renderer>().Select(r => r.bounds.center).ToArray();
+                for (int i = 0; i < before.Length; i++)
+                    Assert.Less(Vector3.Distance(before[i], after[i]), .05f, "Una maneta se va " + Vector3.Distance(before[i], after[i]).ToString("F2") + " m.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(vehicle);
+            }
+        }
+
+        /// <summary>
         /// La dirección: el manubrio, el tenedor y la rueda delantera juntos, girando a un lado y al
         /// otro sobre el pivote, y la rueda se va de lado (no solo da vueltas en su sitio).
         /// </summary>

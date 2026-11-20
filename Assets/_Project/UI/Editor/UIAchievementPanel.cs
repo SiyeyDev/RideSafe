@@ -45,6 +45,7 @@ namespace RideSafe.UI.EditorTools
 
                 RectTransform button = (RectTransform)box.Find("StartButton");
                 button.name = "ContinueButton";
+                WordsNotIcon(button);
                 CenterX(button);
                 // «Continuar al módulo 2» no cabe en el ancho de «Comenzar» (104).
                 button.sizeDelta = new Vector2(250f, button.sizeDelta.y);
@@ -71,6 +72,33 @@ namespace RideSafe.UI.EditorTools
                 PrefabUtility.UnloadPrefabContents(root);
             }
             Debug.Log("[M1-BATCH] Panel de logro en " + UIComposition.Module01Path);
+        }
+
+        /// <summary>
+        /// La bienvenida lleva ▶ en vez de «Comenzar» (PO, 2026-11-07; UIComposition.IconInsteadOfLabel).
+        /// Este botón dice lo que hace —«Continuar», «Intentar de nuevo», «Continuar al módulo 2»—, así
+        /// que la copia recupera su texto y suelta el icono.
+        /// </summary>
+        private static void WordsNotIcon(RectTransform button)
+        {
+            Transform label = button.Find("Label");
+            if (label != null)
+                label.gameObject.SetActive(true);
+            Transform icon = button.Find("Icon");
+            if (icon == null)
+                return;
+            foreach (SelectableStyle style in button.GetComponentsInChildren<SelectableStyle>(true))
+            {
+                SerializedObject so = new SerializedObject(style);
+                SerializedProperty iconRef = so.FindProperty("_icon");
+                if (iconRef != null && iconRef.objectReferenceValue != null &&
+                    ((Component)iconRef.objectReferenceValue).transform == icon)
+                {
+                    iconRef.objectReferenceValue = null;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
+            Object.DestroyImmediate(icon.gameObject);
         }
 
         private static void CenterX(RectTransform rect)

@@ -85,6 +85,13 @@ namespace RideSafe.Module01
         /// <summary>Pregunta del popup cuando el elemento ya está elegido.</summary>
         public const string RemoveQuestionKey = "M1/Remove_Question";
 
+        /// <summary>
+        /// ¿Se delinea en el podio lo que toca revisar? Solo en los frenos de la bici: va el manubrio
+        /// entero y las manetas solas no se distinguían (2026-11-18). La dirección y la transmisión,
+        /// no: lo del podio no se resalta, ya se mueve (PO, 2026-11-19).
+        /// </summary>
+        public static bool OutlinedOnPodium(string itemId) => itemId == "point_brakes";
+
         private void RemoveSelection(string id) => Ledger.Remove(id);
         private void OnDestroy()
         {
@@ -192,7 +199,8 @@ namespace RideSafe.Module01
                     if (highlight != null && highlight.PodiumModel != null)
                     {
                         shown = _inspector.PresentModel(item, highlight.PodiumModel, question);
-                        highlight.OutlinePodium(shown);
+                        if (OutlinedOnPodium(item.ItemId))
+                            highlight.OutlinePodium(shown);
                     }
                     else if (highlight != null && highlight.Parts.Count > 0)
                         shown = _inspector.PresentParts(item, highlight.Parts, question);

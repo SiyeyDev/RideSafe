@@ -32,15 +32,15 @@ namespace RideSafe.Module00.Tests
         }
 
         /// <summary>
-        /// The copy is 0.6 of the vehicle as the artist sized it in the garage, not 0.6 of the
-        /// FBX: the E_Scooter stands at ×1.4, and a fixed 0.6 shrank it to half the bike.
+        /// The copy is DisplayScale of the vehicle as the artist sized it in the garage, not of the
+        /// FBX: the E_Scooter stands at ×1.4, and a fixed factor shrank it to half the bike.
         /// </summary>
         [TestCase("ebike")]
         [TestCase("E_Scooter")]
         public void TheShowroomCopy_KeepsTheVehicleScale(string vehicle)
         {
             WithCopyAndSource(vehicle, (copy, source) =>
-                Assert.AreEqual(source.localScale.x * 0.6f, copy.localScale.x, 1e-3f));
+                Assert.AreEqual(source.localScale.x * RideSafe.Module00.Editor.Module00ShowroomSetup.DisplayScale, copy.localScale.x, 1e-3f));
         }
 
         /// <summary>Runs the check with v5 loaded, on the showroom copy and on the garage vehicle.</summary>

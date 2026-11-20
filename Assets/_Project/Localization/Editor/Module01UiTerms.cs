@@ -110,6 +110,19 @@ public static class Module01UiTerms
         // nota, «solo el puntaje total». {0} es SelectionScore.Percent.
         Set(data, es, en, "M1/Evaluation_Title", "Evaluación de tus elecciones", "Evaluation of your choices");
         Set(data, es, en, "M1/Score_Label", "Puntaje: {0}", "Score: {0}");
+        // The English the Drive sheet's translator rewrote from the Spanish («Yeah», «Do not
+        // circulate», «Omitted nucleus»…), back to the one written for the module (PO, 2026-11-07;
+        // restored 2026-11-19). Never over what the client wrote in her «Textos Modulo 1» sheet or
+        // the Excel names: Module01MeetingTerms owns those, and this skips them.
+        foreach (var (key, english) in EnglishFixes)
+        {
+            if (ClientOwned(key))
+                continue;
+            TermData term = data.GetTermData(key);
+            if (term != null)
+                term.Languages[en] = english;
+        }
+
         // The video's «Reproduciendo» tag was dropped (PO, 2026-10-16): its term goes too.
         data.RemoveTerm("M1/Video_Playing");
         // The pouch stopped being an item (2026-10-28). «M1/Stop_Tools» was dropped with it and
@@ -186,6 +199,51 @@ public static class Module01UiTerms
          "Un casco agrietado ya no absorbe el siguiente golpe.", "A cracked helmet no longer absorbs the next impact."),
         ("VestGrey", "Chaleco gris", "Grey vest",
          "No es reflectivo: no cambia el resultado.", "It is not reflective: it does not change the result."),
+    };
+
+    /// <summary>
+    /// A term the client set in her sheet (Module01MeetingTerms.ClientTexts) or an item name from the
+    /// Excel (Module01MeetingTerms.ShortNames): hers, not ours to correct.
+    /// </summary>
+    private static bool ClientOwned(string key) =>
+        System.Array.Exists(Module01MeetingTerms.ClientTexts, t => "M1/" + t.Key == key) ||
+        System.Array.Exists(Module01MeetingTerms.ShortNames, t => "M1/Item_" + t.Key == key);
+
+    /// <summary>(term, English as written for the module). The comment is what the sheet left.</summary>
+    private static readonly (string Key, string En)[] EnglishFixes =
+    {
+        ("M1/Decision_Correct", "Your decision matches the inspection."),  // was «Your decision matches the review.»
+        ("M1/Decision_Question", "After your inspection, what do you decide?"),  // was «After your review, what do you decide?»
+        ("M1/Decision_Review", "Review your decision before riding."),  // was «Review your decision before driving.»
+        ("M1/DoNotRide", "Do not ride"),  // was «Do not circulate»
+        ("M1/Final_Complete", "Module complete. Review your preparation and inspection summary."),  // was «Module completed. Review your preparation and inspection summary.»
+        ("M1/Item_CargoHandheld_Risk", "An object in your hand takes away a brake and the steering."),  // was «An object in your hand takes away the brake and the steering.»
+        ("M1/Item_CargoSecured_Risk", "A secured load does not shift and does not change your balance."),  // was «The secured load does not shift and does not change your balance.»
+        ("M1/Item_Glasses_Risk", "Glasses keep dust and insects from blinding you in traffic."),  // was «Glasses prevent dust and insects from blinding you in traffic.»
+        ("M1/Item_HelmetDamaged_Risk", "A helmet that has taken a blow no longer absorbs the next one."),  // was «A helmet that has already been hit will not absorb the next one.»
+        ("M1/Item_HelmetOk_Risk", "An intact, fitted helmet is the only protection for the head."),  // was «A full-face, properly fitted helmet is the only protection for the head.»
+        ("M1/Item_Reflective_Risk", "A reflective vest is what makes you visible at dusk and in the rain."),  // was «The reflective vest is what makes you visible at dusk and in the rain.»
+        ("M1/Item_ShoesOk_Risk", "Closed-toe shoes hold the foot on the pedal and shield the toes."),  // was «Closed footwear secures the foot to the pedal and protects the toes.»
+        ("M1/Item_TrousersFitted_Risk", "Fitted trousers keep the leg clear of the chain and the wheel."),  // was «The tight-fitting pants keep the leg away from the chain and the wheel.»
+        ("M1/Omitted", "Core item omitted"),  // was «Omitted nucleus»
+        ("M1/Pause", "Pause / resume"),  // was «Pause / Continue»
+        ("M1/Point_Brakes_Risk", "Brakes are what decide the distance at which you stop."),  // was «The brakes are what determine the distance at which you stop.»
+        ("M1/Point_Electrics_Risk", "A loose battery or throttle can cut out or surge while riding."),  // was «A loose battery or throttle can cut out or accelerate on its own while driving.»
+        ("M1/Point_Lights_Risk", "Without lights and reflectors, no one sees you coming."),  // was «Without lights or reflectors, nobody sees you coming.»
+        ("M1/Point_Steering_Risk", "Loose steering does not answer when you need to dodge."),  // was «A steering system with a game doesn't respond when it's time to dodge.»
+        ("M1/Point_Wheels_Risk", "Low pressure or a loose wheel skids in a curve."),  // was «Low pressure or a loose wheel causes skidding on a curve.»
+        ("M1/Replay", "Replay"),  // was «Repeat»
+        ("M1/Report_Reference", "Reference for this ride"),  // was «Reference for this route»
+        ("M1/Review_Lock", "Confirm to evaluate this section."),  // was «Upon confirmation, this section will be evaluated.»
+        ("M1/RoadReady", "Ready to ride"),  // was «Ready to drive»
+        ("M1/Sidebar_Empty", "No items added yet."),  // was «You haven't added any items yet.»
+        ("M1/Start", "Start"),  // was «Begin»
+        ("M1/VideoPlaceholder", "Placeholder video. Final educational content is pending."),  // was «Provisional video. Final educational content is pending.»
+        ("M1/WatchVideo", "Watch explanation"),  // was «See explanation»
+        ("M1/Yes", "Yes"),  // was «Yeah»
+        ("M1/Zone_Head", "Head protection"),  // was «Head and protection»
+        ("M1/Zone_Load", "Load and free hands"),  // was «Charging and hands-free operation»
+        ("M1/Zone_Wheels", "Wheels and frame"),  // was «Wheels and structure»
     };
 
     /// <summary>

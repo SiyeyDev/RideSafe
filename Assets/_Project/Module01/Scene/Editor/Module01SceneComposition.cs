@@ -394,11 +394,20 @@ namespace RideSafe.Module01.Editor
             EditorUtility.SetDirty(questionText);
 
             float answersY = question.anchoredPosition.y - PopupQuestionHeight * 0.5f - 23.35f - 22f;
-            PlaceButton(Child(confirm, "AcceptButton"), new Vector2(-125f, answersY), new Vector2(230f, 44f * px), 16f * px);
-            PlaceButton(Child(confirm, "DeclineButton"), new Vector2(125f, answersY), new Vector2(230f, 44f * px), 16f * px);
+            // ✓ and ✕ instead of «Sí» and «No» (PO, 2026-11-07), centred as a pair. Narrower than the
+            // word pills, still a wide target for the ray; the label stays hidden with its I2 term.
+            float half = (PopupAnswerWidth + UIComposition.IconPairGap) * 0.5f;
+            RectTransform accept = Child(confirm, "AcceptButton"), decline = Child(confirm, "DeclineButton");
+            PlaceButton(accept, new Vector2(-half, answersY), new Vector2(PopupAnswerWidth, 44f * px), 16f * px);
+            PlaceButton(decline, new Vector2(half, answersY), new Vector2(PopupAnswerWidth, 44f * px), 16f * px);
+            UIComposition.IconInsteadOfLabel(accept, kit, UIStatusIcons.NavigationName("Icon_Confirm"), 30f * px);
+            UIComposition.IconInsteadOfLabel(decline, kit, UIStatusIcons.NavigationName("Icon_Close"), 26f * px);
             // No mark here: the popup opens over the station, whose sign carries it (one logo in view).
             UIBrand.Remove(title);
         }
+
+        /// <summary>Visible width of each of the popup's ✓ / ✕ pills.</summary>
+        private const float PopupAnswerWidth = 132f;
 
         #region Rect helpers (centre-pivoted panels, kit pills placed from their parent's top-left)
 
