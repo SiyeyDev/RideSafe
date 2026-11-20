@@ -65,6 +65,22 @@ namespace RideSafe.Module01.Tests
             Assert.IsTrue(body.GetComponent<TMPro.TMP_Text>().enableAutoSizing, "un texto más largo se encoge en vez de pisar los botones");
         }
 
+        /// <summary>
+        /// ↺ y ▶ en lugar de «Repetir instrucciones» y «Comenzar» (PO, 2026-11-07). La etiqueta se
+        /// queda, apagada, con su término de I2.
+        /// </summary>
+        [TestCase("RepeatAudioButton", "IconMono_Replay_Round")]
+        [TestCase("StartButton", "IconMono_Play")]
+        public void La_bienvenida_usa_iconos(string button, string sprite)
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+            Transform pill = Find(Find(prefab.transform, "OrientationPanel"), button);
+            Assert.IsFalse(pill.Find("Label").gameObject.activeSelf, button + ": sin texto");
+            UnityEngine.UI.Image icon = pill.Find("Icon").GetComponent<UnityEngine.UI.Image>();
+            Assert.IsNotNull(icon.sprite, button + ": sin icono");
+            Assert.AreEqual(sprite, icon.sprite.name);
+        }
+
         [Test]
         public void Revisa_tus_elecciones_crece_con_la_lista()
         {

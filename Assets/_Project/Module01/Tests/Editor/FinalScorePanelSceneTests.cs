@@ -145,6 +145,18 @@ namespace RideSafe.Module01.Tests
             Assert.Less(repetir.anchoredPosition.x + repetir.sizeDelta.x, continuar.anchoredPosition.x + 1f, "sin pisarse");
         }
 
+        /// <summary>✓ y ✕ en el popup en lugar de «Sí» y «No» (PO, 2026-11-07).</summary>
+        [TestCase("AcceptButton", "IconMono_Confirm")]
+        [TestCase("DeclineButton", "IconMono_Close")]
+        public void El_popup_responde_con_iconos(string button, string sprite)
+        {
+            Transform pill = Todo().First(g => g.name == button).transform;
+            Assert.IsFalse(pill.Find("Label").gameObject.activeSelf, button + ": sin texto");
+            UnityEngine.UI.Image icon = pill.Find("Icon").GetComponent<UnityEngine.UI.Image>();
+            Assert.IsNotNull(icon.sprite, button + ": sin icono");
+            Assert.AreEqual(sprite, icon.sprite.name);
+        }
+
         [Test]
         public void El_panel_no_tapa_los_botones_de_continuar_y_repetir()
         {

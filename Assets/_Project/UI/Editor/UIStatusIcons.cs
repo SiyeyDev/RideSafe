@@ -43,14 +43,95 @@ namespace RideSafe.UI.EditorTools
 
         public static string NavigationName(string source) => source.Replace("Icon_", "IconMono_");
 
+        /// <summary>
+        /// Icons instead of words on the answer and welcome buttons (PO, 2026-11-07): a check for
+        /// «Sí» and an X for «No». White copies like the chevrons, so <c>SelectableStyle</c> paints them
+        /// with their label's colour.
+        /// </summary>
+        public static readonly string[] Actions = { "Icon_Confirm", "Icon_Close" };
+
+        /// <summary>
+        /// «Repetir instrucciones» as ↺: a white copy of the video's round arrow
+        /// (<c>UIComposition.ReplayIcon</c>), not the atlas's <c>Icon_Replay</c>, which the PO found
+        /// read as something else (2026-10-26).
+        /// </summary>
+        public const string ReplayIcon = "IconMono_Replay_Round";
+
+        /// <summary>«Comenzar» as ▶. The atlas has no play glyph: it is drawn (<see cref="DrawPlay"/>).</summary>
+        public const string PlayIcon = "IconMono_Play";
+
         /// <summary>Writes the white <see cref="Navigation"/> chevrons. Idempotent.</summary>
-        public static void BuildNavigation()
+        public static void BuildNavigation() => WriteWhiteCopies(Navigation);
+
+        /// <summary>Writes the white <see cref="Actions"/> and the drawn ▶. Idempotent.</summary>
+        public static void BuildActionIcons()
+        {
+            WriteWhiteCopies(Actions);
+            WhiteCopyOfFile(UIComposition.IconsFolder + "/" + UIComposition.ReplayIcon + ".png",
+                            UIComposition.IconsFolder + "/" + ReplayIcon + ".png");
+            DrawPlay();
+        }
+
+        /// <summary>
+        /// A right-pointing triangle with rounded corners, white, as big on the 128 px canvas as the
+        /// atlas's glyphs (they span about 70 px) and nudged right so it looks centred: a triangle's
+        /// centre of mass sits a third of the way from its flat side.
+        /// </summary>
+        public static void DrawPlay()
+        {
+            const int size = 128;
+            const float round = 7f;
+            Vector2 a = new Vector2(-20f, -31f), b = new Vector2(-20f, 31f), c = new Vector2(34f, 0f);
+            Color[] pixels = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                Vector2 p = new Vector2(x + 0.5f - size * 0.5f, y + 0.5f - size * 0.5f);
+                float inside = Mathf.Clamp01(-TriangleDistance(p, a, b, c) + round + 0.5f);
+                pixels[y * size + x] = new Color(1f, 1f, 1f, inside);
+            }
+            Texture2D icon = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            icon.SetPixels(pixels);
+            icon.Apply();
+            string path = UIComposition.IconsFolder + "/" + PlayIcon + ".png";
+            File.WriteAllBytes(path, icon.EncodeToPNG());
+            Object.DestroyImmediate(icon);
+            AssetDatabase.ImportAsset(path);
+            Configure(path);
+        }
+
+        private static void WhiteCopyOfFile(string source, string target)
+        {
+            Texture2D icon = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            icon.LoadImage(File.ReadAllBytes(source));
+            Color[] pixels = icon.GetPixels();
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = Ink(pixels[i]);
+            icon.SetPixels(pixels);
+            icon.Apply();
+            File.WriteAllBytes(target, icon.EncodeToPNG());
+            Object.DestroyImmediate(icon);
+            AssetDatabase.ImportAsset(target);
+            Configure(target);
+        }
+
+        /// <summary>Signed distance to a triangle: negative inside.</summary>
+        private static float TriangleDistance(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
+        {
+            float d = Mathf.Min(DistanceToSegment(p, a, b), Mathf.Min(DistanceToSegment(p, b, c), DistanceToSegment(p, c, a)));
+            bool inside = Side(p, a, b) == Side(p, b, c) && Side(p, b, c) == Side(p, c, a);
+            return inside ? -d : d;
+        }
+
+        private static bool Side(Vector2 p, Vector2 a, Vector2 b) => (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x) > 0f;
+
+        private static void WriteWhiteCopies(IEnumerable<string> sources)
         {
             Texture2D sheet = new Texture2D(2, 2, TextureFormat.RGBA32, false);
             sheet.LoadImage(File.ReadAllBytes(AtlasB));
             try
             {
-                foreach (string source in Navigation)
+                foreach (string source in sources)
                 {
                     Rect r = Find(source).rect;
                     Color[] pixels = sheet.GetPixels((int)r.x, (int)r.y, (int)r.width, (int)r.height);

@@ -55,7 +55,18 @@ namespace RideSafe.Module01
             return null;
         }
 
-        private IEnumerable<Transform> All() => GetComponentsInChildren<Transform>(true);
+        /// <summary>
+        /// Las piezas de lo presentado, <b>sin la raíz</b>. Las piezas de la patineta llegan al podio
+        /// en un contenedor que se llama como la primera («freno_de»), con el pivote donde estaba el
+        /// vehículo: tomado por maneta, giraba 18° sobre ese pivote, a más de 2 m, y sacaba las dos
+        /// manetas del podio (prueba de la PO, 2026-11-19).
+        /// </summary>
+        private IEnumerable<Transform> All()
+        {
+            foreach (Transform t in GetComponentsInChildren<Transform>(true))
+                if (t != transform)
+                    yield return t;
+        }
 
         private void FindLevers()
         {

@@ -43,8 +43,16 @@ namespace RideSafe.Module01
 
         [Tooltip("Latidos por segundo.")]
         [SerializeField, Min(0f)] private float _pulseSpeed = 1.6f;
-        [Tooltip("Radio, en metros, de la zona de clic alrededor del signo.")]
-        [SerializeField, Min(.02f)] private float _clickRadius = .12f;
+        [Tooltip("Ancho y alto, en metros, de la zona de clic: el recuadro del signo.")]
+        [SerializeField] private Vector2 _clickSize = ClickSize;
+
+        /// <summary>
+        /// La zona de clic es el recuadro del «!» (20 cm de alto) y no una esfera de 12 cm de radio:
+        /// en la cabina de la patineta el signo de la dirección queda 14 cm al lado del del display
+        /// y más cerca, y su esfera tapaba el del display; apuntar al «!» del medio abría el de la
+        /// derecha (PO, 2026-11-19). 8 cm de ancho dejan margen al trazo sin pisar al vecino.
+        /// </summary>
+        public static readonly Vector2 ClickSize = new Vector2(.08f, .2f);
 
         /// <summary>Hijo del signo que recibe el clic y se lo pasa al punto.</summary>
         public const string ClickAreaName = "ClickArea";
@@ -132,12 +140,23 @@ namespace RideSafe.Module01
                 area.SetParent(_billboard, false);
             }
             area.gameObject.layer = 0;
+            // La esfera de antes, si la escena la trae guardada: dos zonas volverían a pisarse.
             SphereCollider sphere = area.GetComponent<SphereCollider>();
-            if (sphere == null)
-                sphere = area.gameObject.AddComponent<SphereCollider>();
-            sphere.isTrigger = true;
-            float scale = Mathf.Max(Mathf.Abs(area.lossyScale.x), 1e-6f);
-            sphere.radius = _clickRadius / scale;
+            if (sphere != null)
+            {
+                sphere.enabled = false;
+                if (Application.isPlaying) Destroy(sphere);
+                else DestroyImmediate(sphere);
+            }
+            BoxCollider box = area.GetComponent<BoxCollider>();
+            if (box == null)
+                box = area.gameObject.AddComponent<BoxCollider>();
+            box.isTrigger = true;
+            // El hijo cuelga del signo, que gira para mirar al aprendiz: la caja le da la cara.
+            Vector3 scale = area.lossyScale;
+            float sx = Mathf.Max(Mathf.Abs(scale.x), 1e-6f), sy = Mathf.Max(Mathf.Abs(scale.y), 1e-6f);
+            box.center = Vector3.zero;
+            box.size = new Vector3(_clickSize.x / sx, _clickSize.y / sy, .02f / sx);
         }
 
         private void LateUpdate()

@@ -89,6 +89,21 @@ namespace RideSafe.Module01.Tests
             StringAssert.Contains("plataforma", terms["M1/Point_Deck_Risk"][1]);
         }
 
+        /// <summary>
+        /// El inglés que el traductor de la hoja del Drive reescribió desde el español (PO,
+        /// 2026-11-07: «Yeah», «Do not circulate»…) vuelve al escrito para el módulo. Lo que el cliente
+        /// escribió en su hoja (Module01MeetingTerms) no entra aquí: eso es suyo.
+        /// </summary>
+        [TestCase("M1/Yes", "Yes")]
+        [TestCase("M1/DoNotRide", "Do not ride")]
+        [TestCase("M1/RoadReady", "Ready to ride")]
+        [TestCase("M1/Omitted", "Core item omitted")]
+        [TestCase("M1/Zone_Load", "Load and free hands")]
+        public void El_ingles_es_el_del_modulo_y_no_el_del_traductor(string key, string english)
+        {
+            Assert.AreEqual(english, ReadProjectTerms()[key][0]);
+        }
+
         /// <summary>Término → [inglés, español] del asset de I2 del proyecto.</summary>
         internal static Dictionary<string, string[]> ReadProjectTerms() => ReadTerms(File.ReadAllText(AssetPath));
 

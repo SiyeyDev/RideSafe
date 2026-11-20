@@ -14,8 +14,9 @@ namespace RideSafe.Module00.Tests
         private const string PrefabPath = "Assets/_Project/UI/Prefabs/PF_Module00_UI.prefab";
         private const float Pad = 16f / 2.8f; // UIBuilderKit.PadFor(2.8): slice padding around the visible card
 
-        [TestCase("Option_ebike", 200f)]
-        [TestCase("Option_escooter", 830f)]
+        // Out at the door's sides so the vehicles under them leave «RideSafe» clear (PO, 2026-11-07).
+        [TestCase("Option_ebike", -30f)]
+        [TestCase("Option_escooter", 1032f)]
         public void VehicleCard_FitsItsContent_AroundItsVehicle(string name, float centre)
         {
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
@@ -62,21 +63,22 @@ namespace RideSafe.Module00.Tests
                 Assert.IsEmpty(new SerializedObject(style).FindProperty("_onCaption").stringValue, style.name);
         }
 
+        /// <summary>
+        /// The confirmation is its two buttons (PO, 2026-11-07: «quitar el texto duplicado; bastan los
+        /// botones»), centred under «RideSafe» on the door, not over it.
+        /// </summary>
         [Test]
-        public void ConfirmationBar_TextsStackOnTwoLines_LeftOfTheButtons()
+        public void ConfirmationBar_IsOnlyChangeAndConfirm_UnderTheBrand()
         {
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
             RectTransform bar = Find(prefab.transform, "ConfirmationBar");
-            RectTransform selected = Find(bar, "SelectedText");
-            RectTransform prompt = Find(bar, "Prompt");
-            float change = Find(bar, "ChangeButton").anchoredPosition.x;
-            Assert.LessOrEqual(selected.anchoredPosition.x + selected.sizeDelta.x, change, "vehicle sentence clear of Change");
-            Assert.LessOrEqual(prompt.anchoredPosition.x + prompt.sizeDelta.x, change, "prompt clear of Change");
-            float selectedBottom = selected.anchoredPosition.y - selected.sizeDelta.y;
-            Assert.LessOrEqual(prompt.anchoredPosition.y, selectedBottom + 0.01f, "the prompt sits below the sentence, not on it");
-            TMPro.TMP_Text sentence = selected.GetComponent<TMPro.TMP_Text>();
-            Assert.IsTrue(sentence.enableAutoSizing, "a long vehicle name shrinks instead of wrapping");
-            Assert.AreEqual(TMPro.TextWrappingModes.NoWrap, sentence.textWrappingMode);
+            Assert.IsFalse(Find(bar, "SelectedText").gameObject.activeSelf, "no «E-bike selected —»");
+            Assert.IsFalse(Find(bar, "Prompt").gameObject.activeSelf, "no «confirm to continue?»");
+            RectTransform change = Find(bar, "ChangeButton"), confirm = Find(bar, "ConfirmButton");
+            Assert.LessOrEqual(change.anchoredPosition.x + change.sizeDelta.x, confirm.anchoredPosition.x + 1f, "Change left of Confirm");
+            Assert.LessOrEqual(confirm.anchoredPosition.x + confirm.sizeDelta.x, bar.sizeDelta.x + 0.5f, "both inside the bar");
+            Assert.AreEqual(501f, bar.anchoredPosition.x + bar.sizeDelta.x / 2f, 1f, "centred on the door");
+            Assert.GreaterOrEqual(-bar.anchoredPosition.y, 520f, "below the word «RideSafe» (frame y 405–520)");
         }
 
         private static RectTransform Find(Transform root, string name)

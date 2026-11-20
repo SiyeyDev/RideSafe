@@ -44,7 +44,12 @@ namespace RideSafe.Module00.Editor
             EditorSceneManager.SaveScene(scene);
             Debug.Log("[Module00] Learner start moved to " + LearnerStart);
         }
-        private const float DisplayScale = 0.6f;
+        /// <summary>
+        /// Of the vehicle as the artist sized it. 0.5 since 2026-11-07 (was 0.6): with the cards out at
+        /// the door's sides, at 0.6 the e-bike side-on still reached the «R» of «RideSafe» and the
+        /// scooter's handlebar the «fe» (PO: «los vehículos no deben tapar el logo»).
+        /// </summary>
+        public const float DisplayScale = 0.5f;
 
         /// <summary>
         /// Altura a la que se apoyan los vehículos de exhibición. <b>No es el suelo del garaje.</b>
@@ -141,6 +146,42 @@ namespace RideSafe.Module00.Editor
                 if (openedHere)
                     EditorSceneManager.CloseScene(scene, true);
             }
+        }
+
+        /// <summary>
+        /// Puts the existing showroom at <see cref="DisplayScale"/> where it stands: each copy at that
+        /// share of its garage vehicle, and its platform with it. Unlike <see cref="Build"/>, nothing is
+        /// recreated, so the scene keeps its object ids (the artist edits v5 too; a rebuild rewrote
+        /// ~290 objects and its diff ran to 100 000 lines). Idempotent.
+        /// </summary>
+        [MenuItem("RideSafe/Módulo 0/Escalar la vitrina de vehículos en su sitio (Garaje_v5)")]
+        public static void ApplyDisplayScale()
+        {
+            Scene scene = SceneManager.GetSceneByPath(ScenePath);
+            if (!scene.isLoaded)
+                throw new System.InvalidOperationException("Open " + ScenePath + " first.");
+            GameObject root = FindRoot(scene, RootName);
+            if (root == null)
+                throw new System.InvalidOperationException(ScenePath + " has no showroom; run Build.");
+            SerializedProperty entries = new SerializedObject(root.GetComponent<VehiclePreviewController>()).FindProperty("_vehicles");
+            foreach ((string id, string modelName, string _) in Vehicles)
+            {
+                Transform copy = ShownModel(entries, id);
+                GameObject source = FindByName(scene, modelName, root.transform);
+                if (copy == null || source == null)
+                    throw new System.InvalidOperationException("Showroom entry '" + id + "' has no copy or no vehicle " + modelName);
+                copy.localScale = source.transform.localScale * DisplayScale;
+                EditorUtility.SetDirty(copy);
+                Transform platform = root.transform.Find("Stage/Slot_" + id + "/Platform");
+                if (platform != null)
+                {
+                    platform.localScale = Vector3.one * DisplayScale;
+                    EditorUtility.SetDirty(platform);
+                }
+            }
+            EditorSceneManager.MarkSceneDirty(scene);
+            if (!EditorSceneManager.SaveScene(scene))
+                throw new System.InvalidOperationException("Could not save " + ScenePath);
         }
 
         /// <summary>
@@ -247,8 +288,8 @@ namespace RideSafe.Module00.Editor
                 Object.DestroyImmediate(collider);
             copy.transform.localPosition = Vector3.zero;
             copy.transform.localRotation = Quaternion.identity;
-            // 0.6 of the vehicle as the artist sized it, not 0.6 of the FBX: the 2026-10-26
-            // scooter stands in the garage at ×1.4, and a fixed 0.6 shrank it to half the bike.
+            // DisplayScale of the vehicle as the artist sized it, not of the FBX: the 2026-10-26
+            // scooter stands in the garage at ×1.4, and a fixed factor shrank it to half the bike.
             copy.transform.localScale = source.transform.localScale * DisplayScale;
 
             Bounds bounds = new Bounds(copy.transform.position, Vector3.zero);

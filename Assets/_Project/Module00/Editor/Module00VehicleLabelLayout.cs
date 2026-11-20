@@ -18,8 +18,10 @@ namespace RideSafe.Module00.Editor
 
         private static readonly (string Name, float Centre)[] Cards =
         {
-            ("Option_ebike", 200f),
-            ("Option_escooter", 830f)
+            // Out to the door's sides so neither vehicle covers «RideSafe» (PO, 2026-11-07); the
+            // same centres as UIComposition.VehicleCardCentres, which composes the prefab after this.
+            ("Option_ebike", -30f),
+            ("Option_escooter", 1032f)
         };
 
         [MenuItem("RideSafe/Módulo 0/Ensanchar etiquetas de vehículo")]

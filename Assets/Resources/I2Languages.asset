@@ -770,7 +770,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Your decision matches the review.
+      - Your decision matches the inspection.
       - "Tu decisi\xF3n coincide con la revisi\xF3n."
       Flags: 0000
       Languages_Touch: []
@@ -778,7 +778,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - After your review, what do you decide?
+      - After your inspection, what do you decide?
       - "Despu\xE9s de tu revisi\xF3n, \xBFqu\xE9 decides?"
       Flags: 0000
       Languages_Touch: []
@@ -786,7 +786,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Review your decision before driving.
+      - Review your decision before riding.
       - "Revisa tu decisi\xF3n antes de circular."
       Flags: 0000
       Languages_Touch: []
@@ -794,7 +794,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Do not circulate
+      - Do not ride
       - No circular
       Flags: 0000
       Languages_Touch: []
@@ -802,7 +802,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Module completed. Review your preparation and inspection summary.
+      - Module complete. Review your preparation and inspection summary.
       - "M\xF3dulo completado. Revisa el resumen de tu preparaci\xF3n e inspecci\xF3n."
       Flags: 0000
       Languages_Touch: []
@@ -904,7 +904,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Omitted nucleus
+      - Core item omitted
       - "N\xFAcleo omitido"
       Flags: 0000
       Languages_Touch: []
@@ -930,7 +930,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Pause / Continue
+      - Pause / resume
       - Pausar / seguir
       Flags: 0000
       Languages_Touch: []
@@ -994,7 +994,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Repeat
+      - Replay
       - Repetir
       Flags: 0000
       Languages_Touch: []
@@ -1002,7 +1002,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Reference for this route
+      - Reference for this ride
       - Referencia para este recorrido
       Flags: 0000
       Languages_Touch: []
@@ -1034,7 +1034,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Upon confirmation, this section will be evaluated.
+      - Confirm to evaluate this section.
       - "Al confirmar se evaluar\xE1 esta secci\xF3n."
       Flags: 0000
       Languages_Touch: []
@@ -1058,7 +1058,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Ready to drive
+      - Ready to ride
       - Listo para circular
       Flags: 0000
       Languages_Touch: []
@@ -1074,7 +1074,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - You haven't added any items yet.
+      - No items added yet.
       - "Todav\xEDa no has a\xF1adido elementos."
       Flags: 0000
       Languages_Touch: []
@@ -1098,7 +1098,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Begin
+      - Start
       - Comenzar
       Flags: 0000
       Languages_Touch: []
@@ -1106,7 +1106,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Provisional video. Final educational content is pending.
+      - Placeholder video. Final educational content is pending.
       - "Video provisional. El contenido educativo final est\xE1 pendiente."
       Flags: 0000
       Languages_Touch: []
@@ -1114,7 +1114,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - See explanation
+      - Watch explanation
       - "Ver explicaci\xF3n"
       Flags: 0000
       Languages_Touch: []
@@ -1122,7 +1122,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Yeah
+      - Yes
       - "S\xED"
       Flags: 0000
       Languages_Touch: []
@@ -1146,7 +1146,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Head and protection
+      - Head protection
       - "Cabeza y protecci\xF3n"
       Flags: 0000
       Languages_Touch: []
@@ -1154,7 +1154,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Charging and hands-free operation
+      - Load and free hands
       - Carga y manos libres
       Flags: 0000
       Languages_Touch: []
@@ -1170,7 +1170,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Wheels and structure
+      - Wheels and frame
       - Ruedas y estructura
       Flags: 0000
       Languages_Touch: []
@@ -1178,7 +1178,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Glasses prevent dust and insects from blinding you in traffic.
+      - Glasses keep dust and insects from blinding you in traffic.
       - "Las gafas evitan que el polvo y los insectos te cieguen en el tr\xE1fico."
       Flags: 0000
       Languages_Touch: []
@@ -1186,7 +1186,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - A helmet that has already been hit will not absorb the next one.
+      - A helmet that has taken a blow no longer absorbs the next one.
       - "Un casco que ya recibi\xF3 un golpe no absorbe el siguiente."
       Flags: 0000
       Languages_Touch: []
@@ -1194,7 +1194,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - A full-face, properly fitted helmet is the only protection for the head.
+      - An intact, fitted helmet is the only protection for the head.
       - "Un casco \xEDntegro y ajustado es la \xFAnica protecci\xF3n de la cabeza."
       Flags: 0000
       Languages_Touch: []
@@ -1226,7 +1226,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - The reflective vest is what makes you visible at dusk and in the rain.
+      - A reflective vest is what makes you visible at dusk and in the rain.
       - El chaleco reflectivo es lo que te hace visible al atardecer y con lluvia.
       Flags: 0000
       Languages_Touch: []
@@ -1234,7 +1234,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Closed footwear secures the foot to the pedal and protects the toes.
+      - Closed-toe shoes hold the foot on the pedal and shield the toes.
       - El calzado cerrado sujeta el pie en el pedal y protege los dedos.
       Flags: 0000
       Languages_Touch: []
@@ -1242,7 +1242,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - The tight-fitting pants keep the leg away from the chain and the wheel.
+      - Fitted trousers keep the leg clear of the chain and the wheel.
       - "El pantal\xF3n ajustado mantiene la pierna lejos de la cadena y de la rueda."
       Flags: 0000
       Languages_Touch: []
@@ -1267,7 +1267,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - An object in your hand takes away the brake and the steering.
+      - An object in your hand takes away a brake and the steering.
       - "Un objeto en la mano te quita un freno y la direcci\xF3n."
       Flags: 0000
       Languages_Touch: []
@@ -1275,7 +1275,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - The secured load does not shift and does not change your balance.
+      - A secured load does not shift and does not change your balance.
       - La carga asegurada no se desplaza y no te cambia el equilibrio.
       Flags: 0000
       Languages_Touch: []
@@ -1283,7 +1283,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - The brakes are what determine the distance at which you stop.
+      - Brakes are what decide the distance at which you stop.
       - Los frenos son lo que decide la distancia en la que te detienes.
       Flags: 0000
       Languages_Touch: []
@@ -1291,7 +1291,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - A loose battery or throttle can cut out or accelerate on its own while driving.
+      - A loose battery or throttle can cut out or surge while riding.
       - "Una bater\xEDa o un acelerador flojos se pueden cortar o acelerar solos
         en marcha."
       Flags: 0000
@@ -1300,7 +1300,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - A steering system with a game doesn't respond when it's time to dodge.
+      - Loose steering does not answer when you need to dodge.
       - "Una direcci\xF3n con juego no responde cuando toca esquivar."
       Flags: 0000
       Languages_Touch: []
@@ -1308,7 +1308,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Low pressure or a loose wheel causes skidding on a curve.
+      - Low pressure or a loose wheel skids in a curve.
       - "La presi\xF3n baja o una rueda floja derrapan en una curva."
       Flags: 0000
       Languages_Touch: []
@@ -1316,7 +1316,7 @@ MonoBehaviour:
       TermType: 0
       Description: 
       Languages:
-      - Without lights or reflectors, nobody sees you coming.
+      - Without lights and reflectors, no one sees you coming.
       - Sin luces ni reflectivos, nadie te ve llegar.
       Flags: 0000
       Languages_Touch: []

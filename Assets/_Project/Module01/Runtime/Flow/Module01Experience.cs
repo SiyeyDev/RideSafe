@@ -305,11 +305,23 @@ namespace RideSafe.Module01
         private void RefreshInstruction()
         {
             if (string.IsNullOrEmpty(_instructionKey)) return;
-            // The station's name as a heading over the instruction, not one more line of the same weight.
-            _instructionText.text = "<b><size=112%>" + UIText.Resolve(_instructionKey) + "</size></b>\n" +
-                UIText.Resolve(_director.InVehicleSection ? "M1/Inspect_Instruction" : "M1/Choose_Instruction");
+            _instructionText.text = SignText(UIText.Resolve(_instructionKey),
+                UIText.Resolve(_director.InVehicleSection ? "M1/Inspect_Instruction" : "M1/Choose_Instruction"));
             _instruction.SetActive(SubtitlesEnabled && (Phase == "Choosing" || Phase == "Moving"));
         }
+        /// <summary>
+        /// El cartel de la parada: el nombre como título y la instrucción como subtítulo, separados
+        /// y con jerarquía clara (PO, 2026-11-07: «separar título y subtítulo; más contraste entre H1
+        /// y H2»). El título más grande y en negrita; la instrucción algo menor y atenuada, con
+        /// aire entre los dos. Antes iban a 112 % y 100 %, pegados: se leían como un solo párrafo.
+        /// </summary>
+        public static string SignText(string title, string instruction) =>
+            "<line-height=" + SignTitleLineHeight + "%><b><size=" + SignTitleSize + "%>" + title + "</size></b>\n</line-height>" +
+            "<size=" + SignInstructionSize + "%><alpha=#" + SignInstructionAlpha + ">" + instruction;
+
+        public const int SignTitleSize = 128, SignTitleLineHeight = 150, SignInstructionSize = 90;
+        public const string SignInstructionAlpha = "B3";
+
         private void Update()
         {
             if (Phase == "Choosing")

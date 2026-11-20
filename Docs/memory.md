@@ -1242,6 +1242,53 @@ entidad sirve a los dos. Por eso ambos perfiles pueden apuntar a las mismas 3 zo
 
 ## 11. Bitácora
 
+### 2026-11-19 (noche) — podio y «!» del vehículo, tras la prueba de la PO
+
+- **Las manetas de la patineta salían del podio.** Van al podio en un contenedor que se llama
+  como la primera («freno_de») y tiene el pivote donde estaba el vehículo. `PodiumAnimation` lo
+  tomaba por maneta y lo giraba 18° sobre ese pivote, a más de 2 m. Ahora se salta la raíz
+  (`All()`). El test del equipo animaba la patineta entera y no lo veía. Regresión:
+  `Las_manetas_de_la_patineta_no_se_salen_del_podio`.
+- **Lo del podio ya no se resalta** (ya se mueve). Solo siguen delineadas las manetas sobre el
+  manubrio de la bici (`ZoneRunner.OutlinedOnPodium`).
+- **El «!» del medio abría el de la derecha** (cabina de la patineta). Cada signo tenía una esfera
+  de clic de 12 cm de radio, y la de la dirección, más cerca, tapaba el del display. Ahora es un
+  recuadro de 8 × 20 cm que gira con el signo (`InspectionMarker.ClickSize`). La esfera guardada
+  en la escena se quita al arrancar. Medido en Play: cada «!» recibe su propio clic.
+
+### 2026-11-19 — se recupera lo del 07-11 sobre el trabajo de la reunión del 11-11
+
+Los cambios del 2026-11-07 no se habían subido. El 19-11, para poder traer `dev` (`da5b43c →
+bcf76f4`), se descartaron en GitHub Desktop y fueron a la papelera de Windows (dos rondas: 17:29–17:36,
+los modificados; 18:22, los nuevos, como los iconos). Se copiaron de ahí y se compararon con
+`da5b43c` (base) y `HEAD` (equipo).
+
+- **Criterio:** manda lo de la reunión del 11-11 con el cliente (entradas del 17 y 18-11): el
+  panel «Achievement» con «Intentémoslo de nuevo», la felicitación y el cierre; sin resumen general
+  ni «¿qué decides?»; los nombres de EPP del Excel; los textos que el cliente corrigió en su hoja.
+  Vuelve lo nuestro que nadie sustituyó.
+- **Vuelve:**
+  - Iconos: popup ✓ / ✕ y bienvenida ↺ / ▶ (`UIStatusIcons`, `UIComposition.IconInsteadOfLabel`,
+    `Module01SceneComposition`, los 4 `IconMono_*`).
+  - M0 «Choose your vehicle»: barra con solo Cambiar / Confirmar bajo «RideSafe», tarjetas a los
+    lados de la puerta y vitrina a 0.5 (`UIComposition`, `Module00VehicleLabelLayout`,
+    `Module00ShowroomSetup`).
+  - Cartel de parada con título y subtítulo separados (`Module01Experience.SignText`).
+  - Inglés: 32 de las 43 correcciones (`Module01UiTerms.EnglishFixes`). Las otras 11 son términos
+    que el cliente reescribió en su hoja o nombres del Excel: `Module01UiTerms.ClientOwned` los salta,
+    y `Module01MeetingTerms` se aplica después.
+- **No vuelve (sustituido por la reunión):** nuestro panel de entrada al vehículo y de reintento
+  (`NarrationPlayer.PlayLine`, `onNarrate`, `M01_VehicleIntro/RetryGear/RetryVehicle`), los nombres
+  `_Short` y `ReportPresenter.CardName`, y los 14 audios (el equipo regeneró los suyos).
+- **Ajuste en el código del equipo:** `UIAchievementPanel` copia el panel de bienvenida, que ahora
+  lleva ▶; `WordsNotIcon` le devuelve su texto al botón (Continuar / Intentar de nuevo / Continuar
+  al módulo 2).
+- **Builders aplicados** (batch, `TempRestoreBatch`, ya borrado; la vitrina se escala en su sitio con `Module00ShowroomSetup.ApplyDisplayScale`, sin recrearla): `Module01UiTerms` →
+  `Module01MeetingTerms` → `UIComposition.ApplyInPlace` → `UIAchievementPanel` →
+  `Module01SceneComposition.ApplyToOpenScene` → `Module00ShowroomSetup.ApplyDisplayScale`.
+- **Pendiente de la PO:** ¿se quiere de vuelta el panel «Revisa tu vehículo» antes de la primera
+  parada del vehículo? Hoy solo suena la voz `M02_Welcome` del cliente.
+
 ### 2026-11-18 — módulo 1 listo para la presentación del 19-11 (todo en batchmode)
 
 Fuentes: la grabación de la reunión del 11-11 (`D:\Videos\Ridesafe\Runion 11 nov\`), la hoja del
@@ -1360,6 +1407,46 @@ el stash «churn editor 2026-11-17».
     las capas y los canvas de la de overlay durante la foto. **El PlayMode en batch se colgaba** al
     recargar el dominio: el relay MCP de la sesión de Claude (`relay_win.exe --mcp`) se conectaba
     al Unity del lote. Hay que cerrarlo antes. Y `WaitForEndOfFrame` no vuelve en batch.
+
+### 2026-11-07 — correcciones de la PO: inglés, iconos, paneles de entrada y M0
+
+> Se quedó sin subir y se perdió al descartar los cambios locales antes del *pull* del 19-11; se
+> recuperó de la papelera ese mismo día (ver la entrada del 2026-11-19). Lo que la reunión del 11-11
+> sustituyó está marcado como **[sustituido]**.
+
+- **Dónde viven los textos:** en el **I2Languages.asset** (Tools → I2 Localization → Open
+  I2Languages.asset), no en `Docs/Module1_I2.csv`. Primero el texto en el asset (vía
+  `Module01UiTerms.Apply`), después el audio con Tools → Cachacos → GenerateAudio, cuya clase
+  `GenerateAudio` usa también `M1ItemAudioBatch` (mismo mp3 y mismo .json de tiempos).
+- **Inglés dañado por el traductor del Drive:** 43 términos (`Yeah`, `Prepare yourself before
+  filming`, `Do not circulate`, `Omitted nucleus`, `Wheels and structure`, `Compatible doorbell`…)
+  vuelven al inglés escrito para el módulo. Solo donde el español seguía igual; los nombres de EPP
+  conservan los de la hoja. Lista en `Module01UiTerms.EnglishFixes`: si una importación de la hoja
+  los vuelve a pisar, basta con reaplicar el builder.
+- **[sustituido]** **Nombre de tarjeta:** `M1/Item_X_Short` (28 EPP, ES/EN, ≤ 30 caracteres). Lo leen
+  `ReportPresenter.CardName` (evaluación, resumen) y la revisión. El popup y su voz siguen con el
+  nombre largo de la hoja. Test: `I2TermsTests.Todo_nombre_largo_tiene_un_nombre_de_tarjeta_que_cabe`.
+- **Iconos:** popup ✓ / ✕ (`IconMono_Confirm`, `IconMono_Close`); bienvenida ↺ / ▶
+  (`IconMono_Replay_Round`, copia blanca del ↺ del video, y `IconMono_Play`, dibujado). Los genera
+  `UIStatusIcons.BuildActionIcons`; `UIComposition.IconInsteadOfLabel` deja la etiqueta apagada con
+  su término.
+- **[sustituido]** **Panel de entrada reutilizado:** el de bienvenida, con otros textos y otra locución
+  (`Module01Experience.Intro`). Sale al llegar al vehículo tras aprobar los EPP (`M1/VehicleIntro_*`)
+  y después del video al reprobar (`M1/Retry_Title` + `M1/RetryGear_Body` / `M1/RetryVehicle_Body`);
+  su ▶ lleva de vuelta a la primera parada. Locución por `onNarrate` → `NarrationPlayer.PlayLine`
+  (`M01_VehicleIntro`, `M01_RetryGear`, `M01_RetryVehicle`, ES Daniela / EN Alice).
+- **Evaluación reprobada:** se probó una línea roja bajo las tarjetas y la PO la quitó: el panel
+  queda como estaba, porque el «Intentémoslo de nuevo» ya lo explica.
+- **Cartel de parada:** `Module01Experience.SignText`: título 128 % en negrita con aire debajo
+  (line-height 150 %), instrucción 90 % y atenuada (alpha B3).
+- **M0 «Choose your vehicle»:** la barra es solo «Cambiar / Confirmar», centrada bajo «RideSafe»
+  (`UIComposition.ConfirmationButtonsOnly`, top 530). Las tarjetas se abren a los lados de la
+  puerta (centros −30 y 1032, `VehicleCardCentres`) y la vitrina baja a escala 0.5
+  (`Module00ShowroomSetup.DisplayScale`, reconstruida con `Build`): con 0.6 la e-bike de lado
+  todavía tocaba la «R».
+- **[sustituido]** **Audio generado (14):** las 3 locuciones nuevas ES+EN, 4 en inglés con texto corregido
+  (`Item_Bell`, `Point_Electrics`, `Point_Steering`, `Point_Wheels`) y los 2 EPP del artista que no
+  tenían voz (`Item_HelmetCracked`, `Item_VestGrey`). `DryRunMissing` queda en 0.
 
 ### 2026-11-06 (tarde) — prueba de la PO: vehículo y paneles finales
 

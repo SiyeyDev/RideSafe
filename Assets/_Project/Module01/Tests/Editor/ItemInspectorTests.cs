@@ -340,6 +340,14 @@ namespace RideSafe.Module01.Tests
             Object.DestroyImmediate(outline);
         }
 
+        /// <summary>Lo del podio no se resalta, ya se mueve; solo las manetas sobre el manubrio de la bici (PO, 2026-11-19).</summary>
+        [TestCase("point_brakes", true)]
+        [TestCase("point_steering", false)]
+        [TestCase("point_drivetrain", false)]
+        [TestCase("point_electrics", false)]
+        public void En_el_podio_solo_se_delinean_las_manetas(string itemId, bool outlined) =>
+            Assert.AreEqual(outlined, ZoneRunner.OutlinedOnPodium(itemId));
+
         [Test]
         public void Las_piezas_de_un_punto_van_juntas_en_el_pedestal_no_a_la_distancia_de_la_bici()
         {

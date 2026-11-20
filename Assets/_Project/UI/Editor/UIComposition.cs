@@ -110,7 +110,7 @@ namespace RideSafe.UI.EditorTools
                 if (firstPass != null)
                     Object.DestroyImmediate(firstPass.gameObject);
                 HeaderBox(vehicle, kit, OptionsCentre);
-                SetVisibleY(Find(vehicle, "ConfirmationBar"), 440f, 74f);
+                ConfirmationButtonsOnly(Find(vehicle, "ConfirmationBar"));
                 // Only the name, «E-bike» / «E-scooter» (PO, 2026-11-04): the «Pedal assist · seated»
                 // line goes, the card shrinks to one row and the check sits beside the name.
                 SetVisibleY(Find(vehicle, "VehicleLabels/Option_ebike"), 183f, VehicleCardHeight);
@@ -132,6 +132,15 @@ namespace RideSafe.UI.EditorTools
                     check.anchoredPosition = new Vector2(check.anchoredPosition.x, -(pad + (VehicleCardHeight - check.sizeDelta.y) * 0.5f));
                     EditorUtility.SetDirty(title);
                     EditorUtility.SetDirty(check);
+                }
+                // Neither vehicle covers «RideSafe» on the door (PO, 2026-11-07): each display vehicle
+                // stands under its card (VehicleShowroom), so the cards go out to the door's sides and
+                // the vehicles with them. FitCardToContent keeps this centre when it resizes the card.
+                foreach (var (name, centre) in VehicleCardCentres)
+                {
+                    RectTransform card = Find(vehicle, "VehicleLabels/" + name);
+                    card.anchoredPosition = new Vector2(centre - card.sizeDelta.x * 0.5f, card.anchoredPosition.y);
+                    EditorUtility.SetDirty(card);
                 }
 
                 Transform comfort = Find(root, "Comfort");
@@ -166,6 +175,50 @@ namespace RideSafe.UI.EditorTools
         /// <summary>The vehicle name cards, one row tall since they only carry the name.</summary>
         private const float VehicleCardHeight = 48f;
 
+        /// <summary>
+        /// Card centres on the frame (was 200 and 830). Measured on the PC view: the word «RideSafe»
+        /// spans about x 205–830 and y 405–520 of the frame, and the e-bike side-on (its widest pose,
+        /// before it is chosen) about ±135 around its card at the showroom's 0.5 scale. Symmetric
+        /// about the frame's centre (501), and both cards still on the door.
+        /// </summary>
+        internal static readonly (string Name, float Centre)[] VehicleCardCentres =
+            { ("Option_ebike", -30f), ("Option_escooter", 1032f) };
+
+        /// <summary>
+        /// The confirmation as its two buttons and nothing else (PO, 2026-11-07: «quitar el texto
+        /// duplicado; bastan los botones»): the coral card and its check already say what was chosen.
+        /// Centred under «RideSafe», not over it. The sentence objects stay, off, for ChoicePanel.
+        /// </summary>
+        private static void ConfirmationButtonsOnly(RectTransform bar)
+        {
+            foreach (string text in new[] { "SelectedText", "Prompt" })
+                Find(bar, text).gameObject.SetActive(false);
+            UnityEngine.UI.Image pill = bar.GetComponent<UnityEngine.UI.Image>();
+            pill.pixelsPerUnitMultiplier = UIBuilderKit.PillMultiplier(pill.sprite != null ? pill.sprite.name : "Status_Pill_Default", ConfirmBarHeight);
+            EditorUtility.SetDirty(pill);
+            float width = 3f * ConfirmBarInset + ChangeWidth + ConfirmWidth;
+            SetVisibleX(bar, UIBuilderKit.FrameW * 0.5f - width * 0.5f, width);
+            SetVisibleY(bar, ConfirmBarTop, ConfirmBarHeight);
+            EditorUtility.SetDirty(bar);
+
+            float pad = PadOf(bar);
+            float top = pad + (ConfirmBarHeight - ConfirmButtonHeight) * 0.5f;
+            foreach (var (name, x, w) in new[] { ("ChangeButton", ConfirmBarInset, ChangeWidth),
+                                                 ("ConfirmButton", 2f * ConfirmBarInset + ChangeWidth, ConfirmWidth) })
+            {
+                RectTransform button = Find(bar, name);
+                UnityEngine.UI.Image image = button.GetComponent<UnityEngine.UI.Image>();
+                image.pixelsPerUnitMultiplier = UIBuilderKit.PillMultiplier(image.sprite != null ? image.sprite.name : "Button_", ConfirmButtonHeight);
+                SetVisibleX(button, pad + x, w);
+                SetVisibleY(button, top, ConfirmButtonHeight);
+                EditorUtility.SetDirty(image);
+                EditorUtility.SetDirty(button);
+            }
+        }
+
+        private const float ConfirmBarTop = 530f, ConfirmBarHeight = 62f, ConfirmBarInset = 10f;
+        private const float ChangeWidth = 116f, ConfirmWidth = 124f, ConfirmButtonHeight = 44f;
+
         #endregion
 
         #region Module 1
@@ -179,8 +232,13 @@ namespace RideSafe.UI.EditorTools
                 float pad = PadOf(box);
                 float centre = pad + (box.sizeDelta.x - 2f * pad) * 0.5f;
                 SetX(Find(box, "Title"), centre - 270.5f, 541f);
-                SetVisibleX(Find(box, "RepeatAudioButton"), centre - 174.5f, 230f);
-                SetVisibleX(Find(box, "StartButton"), centre - 174.5f + 245f, 104f);
+                // ↺ and ▶ instead of «Repetir instrucciones» and «Comenzar» (PO, 2026-11-07), the pair
+                // centred and each pill as wide as Back / Continue on module 0. The same panel opens the
+                // vehicle section and the retries, so they all get them.
+                SetVisibleX(Find(box, "RepeatAudioButton"), centre - NavButtonWidth - IconPairGap * 0.5f, NavButtonWidth);
+                SetVisibleX(Find(box, "StartButton"), centre + IconPairGap * 0.5f, NavButtonWidth);
+                IconInsteadOfLabel(Find(box, "RepeatAudioButton"), kit, UIStatusIcons.ReplayIcon);
+                IconInsteadOfLabel(Find(box, "StartButton"), kit, UIStatusIcons.PlayIcon, 26f);
                 OrientationFitsItsBody(box);
                 // The company mark at the top left of every panel (2026-10-21), here where the body text
                 // starts and on the «MÓDULO 1 · PREPARACIÓN» line above the title (PO). The title keeps
@@ -718,6 +776,9 @@ namespace RideSafe.UI.EditorTools
         /// </summary>
         private const float NavButtonWidth = 88f;
 
+        /// <summary>Between two icon pills side by side (the welcome's ↺ ▶, the popup's ✓ ✕).</summary>
+        internal const float IconPairGap = 16f;
+
         /// <summary>The title at <see cref="TitleTop"/> and the subtitle off: «no son relevantes» (PO, 2026-10-29).</summary>
         private static void TitleAboveDoor(Transform panel)
         {
@@ -732,7 +793,15 @@ namespace RideSafe.UI.EditorTools
         /// (hidden) for <c>SelectableStyle</c>, which now paints the chevron with the label's colour:
         /// navy on the light Back, white on the coral Continue, grey while it is disabled.
         /// </summary>
-        private static void NavIcon(RectTransform button, UIBuilderKit kit, string source)
+        private static void NavIcon(RectTransform button, UIBuilderKit kit, string source) =>
+            IconInsteadOfLabel(button, kit, UIStatusIcons.NavigationName(source));
+
+        /// <summary>
+        /// Any pill showing a white icon in place of its label (the chevrons; since 2026-11-07 also
+        /// the popup's ✓ / ✕ and the welcome's ↺ / ▶). The label stays, hidden: it keeps the I2 term
+        /// and gives <c>SelectableStyle</c> the colour to paint the icon with. Idempotent.
+        /// </summary>
+        internal static void IconInsteadOfLabel(RectTransform button, UIBuilderKit kit, string sprite, float size = 30f)
         {
             TMP_Text label = button.Find("Label").GetComponent<TMP_Text>();
             label.gameObject.SetActive(false);
@@ -741,11 +810,11 @@ namespace RideSafe.UI.EditorTools
             RectTransform rect = (RectTransform)icon.transform;
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = new Vector2(30f, 30f);
+            rect.sizeDelta = new Vector2(size, size);
             UnityEngine.UI.Image image = icon.GetComponent<UnityEngine.UI.Image>();
             if (image == null)
                 image = icon.AddComponent<UnityEngine.UI.Image>();
-            image.sprite = kit.S(UIStatusIcons.NavigationName(source));
+            image.sprite = kit.S(sprite);
             image.preserveAspect = true;
             image.raycastTarget = false;
             image.color = label.color;
