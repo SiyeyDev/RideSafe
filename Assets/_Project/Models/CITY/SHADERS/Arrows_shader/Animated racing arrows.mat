@@ -79,9 +79,9 @@ Material:
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Color_arrow: {r: 0.100708425, g: 1.4980392, b: 0, a: 1}
+    - _Color_arrow: {r: 0.06806278, g: 1, b: 0, a: 1}
     - _Color_ligth: {r: 9.663322, g: 0.88035935, b: 0, a: 1}
-    - _Fresnel_Color: {r: 0.44085297, g: 23.96862, b: 0, a: 1}
+    - _Fresnel_Color: {r: 0.9986928, g: 1.4980392, b: 0, a: 1}
     - _arrow_speed: {r: -1, g: 0, b: 0, a: 0}
     - _direction: {r: 1, g: 1, b: 0, a: 0}
     - _offset: {r: 1, g: 1, b: 0, a: 0}
