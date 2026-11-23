@@ -9,6 +9,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: umbrella
     second: {fileID: 2100000, guid: cb24701a72cf9f54f817def4c7117546, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: umbrella_mat
+    second: {fileID: 2100000, guid: 91518deca17e6c24eb3eea80de2bd7d2, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

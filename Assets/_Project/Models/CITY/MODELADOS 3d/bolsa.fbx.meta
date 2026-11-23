@@ -9,6 +9,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: Bolsa_Mat
     second: {fileID: 2100000, guid: 02b65008320530a49ac779081043ad61, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: bolsa_mat
+    second: {fileID: 2100000, guid: fc094de60a53ac641b07eb455d09fda5, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
